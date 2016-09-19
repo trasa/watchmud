@@ -21,6 +21,7 @@ func SomeApi(w http.ResponseWriter, r *http.Request) {
 }
 
 func EchoServer(ws *websocket.Conn) {
+	log.Printf("something happened!")
 	io.Copy(ws, ws)
 }
 
