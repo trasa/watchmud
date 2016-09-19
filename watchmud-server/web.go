@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"golang.org/x/net/websocket"
 	"html"
+	"io"
 	"log"
 	"net/http"
 )
@@ -18,6 +20,10 @@ func SomeApi(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Some Api!! %q", html.EscapeString(r.URL.Path))
 }
 
+func EchoServer(ws *websocket.Conn) {
+	io.Copy(ws, ws)
+}
+
 func connectHttpServer() {
 	router := mux.NewRouter().StrictSlash(true)
 
@@ -30,6 +36,9 @@ func connectHttpServer() {
 
 	// TODO write an api...
 	router.HandleFunc("/api/v1", SomeApi)
+
+	// websocket handler
+	router.Handle("/ws", websocket.Handler(EchoServer))
 
 	log.Printf("http listening on port %d", port)
 	http.Handle("/", router)
