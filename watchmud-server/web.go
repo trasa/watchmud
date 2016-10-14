@@ -11,7 +11,7 @@ import (
 
 const port = 8888
 
-var upgrader = websocket.Upgrader {} // default options
+var upgrader = websocket.Upgrader{} // default options
 
 func Index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/static/index.html", 302)
@@ -27,20 +27,9 @@ func mudsocket(w http.ResponseWriter, r *http.Request) {
 		log.Printf("upgrade error: %s", err)
 		return
 	}
-	defer c.Close()
-	for {
-		messageType, message, err := c.ReadMessage()
-		if err != nil {
-			log.Printf("read error: %s", err)
-			break
-		}
-		log.Printf("Recd: %s", message)
-		err = c.WriteMessage(messageType, message)
-		if err != nil {
-			log.Printf("write error: %s", err)
-			break
-		}
-	}
+	client := &Client{conn: c, send: make(chan []byte, 256)}
+	go client.writePump()
+	client.readPump()
 }
 
 func connectHttpServer() {

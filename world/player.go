@@ -7,15 +7,13 @@ import (
 type Player struct {
 	Id            string
 	Name          string
-	Jid           string
 	Room          *Room
 	EventCallback func(*Player, interface{})
 }
 
-func NewPlayer(id string, jid string, name string, onEvent func(*Player, interface{})) *Player {
+func NewPlayer(id string, name string, onEvent func(*Player, interface{})) *Player {
 	p := Player{
 		Name:          name,
-		Jid:           jid,
 		Id:            id,
 		EventCallback: onEvent,
 	}
@@ -23,7 +21,7 @@ func NewPlayer(id string, jid string, name string, onEvent func(*Player, interfa
 }
 
 func (p *Player) String() string {
-	return fmt.Sprintf("(Player Id='%s', Name='%s', Jid='%s' in room '%v')", p.Id, p.Name, p.Jid, p.Room)
+	return fmt.Sprintf("(Player Id='%s', Name='%s' in room '%v')", p.Id, p.Name, p.Room)
 }
 
 func (p *Player) FindZone() *Zone {

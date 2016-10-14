@@ -53,7 +53,7 @@
             websocket = new WebSocket(plugin.settings["socketUrl"]);
 
             websocket.onopen = function (evt) {
-                displayMessage("opening socket");
+                displayMessage("opening socket...ready");
             };
             websocket.onclose = function (evt) {
                 displayMessage("Socket closed");
@@ -75,6 +75,8 @@
 
         /* public */
         plugin.send = function(msg) {
+            msg = JSON.stringify(msg);
+            console.log("send " + msg);
             websocket.send(msg);
         };
 
@@ -113,7 +115,7 @@
                 });
 
                 $('#login').click(function() {
-                   mc.send("hello") 
+                   mc.send({"foo":"bar"});
                 });
 
                 function displayMessage(msg) {

@@ -7,21 +7,16 @@ import (
 
 func TestLogin(t *testing.T) {
 	ClearKnownPlayers()
-	originalPlayer := NewPlayer("id", "Jid", "Name", nil)
+	originalPlayer := NewPlayer("id", "Name", nil)
 	if err := Login(originalPlayer); err != nil {
 		t.Error("Failed to login")
-	}
-
-	p := FindPlayerByJid("Jid")
-	if originalPlayer != p {
-		t.Errorf("Found different player than expected: expected %s, actual %s", originalPlayer, p)
 	}
 }
 
 func TestGetAll(t *testing.T) {
 	ClearKnownPlayers()
-	playerA := NewPlayer("a", "a", "a", nil)
-	playerB := NewPlayer("b", "b", "b", nil)
+	playerA := NewPlayer("a", "a", nil)
+	playerB := NewPlayer("b", "b", nil)
 	if err := Login(playerA); err != nil {
 		t.Error("Failed to login A")
 	}
