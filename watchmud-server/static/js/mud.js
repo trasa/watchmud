@@ -56,7 +56,7 @@
                 displayMessage("opening socket");
             };
             websocket.onclose = function (evt) {
-                displayMessage("Socket closed")
+                displayMessage("Socket closed");
                 websocket = null;
             };
             websocket.onmessage = function (evt) {
@@ -71,6 +71,11 @@
                 console.log("Error:");
                 console.log(evt);
             };
+        };
+
+        /* public */
+        plugin.send = function(msg) {
+            websocket.send(msg);
         };
 
         /* public */
@@ -98,14 +103,18 @@
         this.get('#/', function () {
             this.render('templates/index.ejs', function (html) {
                 $('#mainContent').html(html);
+                var mc;
 
                 $('#connect').click(function () {
-                    var mc = $('#connect').mudclient({
+                    mc = $('#connect').mudclient({
                         displayMessage: displayMessage
                     }).data('mudclient');
                     mc.run();
                 });
 
+                $('#login').click(function() {
+                   mc.send("hello") 
+                });
 
                 function displayMessage(msg) {
                     var display = $('#display');
