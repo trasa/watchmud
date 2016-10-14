@@ -3,14 +3,15 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 	"html"
-	"io"
 	"log"
 	"net/http"
 )
 
 const port = 8888
+
+var upgrader = websocket.Upgrader {} // default options
 
 func Index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/static/index.html", 302)
@@ -20,9 +21,26 @@ func SomeApi(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Some Api!! %q", html.EscapeString(r.URL.Path))
 }
 
-func EchoServer(ws *websocket.Conn) {
-	log.Printf("something happened!")
-	io.Copy(ws, ws)
+func mudsocket(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Printf("upgrade error: %s", err)
+		return
+	}
+	defer c.Close()
+	for {
+		messageType, message, err := c.ReadMessage()
+		if err != nil {
+			log.Printf("read error: %s", err)
+			break
+		}
+		log.Printf("Recd: %s", message)
+		err = c.WriteMessage(messageType, message)
+		if err != nil {
+			log.Printf("write error: %s", err)
+			break
+		}
+	}
 }
 
 func connectHttpServer() {
@@ -39,7 +57,7 @@ func connectHttpServer() {
 	router.HandleFunc("/api/v1", SomeApi)
 
 	// websocket handler
-	router.Handle("/ws", websocket.Handler(EchoServer))
+	router.HandleFunc("/ws", mudsocket)
 
 	log.Printf("http listening on port %d", port)
 	http.Handle("/", router)
