@@ -27,6 +27,7 @@ func (c *Client) readPump() {
 		//c.hub.broadcast <- message
 		// TODO do someting useful with message
 		log.Printf("message: %s", message)
+		c.send <- []byte("abcdefg")
 	}
 }
 
@@ -38,7 +39,8 @@ func (c *Client) writePump() {
 	for {
 		select {
 		case message := <-c.send:
-			c.conn.WriteJSON(message)
+			log.Printf("writing %s", message)
+			c.conn.WriteMessage(websocket.TextMessage, message)
 		}
 	}
 }

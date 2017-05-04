@@ -2,8 +2,6 @@
 
 
     $.mudclient = function (element, options) {
-        console.log("hi");
-
 
         var defaults = {
             foo: 'bar',
@@ -61,7 +59,7 @@
             };
             websocket.onmessage = function (evt) {
                 console.log("msg rec: ");
-                console.log(evt);
+                console.log(evt.data);
                 // TODO
                 // var msg = JSON.parse(evt.data);
                 // handleMessage(msg);
