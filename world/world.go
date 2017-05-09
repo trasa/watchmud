@@ -7,24 +7,24 @@ type World struct {
 	StartRoom *Room
 }
 
-var worldInstance World
+var WorldInstance World
 
 var startZoneKey = "sample"
 var startRoomKey = "start"
 
 func init() {
 	// Build a very boring world.
-	worldInstance = World{Zones: make(map[string]*Zone)}
+	WorldInstance = World{Zones: make(map[string]*Zone)}
 	sampleZone := Zone{
 		Id:    startZoneKey,
 		Name:  "Sample Zone",
 		Rooms: make(map[string]*Room),
 	}
-	worldInstance.Zones[sampleZone.Id] = &sampleZone
+	WorldInstance.Zones[sampleZone.Id] = &sampleZone
 
 	r := NewRoom(&sampleZone, startRoomKey, "Central Portal", "It's a boring room, with boring stuff in it.")
 	sampleZone.Rooms[r.Id] = r
-	worldInstance.StartRoom = r
+	WorldInstance.StartRoom = r
 
 	// north room
 	northRoom := NewRoom(&sampleZone, "northRoom", "North Room", "This room is north of the start.")

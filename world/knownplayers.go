@@ -31,7 +31,7 @@ func Login(player *Player) error {
 	AddKnownPlayer(player)
 
 	// put the player in the start room
-	worldInstance.StartRoom.AddPlayer(player)
+	WorldInstance.StartRoom.AddPlayer(player)
 	return nil
 }
 

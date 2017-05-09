@@ -113,7 +113,11 @@
                 });
 
                 $('#login').click(function() {
-                   mc.send({"foo":"bar"});
+                   mc.send({
+                       "msg_type" : "login",
+                       "player_name" : $('#player'),
+                       "password" : $('#pass')
+                   });
                 });
 
                 function displayMessage(msg) {

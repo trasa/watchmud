@@ -5,17 +5,16 @@ import (
 )
 
 type Player struct {
-	Id            string
-	Name          string
-	Room          *Room
-	EventCallback func(*Player, interface{})
+	Id   string
+	Name string
+	Room *Room
 }
 
-func NewPlayer(id string, name string, onEvent func(*Player, interface{})) *Player {
+func NewPlayer(id string, name string) *Player {
 	p := Player{
-		Name:          name,
-		Id:            id,
-		EventCallback: onEvent,
+		Name: name,
+		Id:   id,
+		Room: WorldInstance.StartRoom,
 	}
 	return &p
 }
@@ -29,10 +28,4 @@ func (p *Player) FindZone() *Zone {
 		return p.Room.Zone
 	}
 	return nil
-}
-
-func (p *Player) OnEvent(payload interface{}) {
-	if p.EventCallback != nil {
-		p.EventCallback(p, payload)
-	}
 }
