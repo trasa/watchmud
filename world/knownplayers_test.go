@@ -7,7 +7,7 @@ import (
 
 func TestLogin(t *testing.T) {
 	ClearKnownPlayers()
-	originalPlayer := NewPlayer("id", "Name", nil)
+	originalPlayer := NewPlayer("id", "Name")
 	if err := Login(originalPlayer); err != nil {
 		t.Error("Failed to login")
 	}
@@ -15,8 +15,8 @@ func TestLogin(t *testing.T) {
 
 func TestGetAll(t *testing.T) {
 	ClearKnownPlayers()
-	playerA := NewPlayer("a", "a", nil)
-	playerB := NewPlayer("b", "b", nil)
+	playerA := NewPlayer("a", "a")
+	playerB := NewPlayer("b", "b")
 	if err := Login(playerA); err != nil {
 		t.Error("Failed to login A")
 	}

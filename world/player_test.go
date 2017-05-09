@@ -21,7 +21,7 @@ func TestPlayerNotInZone(t *testing.T) {
 
 func TestPlayerInZoneAndRoom(t *testing.T) {
 	p := Player{
-		Room: worldInstance.StartRoom,
+		Room: WorldInstance.StartRoom,
 	}
 
 	z := p.FindZone()
