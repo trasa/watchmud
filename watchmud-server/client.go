@@ -29,6 +29,9 @@ func (c *Client) readPump() {
 		}
 
 		log.Printf("message: %s", message)
+		// need to put this message into a queue of messages to be handled
+
+		/*
 		if !c.authenticated {
 			// must authenticate first, only allowable message
 			if !c.authenticate(message) {
@@ -43,6 +46,7 @@ func (c *Client) readPump() {
 		} else {
 			// TODO do someting useful with message
 		}
+		*/
 		//c.send <- []byte("abcdefg")
 	}
 }
