@@ -27,7 +27,7 @@ func mudsocket(w http.ResponseWriter, r *http.Request) {
 		log.Printf("upgrade error: %s", err)
 		return
 	}
-	client := &Client{conn: c, send: make(chan []byte, 256)}
+	client := newClient(c)
 	go client.writePump()
 	client.readPump()
 }

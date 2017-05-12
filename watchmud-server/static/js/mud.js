@@ -115,8 +115,8 @@
                 $('#login').click(function() {
                    mc.send({
                        "msg_type" : "login",
-                       "player_name" : $('#player'),
-                       "password" : $('#pass')
+                       "player_name" : $('#player').val(),
+                       "password" : $('#pass').val()
                    });
                 });
 
