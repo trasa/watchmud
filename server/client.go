@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/gorilla/websocket"
+	"github.com/trasa/watchmud/world"
 	"log"
 )
 
@@ -9,14 +10,14 @@ type Client struct {
 	// websocket connection
 	conn *websocket.Conn
 	// buffered channel of outbound messages
-	send          chan []byte // what to send?
-	authenticated bool
+	send   chan interface{} // what to send?
+	Player *world.Player
 }
 
 func newClient(c *websocket.Conn) *Client {
 	return &Client{
 		conn: c,
-		send: make(chan []byte, 256),
+		send: make(chan interface{}, 256),
 	}
 }
 
@@ -47,7 +48,8 @@ func (c *Client) writePump() {
 		select {
 		case message := <-c.send:
 			log.Printf("writing %s", message)
-			c.conn.WriteMessage(websocket.TextMessage, message)
+			c.conn.WriteJSON(message)
+			//c.conn.WriteMessage(websocket.TextMessage, message)
 		}
 	}
 }

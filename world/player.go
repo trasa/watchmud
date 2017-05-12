@@ -7,14 +7,13 @@ import (
 type Player struct {
 	Id   string
 	Name string
-	Room *Room
+	Room *Room `json:"-"`
 }
 
 func NewPlayer(id string, name string) *Player {
 	p := Player{
 		Name: name,
 		Id:   id,
-		Room: WorldInstance.StartRoom,
 	}
 	return &p
 }

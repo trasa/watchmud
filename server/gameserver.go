@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/trasa/watchmud/world"
 	"log"
 )
 
@@ -8,17 +9,20 @@ var GameServerInstance *GameServer
 
 type GameServer struct {
 	incomingMessageBuffer chan *Message
+	World                 *world.World
 }
 
 func newGameServer() *GameServer {
 	return &GameServer{
 		incomingMessageBuffer: make(chan *Message),
+		World: world.NewWorld(),
 	}
 }
 
 // Initialize the game server
 func Init() {
 	GameServerInstance = newGameServer()
+
 }
 
 func (server *GameServer) Run() {
@@ -42,9 +46,33 @@ func (server *GameServer) handleMessage(message *Message) {
 	}
 }
 
+type LoginResponse struct {
+	MessageType string        `json:"msg_type"`
+	Successful  bool          `json:"success"`
+	ResultCode  string        `json:"result_code"`
+	Player      *world.Player `json:"player"`
+}
+
+// Authenticate, create a Player, put the Player in a Room,
+// other World state stuff.
 func (server *GameServer) handleLogin(message *Message) {
 	// todo authentication and stuff
 	// is this connection already authenticated?
-	// create a Player, put the Player in a Room, other World state stuff
-	// return the result back to the Player
+	if message.Client.Player != nil {
+		// already authenticated, can't login again
+		message.Client.send <- LoginResponse{
+			Successful: false,
+			ResultCode: "ALREADY_AUTHENTICATED",
+		}
+		return
+	}
+	player := world.NewPlayer(message.Body["player_name"], message.Body["player_name"])
+	message.Client.Player = player
+	server.World.AddPlayer(player)
+	message.Client.send <- LoginResponse{
+		MessageType: "LoginResponse",
+		Successful:  true,
+		ResultCode:  "OK",
+		Player:      player,
+	}
 }

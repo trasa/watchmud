@@ -8,8 +8,8 @@ type Room struct {
 	Id          string
 	Name        string
 	Description string
-	Zone        *Zone
-	Players     map[string]*Player
+	Zone        *Zone              `json:"-"`
+	Players     map[string]*Player `json:"-"`
 	North       *Room
 	South       *Room
 	East        *Room
