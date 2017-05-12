@@ -32,26 +32,8 @@ func (c *Client) readPump() {
 			log.Printf("read error: %s", err)
 			break
 		}
-
 		log.Printf("message body: %s", body)
 		GameServerInstance.incomingMessageBuffer <- newMessage(c, &body)
-		// need to put this message into a queue of messages to be handled
-		/*
-			if !c.authenticated {
-				// must authenticate first, only allowable message
-				if !c.authenticate(message) {
-					// TODO some sort of useful response here
-					log.Printf("Failed to authenticate %s", message)
-				} else {
-					// TODO do login (create player, land into a room, and so on)
-					p := world.NewPlayer(message["player_name"], message["player_name"])
-					//p.Room = world.World.StartRoom
-					c.Player = p
-				}
-			} else {
-				// TODO do someting useful with message
-			}
-		*/
 		//c.send <- []byte("abcdefg")
 	}
 }
