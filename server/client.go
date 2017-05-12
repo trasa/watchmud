@@ -33,7 +33,7 @@ func (c *Client) readPump() {
 			break
 		}
 		log.Printf("message body: %s", body)
-		GameServerInstance.incomingMessageBuffer <- newMessage(c, &body)
+		GameServerInstance.incomingMessageBuffer <- newMessage(c, body)
 		//c.send <- []byte("abcdefg")
 	}
 }
@@ -50,10 +50,4 @@ func (c *Client) writePump() {
 			c.conn.WriteMessage(websocket.TextMessage, message)
 		}
 	}
-}
-
-func (c *Client) authenticate(message map[string]string) bool {
-	// TODO authenticate stuff..
-	c.authenticated = true
-	return true
 }
