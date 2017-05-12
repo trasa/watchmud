@@ -6,12 +6,9 @@ import (
 
 var GameServerInstance *GameServer
 
-
-
 type GameServer struct {
 	incomingMessageBuffer chan *Message
 }
-
 
 func newGameServer() *GameServer {
 	return &GameServer{
