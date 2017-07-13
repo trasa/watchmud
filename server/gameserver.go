@@ -60,6 +60,13 @@ type Response struct {
 	ResultCode  string `json:"result_code"`
 }
 
+type TellAllResponse struct {
+	Sender      string `json:"sender"`
+	MessageType string `json:"msg_type"`
+	Successful  bool   `json:"success"`
+	ResultCode  string `json:"result_code"`
+}
+
 type LoginResponse struct {
 	MessageType string        `json:"msg_type"`
 	Successful  bool          `json:"success"`
@@ -75,8 +82,9 @@ func (server *GameServer) handleLogin(message *Message) {
 	if message.Client.Player != nil {
 		// already authenticated, can't login again
 		message.Client.source <- LoginResponse{
-			Successful: false,
-			ResultCode: "ALREADY_AUTHENTICATED",
+			MessageType: "login_response",
+			Successful:  false,
+			ResultCode:  "ALREADY_AUTHENTICATED",
 		}
 		return
 	}
@@ -84,7 +92,7 @@ func (server *GameServer) handleLogin(message *Message) {
 	message.Client.Player = player
 	server.World.AddPlayer(player)
 	message.Client.source <- LoginResponse{
-		MessageType: "LoginResponse",
+		MessageType: "login_response",
 		Successful:  true,
 		ResultCode:  "OK",
 		Player:      player,
@@ -96,14 +104,15 @@ func (server *GameServer) handleLogin(message *Message) {
 func (server *GameServer) tellAll(message *Message) {
 	if val, ok := message.Body["message"]; ok {
 		// TODO need notification type
-		Broadcaster <- Response{
-			MessageType: "TellAllNotification",
+		Broadcaster <- TellAllResponse{
+			Sender:      message.Client.Player.Name,
+			MessageType: "tell_all_notification",
 			Successful:  true,
 			ResultCode:  val,
 		}
 	} else {
-		message.Client.source <- Response{
-			MessageType: "TellAllResponse",
+		message.Client.source <- TellAllResponse{
+			MessageType: "tell_all_notification",
 			Successful:  false,
 			ResultCode:  "NO_MESSAGE",
 		}

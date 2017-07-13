@@ -43,7 +43,33 @@
         /* private */
         var displayMessage = function (msg) {
             plugin.settings["displayMessage"](msg);
-        }
+        };
+
+        /* private */
+        var handleMessage = function(msg) {
+            switch(msg["msg_type"]) {
+                case "login_response":
+                    handleLoginResponse(msg);
+                    break;
+
+                case "tell_all_notification":
+                    handleTellAllNotification(msg);
+                    break;
+
+                default:
+                    displayMessage("Unknown message received: " + msg);
+                    break;
+            }
+        };
+
+        var handleLoginResponse = function(msg) {
+            displayMessage("Login Response: Success=" + msg["success"] + " " + msg["result_code"]);
+            displayMessage("Player is: " + JSON.stringify(msg["player"]));
+        };
+
+        var handleTellAllNotification = function(msg) {
+            displayMessage("tell_all " + msg["sender"] +  "> " + msg["result_code"]);
+        };
 
         /* public */
         plugin.run = function () {
@@ -61,8 +87,8 @@
                 console.log("msg rec: ");
                 console.log(evt.data);
                 // TODO
-                // var msg = JSON.parse(evt.data);
-                // handleMessage(msg);
+                var msg = JSON.parse(evt.data);
+                handleMessage(msg);
             };
             websocket.onerror = function (evt) {
                 displayMessage("Error Received");
