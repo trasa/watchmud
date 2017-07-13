@@ -8,13 +8,13 @@ import (
 var GameServerInstance *GameServer
 
 type GameServer struct {
-	incomingMessageBuffer chan *Message
+	incomingMessageBuffer chan *IncomingMessage
 	World                 *world.World
 }
 
 func newGameServer() *GameServer {
 	return &GameServer{
-		incomingMessageBuffer: make(chan *Message),
+		incomingMessageBuffer: make(chan *IncomingMessage),
 		World: world.NewWorld(),
 	}
 }
@@ -34,12 +34,12 @@ func (server *GameServer) Run() {
 		select {
 		// TODO add in tick time
 		case message := <-server.incomingMessageBuffer:
-			server.handleMessage(message)
+			server.handleIncomingMessage(message)
 		}
 	}
 }
 
-func (server *GameServer) handleMessage(message *Message) {
+func (server *GameServer) handleIncomingMessage(message *IncomingMessage) {
 	log.Printf("server incoming message: %s", message.Body)
 	switch messageType := message.Body["msg_type"]; messageType {
 	case "login":
@@ -53,29 +53,9 @@ func (server *GameServer) handleMessage(message *Message) {
 	}
 }
 
-type Response struct {
-	MessageType string `json:"msg_type"`
-	Successful  bool   `json:"success"`
-	ResultCode  string `json:"result_code"`
-}
-
-type TellAllResponse struct {
-	Sender      string `json:"sender"`
-	MessageType string `json:"msg_type"`
-	Successful  bool   `json:"success"`
-	ResultCode  string `json:"result_code"`
-}
-
-type LoginResponse struct {
-	MessageType string        `json:"msg_type"`
-	Successful  bool          `json:"success"`
-	ResultCode  string        `json:"result_code"`
-	Player      *world.Player `json:"player"`
-}
-
 // Authenticate, create a Player, put the Player in a Room,
 // other World state stuff.
-func (server *GameServer) handleLogin(message *Message) {
+func (server *GameServer) handleLogin(message *IncomingMessage) {
 	// todo authentication and stuff
 	// is this connection already authenticated?
 	if message.Client.Player != nil {
@@ -100,15 +80,15 @@ func (server *GameServer) handleLogin(message *Message) {
 
 // Tell everybody in the game something.
 // TODO this belongs somewhere else.
-func (server *GameServer) tellAll(message *Message) {
+func (server *GameServer) tellAll(message *IncomingMessage) {
 	if val, ok := message.Body["message"]; ok {
 		// TODO need notification type
-		Broadcaster <- TellAllResponse{
+		SendToAllClients(TellAllResponse{
 			Sender:      message.Client.Player.Name,
 			MessageType: "tell_all_notification",
 			Successful:  true,
 			ResultCode:  val,
-		}
+		})
 	} else {
 		message.Client.source <- TellAllResponse{
 			MessageType: "tell_all_notification",
