@@ -5,7 +5,7 @@
 
         var defaults = {
             foo: 'bar',
-            socketUrl: "ws://localhost:8888/ws",
+            socketUrl: "ws://" + window.location.host + "/ws",
 
             // if your plugin is event-driven, you may provide callback capabilities
             // for its events. execute these functions before or after events of your
@@ -119,6 +119,14 @@
                        "password" : $('#pass').val()
                    });
                 });
+
+                $('#send').click(function() {
+                   mc.send({
+                       "msg_type":"tell_all",
+                       "message" : $('#buf').val()
+                   });
+                });
+
 
                 function displayMessage(msg) {
                     var display = $('#display');

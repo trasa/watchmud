@@ -4,20 +4,43 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/trasa/watchmud/world"
 	"log"
+	"sync"
 )
+
+// controls terminating all clients
+var GlobalQuit = make(chan interface{})
+
+// collection of clients
+var clients = newClients()
+
+// channel for sending to all clients
+var Broadcaster = make(chan interface{}, 10)
+
+func StartAllClientDispatcher() {
+	go func() {
+		for {
+			msg := <-Broadcaster
+			clients.Iter(func(c *Client) {
+				c.source <- msg
+			})
+		}
+	}()
+}
 
 type Client struct {
 	// websocket connection
 	conn *websocket.Conn
 	// buffered channel of outbound messages
-	send   chan interface{} // what to send?
+	source chan interface{} // sends down to client
+	quit   chan interface{} // used to terminate clients
 	Player *world.Player
 }
 
 func newClient(c *websocket.Conn) *Client {
 	return &Client{
-		conn: c,
-		send: make(chan interface{}, 256),
+		conn:   c,
+		source: make(chan interface{}, 256),
+		quit:   GlobalQuit,
 	}
 }
 
@@ -31,7 +54,8 @@ func (c *Client) readPump() {
 		err := c.conn.ReadJSON(&body)
 		if err != nil {
 			log.Printf("read error: %s", err)
-			break
+			clients.Remove(c)
+			return
 		}
 		log.Printf("message body: %s", body)
 		GameServerInstance.incomingMessageBuffer <- newMessage(c, body)
@@ -43,13 +67,51 @@ func (c *Client) writePump() {
 	defer func() {
 		c.conn.Close()
 	}()
-
+	c.source = make(chan interface{}, 10)
 	for {
 		select {
-		case message := <-c.send:
+		case message := <-c.source:
 			log.Printf("writing %s", message)
-			c.conn.WriteJSON(message)
-			//c.conn.WriteMessage(websocket.TextMessage, message)
+			err := c.conn.WriteJSON(message)
+			if err != nil {
+				log.Printf("Write Error: %v", err)
+				clients.Remove(c)
+				return
+			}
+		case <-c.quit:
+			return // terminate the client
 		}
+	}
+}
+
+type Clients struct {
+	sync.Mutex
+	clients map[*Client]*Client
+}
+
+func newClients() *Clients {
+	return &Clients{
+		clients: make(map[*Client]*Client),
+	}
+}
+
+func (cs *Clients) Add(c *Client) {
+	cs.Lock()
+	defer cs.Unlock()
+	cs.clients[c] = c
+}
+
+func (cs *Clients) Remove(c *Client) {
+	cs.Lock()
+	defer cs.Unlock()
+	delete(cs.clients, c)
+}
+
+func (cs *Clients) Iter(routine func(*Client)) {
+	cs.Lock()
+	defer cs.Unlock()
+	log.Printf("sending to %d clients", len(cs.clients))
+	for c := range cs.clients {
+		routine(c)
 	}
 }

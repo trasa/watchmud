@@ -8,4 +8,7 @@ func main() {
 	server.Init()
 	go server.GameServerInstance.Run()
 	server.ConnectHttpServer()
+
+	// tell everybody to quit
+	close(server.GlobalQuit)
 }

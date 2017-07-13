@@ -28,6 +28,7 @@ func mudsocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	client := newClient(c)
+	clients.Add(client)
 	go client.writePump()
 	client.readPump()
 }
