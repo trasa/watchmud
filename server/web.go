@@ -27,12 +27,15 @@ func mudsocket(w http.ResponseWriter, r *http.Request) {
 		log.Printf("upgrade error: %s", err)
 		return
 	}
+	// new client object, add to clients and
+	// set up reader/writer
 	client := newClient(c)
-	clients.Add(client)
+	clients.add(client)
 	go client.writePump()
 	client.readPump()
 }
 
+// Start Up the HttpServer
 func ConnectHttpServer() {
 	router := mux.NewRouter().StrictSlash(true)
 

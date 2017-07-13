@@ -16,11 +16,15 @@ var clients = newClients()
 // channel for sending to all clients
 var Broadcaster = make(chan interface{}, 10)
 
+func SendToAllClients(msg interface{}) {
+	Broadcaster <- msg
+}
+
 func StartAllClientDispatcher() {
 	go func() {
 		for {
 			msg := <-Broadcaster
-			clients.Iter(func(c *Client) {
+			clients.iter(func(c *Client) {
 				c.source <- msg
 			})
 		}
@@ -54,7 +58,7 @@ func (c *Client) readPump() {
 		err := c.conn.ReadJSON(&body)
 		if err != nil {
 			log.Printf("read error: %s", err)
-			clients.Remove(c)
+			clients.remove(c)
 			return
 		}
 		log.Printf("message body: %s", body)
@@ -75,7 +79,7 @@ func (c *Client) writePump() {
 			err := c.conn.WriteJSON(message)
 			if err != nil {
 				log.Printf("Write Error: %v", err)
-				clients.Remove(c)
+				clients.remove(c)
 				return
 			}
 		case <-c.quit:
@@ -95,19 +99,19 @@ func newClients() *Clients {
 	}
 }
 
-func (cs *Clients) Add(c *Client) {
+func (cs *Clients) add(c *Client) {
 	cs.Lock()
 	defer cs.Unlock()
 	cs.clients[c] = c
 }
 
-func (cs *Clients) Remove(c *Client) {
+func (cs *Clients) remove(c *Client) {
 	cs.Lock()
 	defer cs.Unlock()
 	delete(cs.clients, c)
 }
 
-func (cs *Clients) Iter(routine func(*Client)) {
+func (cs *Clients) iter(routine func(*Client)) {
 	cs.Lock()
 	defer cs.Unlock()
 	log.Printf("sending to %d clients", len(cs.clients))

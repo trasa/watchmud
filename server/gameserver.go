@@ -22,7 +22,6 @@ func newGameServer() *GameServer {
 // Initialize the game server
 func Init() {
 	GameServerInstance = newGameServer()
-
 }
 
 func (server *GameServer) Run() {
