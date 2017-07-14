@@ -62,7 +62,6 @@ func (c *Client) readPump() {
 		}
 		log.Printf("message body: %s", body)
 		GameServerInstance.incomingMessageBuffer <- newIncomingMessage(c, body)
-		//c.send <- []byte("abcdefg")
 	}
 }
 

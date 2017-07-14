@@ -1,5 +1,7 @@
 package server
 
+// TODO delete me
+
 /*
 func Logout(playerId string) error {
 	log.Printf("%s logged out", playerId)

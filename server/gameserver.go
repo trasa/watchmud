@@ -61,7 +61,8 @@ func (server *GameServer) handleIncomingMessage(message *IncomingMessage) {
 func (server *GameServer) handleLogin(message *IncomingMessage) {
 	// todo authentication and stuff
 	// is this connection already authenticated?
-	if message.Client.Player != nil {
+	p := FindPlayerByClient(message.Client)
+	if p != nil {
 		// already authenticated, can't login again
 		lr := LoginResponse{
 			Response: Response{

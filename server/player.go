@@ -3,12 +3,13 @@ package server
 import (
 	"fmt"
 )
+var playersByClient = make(map[*Client]*Player)
 
 type Player struct {
 	Id   string
 	Name string
 	Room *Room `json:"-"`
-	Client *Client
+	Client *Client `json:"-"`
 }
 
 func NewPlayer(id string, name string, client *Client) *Player {
@@ -30,3 +31,9 @@ func (p *Player) FindZone() *Zone {
 	}
 	return nil
 }
+
+// Locate the player who is attached to this client
+func FindPlayerByClient(c *Client) *Player {
+	return playersByClient[c];
+}
+
