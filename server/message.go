@@ -94,8 +94,8 @@ func (w *World) handleTell(message *IncomingMessage) {
 	}
 }
 
-type TellAllResponse struct {
-	Response
+type TellAllNotification struct {
+	Notification
 	Value  string `json:"value"`
 	Sender string `json:"sender"`
 }
@@ -103,23 +103,18 @@ type TellAllResponse struct {
 // Tell everybody in the game something.
 func (w *World) handleTellAll(message *IncomingMessage) {
 	if val, ok := message.Body["value"]; ok {
-		// TODO need notification type
-		SendToAllClients(TellAllResponse{
-			Response: Response{
+		SendToAllClients(TellAllNotification{
+			Notification: Notification{
 				MessageType: "tell_all_notification",
-				Successful:  true,
-				ResultCode:  "OK",
 			},
 			Value:  val,
 			Sender: message.Client.Player.Name,
 		})
 	} else {
-		message.Player.Send(TellAllResponse{
-			Response: Response{
-				MessageType: "tell_all_notification",
-				Successful:  false,
-				ResultCode:  "NO_VALUE",
-			},
+		message.Player.Send(Response{
+			MessageType: "tell_all",
+			Successful:  false,
+			ResultCode:  "NO_VALUE",
 		})
 	}
 }

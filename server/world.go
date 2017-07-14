@@ -57,3 +57,25 @@ func (w *World) addPlayer(player *Player) {
 func (w *World) findPlayerByName(name string) *Player {
 	return w.knownPlayersByName[name]
 }
+
+func (w *World) handleIncomingMessage(message *IncomingMessage) {
+	log.Printf("world incoming message: %s", message.Body)
+	switch messageType := message.Body["msg_type"]; messageType {
+	case "login":
+		log.Printf("login received: %s", message.Body)
+		w.handleLogin(message)
+	case "tell":
+		log.Printf("tell: %s", message.Body)
+		w.handleTell(message)
+	case "tell_all":
+		log.Printf("Tell All: %s", message.Body)
+		w.handleTellAll(message)
+	default:
+		log.Printf("UNHANDLED messageType: %s, body %s", messageType, message.Body)
+		message.Client.send(Response{
+			MessageType: messageType,
+			Successful:  false,
+			ResultCode:  "UNKNOWN_MESSAGE_TYPE",
+		})
+	}
+}
