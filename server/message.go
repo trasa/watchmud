@@ -1,6 +1,5 @@
 package server
 
-
 type IncomingMessage struct {
 	Client *Client
 	Body   map[string]string

@@ -49,7 +49,38 @@ func (w *World) getAllPlayers() (result []*Player) {
 
 // Add this Player to the world
 // putting them in the start room
-func (w *World) AddPlayer(player *Player) {
+func (w *World) addPlayer(player *Player) {
 	w.knownPlayersById[player.Id] = player
 	w.StartRoom.AddPlayer(player)
+}
+
+// handle an incoming login message
+func (w *World) HandleLogin(message *IncomingMessage) {
+	// is this connection already authenticated?
+	// see if we can find an existing player ..
+	p := FindPlayerByClient(message.Client)
+	if p != nil {
+		// already authenticated, can't login again
+		p.Send(LoginResponse{
+			Response: Response{
+				MessageType: "login_response",
+				Successful:  false,
+				ResultCode:  "ALREADY_AUTHENTICATED",
+			},
+		})
+		return
+	}
+
+	// todo authentication and stuff
+	player := NewPlayer(message.Body["player_name"], message.Body["player_name"], message.Client)
+	message.Client.Player = player
+	w.addPlayer(player)
+	player.Send(LoginResponse{
+		Response: Response{
+			MessageType: "login_response",
+			Successful:  true,
+			ResultCode:  "OK",
+		},
+		Player: player,
+	})
 }

@@ -39,11 +39,12 @@ func (server *GameServer) Run() {
 }
 
 func (server *GameServer) handleIncomingMessage(message *IncomingMessage) {
+	// TODO this should be moved to world as well i think
 	log.Printf("server incoming message: %s", message.Body)
 	switch messageType := message.Body["msg_type"]; messageType {
 	case "login":
 		log.Printf("login received: %s", message.Body)
-		server.handleLogin(message)
+		server.World.HandleLogin(message)
 	case "tell":
 		log.Printf("tell: %s", message.Body)
 		// TODO
@@ -53,38 +54,6 @@ func (server *GameServer) handleIncomingMessage(message *IncomingMessage) {
 		server.handleTellAll(message)
 	default:
 		log.Printf("UNHANDLED messageType: %s, body %s", messageType, message.Body)
-	}
-}
-
-// Authenticate, create a Player, put the Player in a Room,
-// other World state stuff.
-func (server *GameServer) handleLogin(message *IncomingMessage) {
-	// todo authentication and stuff
-	// is this connection already authenticated?
-	p := FindPlayerByClient(message.Client)
-	if p != nil {
-		// already authenticated, can't login again
-		lr := LoginResponse{
-			Response: Response{
-				MessageType: "login_response",
-				Successful:  false,
-				ResultCode:  "ALREADY_AUTHENTICATED",
-			},
-		}
-		message.Client.source <- lr
-		log.Printf("login response %s", lr.MessageType)
-		return
-	}
-	player := NewPlayer(message.Body["player_name"], message.Body["player_name"], message.Client)
-	message.Client.Player = player
-	server.World.AddPlayer(player)
-	message.Client.source <- LoginResponse{
-		Response: Response{
-			MessageType: "login_response",
-			Successful:  true,
-			ResultCode:  "OK",
-		},
-		Player: player,
 	}
 }
 

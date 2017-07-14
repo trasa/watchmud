@@ -2,20 +2,22 @@ package server
 
 import (
 	"fmt"
+	"log"
 )
+
 var playersByClient = make(map[*Client]*Player)
 
 type Player struct {
-	Id   string
-	Name string
-	Room *Room `json:"-"`
+	Id     string
+	Name   string
+	Room   *Room   `json:"-"`
 	Client *Client `json:"-"`
 }
 
 func NewPlayer(id string, name string, client *Client) *Player {
 	p := Player{
-		Name: name,
-		Id:   id,
+		Name:   name,
+		Id:     id,
 		Client: client,
 	}
 	return &p
@@ -32,8 +34,15 @@ func (p *Player) FindZone() *Zone {
 	return nil
 }
 
-// Locate the player who is attached to this client
-func FindPlayerByClient(c *Client) *Player {
-	return playersByClient[c];
+func (p *Player) Send(message interface{}) {
+	if p.Client != nil {
+		p.Client.source <- message
+	} else {
+		log.Printf("Can't send message to player: no client attached: %v", message)
+	}
 }
 
+// Locate the player who is attached to this client
+func FindPlayerByClient(c *Client) *Player {
+	return playersByClient[c]
+}
