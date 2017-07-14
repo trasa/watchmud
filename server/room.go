@@ -9,7 +9,7 @@ type Room struct {
 	Name        string
 	Description string
 	Zone        *Zone              `json:"-"`
-	Players     map[string]*Player `json:"-"`
+	Players     map[string]*Player `json:"-"` // map of players by name
 	North       *Room
 	South       *Room
 	East        *Room
@@ -33,7 +33,7 @@ func (r Room) String() string {
 }
 
 func (r *Room) RemovePlayer(player *Player) {
-	delete(r.Players, player.Id)
+	delete(r.Players, player.Name)
 	// tell players in room that this player has left
 	/*
 		for _, p := range r.Players {
@@ -60,7 +60,7 @@ func (r *Room) AddPlayer(player *Player) {
 			})
 		}
 	*/
-	r.Players[player.Id] = player
+	r.Players[player.Name] = player
 	player.Room = r
 }
 

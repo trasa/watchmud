@@ -3,14 +3,10 @@ package server
 import (
 	"github.com/gorilla/websocket"
 	"log"
-	"sync"
 )
 
 // controls terminating all clients
 var GlobalQuit = make(chan interface{})
-
-// collection of clients
-var clients = newClients()
 
 // channel for sending to all clients
 var Broadcaster = make(chan interface{}, 10)
@@ -31,9 +27,7 @@ func StartAllClientDispatcher() {
 }
 
 type Client struct {
-	// websocket connection
-	conn *websocket.Conn
-	// buffered channel of outbound messages
+	conn   *websocket.Conn  // websocket connection
 	source chan interface{} // sends down to client
 	quit   chan interface{} // used to terminate clients
 	Player *Player
@@ -47,10 +41,12 @@ func newClient(c *websocket.Conn) *Client {
 	}
 }
 
+func (c *Client) send(message interface{}) {
+	c.source <- message
+}
+
 func (c *Client) readPump() {
-	defer func() {
-		c.conn.Close()
-	}()
+	defer c.conn.Close()
 
 	for {
 		body := make(map[string]string)
@@ -66,9 +62,8 @@ func (c *Client) readPump() {
 }
 
 func (c *Client) writePump() {
-	defer func() {
-		c.conn.Close()
-	}()
+	defer c.conn.Close()
+
 	c.source = make(chan interface{}, 10)
 	for {
 		select {
@@ -83,37 +78,5 @@ func (c *Client) writePump() {
 		case <-c.quit:
 			return // terminate the client
 		}
-	}
-}
-
-type Clients struct {
-	sync.Mutex
-	clients map[*Client]*Client
-}
-
-func newClients() *Clients {
-	return &Clients{
-		clients: make(map[*Client]*Client),
-	}
-}
-
-func (cs *Clients) add(c *Client) {
-	cs.Lock()
-	defer cs.Unlock()
-	cs.clients[c] = c
-}
-
-func (cs *Clients) remove(c *Client) {
-	cs.Lock()
-	defer cs.Unlock()
-	delete(cs.clients, c)
-}
-
-func (cs *Clients) iter(routine func(*Client)) {
-	cs.Lock()
-	defer cs.Unlock()
-	log.Printf("sending to %d clients", len(cs.clients))
-	for c := range cs.clients {
-		routine(c)
 	}
 }

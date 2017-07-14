@@ -44,45 +44,19 @@ func (server *GameServer) handleIncomingMessage(message *IncomingMessage) {
 	switch messageType := message.Body["msg_type"]; messageType {
 	case "login":
 		log.Printf("login received: %s", message.Body)
-		server.World.HandleLogin(message)
+		server.World.handleLogin(message)
 	case "tell":
 		log.Printf("tell: %s", message.Body)
-		// TODO
-		//server.handleTell(message)
+		server.World.handleTell(message)
 	case "tell_all":
 		log.Printf("Tell All: %s", message.Body)
-		server.handleTellAll(message)
+		server.World.handleTellAll(message)
 	default:
 		log.Printf("UNHANDLED messageType: %s, body %s", messageType, message.Body)
-	}
-}
-
-//func (server *GameServer) handleTell(message *IncomingMessage) {
-//	from := message.Client.Player.Name
-//	to := message.Body["to"]
-//	msg := message.Body["message"]
-//}
-
-// Tell everybody in the game something.
-// TODO this belongs somewhere else.
-func (server *GameServer) handleTellAll(message *IncomingMessage) {
-	if val, ok := message.Body["message"]; ok {
-		// TODO need notification type
-		SendToAllClients(TellAllResponse{
-			Response: Response{
-				MessageType: "tell_all_notification",
-				Successful:  true,
-				ResultCode:  val,
-			},
-			Sender: message.Client.Player.Name,
+		message.Client.send(Response{
+			MessageType: messageType,
+			Successful:  false,
+			ResultCode:  "UNKNOWN_MESSAGE_TYPE",
 		})
-	} else {
-		message.Client.source <- TellAllResponse{
-			Response: Response{
-				MessageType: "tell_all_notification",
-				Successful:  false,
-				ResultCode:  "NO_MESSAGE",
-			},
-		}
 	}
 }

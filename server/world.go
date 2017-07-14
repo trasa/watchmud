@@ -3,9 +3,9 @@ package server
 import "log"
 
 type World struct {
-	Zones            map[string]*Zone
-	StartRoom        *Room
-	knownPlayersById map[string]*Player
+	Zones              map[string]*Zone
+	StartRoom          *Room
+	knownPlayersByName map[string]*Player
 }
 
 var startZoneKey = "sample"
@@ -15,8 +15,8 @@ var startRoomKey = "start"
 func NewWorld() *World {
 	// Build a very boring world.
 	w := World{
-		Zones:            make(map[string]*Zone),
-		knownPlayersById: make(map[string]*Player),
+		Zones:              make(map[string]*Zone),
+		knownPlayersByName: make(map[string]*Player),
 	}
 	sampleZone := Zone{
 		Id:    startZoneKey,
@@ -41,7 +41,7 @@ func NewWorld() *World {
 }
 
 func (w *World) getAllPlayers() (result []*Player) {
-	for _, v := range w.knownPlayersById {
+	for _, v := range w.knownPlayersByName {
 		result = append(result, v)
 	}
 	return result
@@ -50,37 +50,10 @@ func (w *World) getAllPlayers() (result []*Player) {
 // Add this Player to the world
 // putting them in the start room
 func (w *World) addPlayer(player *Player) {
-	w.knownPlayersById[player.Id] = player
+	w.knownPlayersByName[player.Name] = player
 	w.StartRoom.AddPlayer(player)
 }
 
-// handle an incoming login message
-func (w *World) HandleLogin(message *IncomingMessage) {
-	// is this connection already authenticated?
-	// see if we can find an existing player ..
-	p := FindPlayerByClient(message.Client)
-	if p != nil {
-		// already authenticated, can't login again
-		p.Send(LoginResponse{
-			Response: Response{
-				MessageType: "login_response",
-				Successful:  false,
-				ResultCode:  "ALREADY_AUTHENTICATED",
-			},
-		})
-		return
-	}
-
-	// todo authentication and stuff
-	player := NewPlayer(message.Body["player_name"], message.Body["player_name"], message.Client)
-	message.Client.Player = player
-	w.addPlayer(player)
-	player.Send(LoginResponse{
-		Response: Response{
-			MessageType: "login_response",
-			Successful:  true,
-			ResultCode:  "OK",
-		},
-		Player: player,
-	})
+func (w *World) findPlayerByName(name string) *Player {
+	return w.knownPlayersByName[name]
 }

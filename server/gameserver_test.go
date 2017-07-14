@@ -18,12 +18,13 @@ func TestGameServer_handleMessage_unknownMessageType(t *testing.T) {
 func TestGameServer_handleLogin(t *testing.T) {
 	t.Skip("channels are broken here")
 	// what to do here...
-	server := newGameServer()
-	body := map[string]string{
-		"msg_type":    "login",
-		"player_name": "testdood",
-		"password":    "password",
-	}
-	server.handleLogin(newIncomingMessage(&Client{}, body))
+	//server := newGameServer()
+	//body := map[string]string{
+	//	"msg_type":    "login",
+	//	"player_name": "testdood",
+	//	"password":    "password",
+	//}
+	// TODO fixme
+	//server.handleLogin(newIncomingMessage(&Client{}, body))
 	// TODO verify state of world after
 }

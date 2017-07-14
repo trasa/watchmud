@@ -68,7 +68,7 @@
         };
 
         var handleTellAllNotification = function(msg) {
-            displayMessage("tell_all " + msg["sender"] +  "> " + msg["result_code"]);
+            displayMessage("tell_all " + msg["sender"] +  "> " + msg["value"]);
         };
 
         /* public */
@@ -149,7 +149,7 @@
                 $('#send').click(function() {
                    mc.send({
                        "msg_type":"tell_all",
-                       "message" : $('#buf').val()
+                       "value" : $('#buf').val()
                    });
                 });
 

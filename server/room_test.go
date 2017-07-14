@@ -5,7 +5,7 @@ import "testing"
 func TestAddPlayerToRoom(t *testing.T) {
 	room := NewRoom(nil, "id", "name", "description")
 	player := Player{
-		Id: "foo",
+		Name: "foo",
 	}
 
 	room.AddPlayer(&player)
