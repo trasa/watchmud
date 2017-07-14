@@ -21,15 +21,11 @@ type Response struct {
 }
 
 type TellAllResponse struct {
+	Response
 	Sender      string `json:"sender"`
-	MessageType string `json:"msg_type"`
-	Successful  bool   `json:"success"`
-	ResultCode  string `json:"result_code"`
 }
 
 type LoginResponse struct {
-	MessageType string        `json:"msg_type"`
-	Successful  bool          `json:"success"`
-	ResultCode  string        `json:"result_code"`
+	Response
 	Player      *world.Player `json:"player"`
 }

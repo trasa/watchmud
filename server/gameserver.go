@@ -60,20 +60,26 @@ func (server *GameServer) handleLogin(message *IncomingMessage) {
 	// is this connection already authenticated?
 	if message.Client.Player != nil {
 		// already authenticated, can't login again
-		message.Client.source <- LoginResponse{
-			MessageType: "login_response",
-			Successful:  false,
-			ResultCode:  "ALREADY_AUTHENTICATED",
+		lr := LoginResponse{
+			Response: Response{
+				MessageType: "login_response",
+				Successful:  false,
+				ResultCode:  "ALREADY_AUTHENTICATED",
+			},
 		}
+		message.Client.source <- lr
+		log.Printf("login response %s", lr.MessageType)
 		return
 	}
 	player := world.NewPlayer(message.Body["player_name"], message.Body["player_name"])
 	message.Client.Player = player
 	server.World.AddPlayer(player)
 	message.Client.source <- LoginResponse{
-		MessageType: "login_response",
-		Successful:  true,
-		ResultCode:  "OK",
+		Response: Response{
+			MessageType: "login_response",
+			Successful:  true,
+			ResultCode:  "OK",
+		},
 		Player:      player,
 	}
 }
@@ -84,16 +90,20 @@ func (server *GameServer) tellAll(message *IncomingMessage) {
 	if val, ok := message.Body["message"]; ok {
 		// TODO need notification type
 		SendToAllClients(TellAllResponse{
+			Response: Response{
+				MessageType: "tell_all_notification",
+				Successful:  true,
+				ResultCode:  val,
+			},
 			Sender:      message.Client.Player.Name,
-			MessageType: "tell_all_notification",
-			Successful:  true,
-			ResultCode:  val,
 		})
 	} else {
 		message.Client.source <- TellAllResponse{
-			MessageType: "tell_all_notification",
-			Successful:  false,
-			ResultCode:  "NO_MESSAGE",
+			Response: Response{
+				MessageType: "tell_all_notification",
+				Successful:  false,
+				ResultCode:  "NO_MESSAGE",
+			},
 		}
 	}
 }
