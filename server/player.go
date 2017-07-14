@@ -1,4 +1,4 @@
-package world
+package server
 
 import (
 	"fmt"
@@ -8,12 +8,14 @@ type Player struct {
 	Id   string
 	Name string
 	Room *Room `json:"-"`
+	Client *Client
 }
 
-func NewPlayer(id string, name string) *Player {
+func NewPlayer(id string, name string, client *Client) *Player {
 	p := Player{
 		Name: name,
 		Id:   id,
+		Client: client,
 	}
 	return &p
 }

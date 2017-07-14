@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/gorilla/websocket"
-	"github.com/trasa/watchmud/world"
 	"log"
 	"sync"
 )
@@ -37,7 +36,7 @@ type Client struct {
 	// buffered channel of outbound messages
 	source chan interface{} // sends down to client
 	quit   chan interface{} // used to terminate clients
-	Player *world.Player
+	Player *Player
 }
 
 func newClient(c *websocket.Conn) *Client {

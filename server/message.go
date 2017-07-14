@@ -1,6 +1,5 @@
 package server
 
-import "github.com/trasa/watchmud/world"
 
 type IncomingMessage struct {
 	Client *Client
@@ -22,10 +21,10 @@ type Response struct {
 
 type TellAllResponse struct {
 	Response
-	Sender      string `json:"sender"`
+	Sender string `json:"sender"`
 }
 
 type LoginResponse struct {
 	Response
-	Player      *world.Player `json:"player"`
+	Player *Player `json:"player"`
 }

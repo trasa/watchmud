@@ -6,7 +6,6 @@ import (
 
 // TODO this breaks because of channels!
 
-
 func TestGameServer_handleMessage_unknownMessageType(t *testing.T) {
 	t.Skip("channels are broken here")
 	server := newGameServer()

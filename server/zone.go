@@ -1,4 +1,4 @@
-package world
+package server
 
 import "fmt"
 

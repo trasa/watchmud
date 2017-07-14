@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/trasa/watchmud/world"
 	"log"
 )
 
@@ -9,13 +8,13 @@ var GameServerInstance *GameServer
 
 type GameServer struct {
 	incomingMessageBuffer chan *IncomingMessage
-	World                 *world.World
+	World                 *World
 }
 
 func newGameServer() *GameServer {
 	return &GameServer{
 		incomingMessageBuffer: make(chan *IncomingMessage),
-		World: world.NewWorld(),
+		World: NewWorld(),
 	}
 }
 
@@ -45,9 +44,13 @@ func (server *GameServer) handleIncomingMessage(message *IncomingMessage) {
 	case "login":
 		log.Printf("login received: %s", message.Body)
 		server.handleLogin(message)
+	case "tell":
+		log.Printf("tell: %s", message.Body)
+		// TODO
+		//server.handleTell(message)
 	case "tell_all":
 		log.Printf("Tell All: %s", message.Body)
-		server.tellAll(message)
+		server.handleTellAll(message)
 	default:
 		log.Printf("UNHANDLED messageType: %s, body %s", messageType, message.Body)
 	}
@@ -71,7 +74,7 @@ func (server *GameServer) handleLogin(message *IncomingMessage) {
 		log.Printf("login response %s", lr.MessageType)
 		return
 	}
-	player := world.NewPlayer(message.Body["player_name"], message.Body["player_name"])
+	player := NewPlayer(message.Body["player_name"], message.Body["player_name"], message.Client)
 	message.Client.Player = player
 	server.World.AddPlayer(player)
 	message.Client.source <- LoginResponse{
@@ -80,13 +83,19 @@ func (server *GameServer) handleLogin(message *IncomingMessage) {
 			Successful:  true,
 			ResultCode:  "OK",
 		},
-		Player:      player,
+		Player: player,
 	}
 }
 
+//func (server *GameServer) handleTell(message *IncomingMessage) {
+//	from := message.Client.Player.Name
+//	to := message.Body["to"]
+//	msg := message.Body["message"]
+//}
+
 // Tell everybody in the game something.
 // TODO this belongs somewhere else.
-func (server *GameServer) tellAll(message *IncomingMessage) {
+func (server *GameServer) handleTellAll(message *IncomingMessage) {
 	if val, ok := message.Body["message"]; ok {
 		// TODO need notification type
 		SendToAllClients(TellAllResponse{
@@ -95,7 +104,7 @@ func (server *GameServer) tellAll(message *IncomingMessage) {
 				Successful:  true,
 				ResultCode:  val,
 			},
-			Sender:      message.Client.Player.Name,
+			Sender: message.Client.Player.Name,
 		})
 	} else {
 		message.Client.source <- TellAllResponse{

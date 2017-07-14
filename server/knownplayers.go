@@ -1,4 +1,4 @@
-package world
+package server
 
 /*
 func Logout(playerId string) error {
