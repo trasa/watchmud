@@ -15,19 +15,30 @@ func FindPlayerByClient(c *Client) *Player {
 }
 
 type Player struct {
-	Name         string
-	Room         *Room   `json:"-"`
-	Client       *Client `json:"-"`
-	PlayerSender `json:"-"`
+	Name   string
+	Room   *Room        `json:"-"`
+	Client *Client      `json:"-"`
+	Send   playerSender `json:"-"`
 }
 
-type PlayerSender func(player *Player, message interface{})
+// method called to send a message to the player
+// could be overridden for test purposes
+type playerSender func(message interface{})
 
+// Create a new player and set it up to work with this client
 func NewPlayer(name string, client *Client) *Player {
 	p := Player{
-		Name:         name,
-		Client:       client,
-		PlayerSender: sendToPlayer, // use real method that relies on client
+		Name:   name,
+		Client: client,
+	}
+	p.Send = func(message interface{}) {
+		log.Printf("using REAL playersender to talk to %s", p.Name)
+		if p.Client != nil {
+			p.Client.source <- message
+		} else {
+			log.Printf("Can't send message to player: no client attached: %v", message)
+			// TODO return err
+		}
 	}
 	return &p
 }
@@ -36,24 +47,11 @@ func (p *Player) String() string {
 	return fmt.Sprintf("(Player Name='%s' in room '%v')", p.Name, p.Room)
 }
 
+// TODO move to somewhere else?
 func (p *Player) FindZone() *Zone {
 	if p.Room != nil {
 		return p.Room.Zone
 	}
 	// TODO return err?
 	return nil
-}
-
-func (p *Player) Send(message interface{}) {
-	p.PlayerSender(p, message)
-}
-
-// Really send a message to the player via the client
-func sendToPlayer(p *Player, message interface{}) {
-	if p.Client != nil {
-		p.Client.source <- message
-	} else {
-		log.Printf("Can't send message to player: no client attached: %v", message)
-		// TODO return err
-	}
 }

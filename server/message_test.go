@@ -8,36 +8,42 @@ import (
 // keeps track of a messages sent to players
 var sentMessages = make(map[*Player][]interface{})
 
+// create a new test world
 func NewTestWorld() *World {
 	return &World{
 		knownPlayersByName: make(map[string]*Player),
 	}
 }
 
+// create a new test player that can track sent messages through 'sentmessages'
 func NewTestPlayer(name string) *Player {
-	return &Player{
-		Name:         name,
-		PlayerSender: playerSenderForTest, // uses test sender method
+	p := Player{
+		Name: name,
 	}
+	p.Send = func(message interface{}) {
+		log.Printf("sending fake! %s p is %s", message, p.Name)
+		sentMessages[&p] = append(sentMessages[&p], message)
+	}
+	return &p
 }
 
-func playerSenderForTest(player *Player, message interface{}) {
-	log.Printf("sending fake! %s", message)
-	sentMessages[player] = append(sentMessages[player], message)
-}
-
+// tell receiver about it
 func TestHandleTell_success(t *testing.T) {
+	// arrange
 	w := NewTestWorld()
 	senderPlayer := NewTestPlayer("sender")
+	receiverPlayer := NewTestPlayer("receiver")
+	w.knownPlayersByName[receiverPlayer.Name] = receiverPlayer
+	w.knownPlayersByName[senderPlayer.Name] = senderPlayer
+
 	msg := IncomingMessage{
 		Player: senderPlayer,
 		Body:   make(map[string]string),
 	}
 	msg.Body["to"] = "receiver"
 	msg.Body["value"] = "hi"
-	receiverPlayer := NewTestPlayer("receiver")
-	w.knownPlayersByName[receiverPlayer.Name] = receiverPlayer
 
+	// act
 	w.handleTell(&msg)
 
 	// assert tell to receiver
@@ -69,5 +75,4 @@ func TestHandleTell_success(t *testing.T) {
 	if !senderResponse.Successful {
 		t.Error("expected sender response to be successful")
 	}
-
 }
