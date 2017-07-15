@@ -49,7 +49,7 @@ func TestHandleTell_success(t *testing.T) {
 
 	// assert
 	if len(sentMessages) != 2 {
-		t.Error("Unexpected messages found: %d", len(sentMessages))
+		t.Errorf("Unexpected messages found: %d", len(sentMessages))
 	}
 
 	// assert tell to receiver
