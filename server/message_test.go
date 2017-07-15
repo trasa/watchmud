@@ -6,7 +6,7 @@ import (
 )
 
 // keeps track of a messages sent to players
-var sentMessages = make(map[*Player][]interface{})
+var sentMessages map[*Player][]interface{}
 
 // create a new test world
 func NewTestWorld() *World {
@@ -31,6 +31,7 @@ func NewTestPlayer(name string) *Player {
 func TestHandleTell_success(t *testing.T) {
 	// arrange
 	w := NewTestWorld()
+	sentMessages = make(map[*Player][]interface{})
 	senderPlayer := NewTestPlayer("sender")
 	receiverPlayer := NewTestPlayer("receiver")
 	w.knownPlayersByName[receiverPlayer.Name] = receiverPlayer
@@ -45,6 +46,11 @@ func TestHandleTell_success(t *testing.T) {
 
 	// act
 	w.handleTell(&msg)
+
+	// assert
+	if len(sentMessages) != 2 {
+		t.Error("Unexpected messages found: %d", len(sentMessages))
+	}
 
 	// assert tell to receiver
 	if len(sentMessages[receiverPlayer]) != 1 {
@@ -74,5 +80,45 @@ func TestHandleTell_success(t *testing.T) {
 	}
 	if !senderResponse.Successful {
 		t.Error("expected sender response to be successful")
+	}
+}
+
+func TestHandleTell_receiverNotFound(t *testing.T) {
+	// arrange
+	w := NewTestWorld()
+	sentMessages = make(map[*Player][]interface{})
+	senderPlayer := NewTestPlayer("sender")
+	// note: receiver doesn't exist
+	w.knownPlayersByName[senderPlayer.Name] = senderPlayer
+
+	msg := IncomingMessage{
+		Player: senderPlayer,
+		Body:   make(map[string]string),
+	}
+	msg.Body["to"] = "receiver"
+	msg.Body["value"] = "hi"
+
+	// act
+	w.handleTell(&msg)
+
+	// assert tell-response to sender
+	if len(sentMessages[senderPlayer]) != 1 {
+		t.Errorf("expected sender to get a response %s", sentMessages)
+	}
+
+	// no other messages
+	if len(sentMessages) != 1 {
+		t.Errorf("Unexpected messages found: %d", len(sentMessages))
+	}
+
+	senderResponse := sentMessages[senderPlayer][0].(Response)
+	if senderResponse.MessageType != "tell" {
+		t.Errorf("sender response message type: %s", senderResponse.MessageType)
+	}
+	if senderResponse.ResultCode != "TO_PLAYER_NOT_FOUND" {
+		t.Errorf("sender response: %s", senderResponse.ResultCode)
+	}
+	if senderResponse.Successful {
+		t.Error("expected sender response to be a failure")
 	}
 }
