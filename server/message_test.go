@@ -5,6 +5,10 @@ import (
 	"testing"
 )
 
+
+// see https://play.golang.org/p/zPLyr3ZOM0 (first attempt)
+// then see https://play.golang.org/p/z5athD5fV3 (client is an interface, but now pointer woes)
+
 // keeps track of a messages sent to players
 var sentMessages map[*Player][]interface{}
 
