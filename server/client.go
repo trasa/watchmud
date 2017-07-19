@@ -23,7 +23,6 @@ func StartAllClientDispatcher() {
 		for {
 			msg := <-Broadcaster
 			clients.iter(func(c Client) {
-				log.Printf("sending to %s", c)
 				c.Send(msg)
 			})
 		}
