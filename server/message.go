@@ -1,15 +1,15 @@
 package server
 
 type IncomingMessage struct {
-	Client *Client
+	Client Client
 	Player *Player
 	Body   map[string]string
 }
 
-func newIncomingMessage(client *Client, body map[string]string) *IncomingMessage {
+func newIncomingMessage(client Client, body map[string]string) *IncomingMessage {
 	return &IncomingMessage{
 		Client: client,
-		Player: client.Player,
+		Player: client.GetPlayer(),
 		Body:   body,
 	}
 }
@@ -51,7 +51,8 @@ func (w *World) handleLogin(message *IncomingMessage) {
 
 	// todo authentication and stuff
 	player := NewPlayer(message.Body["player_name"], message.Client)
-	message.Client.Player = player
+	message.Client.SetPlayer(player)
+	message.Player = player
 	w.addPlayer(player)
 	player.Send(LoginResponse{
 		Response: Response{
@@ -108,7 +109,7 @@ func (w *World) handleTellAll(message *IncomingMessage) {
 				MessageType: "tell_all_notification",
 			},
 			Value:  val,
-			Sender: message.Client.Player.Name,
+			Sender: message.Player.Name,
 		})
 	} else {
 		message.Player.Send(Response{

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 )
@@ -9,8 +10,10 @@ import (
 var GlobalQuit = make(chan interface{})
 
 // channel for sending to all clients
+// does this still make sense with the whole player / client thing?
 var Broadcaster = make(chan interface{}, 10)
 
+// this maybe goes away?!
 func SendToAllClients(msg interface{}) {
 	Broadcaster <- msg
 }
@@ -19,33 +22,49 @@ func StartAllClientDispatcher() {
 	go func() {
 		for {
 			msg := <-Broadcaster
-			clients.iter(func(c *Client) {
-				c.source <- msg
+			clients.iter(func(c Client) {
+				log.Printf("sending to %s", c)
+				c.Send(msg)
 			})
 		}
 	}()
 }
 
-type Client struct {
+type Client interface {
+	Send(message interface{}) // todo return err
+	SetPlayer(player *Player)
+	GetPlayer() *Player
+}
+
+type WebClient struct {
 	conn   *websocket.Conn  // websocket connection
 	source chan interface{} // sends down to client
 	quit   chan interface{} // used to terminate clients
 	Player *Player
 }
 
-func newClient(c *websocket.Conn) *Client {
-	return &Client{
+func newWebClient(c *websocket.Conn) *WebClient {
+	return &WebClient{
 		conn:   c,
 		source: make(chan interface{}, 256),
 		quit:   GlobalQuit,
 	}
 }
 
-func (c *Client) send(message interface{}) {
+func (c *WebClient) Send(message interface{}) {
 	c.source <- message
 }
 
-func (c *Client) readPump() {
+func (c *WebClient) GetPlayer() *Player {
+	return c.Player
+}
+
+func (c *WebClient) SetPlayer(player *Player) {
+	log.Print("setting player!")
+	c.Player = player
+}
+
+func (c *WebClient) readPump() {
 	defer c.conn.Close()
 
 	for {
@@ -61,7 +80,7 @@ func (c *Client) readPump() {
 	}
 }
 
-func (c *Client) writePump() {
+func (c *WebClient) writePump() {
 	defer c.conn.Close()
 
 	c.source = make(chan interface{}, 10)
@@ -79,4 +98,8 @@ func (c *Client) writePump() {
 			return // terminate the client
 		}
 	}
+}
+
+func (c *WebClient) String() string {
+	return fmt.Sprintf("(WebClient conn: %v, Player %s", c.conn != nil, c.Player)
 }

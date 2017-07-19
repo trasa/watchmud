@@ -4,7 +4,7 @@ import "testing"
 
 func TestClients_Add(t *testing.T) {
 	clients := newClients()
-	client := &Client{}
+	client := &TestClient{}
 
 	clients.add(client)
 	if _, ok := clients.clients[client]; !ok {
@@ -14,7 +14,7 @@ func TestClients_Add(t *testing.T) {
 
 func TestClients_Remove(t *testing.T) {
 	clients := newClients()
-	client := &Client{}
+	client := &TestClient{}
 
 	clients.add(client)
 	clients.remove(client)
@@ -26,11 +26,11 @@ func TestClients_Remove(t *testing.T) {
 
 func TestClients_Iter(t *testing.T) {
 	clients := newClients()
-	client := &Client{}
+	client := &TestClient{}
 
 	clients.add(client)
 	count := 0
-	clients.iter(func(c *Client) {
+	clients.iter(func(c Client) {
 		count++
 	})
 	if count != 1 {

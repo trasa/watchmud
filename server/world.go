@@ -68,11 +68,11 @@ func (w *World) handleIncomingMessage(message *IncomingMessage) {
 		log.Printf("tell: %s", message.Body)
 		w.handleTell(message)
 	case "tell_all":
-		log.Printf("Tell All: %s", message.Body)
+		log.Printf("Tell All: %s", message)
 		w.handleTellAll(message)
 	default:
 		log.Printf("UNHANDLED messageType: %s, body %s", messageType, message.Body)
-		message.Client.send(Response{
+		message.Client.Send(Response{
 			MessageType: messageType,
 			Successful:  false,
 			ResultCode:  "UNKNOWN_MESSAGE_TYPE",

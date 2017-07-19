@@ -1,16 +1,11 @@
 package server
 
 import (
-	"log"
 	"testing"
 )
 
-
 // see https://play.golang.org/p/zPLyr3ZOM0 (first attempt)
 // then see https://play.golang.org/p/z5athD5fV3 (client is an interface, but now pointer woes)
-
-// keeps track of a messages sent to players
-var sentMessages map[*Player][]interface{}
 
 // create a new test world
 func NewTestWorld() *World {
@@ -21,21 +16,19 @@ func NewTestWorld() *World {
 
 // create a new test player that can track sent messages through 'sentmessages'
 func NewTestPlayer(name string) *Player {
-	p := Player{
-		Name: name,
+	c := &TestClient{}
+	p := &Player{
+		Name:   name,
+		Client: c,
 	}
-	p.Send = func(message interface{}) {
-		log.Printf("sending fake! %s p is %s", message, p.Name)
-		sentMessages[&p] = append(sentMessages[&p], message)
-	}
-	return &p
+	c.Player = p
+	return p
 }
 
 // tell receiver about it
 func TestHandleTell_success(t *testing.T) {
 	// arrange
 	w := NewTestWorld()
-	sentMessages = make(map[*Player][]interface{})
 	senderPlayer := NewTestPlayer("sender")
 	receiverPlayer := NewTestPlayer("receiver")
 	w.knownPlayersByName[receiverPlayer.Name] = receiverPlayer
@@ -52,15 +45,12 @@ func TestHandleTell_success(t *testing.T) {
 	w.handleTell(&msg)
 
 	// assert
-	if len(sentMessages) != 2 {
-		t.Errorf("Unexpected messages found: %d", len(sentMessages))
-	}
-
 	// assert tell to receiver
-	if len(sentMessages[receiverPlayer]) != 1 {
-		t.Errorf("expected receiver to get a message %s", sentMessages)
+
+	if len(receiverPlayer.Client.(*TestClient).tosend) != 1 {
+		t.Errorf("expected receiver to get a message %s", receiverPlayer.Client.(*TestClient).tosend)
 	}
-	recdMessage := sentMessages[receiverPlayer][0].(TellNotification)
+	recdMessage := receiverPlayer.Client.(*TestClient).tosend[0].(TellNotification)
 	if recdMessage.From != senderPlayer.Name {
 		t.Errorf("Didn't get expected senderPlayer.Name: %s", recdMessage.From)
 	}
@@ -72,10 +62,10 @@ func TestHandleTell_success(t *testing.T) {
 	}
 
 	// assert tell-response to sender
-	if len(sentMessages[senderPlayer]) != 1 {
-		t.Errorf("expected sender to get a response %s", sentMessages)
+	if len(senderPlayer.Client.(*TestClient).tosend) != 1 {
+		t.Errorf("expected sender to get a response %s", senderPlayer.Client.(*TestClient).tosend)
 	}
-	senderResponse := sentMessages[senderPlayer][0].(Response)
+	senderResponse := senderPlayer.Client.(*TestClient).tosend[0].(Response)
 	if senderResponse.MessageType != "tell" {
 		t.Errorf("expected sender response tell: %s", senderResponse.MessageType)
 	}
@@ -90,7 +80,6 @@ func TestHandleTell_success(t *testing.T) {
 func TestHandleTell_receiverNotFound(t *testing.T) {
 	// arrange
 	w := NewTestWorld()
-	sentMessages = make(map[*Player][]interface{})
 	senderPlayer := NewTestPlayer("sender")
 	// note: receiver doesn't exist
 	w.knownPlayersByName[senderPlayer.Name] = senderPlayer
@@ -106,16 +95,11 @@ func TestHandleTell_receiverNotFound(t *testing.T) {
 	w.handleTell(&msg)
 
 	// assert tell-response to sender
-	if len(sentMessages[senderPlayer]) != 1 {
-		t.Errorf("expected sender to get a response %s", sentMessages)
+	if len(senderPlayer.Client.(*TestClient).tosend) != 1 {
+		t.Error("expected sender to get a response")
 	}
 
-	// no other messages
-	if len(sentMessages) != 1 {
-		t.Errorf("Unexpected messages found: %d", len(sentMessages))
-	}
-
-	senderResponse := sentMessages[senderPlayer][0].(Response)
+	senderResponse := senderPlayer.Client.(*TestClient).tosend[0].(Response)
 	if senderResponse.MessageType != "tell" {
 		t.Errorf("sender response message type: %s", senderResponse.MessageType)
 	}

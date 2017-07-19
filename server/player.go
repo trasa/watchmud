@@ -2,45 +2,34 @@ package server
 
 import (
 	"fmt"
-	"log"
 )
 
 // TODO move to world
-var playersByClient = make(map[*Client]*Player)
+var playersByClient = make(map[Client]*Player)
 
 // Locate the player who is attached to this client
 // TODO move to world
-func FindPlayerByClient(c *Client) *Player {
+func FindPlayerByClient(c Client) *Player {
 	return playersByClient[c]
 }
 
 type Player struct {
 	Name   string
-	Room   *Room        `json:"-"`
-	Client *Client      `json:"-"`
-	Send   playerSender `json:"-"`
+	Room   *Room  `json:"-"`
+	Client Client `json:"-"`
 }
 
-// method called to send a message to the player
-// could be overridden for test purposes
-type playerSender func(message interface{})
-
 // Create a new player and set it up to work with this client
-func NewPlayer(name string, client *Client) *Player {
+func NewPlayer(name string, client Client) *Player {
 	p := Player{
 		Name:   name,
-		Client: client,
-	}
-	p.Send = func(message interface{}) {
-		log.Printf("using REAL playersender to talk to %s", p.Name)
-		if p.Client != nil {
-			p.Client.source <- message
-		} else {
-			log.Printf("Can't send message to player: no client attached: %v", message)
-			// TODO return err
-		}
+		Client: client, // address of interface
 	}
 	return &p
+}
+
+func (p *Player) Send(msg interface{}) {
+	p.Client.Send(msg)
 }
 
 func (p *Player) String() string {
