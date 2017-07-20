@@ -59,10 +59,8 @@ func (c *WebClient) readPump() {
 			return
 		}
 		log.Printf("message body: %s", body)
-		//GameServerInstance.incomingMessageBuffer <- message.NewIncomingMessage(c, body)
 		gameServerInstance.Receive(message.New(c, body))
 	}
-
 }
 
 func (c *WebClient) writePump() {

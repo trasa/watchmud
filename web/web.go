@@ -35,7 +35,7 @@ func mudsocket(w http.ResponseWriter, r *http.Request) {
 }
 
 // Start Up the HttpServer
-func ConnectHttpServer() {
+func Start() {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/", index)

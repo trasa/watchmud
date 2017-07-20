@@ -6,10 +6,12 @@ import (
 )
 
 func main() {
-	server.Init()
-	go server.GameServerInstance.Run()
-	web.Init(server.GameServerInstance)
-	web.ConnectHttpServer()
+	//server.Init()
+	gameserver := server.NewGameServer()
+	go gameserver.Start()
+
+	web.Init(gameserver)
+	web.Start()
 
 	// tell everybody to quit
 	//close(server.GlobalQuit)

@@ -2,14 +2,14 @@ package server
 
 import "github.com/trasa/watchmud/message"
 
-var GameServerInstance *GameServer
+//var GameServerInstance *GameServer
 
 type GameServer struct {
 	incomingMessageBuffer chan *message.IncomingMessage
 	World                 *World
 }
 
-func newGameServer() *GameServer {
+func NewGameServer() *GameServer {
 	return &GameServer{
 		incomingMessageBuffer: make(chan *message.IncomingMessage),
 		World: NewWorld(),
@@ -17,11 +17,11 @@ func newGameServer() *GameServer {
 }
 
 // Initialize the game server
-func Init() {
-	GameServerInstance = newGameServer()
-}
+//func Init() {
+//	GameServerInstance = newGameServer()
+//}
 
-func (server *GameServer) Run() {
+func (server *GameServer) Start() {
 	// this is the loop that handles incoming requests
 	// needs to be organized around TICKs
 	for {
