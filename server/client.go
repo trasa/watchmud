@@ -6,9 +6,6 @@ import (
 	"log"
 )
 
-// controls terminating all clients
-var GlobalQuit = make(chan interface{})
-
 // channel for sending to all clients
 // does this still make sense with the whole player / client thing?
 var Broadcaster = make(chan interface{}, 10)
@@ -33,6 +30,7 @@ type Client interface {
 	Send(message interface{}) // todo return err
 	SetPlayer(player *Player)
 	GetPlayer() *Player
+	Close()
 }
 
 type WebClient struct {
@@ -46,7 +44,7 @@ func newWebClient(c *websocket.Conn) *WebClient {
 	return &WebClient{
 		conn:   c,
 		source: make(chan interface{}, 256),
-		quit:   GlobalQuit,
+		quit:   make(chan interface{}),
 	}
 }
 
@@ -61,6 +59,10 @@ func (c *WebClient) GetPlayer() *Player {
 func (c *WebClient) SetPlayer(player *Player) {
 	log.Print("setting player!")
 	c.Player = player
+}
+
+func (c *WebClient) Close() {
+	close(c.quit)
 }
 
 func (c *WebClient) readPump() {

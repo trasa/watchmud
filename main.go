@@ -10,5 +10,6 @@ func main() {
 	server.ConnectHttpServer()
 
 	// tell everybody to quit
-	close(server.GlobalQuit)
+	//close(server.GlobalQuit)
+	// TODO some sort of server.GameServerInstance.Shutdown() ?
 }

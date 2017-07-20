@@ -5,6 +5,7 @@ import "log"
 type TestClient struct {
 	Player *Player
 	tosend []interface{}
+	open   bool
 }
 
 func (c *TestClient) Send(msg interface{}) {
@@ -18,4 +19,8 @@ func (c *TestClient) GetPlayer() *Player {
 
 func (c *TestClient) SetPlayer(p *Player) {
 	c.Player = p
+}
+
+func (c *TestClient) Close() {
+	c.open = false
 }
