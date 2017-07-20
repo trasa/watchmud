@@ -104,7 +104,7 @@ type TellAllNotification struct {
 // Tell everybody in the game something.
 func (w *World) handleTellAll(message *IncomingMessage) {
 	if val, ok := message.Body["value"]; ok {
-		SendToAllClients(TellAllNotification{
+		w.SendToAllPlayers(TellAllNotification{
 			Notification: Notification{
 				MessageType: "tell_all_notification",
 			},

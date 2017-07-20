@@ -20,9 +20,6 @@ func Init() {
 }
 
 func (server *GameServer) Run() {
-
-	StartAllClientDispatcher()
-
 	// this is the loop that handles incoming requests
 	// needs to be organized around TICKs
 	for {

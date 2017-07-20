@@ -5,7 +5,8 @@ import "log"
 type World struct {
 	Zones              map[string]*Zone
 	StartRoom          *Room
-	knownPlayersByName map[string]*Player
+	knownPlayersByName map[string]*Player // TODO move to players?
+	Players            *Players
 }
 
 var startZoneKey = "sample"
@@ -17,6 +18,7 @@ func NewWorld() *World {
 	w := World{
 		Zones:              make(map[string]*Zone),
 		knownPlayersByName: make(map[string]*Player),
+		Players:            newPlayers(),
 	}
 	sampleZone := Zone{
 		Id:    startZoneKey,
@@ -50,9 +52,12 @@ func (w *World) getAllPlayers() (result []*Player) {
 // Add this Player to the world
 // putting them in the start room
 func (w *World) addPlayer(player *Player) {
-	w.knownPlayersByName[player.Name] = player
+	w.knownPlayersByName[player.Name] = player // TODO players
+	w.Players.Add(player)
 	w.StartRoom.AddPlayer(player)
 }
+
+// TODO remove player
 
 func (w *World) findPlayerByName(name string) *Player {
 	return w.knownPlayersByName[name]
@@ -78,4 +83,10 @@ func (w *World) handleIncomingMessage(message *IncomingMessage) {
 			ResultCode:  "UNKNOWN_MESSAGE_TYPE",
 		})
 	}
+}
+
+func (w *World) SendToAllPlayers(message interface{}) {
+	w.Players.Iter(func(p *Player) {
+		p.Send(message)
+	})
 }

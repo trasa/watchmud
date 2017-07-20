@@ -6,26 +6,6 @@ import (
 	"log"
 )
 
-// channel for sending to all clients
-// does this still make sense with the whole player / client thing?
-var Broadcaster = make(chan interface{}, 10)
-
-// this maybe goes away?!
-func SendToAllClients(msg interface{}) {
-	Broadcaster <- msg
-}
-
-func StartAllClientDispatcher() {
-	go func() {
-		for {
-			msg := <-Broadcaster
-			clients.iter(func(c Client) {
-				c.Send(msg)
-			})
-		}
-	}()
-}
-
 type Client interface {
 	Send(message interface{}) // todo return err
 	SetPlayer(player *Player)
