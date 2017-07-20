@@ -15,39 +15,39 @@ func Init(gs gameserver.Instance) {
 	gameServerInstance = gs
 }
 
-type WebClient struct {
+type Client struct {
 	conn   *websocket.Conn  // websocket connection
 	source chan interface{} // sends down to client
 	quit   chan interface{} // used to terminate clients
 	Player player.Player
 }
 
-func newWebClient(c *websocket.Conn) *WebClient {
-	return &WebClient{
+func newClient(c *websocket.Conn) *Client {
+	return &Client{
 		conn:   c,
 		source: make(chan interface{}, 256),
 		quit:   make(chan interface{}),
 	}
 }
 
-func (c *WebClient) Send(message interface{}) {
+func (c *Client) Send(message interface{}) {
 	c.source <- message
 }
 
-func (c *WebClient) GetPlayer() player.Player {
+func (c *Client) GetPlayer() player.Player {
 	return c.Player
 }
 
-func (c *WebClient) SetPlayer(player player.Player) {
+func (c *Client) SetPlayer(player player.Player) {
 	log.Print("setting player!")
 	c.Player = player
 }
 
-func (c *WebClient) Close() {
+func (c *Client) Close() {
 	close(c.quit)
 }
 
-func (c *WebClient) readPump() {
+func (c *Client) readPump() {
 	defer c.conn.Close()
 
 	for {
@@ -63,15 +63,15 @@ func (c *WebClient) readPump() {
 	}
 }
 
-func (c *WebClient) writePump() {
+func (c *Client) writePump() {
 	defer c.conn.Close()
 
 	c.source = make(chan interface{}, 10)
 	for {
 		select {
-		case message := <-c.source:
-			log.Printf("writing %s", message)
-			err := c.conn.WriteJSON(message)
+		case msg := <-c.source:
+			log.Printf("writing %s", msg)
+			err := c.conn.WriteJSON(msg)
 			if err != nil {
 				log.Printf("Write Error: %v", err)
 				// TODO terminate/disconnect player
@@ -83,6 +83,6 @@ func (c *WebClient) writePump() {
 	}
 }
 
-func (c *WebClient) String() string {
+func (c *Client) String() string {
 	return fmt.Sprintf("(WebClient conn: %v, Player %s", c.conn != nil, c.Player)
 }
