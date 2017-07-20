@@ -10,7 +10,7 @@ import (
 // create a new test world
 func newTestWorld() *World {
 	return &World{
-		knownPlayersByName: make(map[string]player.Player),
+		PlayerList: player.NewList(),
 	}
 }
 

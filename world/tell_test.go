@@ -12,8 +12,8 @@ func TestHandleTell_success(t *testing.T) {
 	w := newTestWorld()
 	senderPlayer := NewTestPlayer("sender")
 	receiverPlayer := NewTestPlayer("receiver")
-	w.knownPlayersByName[receiverPlayer.name] = receiverPlayer
-	w.knownPlayersByName[senderPlayer.name] = senderPlayer
+	w.AddPlayer(receiverPlayer)
+	w.AddPlayer(senderPlayer)
 
 	msg := message.IncomingMessage{
 		Player: senderPlayer,
@@ -63,7 +63,7 @@ func TestHandleTell_receiverNotFound(t *testing.T) {
 	w := newTestWorld()
 	senderPlayer := NewTestPlayer("sender")
 	// note: receiver doesn't exist
-	w.knownPlayersByName[senderPlayer.name] = senderPlayer
+	w.AddPlayer(senderPlayer)
 
 	msg := message.IncomingMessage{
 		Player: senderPlayer,

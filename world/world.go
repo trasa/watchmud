@@ -8,10 +8,9 @@ import (
 )
 
 type World struct {
-	Zones              map[string]*Zone
-	StartRoom          *Room
-	knownPlayersByName map[string]player.Player // TODO move to players?
-	PlayerList         *player.List
+	Zones      map[string]*Zone
+	StartRoom  *Room
+	PlayerList *player.List
 }
 
 var startZoneKey = "sample"
@@ -21,9 +20,8 @@ var startRoomKey = "start"
 func New() *World {
 	// Build a very boring world.
 	w := World{
-		Zones:              make(map[string]*Zone),
-		knownPlayersByName: make(map[string]player.Player),
-		PlayerList:         player.NewList(),
+		Zones:      make(map[string]*Zone),
+		PlayerList: player.NewList(),
 	}
 	sampleZone := Zone{
 		Id:    startZoneKey,
@@ -54,15 +52,14 @@ func (w *World) getAllPlayers() []player.Player {
 // Add this Player to the world
 // putting them in the start room
 func (w *World) AddPlayer(player player.Player) {
-	w.knownPlayersByName[player.GetName()] = player // TODO players
 	w.PlayerList.Add(player)
 	//w.StartRoom.AddPlayer(player)
 }
 
-// TODO remove player
+// TODO remove player from world
 
 func (w *World) findPlayerByName(name string) player.Player {
-	return w.knownPlayersByName[name]
+	return w.PlayerList.FindByName(name)
 }
 
 func (w *World) HandleIncomingMessage(message *message.IncomingMessage) {
