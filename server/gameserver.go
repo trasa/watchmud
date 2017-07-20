@@ -2,10 +2,9 @@ package server
 
 import (
 	"github.com/trasa/watchmud/message"
-	"github.com/trasa/watchmud/world"
 	"github.com/trasa/watchmud/response"
+	"github.com/trasa/watchmud/world"
 )
-
 
 type GameServer struct {
 	incomingMessageBuffer chan *message.IncomingMessage
@@ -42,7 +41,6 @@ func (server *GameServer) Start() {
 func (server *GameServer) Receive(message *message.IncomingMessage) {
 	server.incomingMessageBuffer <- message
 }
-
 
 func (server *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO error handling
 	// is this connection already authenticated?

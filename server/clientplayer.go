@@ -28,8 +28,9 @@ func (p *ClientPlayer) Send(msg interface{}) {
 }
 
 func (p *ClientPlayer) String() string {
-	return fmt.Sprintf("(Player Name='%s')", p.Name )
+	return fmt.Sprintf("(Player Name='%s')", p.Name)
 }
+
 //
 //// TODO move to somewhere else?
 //func (p *ClientPlayer) FindZone() *Zone {

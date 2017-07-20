@@ -5,7 +5,6 @@ import (
 	"github.com/trasa/watchmud/response"
 )
 
-
 func (w *World) handleTell(message *message.IncomingMessage) {
 	fromName := message.Player.GetName()
 	toPlayer := w.findPlayerByName(message.Body["to"])
