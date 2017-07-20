@@ -1,16 +1,25 @@
-package server
+package web
 
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/trasa/watchmud/gameserver"
+	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/player"
 	"log"
 )
+
+var gameServerInstance gameserver.Instance
+
+func Init(gs gameserver.Instance) {
+	gameServerInstance = gs
+}
 
 type WebClient struct {
 	conn   *websocket.Conn  // websocket connection
 	source chan interface{} // sends down to client
 	quit   chan interface{} // used to terminate clients
-	Player *Player
+	Player player.Player
 }
 
 func newWebClient(c *websocket.Conn) *WebClient {
@@ -21,16 +30,15 @@ func newWebClient(c *websocket.Conn) *WebClient {
 	}
 }
 
-
 func (c *WebClient) Send(message interface{}) {
 	c.source <- message
 }
 
-func (c *WebClient) GetPlayer() *Player {
+func (c *WebClient) GetPlayer() player.Player {
 	return c.Player
 }
 
-func (c *WebClient) SetPlayer(player *Player) {
+func (c *WebClient) SetPlayer(player player.Player) {
 	log.Print("setting player!")
 	c.Player = player
 }
@@ -51,8 +59,10 @@ func (c *WebClient) readPump() {
 			return
 		}
 		log.Printf("message body: %s", body)
-		GameServerInstance.incomingMessageBuffer <- newIncomingMessage(c, body)
+		//GameServerInstance.incomingMessageBuffer <- message.NewIncomingMessage(c, body)
+		gameServerInstance.Receive(message.NewIncomingMessage(c, body))
 	}
+
 }
 
 func (c *WebClient) writePump() {

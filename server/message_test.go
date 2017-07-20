@@ -1,6 +1,10 @@
 package server
 
 import (
+	"github.com/trasa/watchmud/client"
+	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/player"
+	"log"
 	"testing"
 )
 
@@ -10,16 +14,30 @@ import (
 // create a new test world
 func NewTestWorld() *World {
 	return &World{
-		knownPlayersByName: make(map[string]*Player),
+		knownPlayersByName: make(map[string]player.Player),
 	}
 }
 
+type TestPlayer struct {
+	name   string
+	client client.Client
+}
+
+func (this *TestPlayer) Send(message interface{}) {
+	log.Printf("sending for player %s", message)
+	this.client.Send(message)
+}
+
+func (this *TestPlayer) GetName() string {
+	return this.name
+}
+
 // create a new test player that can track sent messages through 'sentmessages'
-func NewTestPlayer(name string) *Player {
+func NewTestPlayer(name string) *TestPlayer {
 	c := &TestClient{}
-	p := &Player{
-		Name:   name,
-		Client: c,
+	p := &TestPlayer{
+		name:   name,
+		client: c,
 	}
 	c.Player = p
 	return p
@@ -31,10 +49,10 @@ func TestHandleTell_success(t *testing.T) {
 	w := NewTestWorld()
 	senderPlayer := NewTestPlayer("sender")
 	receiverPlayer := NewTestPlayer("receiver")
-	w.knownPlayersByName[receiverPlayer.Name] = receiverPlayer
-	w.knownPlayersByName[senderPlayer.Name] = senderPlayer
+	w.knownPlayersByName[receiverPlayer.name] = receiverPlayer
+	w.knownPlayersByName[senderPlayer.name] = senderPlayer
 
-	msg := IncomingMessage{
+	msg := message.IncomingMessage{
 		Player: senderPlayer,
 		Body:   make(map[string]string),
 	}
@@ -47,11 +65,11 @@ func TestHandleTell_success(t *testing.T) {
 	// assert
 	// assert tell to receiver
 
-	if len(receiverPlayer.Client.(*TestClient).tosend) != 1 {
-		t.Errorf("expected receiver to get a message %s", receiverPlayer.Client.(*TestClient).tosend)
+	if len(receiverPlayer.client.(*TestClient).tosend) != 1 {
+		t.Errorf("expected receiver to get a message %s", receiverPlayer.client.(*TestClient).tosend)
 	}
-	recdMessage := receiverPlayer.Client.(*TestClient).tosend[0].(TellNotification)
-	if recdMessage.From != senderPlayer.Name {
+	recdMessage := receiverPlayer.client.(*TestClient).tosend[0].(TellNotification)
+	if recdMessage.From != senderPlayer.name {
 		t.Errorf("Didn't get expected senderPlayer.Name: %s", recdMessage.From)
 	}
 	if recdMessage.MessageType != "tell" {
@@ -62,10 +80,10 @@ func TestHandleTell_success(t *testing.T) {
 	}
 
 	// assert tell-response to sender
-	if len(senderPlayer.Client.(*TestClient).tosend) != 1 {
-		t.Errorf("expected sender to get a response %s", senderPlayer.Client.(*TestClient).tosend)
+	if len(senderPlayer.client.(*TestClient).tosend) != 1 {
+		t.Errorf("expected sender to get a response %s", senderPlayer.client.(*TestClient).tosend)
 	}
-	senderResponse := senderPlayer.Client.(*TestClient).tosend[0].(Response)
+	senderResponse := senderPlayer.client.(*TestClient).tosend[0].(Response)
 	if senderResponse.MessageType != "tell" {
 		t.Errorf("expected sender response tell: %s", senderResponse.MessageType)
 	}
@@ -82,9 +100,9 @@ func TestHandleTell_receiverNotFound(t *testing.T) {
 	w := NewTestWorld()
 	senderPlayer := NewTestPlayer("sender")
 	// note: receiver doesn't exist
-	w.knownPlayersByName[senderPlayer.Name] = senderPlayer
+	w.knownPlayersByName[senderPlayer.name] = senderPlayer
 
-	msg := IncomingMessage{
+	msg := message.IncomingMessage{
 		Player: senderPlayer,
 		Body:   make(map[string]string),
 	}
@@ -95,11 +113,11 @@ func TestHandleTell_receiverNotFound(t *testing.T) {
 	w.handleTell(&msg)
 
 	// assert tell-response to sender
-	if len(senderPlayer.Client.(*TestClient).tosend) != 1 {
+	if len(senderPlayer.client.(*TestClient).tosend) != 1 {
 		t.Error("expected sender to get a response")
 	}
 
-	senderResponse := senderPlayer.Client.(*TestClient).tosend[0].(Response)
+	senderResponse := senderPlayer.client.(*TestClient).tosend[0].(Response)
 	if senderResponse.MessageType != "tell" {
 		t.Errorf("sender response message type: %s", senderResponse.MessageType)
 	}

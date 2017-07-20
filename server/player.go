@@ -2,33 +2,38 @@ package server
 
 import (
 	"fmt"
+	"github.com/trasa/watchmud/client"
 )
 
-type Player struct {
+type ClientPlayer struct {
 	Name   string
-	Room   *Room  `json:"-"`
-	Client Client `json:"-"`
+	Room   *Room         `json:"-"`
+	Client client.Client `json:"-"`
 }
 
 // Create a new player and set it up to work with this client
-func NewPlayer(name string, client Client) *Player {
-	p := Player{
+func NewPlayer(name string, client client.Client) *ClientPlayer {
+	p := ClientPlayer{
 		Name:   name,
 		Client: client, // address of interface
 	}
 	return &p
 }
 
-func (p *Player) Send(msg interface{}) {
+func (p *ClientPlayer) GetName() string {
+	return p.Name
+}
+
+func (p *ClientPlayer) Send(msg interface{}) {
 	p.Client.Send(msg)
 }
 
-func (p *Player) String() string {
+func (p *ClientPlayer) String() string {
 	return fmt.Sprintf("(Player Name='%s' in room '%v')", p.Name, p.Room)
 }
 
 // TODO move to somewhere else?
-func (p *Player) FindZone() *Zone {
+func (p *ClientPlayer) FindZone() *Zone {
 	if p.Room != nil {
 		return p.Room.Zone
 	}

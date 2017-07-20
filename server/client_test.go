@@ -1,23 +1,26 @@
 package server
 
-import "log"
+import (
+	"github.com/trasa/watchmud/player"
+	"log"
+)
 
 type TestClient struct {
-	Player *Player
+	Player player.Player
 	tosend []interface{}
 	open   bool
 }
 
 func (c *TestClient) Send(msg interface{}) {
-	log.Printf("sending fake! %s p is %s", msg, c.Player.Name)
+	log.Printf("sending fake! %s p is %s", msg, c.Player.GetName())
 	c.tosend = append(c.tosend, msg)
 }
 
-func (c *TestClient) GetPlayer() *Player {
+func (c *TestClient) GetPlayer() player.Player {
 	return c.Player
 }
 
-func (c *TestClient) SetPlayer(p *Player) {
+func (c *TestClient) SetPlayer(p player.Player) {
 	c.Player = p
 }
 

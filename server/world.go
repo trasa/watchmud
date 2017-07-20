@@ -1,12 +1,16 @@
 package server
 
-import "log"
+import (
+	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/player"
+	"log"
+)
 
 type World struct {
 	Zones              map[string]*Zone
 	StartRoom          *Room
-	knownPlayersByName map[string]*Player // TODO move to players?
-	Players            *Players
+	knownPlayersByName map[string]player.Player // TODO move to players?
+	Players            *player.Players
 }
 
 var startZoneKey = "sample"
@@ -17,8 +21,8 @@ func NewWorld() *World {
 	// Build a very boring world.
 	w := World{
 		Zones:              make(map[string]*Zone),
-		knownPlayersByName: make(map[string]*Player),
-		Players:            newPlayers(),
+		knownPlayersByName: make(map[string]player.Player),
+		Players:            player.NewPlayers(),
 	}
 	sampleZone := Zone{
 		Id:    startZoneKey,
@@ -42,25 +46,25 @@ func NewWorld() *World {
 	return &w
 }
 
-func (w *World) getAllPlayers() []*Player {
+func (w *World) getAllPlayers() []player.Player {
 	return w.Players.All()
 }
 
 // Add this Player to the world
 // putting them in the start room
-func (w *World) addPlayer(player *Player) {
-	w.knownPlayersByName[player.Name] = player // TODO players
+func (w *World) addPlayer(player player.Player) {
+	w.knownPlayersByName[player.GetName()] = player // TODO players
 	w.Players.Add(player)
-	w.StartRoom.AddPlayer(player)
+	//w.StartRoom.AddPlayer(player)
 }
 
 // TODO remove player
 
-func (w *World) findPlayerByName(name string) *Player {
+func (w *World) findPlayerByName(name string) player.Player {
 	return w.knownPlayersByName[name]
 }
 
-func (w *World) handleIncomingMessage(message *IncomingMessage) {
+func (w *World) handleIncomingMessage(message *message.IncomingMessage) {
 	log.Printf("world incoming message: %s", message.Body)
 	switch messageType := message.Body["msg_type"]; messageType {
 	case "login":
@@ -83,7 +87,7 @@ func (w *World) handleIncomingMessage(message *IncomingMessage) {
 }
 
 func (w *World) SendToAllPlayers(message interface{}) {
-	w.Players.Iter(func(p *Player) {
+	w.Players.Iter(func(p player.Player) {
 		p.Send(message)
 	})
 }

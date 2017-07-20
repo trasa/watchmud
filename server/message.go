@@ -1,18 +1,9 @@
 package server
 
-type IncomingMessage struct {
-	Client Client
-	Player *Player
-	Body   map[string]string
-}
-
-func newIncomingMessage(client Client, body map[string]string) *IncomingMessage {
-	return &IncomingMessage{
-		Client: client,
-		Player: client.GetPlayer(),
-		Body:   body,
-	}
-}
+import (
+	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/player"
+)
 
 type Notification struct {
 	MessageType string `json:"msg_type"`
@@ -26,20 +17,20 @@ type Response struct {
 
 type LoginResponse struct {
 	Response
-	Player *Player `json:"player"`
+	Player player.Player `json:"player"`
 }
 
 // handle an incoming login message
-func (w *World) handleLogin(message *IncomingMessage) {
+func (w *World) handleLogin(message *message.IncomingMessage) {
 	// is this connection already authenticated?
 	// see if we can find an existing player ..
 	if message.Client.GetPlayer() != nil {
 		// you've already got one
 		message.Client.Send(LoginResponse{
-			Response:Response{
-				MessageType:"login_response",
-				Successful: false,
-				ResultCode: "PLAYER_ALREADY_ATTACHED",
+			Response: Response{
+				MessageType: "login_response",
+				Successful:  false,
+				ResultCode:  "PLAYER_ALREADY_ATTACHED",
 			},
 		})
 		return
@@ -85,8 +76,8 @@ type TellNotification struct {
 	Value string `json:"value"`
 }
 
-func (w *World) handleTell(message *IncomingMessage) {
-	fromName := message.Player.Name
+func (w *World) handleTell(message *message.IncomingMessage) {
+	fromName := message.Player.GetName()
 	toPlayer := w.findPlayerByName(message.Body["to"])
 	value := message.Body["value"]
 
@@ -117,14 +108,14 @@ type TellAllNotification struct {
 }
 
 // Tell everybody in the game something.
-func (w *World) handleTellAll(message *IncomingMessage) {
+func (w *World) handleTellAll(message *message.IncomingMessage) {
 	if val, ok := message.Body["value"]; ok {
 		w.SendToAllPlayers(TellAllNotification{
 			Notification: Notification{
 				MessageType: "tell_all_notification",
 			},
 			Value:  val,
-			Sender: message.Player.Name,
+			Sender: message.Player.GetName(),
 		})
 	} else {
 		message.Player.Send(Response{

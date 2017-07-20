@@ -1,13 +1,25 @@
-package server
+package player
 
 import (
-	"testing"
 	"log"
+	"testing"
 )
 
+type TestPlayer struct {
+	name string
+}
+
+func (*TestPlayer) Send(message interface{}) {
+	log.Printf("send to player %s", message)
+}
+
+func (this *TestPlayer) GetName() string {
+	return this.name
+}
+
 func TestPlayers_Add(t *testing.T) {
-	players := newPlayers()
-	p := &Player{}
+	players := NewPlayers()
+	p := &TestPlayer{}
 
 	players.Add(p)
 	if _, ok := players.players[p]; !ok {
@@ -16,8 +28,8 @@ func TestPlayers_Add(t *testing.T) {
 }
 
 func TestPlayers_Remove(t *testing.T) {
-	players := newPlayers()
-	p := &Player{}
+	players := NewPlayers()
+	p := &TestPlayer{}
 
 	players.Add(p)
 	players.Remove(p)
@@ -32,12 +44,12 @@ func TestPlayers_RemoveDoesntExist(t *testing.T) {
 }
 
 func TestPlayers_Iter(t *testing.T) {
-	players := newPlayers()
-	p := &Player{}
+	players := NewPlayers()
+	p := &TestPlayer{}
 
 	players.Add(p)
 	count := 0
-	players.Iter(func(p *Player) {
+	players.Iter(func(p Player) {
 		count++
 	})
 	if count != 1 {
@@ -46,12 +58,12 @@ func TestPlayers_Iter(t *testing.T) {
 }
 
 func TestPlayer_All(t *testing.T) {
-	players := newPlayers()
-	p := &Player{Name:"a"}
+	players := NewPlayers()
+	p := &TestPlayer{name: "a"}
 	players.Add(p)
 
 	all := players.All()
-	players.Add(&Player{Name:"b"})
+	players.Add(&TestPlayer{name: "b"})
 	log.Printf("addr of all: %p", &all)
 	if len(all) != 1 {
 		t.Error("expected len = 1")

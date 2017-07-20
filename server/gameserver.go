@@ -1,15 +1,17 @@
 package server
 
+import "github.com/trasa/watchmud/message"
+
 var GameServerInstance *GameServer
 
 type GameServer struct {
-	incomingMessageBuffer chan *IncomingMessage
+	incomingMessageBuffer chan *message.IncomingMessage
 	World                 *World
 }
 
 func newGameServer() *GameServer {
 	return &GameServer{
-		incomingMessageBuffer: make(chan *IncomingMessage),
+		incomingMessageBuffer: make(chan *message.IncomingMessage),
 		World: NewWorld(),
 	}
 }
@@ -29,4 +31,8 @@ func (server *GameServer) Run() {
 			server.World.handleIncomingMessage(message)
 		}
 	}
+}
+
+func (server *GameServer) Receive(message *message.IncomingMessage) {
+	server.incomingMessageBuffer <- message
 }
