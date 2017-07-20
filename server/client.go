@@ -53,7 +53,7 @@ func (c *WebClient) readPump() {
 		err := c.conn.ReadJSON(&body)
 		if err != nil {
 			log.Printf("read error: %s", err)
-			clients.remove(c)
+			// TODO terminate /disconnect player
 			return
 		}
 		log.Printf("message body: %s", body)
@@ -72,7 +72,7 @@ func (c *WebClient) writePump() {
 			err := c.conn.WriteJSON(message)
 			if err != nil {
 				log.Printf("Write Error: %v", err)
-				clients.remove(c)
+				// TODO terminate/disconnect player
 				return
 			}
 		case <-c.quit:
