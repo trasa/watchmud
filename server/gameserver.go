@@ -1,18 +1,21 @@
 package server
 
-import "github.com/trasa/watchmud/message"
+import (
+	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/world"
+)
 
 //var GameServerInstance *GameServer
 
 type GameServer struct {
 	incomingMessageBuffer chan *message.IncomingMessage
-	World                 *World
+	World                 *world.World
 }
 
 func NewGameServer() *GameServer {
 	return &GameServer{
 		incomingMessageBuffer: make(chan *message.IncomingMessage),
-		World: NewWorld(),
+		World: world.New(),
 	}
 }
 
@@ -28,7 +31,7 @@ func (server *GameServer) Start() {
 		select {
 		// TODO add in tick time
 		case message := <-server.incomingMessageBuffer:
-			server.World.handleIncomingMessage(message)
+			server.World.HandleIncomingMessage(message)
 		}
 	}
 }

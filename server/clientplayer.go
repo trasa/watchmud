@@ -7,7 +7,6 @@ import (
 
 type ClientPlayer struct {
 	Name   string
-	Room   *Room         `json:"-"`
 	Client client.Client `json:"-"`
 }
 
@@ -29,14 +28,14 @@ func (p *ClientPlayer) Send(msg interface{}) {
 }
 
 func (p *ClientPlayer) String() string {
-	return fmt.Sprintf("(Player Name='%s' in room '%v')", p.Name, p.Room)
+	return fmt.Sprintf("(Player Name='%s')", p.Name )
 }
-
-// TODO move to somewhere else?
-func (p *ClientPlayer) FindZone() *Zone {
-	if p.Room != nil {
-		return p.Room.Zone
-	}
-	// TODO return err?
-	return nil
-}
+//
+//// TODO move to somewhere else?
+//func (p *ClientPlayer) FindZone() *Zone {
+//	if p.Room != nil {
+//		return p.Room.Zone
+//	}
+//	// TODO return err?
+//	return nil
+//}

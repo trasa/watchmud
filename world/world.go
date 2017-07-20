@@ -1,4 +1,4 @@
-package server
+package world
 
 import (
 	"github.com/trasa/watchmud/message"
@@ -18,7 +18,7 @@ var startZoneKey = "sample"
 var startRoomKey = "start"
 
 // Constructor for World
-func NewWorld() *World {
+func New() *World {
 	// Build a very boring world.
 	w := World{
 		Zones:              make(map[string]*Zone),
@@ -53,7 +53,7 @@ func (w *World) getAllPlayers() []player.Player {
 
 // Add this Player to the world
 // putting them in the start room
-func (w *World) addPlayer(player player.Player) {
+func (w *World) AddPlayer(player player.Player) {
 	w.knownPlayersByName[player.GetName()] = player // TODO players
 	w.PlayerList.Add(player)
 	//w.StartRoom.AddPlayer(player)
@@ -65,7 +65,7 @@ func (w *World) findPlayerByName(name string) player.Player {
 	return w.knownPlayersByName[name]
 }
 
-func (w *World) handleIncomingMessage(message *message.IncomingMessage) {
+func (w *World) HandleIncomingMessage(message *message.IncomingMessage) {
 	log.Printf("world incoming message: %s", message.Body)
 	switch messageType := message.Body["msg_type"]; messageType {
 	case "login":

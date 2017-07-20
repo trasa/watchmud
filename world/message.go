@@ -1,4 +1,4 @@
-package server
+package world
 
 import (
 	"github.com/trasa/watchmud/message"
@@ -39,12 +39,12 @@ func (w *World) handleLogin(message *message.IncomingMessage) {
 			return
 		}
 	*/
-
+/*
 	// todo authentication and stuff
 	player := NewClientPlayer(message.Body["player_name"], message.Client)
 	message.Client.SetPlayer(player)
 	message.Player = player
-	w.addPlayer(player)
+	w.AddPlayer(player)
 	player.Send(response.LoginResponse{
 		Response: response.Response{
 			MessageType: "login_response",
@@ -53,6 +53,7 @@ func (w *World) handleLogin(message *message.IncomingMessage) {
 		},
 		Player: response.NewPlayerData(player.GetName()),
 	})
+	*/
 }
 
 func (w *World) handleTell(message *message.IncomingMessage) {
