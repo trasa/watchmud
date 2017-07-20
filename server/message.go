@@ -41,7 +41,7 @@ func (w *World) handleLogin(message *message.IncomingMessage) {
 	*/
 
 	// todo authentication and stuff
-	player := NewPlayer(message.Body["player_name"], message.Client)
+	player := NewClientPlayer(message.Body["player_name"], message.Client)
 	message.Client.SetPlayer(player)
 	message.Player = player
 	w.addPlayer(player)

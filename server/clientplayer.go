@@ -12,7 +12,7 @@ type ClientPlayer struct {
 }
 
 // Create a new player and set it up to work with this client
-func NewPlayer(name string, client client.Client) *ClientPlayer {
+func NewClientPlayer(name string, client client.Client) *ClientPlayer {
 	p := ClientPlayer{
 		Name:   name,
 		Client: client, // address of interface
