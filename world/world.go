@@ -68,9 +68,6 @@ func (w *World) findPlayerByName(name string) player.Player {
 func (w *World) HandleIncomingMessage(message *message.IncomingMessage) {
 	log.Printf("world incoming message: %s", message.Body)
 	switch messageType := message.Body["msg_type"]; messageType {
-	case "login":
-		log.Printf("login received: %s", message.Body)
-		w.handleLogin(message)
 	case "tell":
 		log.Printf("tell: %s", message.Body)
 		w.handleTell(message)
