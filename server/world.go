@@ -3,8 +3,8 @@ package server
 import (
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/player"
-	"log"
 	"github.com/trasa/watchmud/response"
+	"log"
 )
 
 type World struct {
