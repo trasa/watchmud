@@ -18,7 +18,7 @@ func (this *TestPlayer) GetName() string {
 }
 
 func TestPlayers_Add(t *testing.T) {
-	players := NewPlayers()
+	players := NewList()
 	p := &TestPlayer{}
 
 	players.Add(p)
@@ -28,7 +28,7 @@ func TestPlayers_Add(t *testing.T) {
 }
 
 func TestPlayers_Remove(t *testing.T) {
-	players := NewPlayers()
+	players := NewList()
 	p := &TestPlayer{}
 
 	players.Add(p)
@@ -44,7 +44,7 @@ func TestPlayers_RemoveDoesntExist(t *testing.T) {
 }
 
 func TestPlayers_Iter(t *testing.T) {
-	players := NewPlayers()
+	players := NewList()
 	p := &TestPlayer{}
 
 	players.Add(p)
@@ -58,7 +58,7 @@ func TestPlayers_Iter(t *testing.T) {
 }
 
 func TestPlayer_All(t *testing.T) {
-	players := NewPlayers()
+	players := NewList()
 	p := &TestPlayer{name: "a"}
 	players.Add(p)
 

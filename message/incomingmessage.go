@@ -11,7 +11,7 @@ type IncomingMessage struct {
 	Body   map[string]string
 }
 
-func NewIncomingMessage(client client.Client, body map[string]string) *IncomingMessage {
+func New(client client.Client, body map[string]string) *IncomingMessage {
 	return &IncomingMessage{
 		Client: client,
 		Player: client.GetPlayer(),

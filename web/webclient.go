@@ -60,7 +60,7 @@ func (c *WebClient) readPump() {
 		}
 		log.Printf("message body: %s", body)
 		//GameServerInstance.incomingMessageBuffer <- message.NewIncomingMessage(c, body)
-		gameServerInstance.Receive(message.NewIncomingMessage(c, body))
+		gameServerInstance.Receive(message.New(c, body))
 	}
 
 }
