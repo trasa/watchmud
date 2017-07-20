@@ -33,6 +33,19 @@ type LoginResponse struct {
 func (w *World) handleLogin(message *IncomingMessage) {
 	// is this connection already authenticated?
 	// see if we can find an existing player ..
+	if message.Client.GetPlayer() != nil {
+		// you've already got one
+		message.Client.Send(LoginResponse{
+			Response:Response{
+				MessageType:"login_response",
+				Successful: false,
+				ResultCode: "PLAYER_ALREADY_ATTACHED",
+			},
+		})
+		return
+	}
+	// what if player is logged in on a different client?
+	// TODO
 	/*
 		p := FindPlayerByClient(message.Client)
 		if p != nil {
