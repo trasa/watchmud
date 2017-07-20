@@ -6,7 +6,6 @@ import (
 	"github.com/trasa/watchmud/response"
 )
 
-//var GameServerInstance *GameServer
 
 type GameServer struct {
 	incomingMessageBuffer chan *message.IncomingMessage
@@ -20,26 +19,21 @@ func NewGameServer() *GameServer {
 	}
 }
 
-// Initialize the game server
-//func Init() {
-//	GameServerInstance = newGameServer()
-//}
-
 func (server *GameServer) Start() {
 	// this is the loop that handles incoming requests
 	// needs to be organized around TICKs
 	for {
 		select {
 		// TODO add in tick time
-		case message := <-server.incomingMessageBuffer:
-			switch messageType := message.Body["msg_type"]; messageType {
+		case msg := <-server.incomingMessageBuffer:
+			switch messageType := msg.Body["msg_type"]; messageType {
 			case "login":
 				// login is special case, handled by server first and then
 				// sent down to world for further initialization
-				server.handleLogin(message) // TODO error handling
+				server.handleLogin(msg) // TODO error handling
 
 			default:
-				server.World.HandleIncomingMessage(message)
+				server.World.HandleIncomingMessage(msg)
 			}
 		}
 	}
