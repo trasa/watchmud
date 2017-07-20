@@ -6,6 +6,7 @@ import (
 	"github.com/trasa/watchmud/player"
 	"log"
 	"testing"
+	"github.com/trasa/watchmud/response"
 )
 
 // see https://play.golang.org/p/zPLyr3ZOM0 (first attempt)
@@ -68,7 +69,7 @@ func TestHandleTell_success(t *testing.T) {
 	if len(receiverPlayer.client.(*TestClient).tosend) != 1 {
 		t.Errorf("expected receiver to get a message %s", receiverPlayer.client.(*TestClient).tosend)
 	}
-	recdMessage := receiverPlayer.client.(*TestClient).tosend[0].(TellNotification)
+	recdMessage := receiverPlayer.client.(*TestClient).tosend[0].(response.TellNotification)
 	if recdMessage.From != senderPlayer.name {
 		t.Errorf("Didn't get expected senderPlayer.Name: %s", recdMessage.From)
 	}
@@ -83,7 +84,7 @@ func TestHandleTell_success(t *testing.T) {
 	if len(senderPlayer.client.(*TestClient).tosend) != 1 {
 		t.Errorf("expected sender to get a response %s", senderPlayer.client.(*TestClient).tosend)
 	}
-	senderResponse := senderPlayer.client.(*TestClient).tosend[0].(Response)
+	senderResponse := senderPlayer.client.(*TestClient).tosend[0].(response.Response)
 	if senderResponse.MessageType != "tell" {
 		t.Errorf("expected sender response tell: %s", senderResponse.MessageType)
 	}
@@ -117,7 +118,7 @@ func TestHandleTell_receiverNotFound(t *testing.T) {
 		t.Error("expected sender to get a response")
 	}
 
-	senderResponse := senderPlayer.client.(*TestClient).tosend[0].(Response)
+	senderResponse := senderPlayer.client.(*TestClient).tosend[0].(response.Response)
 	if senderResponse.MessageType != "tell" {
 		t.Errorf("sender response message type: %s", senderResponse.MessageType)
 	}

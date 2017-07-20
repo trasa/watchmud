@@ -2,23 +2,8 @@ package server
 
 import (
 	"github.com/trasa/watchmud/message"
-	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/response"
 )
-
-type Notification struct {
-	MessageType string `json:"msg_type"`
-}
-
-type Response struct {
-	MessageType string `json:"msg_type"`
-	Successful  bool   `json:"success"`
-	ResultCode  string `json:"result_code"`
-}
-
-type LoginResponse struct {
-	Response
-	Player player.Player `json:"player"`
-}
 
 // handle an incoming login message
 func (w *World) handleLogin(message *message.IncomingMessage) {
@@ -26,8 +11,8 @@ func (w *World) handleLogin(message *message.IncomingMessage) {
 	// see if we can find an existing player ..
 	if message.Client.GetPlayer() != nil {
 		// you've already got one
-		message.Client.Send(LoginResponse{
-			Response: Response{
+		message.Client.Send(response.LoginResponse{
+			Response: response.Response{
 				MessageType: "login_response",
 				Successful:  false,
 				ResultCode:  "PLAYER_ALREADY_ATTACHED",
@@ -60,20 +45,14 @@ func (w *World) handleLogin(message *message.IncomingMessage) {
 	message.Client.SetPlayer(player)
 	message.Player = player
 	w.addPlayer(player)
-	player.Send(LoginResponse{
-		Response: Response{
+	player.Send(response.LoginResponse{
+		Response: response.Response{
 			MessageType: "login_response",
 			Successful:  true,
 			ResultCode:  "OK",
 		},
-		Player: player,
+		Player: response.NewPlayerData(player.GetName()),
 	})
-}
-
-type TellNotification struct {
-	Notification
-	From  string `json:"from"`
-	Value string `json:"value"`
 }
 
 func (w *World) handleTell(message *message.IncomingMessage) {
@@ -82,18 +61,18 @@ func (w *World) handleTell(message *message.IncomingMessage) {
 	value := message.Body["value"]
 
 	if toPlayer == nil {
-		message.Player.Send(Response{
+		message.Player.Send(response.Response{
 			MessageType: "tell",
 			Successful:  false,
 			ResultCode:  "TO_PLAYER_NOT_FOUND",
 		})
 	} else {
-		toPlayer.Send(TellNotification{
-			Notification: Notification{MessageType: "tell"},
+		toPlayer.Send(response.TellNotification{
+			Notification: response.Notification{MessageType: "tell"},
 			From:         fromName,
 			Value:        value,
 		})
-		message.Player.Send(Response{
+		message.Player.Send(response.Response{
 			MessageType: "tell",
 			Successful:  true,
 			ResultCode:  "OK",
@@ -101,24 +80,18 @@ func (w *World) handleTell(message *message.IncomingMessage) {
 	}
 }
 
-type TellAllNotification struct {
-	Notification
-	Value  string `json:"value"`
-	Sender string `json:"sender"`
-}
-
 // Tell everybody in the game something.
 func (w *World) handleTellAll(message *message.IncomingMessage) {
 	if val, ok := message.Body["value"]; ok {
-		w.SendToAllPlayers(TellAllNotification{
-			Notification: Notification{
+		w.SendToAllPlayers(response.TellAllNotification{
+			Notification: response.Notification{
 				MessageType: "tell_all_notification",
 			},
 			Value:  val,
 			Sender: message.Player.GetName(),
 		})
 	} else {
-		message.Player.Send(Response{
+		message.Player.Send(response.Response{
 			MessageType: "tell_all",
 			Successful:  false,
 			ResultCode:  "NO_VALUE",

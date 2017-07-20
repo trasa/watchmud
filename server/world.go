@@ -4,6 +4,7 @@ import (
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/player"
 	"log"
+	"github.com/trasa/watchmud/response"
 )
 
 type World struct {
@@ -78,7 +79,7 @@ func (w *World) handleIncomingMessage(message *message.IncomingMessage) {
 		w.handleTellAll(message)
 	default:
 		log.Printf("UNHANDLED messageType: %s, body %s", messageType, message.Body)
-		message.Client.Send(Response{
+		message.Client.Send(response.Response{
 			MessageType: messageType,
 			Successful:  false,
 			ResultCode:  "UNKNOWN_MESSAGE_TYPE",
