@@ -33,21 +33,23 @@ type LoginResponse struct {
 func (w *World) handleLogin(message *IncomingMessage) {
 	// is this connection already authenticated?
 	// see if we can find an existing player ..
-	p := FindPlayerByClient(message.Client)
-	if p != nil {
-		// already authenticated, can't login again
-		// TODO
-		// note that this isn't really working; the same username can log on twice
-		// instead the old player should be kicked and the new player take over
-		p.Send(LoginResponse{
-			Response: Response{
-				MessageType: "login_response",
-				Successful:  false,
-				ResultCode:  "ALREADY_AUTHENTICATED",
-			},
-		})
-		return
-	}
+	/*
+		p := FindPlayerByClient(message.Client)
+		if p != nil {
+			// already authenticated, can't login again
+			// TODO
+			// note that this isn't really working; the same username can log on twice
+			// instead the old player should be kicked and the new player take over
+			p.Send(LoginResponse{
+				Response: Response{
+					MessageType: "login_response",
+					Successful:  false,
+					ResultCode:  "ALREADY_AUTHENTICATED",
+				},
+			})
+			return
+		}
+	*/
 
 	// todo authentication and stuff
 	player := NewPlayer(message.Body["player_name"], message.Client)

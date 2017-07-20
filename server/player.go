@@ -4,15 +4,6 @@ import (
 	"fmt"
 )
 
-// TODO move to world
-var playersByClient = make(map[Client]*Player)
-
-// Locate the player who is attached to this client
-// TODO move to world
-func FindPlayerByClient(c Client) *Player {
-	return playersByClient[c]
-}
-
 type Player struct {
 	Name   string
 	Room   *Room  `json:"-"`
