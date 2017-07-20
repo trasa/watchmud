@@ -52,12 +52,16 @@
                     handleLoginResponse(msg);
                     break;
 
+                case "tell_all":
+                    handleTellAll(msg);
+                    break;
+
                 case "tell_all_notification":
                     handleTellAllNotification(msg);
                     break;
 
                 default:
-                    displayMessage("Unknown message received: " + msg);
+                    displayMessage("Unknown message received: " + JSON.stringify(msg));
                     break;
             }
         };
@@ -65,6 +69,14 @@
         var handleLoginResponse = function(msg) {
             displayMessage("Login Response: Success=" + msg["success"] + " " + msg["result_code"]);
             displayMessage("Player is: " + JSON.stringify(msg["player"]));
+        };
+
+        var handleTellAll = function(msg) {
+            if (msg["success"]) {
+                displayMessage("sent.");
+            } else {
+                displayMessage("Tell All failed: " + msg["result_code"]);
+            }
         };
 
         var handleTellAllNotification = function(msg) {
