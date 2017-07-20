@@ -1,6 +1,9 @@
 package server
 
-import "testing"
+import (
+	"testing"
+	"log"
+)
 
 func TestPlayers_Add(t *testing.T) {
 	players := newPlayers()
@@ -24,6 +27,10 @@ func TestPlayers_Remove(t *testing.T) {
 	}
 }
 
+func TestPlayers_RemoveDoesntExist(t *testing.T) {
+	// TODO
+}
+
 func TestPlayers_Iter(t *testing.T) {
 	players := newPlayers()
 	p := &Player{}
@@ -36,5 +43,26 @@ func TestPlayers_Iter(t *testing.T) {
 	if count != 1 {
 		t.Errorf("found %d expected 1", count)
 	}
+}
 
+func TestPlayer_All(t *testing.T) {
+	players := newPlayers()
+	p := &Player{Name:"a"}
+	players.Add(p)
+
+	all := players.All()
+	players.Add(&Player{Name:"b"})
+	log.Printf("addr of all: %p", &all)
+	if len(all) != 1 {
+		t.Error("expected len = 1")
+	}
+
+	moreAll := players.All()
+	log.Printf("addr of moreAll: %p", &moreAll)
+	if len(all) != 1 {
+		t.Error("still expected len 1")
+	}
+	if len(moreAll) != 2 {
+		t.Error("expected len = 2")
+	}
 }

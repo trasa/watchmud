@@ -25,6 +25,18 @@ func (ps *Players) Remove(p *Player) {
 	delete(ps.players, p)
 }
 
+func (ps *Players) All() []*Player {
+	ps.Lock()
+	defer ps.Unlock()
+	// copy the keys into a new slice
+	// and return that slice
+	keys := []*Player{}
+	for p := range ps.players {
+		keys = append(keys, p)
+	}
+	return keys
+}
+
 func (ps *Players) Iter(routine func(*Player)) {
 	ps.Lock()
 	defer ps.Unlock()

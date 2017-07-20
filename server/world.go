@@ -42,11 +42,8 @@ func NewWorld() *World {
 	return &w
 }
 
-func (w *World) getAllPlayers() (result []*Player) {
-	for _, v := range w.knownPlayersByName {
-		result = append(result, v)
-	}
-	return result
+func (w *World) getAllPlayers() []*Player {
+	return w.Players.All()
 }
 
 // Add this Player to the world
