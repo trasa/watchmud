@@ -49,6 +49,12 @@ func (w *World) getAllPlayers() []player.Player {
 	return w.PlayerList.All()
 }
 
+func (w *World) addPlayers(player ...player.Player) {
+	for _, p := range player {
+		w.AddPlayer(p)
+	}
+}
+
 // Add this Player to the world
 // putting them in the start room
 func (w *World) AddPlayer(player player.Player) {
@@ -81,8 +87,18 @@ func (w *World) HandleIncomingMessage(message *message.IncomingMessage) {
 	}
 }
 
+// Send a message to all players in the world.
 func (w *World) SendToAllPlayers(message interface{}) {
 	w.PlayerList.Iter(func(p player.Player) {
 		p.Send(message)
+	})
+}
+
+// Send a message to all players in the world except for one.
+func (w *World) SendToAllPlayersExcept(exception player.Player, message interface{}) {
+	w.PlayerList.Iter(func(p player.Player) {
+		if exception != p {
+			p.Send(message)
+		}
 	})
 }

@@ -28,10 +28,10 @@ func TestHandleTell_success(t *testing.T) {
 	// assert
 	// assert tell to receiver
 
-	if len(receiverPlayer.client.(*TestClient).tosend) != 1 {
-		t.Errorf("expected receiver to get a message %s", receiverPlayer.client.(*TestClient).tosend)
+	if len(receiverPlayer.sent) != 1 {
+		t.Errorf("expected receiver to get a message %s", receiverPlayer.sent)
 	}
-	recdMessage := receiverPlayer.client.(*TestClient).tosend[0].(response.TellNotification)
+	recdMessage := receiverPlayer.sent[0].(response.TellNotification)
 	if recdMessage.From != senderPlayer.name {
 		t.Errorf("Didn't get expected senderPlayer.Name: %s", recdMessage.From)
 	}
@@ -43,10 +43,10 @@ func TestHandleTell_success(t *testing.T) {
 	}
 
 	// assert tell-response to sender
-	if len(senderPlayer.client.(*TestClient).tosend) != 1 {
-		t.Errorf("expected sender to get a response %s", senderPlayer.client.(*TestClient).tosend)
+	if len(senderPlayer.sent) != 1 {
+		t.Errorf("expected sender to get a response %s", senderPlayer.sent)
 	}
-	senderResponse := senderPlayer.client.(*TestClient).tosend[0].(response.Response)
+	senderResponse := senderPlayer.sent[0].(response.Response)
 	if senderResponse.MessageType != "tell" {
 		t.Errorf("expected sender response tell: %s", senderResponse.MessageType)
 	}
@@ -76,11 +76,11 @@ func TestHandleTell_receiverNotFound(t *testing.T) {
 	w.handleTell(&msg)
 
 	// assert tell-response to sender
-	if len(senderPlayer.client.(*TestClient).tosend) != 1 {
+	if len(senderPlayer.sent) != 1 {
 		t.Error("expected sender to get a response")
 	}
 
-	senderResponse := senderPlayer.client.(*TestClient).tosend[0].(response.Response)
+	senderResponse := senderPlayer.sent[0].(response.Response)
 	if senderResponse.MessageType != "tell" {
 		t.Errorf("sender response message type: %s", senderResponse.MessageType)
 	}
