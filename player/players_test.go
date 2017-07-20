@@ -40,7 +40,12 @@ func TestPlayers_Remove(t *testing.T) {
 }
 
 func TestPlayers_RemoveDoesntExist(t *testing.T) {
-	// TODO
+	players := NewList()
+	p := &TestPlayer{}
+	players.Remove(p)
+	if _, ok := players.players[p]; ok {
+		t.Error("Player never existed in list but now it exists?!")
+	}
 }
 
 func TestPlayers_Iter(t *testing.T) {
