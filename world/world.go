@@ -79,7 +79,7 @@ func (w *World) HandleIncomingMessage(message *message.IncomingMessage) {
 		w.handleTellAll(message)
 	default:
 		log.Printf("UNHANDLED messageType: %s, body %s", messageType, message.Body)
-		message.Client.Send(response.Response{
+		message.Player.Send(response.Response{
 			MessageType: messageType,
 			Successful:  false,
 			ResultCode:  "UNKNOWN_MESSAGE_TYPE",

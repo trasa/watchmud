@@ -1,6 +1,7 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/response"
 	"log"
 )
 
@@ -17,11 +18,19 @@ func NewTestPlayer(name string) *TestPlayer {
 	return p
 }
 
-func (this *TestPlayer) Send(msg interface{}) {
+func (p *TestPlayer) Send(msg interface{}) {
 	log.Printf("sending for player %s", msg)
-	this.sent = append(this.sent, msg)
+	p.sent = append(p.sent, msg)
 }
 
-func (this *TestPlayer) GetName() string {
-	return this.name
+func (p *TestPlayer) GetName() string {
+	return p.name
+}
+
+func (p *TestPlayer) SentMessageCount() int {
+	return len(p.sent)
+}
+
+func (p *TestPlayer) GetSentResponse(i int) response.Response {
+	return p.sent[i].(response.Response)
 }
