@@ -1,76 +1,15 @@
 package world
 
 import (
-	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/message"
-	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/response"
-	"log"
 	"testing"
 )
-
-// see https://play.golang.org/p/zPLyr3ZOM0 (first attempt)
-// then see https://play.golang.org/p/z5athD5fV3 (client is an interface, but now pointer woes)
-
-// create a new test world
-func NewTestWorld() *World {
-	return &World{
-		knownPlayersByName: make(map[string]player.Player),
-	}
-}
-
-type TestPlayer struct {
-	name   string
-	client client.Client
-}
-
-func (this *TestPlayer) Send(message interface{}) {
-	log.Printf("sending for player %s", message)
-	this.client.Send(message)
-}
-
-func (this *TestPlayer) GetName() string {
-	return this.name
-}
-
-// create a new test player that can track sent messages through 'sentmessages'
-func NewTestPlayer(name string) *TestPlayer {
-	c := &TestClient{}
-	p := &TestPlayer{
-		name:   name,
-		client: c,
-	}
-	c.Player = p
-	return p
-}
-
-type TestClient struct {
-	Player player.Player
-	tosend []interface{}
-	open   bool
-}
-
-func (c *TestClient) Send(msg interface{}) {
-	log.Printf("sending fake! %s p is %s", msg, c.Player.GetName())
-	c.tosend = append(c.tosend, msg)
-}
-
-func (c *TestClient) GetPlayer() player.Player {
-	return c.Player
-}
-
-func (c *TestClient) SetPlayer(p player.Player) {
-	c.Player = p
-}
-
-func (c *TestClient) Close() {
-	c.open = false
-}
 
 // tell receiver about it
 func TestHandleTell_success(t *testing.T) {
 	// arrange
-	w := NewTestWorld()
+	w := newTestWorld()
 	senderPlayer := NewTestPlayer("sender")
 	receiverPlayer := NewTestPlayer("receiver")
 	w.knownPlayersByName[receiverPlayer.name] = receiverPlayer
@@ -121,7 +60,7 @@ func TestHandleTell_success(t *testing.T) {
 
 func TestHandleTell_receiverNotFound(t *testing.T) {
 	// arrange
-	w := NewTestWorld()
+	w := newTestWorld()
 	senderPlayer := NewTestPlayer("sender")
 	// note: receiver doesn't exist
 	w.knownPlayersByName[senderPlayer.name] = senderPlayer

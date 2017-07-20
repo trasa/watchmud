@@ -1,8 +1,18 @@
 package world
 
-import "testing"
+import (
+	"github.com/trasa/watchmud/player"
+	"testing"
+)
 
 // TODO this breaks because of channels!
+
+// create a new test world
+func newTestWorld() *World {
+	return &World{
+		knownPlayersByName: make(map[string]player.Player),
+	}
+}
 
 func TestGameServer_handleMessage_unknownMessageType(t *testing.T) {
 	t.Skip("channels are broken here")
