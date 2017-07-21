@@ -8,6 +8,7 @@ import (
 type IncomingMessage struct {
 	Client client.Client
 	Player player.Player
+	//Body   map[string]string
 	Body   map[string]string
 }
 
