@@ -5,9 +5,10 @@ import (
 )
 
 func (w *World) handleTell(msg *message.IncomingMessage) {
+	tellRequest := msg.Request.(message.TellRequest)
 	fromName := msg.Player.GetName()
-	toPlayer := w.findPlayerByName(msg.Body["to"])
-	value := msg.Body["value"]
+	toPlayer := w.findPlayerByName(tellRequest.ReceiverPlayerName)
+	value := tellRequest.Value
 
 	if toPlayer == nil {
 		msg.Player.Send(message.Response{

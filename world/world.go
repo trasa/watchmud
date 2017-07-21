@@ -68,16 +68,14 @@ func (w *World) findPlayerByName(name string) player.Player {
 }
 
 func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
-	log.Printf("world incoming message: %s", msg.Body)
-	switch messageType := msg.Body["msg_type"]; messageType {
+	log.Printf("world incoming message: %s", msg.Request)
+	switch messageType := msg.Request.GetMessageType(); messageType {
 	case "tell":
-		log.Printf("tell: %s", msg.Body)
 		w.handleTell(msg)
 	case "tell_all":
-		log.Printf("Tell All: %s", msg)
 		w.handleTellAll(msg)
 	default:
-		log.Printf("UNHANDLED messageType: %s, body %s", messageType, msg.Body)
+		log.Printf("UNHANDLED messageType: %s, body %s", messageType, msg.Request)
 		msg.Player.Send(message.Response{
 			MessageType: messageType,
 			Successful:  false,

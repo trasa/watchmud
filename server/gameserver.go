@@ -24,7 +24,7 @@ func (server *GameServer) Start() {
 		select {
 		// TODO add in tick time
 		case msg := <-server.incomingMessageBuffer:
-			switch messageType := msg.Body["msg_type"]; messageType {
+			switch messageType := msg.Request.GetMessageType(); messageType {
 			case "login":
 				// login is special case, handled by server first and then
 				// sent down to world for further initialization
@@ -76,7 +76,7 @@ func (server *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO er
 	*/
 
 	// todo authentication and stuff
-	player := NewClientPlayer(msg.Body["player_name"], msg.Client)
+	player := NewClientPlayer(msg.Request.(message.LoginRequest).PlayerName, msg.Client)
 	msg.Client.SetPlayer(player)
 	msg.Player = player
 

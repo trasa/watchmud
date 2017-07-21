@@ -6,16 +6,15 @@ import (
 )
 
 type IncomingMessage struct {
-	Client client.Client
-	Player player.Player
-	//Body   map[string]string
-	Body   map[string]string
+	Client  client.Client
+	Player  player.Player
+	Request Request
 }
 
-func New(client client.Client, body map[string]string) *IncomingMessage {
+func New(client client.Client, request Request) *IncomingMessage {
 	return &IncomingMessage{
-		Client: client,
-		Player: client.GetPlayer(),
-		Body:   body,
+		Client:  client,
+		Player:  client.GetPlayer(),
+		Request: request,
 	}
 }

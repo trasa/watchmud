@@ -5,4 +5,3 @@ type Response struct {
 	Successful  bool   `json:"success"`
 	ResultCode  string `json:"result_code"`
 }
-

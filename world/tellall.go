@@ -6,12 +6,13 @@ import (
 
 // Tell everybody in the game something.
 func (w *World) handleTellAll(msg *message.IncomingMessage) {
-	if val, ok := msg.Body["value"]; ok {
+	tellAllRequest := msg.Request.(message.TellAllRequest)
+	if tellAllRequest.Value != "" {
 		w.SendToAllPlayersExcept(msg.Player, message.TellAllNotification{
 			Notification: message.Notification{
 				MessageType: "tell_all_notification",
 			},
-			Value:  val,
+			Value:  tellAllRequest.Value,
 			Sender: msg.Player.GetName(),
 		})
 		msg.Player.Send(message.Response{

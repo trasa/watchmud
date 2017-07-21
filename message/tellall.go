@@ -1,6 +1,5 @@
 package message
 
-
 type TellAllRequest struct {
 	Request
 	Value string `json:"value"`
@@ -15,4 +14,3 @@ type TellAllNotification struct {
 	Value  string `json:"value"`
 	Sender string `json:"sender"`
 }
-

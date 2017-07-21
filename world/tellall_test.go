@@ -14,9 +14,11 @@ func TestHandleTellAll_success(t *testing.T) {
 
 	msg := message.IncomingMessage{
 		Player: senderPlayer,
-		Body:   make(map[string]string),
+		Request: message.TellAllRequest{
+			Request: message.RequestBase{MessageType: "tell_all"},
+			Value:   "hi",
+		},
 	}
-	msg.Body["value"] = "hi"
 
 	w.handleTellAll(&msg)
 
@@ -48,10 +50,11 @@ func TestHandleTellAll_noValue(t *testing.T) {
 
 	msg := message.IncomingMessage{
 		Player: senderPlayer,
-		Body:   make(map[string]string),
+		Request: message.TellAllRequest{
+			Request: message.RequestBase{MessageType: "tell_all"},
+			Value:   "",
+		},
 	}
-	// no value:
-	//	msg.Body["value"] = ""
 
 	w.handleTellAll(&msg)
 

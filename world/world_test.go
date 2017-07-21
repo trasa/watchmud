@@ -21,8 +21,8 @@ func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
 
 	msg := message.IncomingMessage{
 		Player: p,
-		Body: map[string]string{
-			"msg_type": "asdfasdf",
+		Request: &message.RequestBase{
+			MessageType: "asdfasdf",
 		},
 	}
 	w.HandleIncomingMessage(&msg)
@@ -35,4 +35,3 @@ func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
 		t.Errorf("unexpected result code: %s", resp.ResultCode)
 	}
 }
-

@@ -16,10 +16,12 @@ func TestHandleTell_success(t *testing.T) {
 
 	msg := message.IncomingMessage{
 		Player: senderPlayer,
-		Body:   make(map[string]string),
+		Request: message.TellRequest{
+			Request:            message.RequestBase{MessageType: "tell"},
+			ReceiverPlayerName: "receiver",
+			Value:              "hi",
+		},
 	}
-	msg.Body["to"] = "receiver"
-	msg.Body["value"] = "hi"
 
 	// act
 	w.handleTell(&msg)
@@ -66,10 +68,12 @@ func TestHandleTell_receiverNotFound(t *testing.T) {
 
 	msg := message.IncomingMessage{
 		Player: senderPlayer,
-		Body:   make(map[string]string),
+		Request: message.TellRequest{
+			Request:            message.RequestBase{MessageType: "tell"},
+			ReceiverPlayerName: "receiver",
+			Value:              "hi",
+		},
 	}
-	msg.Body["to"] = "receiver"
-	msg.Body["value"] = "hi"
 
 	// act
 	w.handleTell(&msg)

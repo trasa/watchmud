@@ -52,14 +52,18 @@ func (c *Client) readPump() {
 
 	for {
 		body := make(map[string]string)
-		err := c.conn.ReadJSON(&body)
-		if err != nil {
+		if err := c.conn.ReadJSON(&body); err != nil {
 			log.Printf("read error: %s", err)
-			// TODO terminate /disconnect player
+			// TODO terminate / disconnect player
 			return
 		}
 		log.Printf("message body: %s", body)
-		gameServerInstance.Receive(message.New(c, body))
+		request, err := translateToRequest(body)
+		if err != nil {
+			log.Printf("translation error: %s", err)
+			return // TODO terminate / disconnect player
+		}
+		gameServerInstance.Receive(message.New(c, request))
 	}
 }
 

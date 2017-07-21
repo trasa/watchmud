@@ -1,8 +1,8 @@
 package world
 
 import (
-	"log"
 	"github.com/trasa/watchmud/message"
+	"log"
 )
 
 type TestPlayer struct {
