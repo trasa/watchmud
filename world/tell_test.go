@@ -2,7 +2,6 @@ package world
 
 import (
 	"github.com/trasa/watchmud/message"
-	"github.com/trasa/watchmud/response"
 	"testing"
 )
 
@@ -31,7 +30,7 @@ func TestHandleTell_success(t *testing.T) {
 	if len(receiverPlayer.sent) != 1 {
 		t.Errorf("expected receiver to get a message %s", receiverPlayer.sent)
 	}
-	recdMessage := receiverPlayer.sent[0].(response.TellNotification)
+	recdMessage := receiverPlayer.sent[0].(message.TellNotification)
 	if recdMessage.From != senderPlayer.name {
 		t.Errorf("Didn't get expected senderPlayer.Name: %s", recdMessage.From)
 	}
@@ -46,7 +45,7 @@ func TestHandleTell_success(t *testing.T) {
 	if len(senderPlayer.sent) != 1 {
 		t.Errorf("expected sender to get a response %s", senderPlayer.sent)
 	}
-	senderResponse := senderPlayer.sent[0].(response.Response)
+	senderResponse := senderPlayer.sent[0].(message.Response)
 	if senderResponse.MessageType != "tell" {
 		t.Errorf("expected sender response tell: %s", senderResponse.MessageType)
 	}
@@ -80,7 +79,7 @@ func TestHandleTell_receiverNotFound(t *testing.T) {
 		t.Error("expected sender to get a response")
 	}
 
-	senderResponse := senderPlayer.sent[0].(response.Response)
+	senderResponse := senderPlayer.sent[0].(message.Response)
 	if senderResponse.MessageType != "tell" {
 		t.Errorf("sender response message type: %s", senderResponse.MessageType)
 	}

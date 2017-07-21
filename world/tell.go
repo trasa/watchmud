@@ -2,27 +2,26 @@ package world
 
 import (
 	"github.com/trasa/watchmud/message"
-	"github.com/trasa/watchmud/response"
 )
 
-func (w *World) handleTell(message *message.IncomingMessage) {
-	fromName := message.Player.GetName()
-	toPlayer := w.findPlayerByName(message.Body["to"])
-	value := message.Body["value"]
+func (w *World) handleTell(msg *message.IncomingMessage) {
+	fromName := msg.Player.GetName()
+	toPlayer := w.findPlayerByName(msg.Body["to"])
+	value := msg.Body["value"]
 
 	if toPlayer == nil {
-		message.Player.Send(response.Response{
+		msg.Player.Send(message.Response{
 			MessageType: "tell",
 			Successful:  false,
 			ResultCode:  "TO_PLAYER_NOT_FOUND",
 		})
 	} else {
-		toPlayer.Send(response.TellNotification{
-			Notification: response.Notification{MessageType: "tell"},
+		toPlayer.Send(message.TellNotification{
+			Notification: message.Notification{MessageType: "tell"},
 			From:         fromName,
 			Value:        value,
 		})
-		message.Player.Send(response.Response{
+		msg.Player.Send(message.Response{
 			MessageType: "tell",
 			Successful:  true,
 			ResultCode:  "OK",

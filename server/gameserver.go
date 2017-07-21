@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/trasa/watchmud/message"
-	"github.com/trasa/watchmud/response"
 	"github.com/trasa/watchmud/world"
 )
 
@@ -47,8 +46,8 @@ func (server *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO er
 	// see if we can find an existing player ..
 	if msg.Client.GetPlayer() != nil {
 		// you've already got one
-		msg.Client.Send(response.LoginResponse{
-			Response: response.Response{
+		msg.Client.Send(message.LoginResponse{
+			Response: message.Response{
 				MessageType: "login_response",
 				Successful:  false,
 				ResultCode:  "PLAYER_ALREADY_ATTACHED",
@@ -83,12 +82,12 @@ func (server *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO er
 
 	// add player to world
 	server.World.AddPlayer(player)
-	player.Send(response.LoginResponse{
-		Response: response.Response{
+	player.Send(message.LoginResponse{
+		Response: message.Response{
 			MessageType: "login_response",
 			Successful:  true,
 			ResultCode:  "OK",
 		},
-		Player: response.NewPlayerData(player.GetName()),
+		Player: message.NewPlayerData(player.GetName()),
 	})
 }

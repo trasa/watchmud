@@ -2,7 +2,6 @@ package world
 
 import (
 	"github.com/trasa/watchmud/message"
-	"github.com/trasa/watchmud/response"
 	"testing"
 )
 
@@ -32,7 +31,7 @@ func TestHandleTellAll_success(t *testing.T) {
 	if len(senderPlayer.sent) != 1 {
 		t.Fatalf("sender received wrong number of messages: %d", len(senderPlayer.sent))
 	}
-	senderResponse := senderPlayer.sent[0].(response.Response)
+	senderResponse := senderPlayer.sent[0].(message.Response)
 	if senderResponse.MessageType != "tell_all" {
 		t.Errorf("incorrect sender response message type: %s", senderResponse.MessageType)
 	}
@@ -64,7 +63,7 @@ func TestHandleTellAll_noValue(t *testing.T) {
 	if len(senderPlayer.sent) != 1 {
 		t.Fatalf("sender received wrong number of messages: %d", len(senderPlayer.sent))
 	}
-	senderResponse := senderPlayer.sent[0].(response.Response)
+	senderResponse := senderPlayer.sent[0].(message.Response)
 	if senderResponse.MessageType != "tell_all" {
 		t.Errorf("incorrect sender response message type: %s", senderResponse.MessageType)
 	}

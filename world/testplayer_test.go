@@ -1,8 +1,8 @@
 package world
 
 import (
-	"github.com/trasa/watchmud/response"
 	"log"
+	"github.com/trasa/watchmud/message"
 )
 
 type TestPlayer struct {
@@ -31,6 +31,6 @@ func (p *TestPlayer) SentMessageCount() int {
 	return len(p.sent)
 }
 
-func (p *TestPlayer) GetSentResponse(i int) response.Response {
-	return p.sent[i].(response.Response)
+func (p *TestPlayer) GetSentResponse(i int) message.Response {
+	return p.sent[i].(message.Response)
 }

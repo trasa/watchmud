@@ -1,4 +1,4 @@
-package response
+package message
 
 type PlayerData struct {
 	Name string

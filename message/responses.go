@@ -1,6 +1,5 @@
-package response
+package message
 
-//noinspection GoNameStartsWithPackageName
 type Response struct {
 	MessageType string `json:"msg_type"`
 	Successful  bool   `json:"success"`
