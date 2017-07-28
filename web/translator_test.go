@@ -13,8 +13,30 @@ func TestTranslate_NoOp(t *testing.T) {
 	assert.Equal(t, "no_op", req.GetMessageType(), "expected message_type no_op: %s", req)
 }
 
+func TestTranslate_Tell_shortest_message(t *testing.T) {
+	req, err := translateLineToRequest("tell bob hello")
+
+	assert.Nil(t, err, "no error")
+	assert.Equal(t, "tell", req.GetMessageType(), "message_type tell: %s", req)
+
+	tellReq := req.(message.TellRequest)
+	assert.Equal(t, "bob", tellReq.ReceiverPlayerName, "wrong rec name: %s", req)
+	assert.Equal(t, "hello", tellReq.Value, "wrong value: %s", req)
+}
+
 func TestTranslate_Tell(t *testing.T) {
 	req, err := translateLineToRequest("tell bob hello there")
+
+	assert.Nil(t, err, "no error")
+	assert.Equal(t, "tell", req.GetMessageType(), "message_type tell: %s", req)
+
+	tellReq := req.(message.TellRequest)
+	assert.Equal(t, "bob", tellReq.ReceiverPlayerName, "wrong rec name: %s", req)
+	assert.Equal(t, "hello there", tellReq.Value, "wrong value: %s", req)
+}
+
+func TestTranslate_Tell_shortcut(t *testing.T) {
+	req, err := translateLineToRequest("t bob hello there")
 
 	assert.Nil(t, err, "no error")
 	assert.Equal(t, "tell", req.GetMessageType(), "message_type tell: %s", req)

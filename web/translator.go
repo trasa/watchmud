@@ -22,8 +22,8 @@ func translateLineToRequest(line string) (request message.Request, err error) {
 		return
 	}
 	switch tokens[0] {
-	case "tell":
-		if len(tokens) > 3 {
+	case "tell", "t":
+		if len(tokens) >= 3 {
 			request = message.TellRequest{
 				Request:            message.RequestBase{MessageType: "tell"},
 				ReceiverPlayerName: tokens[1],
@@ -33,6 +33,8 @@ func translateLineToRequest(line string) (request message.Request, err error) {
 			// some sort of error about malformed tell request...
 			err = errors.New("usage: tell [somebody] [something]")
 		}
+	//case "tellall", "ta":
+	//	if len(tokens)
 	default:
 		err = errors.New("Unknown command: " + tokens[0])
 	}
