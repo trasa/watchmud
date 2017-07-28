@@ -1,0 +1,40 @@
+package web
+
+import (
+	"github.com/stretchr/testify/assert"
+	"github.com/trasa/watchmud/message"
+	"testing"
+)
+
+func TestTranslate_NoOp(t *testing.T) {
+	req, err := translateLineToRequest("")
+
+	assert.Nil(t, err, "should not error")
+	assert.Equal(t, "no_op", req.GetMessageType(), "expected message_type no_op: %s", req)
+}
+
+func TestTranslate_Tell(t *testing.T) {
+	req, err := translateLineToRequest("tell bob hello there")
+
+	assert.Nil(t, err, "no error")
+	assert.Equal(t, "tell", req.GetMessageType(), "message_type tell: %s", req)
+
+	tellReq := req.(message.TellRequest)
+	assert.Equal(t, "bob", tellReq.ReceiverPlayerName, "wrong rec name: %s", req)
+	assert.Equal(t, "hello there", tellReq.Value, "wrong value: %s", req)
+}
+
+func TestTranslate_Tell_BadRequest(t *testing.T) {
+	req, err := translateLineToRequest("tell bob")
+
+	assert.NotNil(t, err, "expected error")
+	assert.Nil(t, req, "req should be nil")
+}
+
+func TestTranslate_UnknownCommand(t *testing.T) {
+	cmd := "asdjhfaksjdfhjk"
+	req, err := translateLineToRequest(cmd)
+	assert.Nil(t, req, "req should be nil")
+	assert.NotNil(t, err, "should have error")
+	assert.Equal(t, "Unknown command: "+cmd, err.Error(), "err text")
+}

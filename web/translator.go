@@ -3,17 +3,42 @@ package web
 import (
 	"errors"
 	"github.com/trasa/watchmud/message"
+	"strings"
 )
 
+// have an input string like
+// tell bob hi there
+// turn into Request = message.TellRequest { "bob", "hi there" }
+// and so on.
+// note that not all commands can be parsed from line input
 func translateLineToRequest(line string) (request message.Request, err error) {
-	// have an input string like
-	// tell bob hi there
-	// turn into Request = message.TellRequest { "bob", "hi there" }
-	// and so on.
-	// difficulty: don't repeat yourself with the translateToRequest below that turns a map
-	// into an object ... so should this return a map or jump directly to Request?
-	return nil, errors.New("not implemented")
+
+	// first parse into tokens
+	tokens := strings.Fields(line)
+	if len(tokens) == 0 {
+		request = message.NoOpRequest{
+			Request: message.RequestBase{MessageType: "no_op"},
+		}
+		return
+	}
+	switch tokens[0] {
+	case "tell":
+		if len(tokens) > 3 {
+			request = message.TellRequest{
+				Request:            message.RequestBase{MessageType: "tell"},
+				ReceiverPlayerName: tokens[1],
+				Value:              strings.Join(tokens[2:], " "),
+			}
+		} else {
+			// some sort of error about malformed tell request...
+			err = errors.New("usage: tell [somebody] [something]")
+		}
+	default:
+		err = errors.New("Unknown command: " + tokens[0])
+	}
+	return
 }
+
 func translateToRequest(body map[string]string) (request message.Request, err error) {
 	err = nil
 	switch body["msg_type"] {
