@@ -33,8 +33,15 @@ func translateLineToRequest(line string) (request message.Request, err error) {
 			// some sort of error about malformed tell request...
 			err = errors.New("usage: tell [somebody] [something]")
 		}
-	//case "tellall", "ta":
-	//	if len(tokens)
+	case "tellall", "ta":
+		if len(tokens) >= 2 {
+			request = message.TellAllRequest{
+				Request: message.RequestBase{MessageType: "tell_all"},
+				Value:   strings.Join(tokens[1:], " "),
+			}
+		} else {
+			err = errors.New("usage: tellall [something]")
+		}
 	default:
 		err = errors.New("Unknown command: " + tokens[0])
 	}
