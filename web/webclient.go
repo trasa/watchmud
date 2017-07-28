@@ -57,8 +57,15 @@ func (c *Client) readPump() {
 			// TODO terminate / disconnect player
 			return
 		}
+
 		log.Printf("message body: %s", body)
-		request, err := translateToRequest(body)
+		var request message.Request
+		var err error
+		if body["format"] == "line" {
+			request, err = translateLineToRequest(body["value"])
+		} else {
+			request, err = translateToRequest(body)
+		}
 		if err != nil {
 			log.Printf("translation error: %s", err)
 			return // TODO terminate / disconnect player

@@ -160,7 +160,7 @@
 
                 $('#send').click(function() {
                    mc.send({
-                       "msg_type":"tell_all",
+                       "format":"line",
                        "value" : $('#buf').val()
                    });
                 });
