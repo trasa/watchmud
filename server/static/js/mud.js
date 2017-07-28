@@ -52,8 +52,16 @@
                     handleLoginResponse(msg);
                     break;
 
+                case "tell":
+                    handleTellResponse(msg);
+                    break;
+
+                case "tell_notification":
+                    handleTellNotification(msg);
+                    break;
+
                 case "tell_all":
-                    handleTellAll(msg);
+                    handleTellAllResponse(msg);
                     break;
 
                 case "tell_all_notification":
@@ -71,7 +79,19 @@
             displayMessage("Player is: " + JSON.stringify(msg["player"]));
         };
 
-        var handleTellAll = function(msg) {
+        var handleTellResponse = function(msg) {
+            if (msg["success"]) {
+                displayMessage("sent.");
+            } else {
+                displayMessage("tell failed: " + msg["result_code"])
+            }
+        };
+
+        var handleTellNotification = function(msg) {
+            displayMessage(msg["sender"] + " says '" + msg["value"] + "'");
+        };
+
+        var handleTellAllResponse = function(msg) {
             if (msg["success"]) {
                 displayMessage("sent.");
             } else {

@@ -33,10 +33,10 @@ func TestHandleTell_success(t *testing.T) {
 		t.Errorf("expected receiver to get a message %s", receiverPlayer.sent)
 	}
 	recdMessage := receiverPlayer.sent[0].(message.TellNotification)
-	if recdMessage.From != senderPlayer.name {
-		t.Errorf("Didn't get expected senderPlayer.Name: %s", recdMessage.From)
+	if recdMessage.Sender != senderPlayer.name {
+		t.Errorf("Didn't get expected senderPlayer.Name: %s", recdMessage.Sender)
 	}
-	if recdMessage.MessageType != "tell" {
+	if recdMessage.MessageType != "tell_notification" {
 		t.Errorf("MsgType wasn't tell: %s", recdMessage.MessageType)
 	}
 	if recdMessage.Value != "hi" {
