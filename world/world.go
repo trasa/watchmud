@@ -79,8 +79,9 @@ func (w *World) findPlayerByName(name string) player.Player {
 }
 
 func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
-	log.Printf("world incoming message: %s", msg.Request)
 	switch messageType := msg.Request.GetMessageType(); messageType {
+	case "go":
+		w.handleGo(msg)
 	case "look":
 		w.handleLook(msg)
 	case "tell":

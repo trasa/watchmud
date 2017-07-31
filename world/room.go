@@ -2,7 +2,9 @@ package world
 
 import (
 	"fmt"
+	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/player"
+	"log"
 	"strings"
 )
 
@@ -12,12 +14,12 @@ type Room struct {
 	Description string
 	Zone        *Zone        `json:"-"`
 	PlayerList  *player.List `json:"-"` // map of players by name
-	North       *Room
-	South       *Room
-	East        *Room
-	West        *Room
-	Up          *Room
-	Down        *Room
+	North       *Room        `json:"-"`
+	South       *Room        `json:"-"`
+	East        *Room        `json:"-"`
+	West        *Room        `json:"-"`
+	Up          *Room        `json:"-"`
+	Down        *Room        `json:"-"`
 }
 
 func NewRoom(zone *Zone, id string, name string, description string) *Room {
@@ -63,25 +65,45 @@ func (r *Room) AddPlayer(p player.Player) {
 
 func (r *Room) GetExits() string {
 	exits := []string{}
-	if r.North != nil {
+	if r.HasExit(direction.NORTH) {
 		exits = append(exits, "n")
 	}
-	if r.East != nil {
+	if r.HasExit(direction.EAST) {
 		exits = append(exits, "e")
 	}
-	if r.South != nil {
+	if r.HasExit(direction.SOUTH) {
 		exits = append(exits, "s")
 	}
-	if r.West != nil {
+	if r.HasExit(direction.WEST) {
 		exits = append(exits, "w")
 	}
-	if r.Up != nil {
+	if r.HasExit(direction.UP) {
 		exits = append(exits, "u")
 	}
-	if r.Down != nil {
+	if r.HasExit(direction.DOWN) {
 		exits = append(exits, "d")
 	}
 	return strings.Join(exits, "")
+}
+
+func (r *Room) HasExit(dir direction.Direction) bool {
+	switch dir {
+	case direction.NORTH:
+		return r.North != nil
+	case direction.EAST:
+		return r.East != nil
+	case direction.SOUTH:
+		return r.South != nil
+	case direction.WEST:
+		return r.West != nil
+	case direction.UP:
+		return r.Up != nil
+	case direction.DOWN:
+		return r.Down != nil
+	default:
+		log.Printf("room.HasExit: asked for unknown direction '%s'", dir)
+		return false
+	}
 }
 
 type ExitRoomEvent struct {
