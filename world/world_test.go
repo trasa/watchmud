@@ -6,13 +6,24 @@ import (
 	"testing"
 )
 
-// TODO this breaks because of channels!
-
 // create a new test world
 func newTestWorld() *World {
-	return &World{
+
+	testZone := Zone{
+		Id:    startZoneKey,
+		Name:  "Sample Zone",
+		Rooms: make(map[string]*Room),
+	}
+	w := &World{
+		Zones:      make(map[string]*Zone),
 		PlayerList: player.NewList(),
 	}
+	w.Zones[testZone.Id] = &testZone
+
+	testRoom := NewRoom(&testZone, startRoomKey, "test name", "this is a test room.")
+	testZone.Rooms[testRoom.Id] = testRoom
+	w.StartRoom = testRoom
+	return w
 }
 
 func TestWorld_handleMessage_unknownMessageType(t *testing.T) {

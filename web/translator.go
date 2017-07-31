@@ -22,6 +22,11 @@ func translateLineToRequest(line string) (request message.Request, err error) {
 		return
 	}
 	switch tokens[0] {
+	case "look", "l":
+		request = message.LookRequest{
+			Request:   message.RequestBase{MessageType: "look"},
+			ValueList: tokens[1:],
+		}
 	case "tell", "t":
 		if len(tokens) >= 3 {
 			request = message.TellRequest{

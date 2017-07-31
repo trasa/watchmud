@@ -6,6 +6,7 @@ import (
 	"log"
 )
 
+//noinspection GoNameStartsWithPackageName
 type World struct {
 	Zones      map[string]*Zone
 	StartRoom  *Room
@@ -29,16 +30,17 @@ func New() *World {
 	}
 	w.Zones[sampleZone.Id] = &sampleZone
 
-	r := NewRoom(&sampleZone, startRoomKey, "Central Portal", "It's a boring room, with boring stuff in it.")
-	sampleZone.Rooms[r.Id] = r
-	w.StartRoom = r
+	centralPortalRoom := NewRoom(&sampleZone, startRoomKey, "Central Portal", "It's a boring room, with boring stuff in it.")
+	sampleZone.Rooms[centralPortalRoom.Id] = centralPortalRoom
+	w.StartRoom = centralPortalRoom
 
 	// north room
 	northRoom := NewRoom(&sampleZone, "northRoom", "North Room", "This room is north of the start.")
 	sampleZone.Rooms[northRoom.Id] = northRoom
 
-	r.North = northRoom
-	northRoom.South = r
+	// north room and central portal connect to each other
+	centralPortalRoom.North = northRoom
+	northRoom.South = centralPortalRoom
 
 	log.Print("World built.")
 	return &w
@@ -56,9 +58,18 @@ func (w *World) addPlayers(player ...player.Player) {
 
 // Add this Player to the world
 // putting them in the start room
-func (w *World) AddPlayer(player player.Player) {
-	w.PlayerList.Add(player)
-	//w.StartRoom.AddPlayer(player)
+func (w *World) AddPlayer(p player.Player) {
+	w.PlayerList.Add(p)
+	w.StartRoom.AddPlayer(p)
+}
+
+func (w *World) GetRoomContainingPlayer(p player.Player) *Room {
+	// TODO have to figure out this structure
+	if w.StartRoom.PlayerList.FindByName(p.GetName()) != nil {
+		return w.StartRoom
+	} else {
+		return nil
+	}
 }
 
 // TODO remove player from world
@@ -70,6 +81,8 @@ func (w *World) findPlayerByName(name string) player.Player {
 func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
 	log.Printf("world incoming message: %s", msg.Request)
 	switch messageType := msg.Request.GetMessageType(); messageType {
+	case "look":
+		w.handleLook(msg)
 	case "tell":
 		w.handleTell(msg)
 	case "tell_all":

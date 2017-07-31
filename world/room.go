@@ -2,20 +2,21 @@ package world
 
 import (
 	"fmt"
+	"github.com/trasa/watchmud/player"
 )
 
 type Room struct {
 	Id          string
 	Name        string
 	Description string
-	Zone        *Zone `json:"-"`
-	//Players     map[string]*Player `json:"-"` // map of players by name
-	North *Room
-	South *Room
-	East  *Room
-	West  *Room
-	Up    *Room
-	Down  *Room
+	Zone        *Zone        `json:"-"`
+	PlayerList  *player.List `json:"-"` // map of players by name
+	North       *Room
+	South       *Room
+	East        *Room
+	West        *Room
+	Up          *Room
+	Down        *Room
 }
 
 func NewRoom(zone *Zone, id string, name string, description string) *Room {
@@ -24,7 +25,7 @@ func NewRoom(zone *Zone, id string, name string, description string) *Room {
 		Name:        name,
 		Description: description,
 		Zone:        zone,
-		//Players:     make(map[string]*Player),
+		PlayerList:  player.NewList(),
 	}
 }
 
@@ -32,37 +33,32 @@ func (r Room) String() string {
 	return fmt.Sprintf("(Room %s: '%s')", r.Id, r.Name)
 }
 
-//func (r *Room) RemovePlayer(player *Player) {
-//delete(r.Players, player.Name)
-// tell players in room that this player has left
-/*
-	for _, p := range r.Players {
-		p.OnEvent(ExitRoomEvent{
-			PlayerId: player.Id,
-			ZoneId:   r.Zone.Id,
-			RoomId:   r.Id,
-		})
-	}
-*/
-//player.Room = nil
-//}
-//
-//func (r *Room) AddPlayer(player *Player) {
-//	if player.Room != nil {
-//		player.Room.RemovePlayer(player)
-//	}
-//	/*
-//		for _, p := range r.Players {
-//			p.OnEvent(EnterRoomEvent{
-//				PlayerId: player.Id,
-//				ZoneId:   r.Zone.Id,
-//				RoomId:   r.Id,
-//			})
-//		}
-//	*/
-//	r.Players[player.Name] = player
-//	player.Room = r
-//}
+func (r *Room) RemovePlayer(p player.Player) {
+	r.PlayerList.Remove(p)
+	// tell players in room that this player has left
+	/*
+		for _, p := range r.Players {
+			p.OnEvent(ExitRoomEvent{
+				PlayerId: player.Id,
+				ZoneId:   r.Zone.Id,
+				RoomId:   r.Id,
+			})
+		}
+	*/
+}
+
+func (r *Room) AddPlayer(p player.Player) {
+	/*
+		for _, p := range r.Players {
+			p.OnEvent(EnterRoomEvent{
+				PlayerId: player.Id,
+				ZoneId:   r.Zone.Id,
+				RoomId:   r.Id,
+			})
+		}
+	*/
+	r.PlayerList.Add(p)
+}
 
 type ExitRoomEvent struct {
 	PlayerId string
