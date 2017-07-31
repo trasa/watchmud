@@ -3,6 +3,7 @@ package world
 import (
 	"fmt"
 	"github.com/trasa/watchmud/direction"
+	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/player"
 	"log"
 	"strings"
@@ -103,6 +104,26 @@ func (r *Room) HasExit(dir direction.Direction) bool {
 	default:
 		log.Printf("room.HasExit: asked for unknown direction '%s'", dir)
 		return false
+	}
+}
+
+func (r *Room) BuildLookResponse() message.LookResponse {
+	return message.LookResponse{
+		Response:    message.Response{MessageType: "look", Successful: true},
+		RoomName:    r.Name,
+		Description: r.Description,
+		Exits:       r.GetExits(),
+		// TODO other occupants or objects in the room
+	}
+}
+
+func (r *Room) BuildLookNotification() message.LookNotification {
+	return message.LookNotification{
+		Notification: message.Notification{MessageType: "look"},
+		RoomName:     r.Name,
+		Description:  r.Description,
+		Exits:        r.GetExits(),
+		// TODO other occupants or objects in the room
 	}
 }
 

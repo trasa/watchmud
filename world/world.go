@@ -10,6 +10,7 @@ import (
 type World struct {
 	Zones      map[string]*Zone
 	StartRoom  *Room
+	VoidRoom   *Room
 	PlayerList *player.List
 }
 
@@ -41,6 +42,9 @@ func New() *World {
 	// north room and central portal connect to each other
 	centralPortalRoom.North = northRoom
 	northRoom.South = centralPortalRoom
+
+	// The VOID. When you're not really in a room.
+	w.VoidRoom = NewRoom(nil, "void", "The Void", "You see nothing but endless void.")
 
 	log.Print("World built.")
 	return &w

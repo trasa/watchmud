@@ -95,7 +95,7 @@
             // "value":"It's a boring room, with boring stuff in it."}
             if (msg["success"]) {
                 displayMessage(msg["room_name"]);
-                displayMessage(msg["value"]);
+                displayMessage(msg["description"]);
                 displayMessage("Exits: " + formatExits(msg["exits"]) + "\n")
             } else {
                 displayError(msg);

@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/message"
+	"log"
 	"testing"
 )
 
@@ -22,8 +23,9 @@ func TestGo_butYouCant(t *testing.T) {
 
 	w.handleGo(&msg)
 
+	log.Printf("%d", len(p.sent))
 	if len(p.sent) != 1 {
-		t.Errorf("Expected message %s", p.sent)
+		t.Fatalf("Expected message %s", p.sent)
 	}
 	resp := p.sent[0].(message.Response)
 	assert.False(t, resp.Successful)
