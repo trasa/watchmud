@@ -23,7 +23,15 @@ func (w *World) handleGo(msg *message.IncomingMessage) {
 	// can player go in that direction?
 	if playerRoom.HasExit(dir) {
 		// make it happen
+		// remove player from playerRoom (and tell everybody in playerRoom about it)
+		// add player to playerRoom.direction()  (and tell everybody in that room about it)
+		// send response message
 	} else {
 		// you can't go that way, tell player about error
+		msg.Player.Send(message.Response{
+			MessageType: "go",
+			Successful:  false,
+			ResultCode:  "CANT_GO_THAT_WAY",
+		})
 	}
 }
