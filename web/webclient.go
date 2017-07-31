@@ -39,7 +39,6 @@ func (c *Client) GetPlayer() player.Player {
 }
 
 func (c *Client) SetPlayer(player player.Player) {
-	log.Print("setting player!")
 	c.Player = player
 }
 
@@ -58,7 +57,6 @@ func (c *Client) readPump() {
 			return
 		}
 
-		log.Printf("message body: %s", body)
 		var request message.Request
 		var err error
 		if body["format"] == "line" {
@@ -81,7 +79,6 @@ func (c *Client) writePump() {
 	for {
 		select {
 		case msg := <-c.source:
-			log.Printf("writing %s", msg)
 			err := c.conn.WriteJSON(msg)
 			if err != nil {
 				log.Printf("Write Error: %v", err)
