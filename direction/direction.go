@@ -39,3 +39,23 @@ func StringToDirection(s string) (dir Direction, err error) {
 	}
 	return
 }
+
+func DirectionToString(dir Direction) (str string, err error) {
+	switch dir {
+	case NORTH:
+		str = "n"
+	case SOUTH:
+		str = "s"
+	case EAST:
+		str = "e"
+	case WEST:
+		str = "w"
+	case UP:
+		str = "u"
+	case DOWN:
+		str = "d"
+	default:
+		err = errors.New("Unknown direction")
+	}
+	return
+}
