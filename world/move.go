@@ -6,15 +6,15 @@ import (
 	"log"
 )
 
-func (w *World) handleGo(msg *message.IncomingMessage) {
+func (w *World) handleMove(msg *message.IncomingMessage) {
 	// go somewhere
 	playerRoom := w.GetRoomContainingPlayer(msg.Player)
 	// get the direction we want to go to
-	dir := msg.Request.(message.GoRequest).Direction
+	dir := msg.Request.(message.MoveRequest).Direction
 
 	// dirstr only used for log message so we'll ignore errors
 	dirstr, _ := direction.DirectionToString(dir)
-	log.Printf("player %s in room %s wants to go %s",
+	log.Printf("player %s in room %s wants to move %s",
 		msg.Player.GetName(),
 		playerRoom.Name,
 		dirstr,
@@ -23,21 +23,16 @@ func (w *World) handleGo(msg *message.IncomingMessage) {
 	// can player go in that direction?
 	if targetRoom := playerRoom.Get(dir); targetRoom != nil {
 		// make it happen
-		// remove player from playerRoom (and tell everybody in playerRoom about it)
-		w.LeaveRoom(msg.Player, playerRoom)
-		// add player to playerRoom.direction()  (and tell everybody in that room about it)
-		w.EnterRoom(msg.Player, targetRoom)
+		w.MovePlayer(msg.Player, playerRoom, targetRoom)
 		// send response message
-		msg.Player.Send(message.GoResponse{
-			Response: message.Response{Successful: true,
-				MessageType: "go",
-				ResultCode:  "OK"},
-			RoomDescription: targetRoom.BuildRoomDescription(),
+		msg.Player.Send(message.MoveResponse{
+			Response:        message.NewSuccessfulResponse("move"),
+			RoomDescription: targetRoom.CreateRoomDescription(),
 		})
 	} else {
 		// you can't go that way, tell player about error
 		msg.Player.Send(message.Response{
-			MessageType: "go",
+			MessageType: "move",
 			Successful:  false,
 			ResultCode:  "CANT_GO_THAT_WAY",
 		})

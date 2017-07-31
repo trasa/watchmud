@@ -31,8 +31,8 @@ func translateLineToRequest(line string) (request message.Request, err error) {
 	case "n", "north", "s", "south", "e", "east", "w", "west", "u", "up", "d", "down":
 		var d direction.Direction
 		if d, err = direction.StringToDirection(tokens[0]); err == nil {
-			request = message.GoRequest{
-				Request:   message.RequestBase{MessageType: "go"},
+			request = message.MoveRequest{
+				Request:   message.RequestBase{MessageType: "move"},
 				Direction: d,
 			}
 		}

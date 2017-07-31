@@ -12,9 +12,9 @@ func (w *World) handleLook(msg *message.IncomingMessage) {
 		Response: message.NewSuccessfulResponse("look"),
 	}
 	if playerRoom == nil {
-		resp.RoomDescription = w.VoidRoom.BuildRoomDescription()
+		resp.RoomDescription = w.VoidRoom.CreateRoomDescription()
 	} else {
-		resp.RoomDescription = playerRoom.BuildRoomDescription()
+		resp.RoomDescription = playerRoom.CreateRoomDescription()
 	}
 	msg.Player.Send(resp)
 }

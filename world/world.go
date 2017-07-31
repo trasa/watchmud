@@ -66,17 +66,12 @@ func (w *World) addPlayers(player ...player.Player) {
 // putting them in the start room
 func (w *World) AddPlayer(p player.Player) {
 	w.PlayerList.Add(p)
-	w.StartRoom.AddPlayer(p)
+	w.StartRoom.Add(p)
 }
 
-func (w *World) EnterRoom(p player.Player, r *Room) {
-	// TODO
-	// tell everybody about the new player in the room
-}
-
-func (w *World) LeaveRoom(p player.Player, r *Room) {
-	// TODO
-	// tell everybody about the player who left the room
+func (w *World) MovePlayer(p player.Player, src *Room, dest *Room) {
+	src.Leave(p)
+	dest.Enter(p)
 }
 
 func (w *World) GetRoomContainingPlayer(p player.Player) *Room {
@@ -96,10 +91,10 @@ func (w *World) findPlayerByName(name string) player.Player {
 
 func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
 	switch messageType := msg.Request.GetMessageType(); messageType {
-	case "go":
-		w.handleGo(msg)
 	case "look":
 		w.handleLook(msg)
+	case "move":
+		w.handleMove(msg)
 	case "tell":
 		w.handleTell(msg)
 	case "tell_all":

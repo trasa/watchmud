@@ -37,33 +37,37 @@ func (r Room) String() string {
 	return fmt.Sprintf("(Room %s: '%s')", r.Id, r.Name)
 }
 
-func (r *Room) RemovePlayer(p player.Player) {
+// Player leaves a room. Tells other room residents about it.
+func (r *Room) Leave(p player.Player) {
 	r.PlayerList.Remove(p)
-	// tell players in room that this player has left
-	/*
-		for _, p := range r.Players {
-			p.OnEvent(ExitRoomEvent{
-				PlayerId: player.Id,
-				ZoneId:   r.Zone.Id,
-				RoomId:   r.Id,
-			})
-		}
-	*/
+	r.Send(message.LeaveRoomNotification{
+		Notification: message.Notification{MessageType: "leave_room"},
+		PlayerName:   p.GetName(),
+	})
 }
 
-func (r *Room) AddPlayer(p player.Player) {
-	/*
-		for _, p := range r.Players {
-			p.OnEvent(EnterRoomEvent{
-				PlayerId: player.Id,
-				ZoneId:   r.Zone.Id,
-				RoomId:   r.Id,
-			})
-		}
-	*/
+// Add a player to a room. Don't send notifications.
+func (r *Room) Add(p player.Player) {
 	r.PlayerList.Add(p)
 }
 
+// Player enters a room. Tells other room residents about it.
+func (r *Room) Enter(p player.Player) {
+	r.Send(message.EnterRoomNotification{
+		Notification: message.Notification{MessageType: "enter_room"},
+		PlayerName:   p.GetName(),
+	})
+	r.Add(p)
+}
+
+// Send to every player in the room.
+func (r *Room) Send(msg interface{}) { // TODO err
+	r.PlayerList.Iter(func(p player.Player) {
+		p.Send(msg)
+	})
+}
+
+// Get all the valid exits from this room.
 func (r *Room) GetExits() string {
 	exits := []string{}
 	if r.HasExit(direction.NORTH) {
@@ -87,6 +91,7 @@ func (r *Room) GetExits() string {
 	return strings.Join(exits, "")
 }
 
+// Is there a valid exit in this direction in this room?
 func (r *Room) HasExit(dir direction.Direction) bool {
 	switch dir {
 	case direction.NORTH:
@@ -107,6 +112,8 @@ func (r *Room) HasExit(dir direction.Direction) bool {
 	}
 }
 
+// Get the exit for this direction. Will return nil if there
+// isn't a valid exit that way.
 func (r *Room) Get(dir direction.Direction) *Room {
 	switch dir {
 	case direction.NORTH:
@@ -126,23 +133,12 @@ func (r *Room) Get(dir direction.Direction) *Room {
 	}
 }
 
-func (r *Room) BuildRoomDescription() message.RoomDescription {
+// Describe this room.
+func (r *Room) CreateRoomDescription() message.RoomDescription {
 	return message.RoomDescription{
 		Name:        r.Name,
 		Description: r.Description,
 		Exits:       r.GetExits(),
 		// TODO other occupants or objects in the room
 	}
-}
-
-type ExitRoomEvent struct {
-	PlayerId string
-	ZoneId   string
-	RoomId   string
-}
-
-type EnterRoomEvent struct {
-	PlayerId string
-	ZoneId   string
-	RoomId   string
 }

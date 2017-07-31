@@ -56,7 +56,12 @@
                     handleLoginResponse(msg);
                     break;
 
+                case "leave_room":
+                    handleLeaveRoomNotification(msg);
+                    break;
+
                 case "look":
+                case "move":
                     handleLookResponse(msg);
                     break;
 
@@ -82,21 +87,18 @@
             }
         };
 
+        var handleLeaveRoomNotification = function(msg) {
+            displayMessage(msg["player"] + " left.");
+        };
+
         var handleLoginResponse = function(msg) {
             displayMessage("Login Response: Success=" + msg["success"] + " " + msg["result_code"]);
             displayMessage("Player is: " + JSON.stringify(msg["player"]));
         };
 
         var handleLookResponse = function(msg) {
-            //{"msg_type":"look",
-            // "success":true,
-            // "result_code":"",
-            // "room_name":"Central Portal",
-            // "value":"It's a boring room, with boring stuff in it."}
             if (msg["success"]) {
-                displayMessage(msg["room_name"]);
-                displayMessage(msg["description"]);
-                displayMessage("Exits: " + formatExits(msg["exits"]) + "\n")
+                displayRoom(msg);
             } else {
                 displayError(msg);
             }
@@ -124,6 +126,13 @@
 
         var handleTellAllNotification = function(msg) {
             displayMessage("tell_all " + msg["sender"] +  "> " + msg["value"]);
+        };
+
+
+        var displayRoom = function(msg) {
+            displayMessage(msg["room_name"]);
+            displayMessage(msg["description"]);
+            displayMessage("Exits: " + formatExits(msg["exits"]) + "\n")
         };
 
         var formatExits = function(exitStr) {
