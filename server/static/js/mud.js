@@ -45,11 +45,19 @@
             plugin.settings["displayMessage"](msg);
         };
 
+        var displayError = function(msg) {
+            displayMessage("Error: " + JSON.stringify(msg))
+        };
+
         /* private */
         var handleMessage = function(msg) {
             switch(msg["msg_type"]) {
                 case "login_response":
                     handleLoginResponse(msg);
+                    break;
+
+                case "look":
+                    handleLookResponse(msg);
                     break;
 
                 case "tell":
@@ -77,6 +85,20 @@
         var handleLoginResponse = function(msg) {
             displayMessage("Login Response: Success=" + msg["success"] + " " + msg["result_code"]);
             displayMessage("Player is: " + JSON.stringify(msg["player"]));
+        };
+
+        var handleLookResponse = function(msg) {
+            //{"msg_type":"look",
+            // "success":true,
+            // "result_code":"",
+            // "room_name":"Central Portal",
+            // "value":"It's a boring room, with boring stuff in it."}
+            if (msg["success"]) {
+                displayMessage(msg["room_name"]);
+                displayMessage(msg["value"] + "\n");
+            } else {
+                displayError(msg);
+            }
         };
 
         var handleTellResponse = function(msg) {
@@ -178,18 +200,31 @@
                    });
                 });
 
+                $('#buf').keypress(function(event){
+                    var keycode = (event.keyCode ? event.keyCode : event.which);
+                    if(keycode === 13){
+                        doSend();
+                    }
+                });
+
+                function doSend() {
+                    var buf = $('#buf');
+                    mc.send({
+                        "format":"line",
+                        "value" : buf.val()
+                    });
+                    buf.val("");
+                }
+
                 $('#send').click(function() {
-                   mc.send({
-                       "format":"line",
-                       "value" : $('#buf').val()
-                   });
+                   doSend();
                 });
 
 
                 function displayMessage(msg) {
                     var display = $('#display');
                     display
-                        .append(msg + "\n\n")
+                        .append(msg + "\n")
                         .stop()
                         .animate({scrollTop: display[0].scrollHeight}, 800);
                 }
