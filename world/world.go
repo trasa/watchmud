@@ -50,10 +50,12 @@ func New() *World {
 	return &w
 }
 
+// TODO what uses this?
 func (w *World) getAllPlayers() []player.Player {
 	return w.PlayerList.All()
 }
 
+// TODO do we need this? merge into AddPlayer()?
 func (w *World) addPlayers(player ...player.Player) {
 	for _, p := range player {
 		w.AddPlayer(p)
@@ -65,6 +67,16 @@ func (w *World) addPlayers(player ...player.Player) {
 func (w *World) AddPlayer(p player.Player) {
 	w.PlayerList.Add(p)
 	w.StartRoom.AddPlayer(p)
+}
+
+func (w *World) EnterRoom(p player.Player, r *Room) {
+	// TODO
+	// tell everybody about the new player in the room
+}
+
+func (w *World) LeaveRoom(p player.Player, r *Room) {
+	// TODO
+	// tell everybody about the player who left the room
 }
 
 func (w *World) GetRoomContainingPlayer(p player.Player) *Room {

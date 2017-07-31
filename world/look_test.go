@@ -22,6 +22,6 @@ func TestLook_successful(t *testing.T) {
 	resp := p.sent[0].(message.LookResponse)
 	assert.Equal(t, "look", resp.MessageType, "wrong message type")
 	assert.True(t, resp.Successful)
-	assert.NotNil(t, resp.RoomName)
+	assert.NotNil(t, resp.Name)
 	assert.NotNil(t, resp.Description)
 }

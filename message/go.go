@@ -11,4 +11,5 @@ type GoRequest struct {
 
 type GoResponse struct {
 	Response
+	RoomDescription
 }

@@ -8,11 +8,13 @@ func (w *World) handleLook(msg *message.IncomingMessage) {
 
 	// get room for player
 	playerRoom := w.GetRoomContainingPlayer(msg.Player)
-	var resp message.LookResponse
+	resp := message.LookResponse{
+		Response: message.NewSuccessfulResponse("look"),
+	}
 	if playerRoom == nil {
-		resp = w.VoidRoom.BuildLookResponse()
+		resp.RoomDescription = w.VoidRoom.BuildRoomDescription()
 	} else {
-		resp = playerRoom.BuildLookResponse()
+		resp.RoomDescription = playerRoom.BuildRoomDescription()
 	}
 	msg.Player.Send(resp)
 }

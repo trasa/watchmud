@@ -5,3 +5,11 @@ type Response struct {
 	Successful  bool   `json:"success"`
 	ResultCode  string `json:"result_code"`
 }
+
+func NewSuccessfulResponse(msgType string) Response {
+	return Response{
+		MessageType: msgType,
+		Successful:  true,
+		ResultCode:  "OK",
+	}
+}

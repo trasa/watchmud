@@ -7,16 +7,17 @@ type LookRequest struct {
 
 type LookResponse struct {
 	Response
-	RoomName    string `json:"room_name"`
-	Description string `json:"description"`
-	Exits       string `json:"exits"`
-	// TODO MOBs, Players, Objects ....
+	RoomDescription
 }
 
 type LookNotification struct {
 	Notification
-	RoomName    string `json:"room_name"`
+	RoomDescription
+}
+
+type RoomDescription struct {
+	Name        string `json:"room_name"`
 	Description string `json:"description"`
 	Exits       string `json:"exits"`
-	// TODO objects and so on ...
+	// TODO MOBs, Players, Objects ....
 }

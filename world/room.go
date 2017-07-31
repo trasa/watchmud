@@ -107,22 +107,30 @@ func (r *Room) HasExit(dir direction.Direction) bool {
 	}
 }
 
-func (r *Room) BuildLookResponse() message.LookResponse {
-	return message.LookResponse{
-		Response:    message.Response{MessageType: "look", Successful: true},
-		RoomName:    r.Name,
-		Description: r.Description,
-		Exits:       r.GetExits(),
-		// TODO other occupants or objects in the room
+func (r *Room) Get(dir direction.Direction) *Room {
+	switch dir {
+	case direction.NORTH:
+		return r.North
+	case direction.EAST:
+		return r.East
+	case direction.SOUTH:
+		return r.South
+	case direction.WEST:
+		return r.West
+	case direction.UP:
+		return r.Up
+	case direction.DOWN:
+		return r.Down
+	default:
+		return nil
 	}
 }
 
-func (r *Room) BuildLookNotification() message.LookNotification {
-	return message.LookNotification{
-		Notification: message.Notification{MessageType: "look"},
-		RoomName:     r.Name,
-		Description:  r.Description,
-		Exits:        r.GetExits(),
+func (r *Room) BuildRoomDescription() message.RoomDescription {
+	return message.RoomDescription{
+		Name:        r.Name,
+		Description: r.Description,
+		Exits:       r.GetExits(),
 		// TODO other occupants or objects in the room
 	}
 }
