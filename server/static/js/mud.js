@@ -95,7 +95,8 @@
             // "value":"It's a boring room, with boring stuff in it."}
             if (msg["success"]) {
                 displayMessage(msg["room_name"]);
-                displayMessage(msg["value"] + "\n");
+                displayMessage(msg["value"]);
+                displayMessage("Exits: " + formatExits(msg["exits"]) + "\n")
             } else {
                 displayError(msg);
             }
@@ -125,6 +126,39 @@
             displayMessage("tell_all " + msg["sender"] +  "> " + msg["value"]);
         };
 
+        var formatExits = function(exitStr) {
+            if (exitStr === "") {
+                return "None";
+            }
+            var s = "";
+            for (var i = 0, len = exitStr.length; i < len; i++) {
+                // alert(str[i]);
+                switch(exitStr.charAt(i))  {
+                    case "n":
+                        s += "North, ";
+                        break;
+                    case "s":
+                        s += "South, ";
+                        break;
+                    case "e":
+                        s += "East, ";
+                        break;
+                    case "w":
+                        s += "West, ";
+                        break;
+                    case "u":
+                        s += "Up, ";
+                        break;
+                    case "d":
+                        s += "Down, ";
+                        break;
+                }
+            }
+            if (s.length > 0) {
+                s = s.substr(0, s.length -  2);
+            }
+            return s;
+        };
         /* public */
         plugin.run = function () {
             displayMessage("Connecting to " + plugin.settings["socketUrl"]);

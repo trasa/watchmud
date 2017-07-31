@@ -3,6 +3,7 @@ package world
 import (
 	"fmt"
 	"github.com/trasa/watchmud/player"
+	"strings"
 )
 
 type Room struct {
@@ -58,6 +59,29 @@ func (r *Room) AddPlayer(p player.Player) {
 		}
 	*/
 	r.PlayerList.Add(p)
+}
+
+func (r *Room) GetExits() string {
+	exits := []string{}
+	if r.North != nil {
+		exits = append(exits, "n")
+	}
+	if r.East != nil {
+		exits = append(exits, "e")
+	}
+	if r.South != nil {
+		exits = append(exits, "s")
+	}
+	if r.West != nil {
+		exits = append(exits, "w")
+	}
+	if r.Up != nil {
+		exits = append(exits, "u")
+	}
+	if r.Down != nil {
+		exits = append(exits, "d")
+	}
+	return strings.Join(exits, "")
 }
 
 type ExitRoomEvent struct {

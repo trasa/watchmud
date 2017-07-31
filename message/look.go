@@ -9,5 +9,6 @@ type LookResponse struct {
 	Response
 	RoomName string `json:"room_name"`
 	Value    string `json:"value"`
+	Exits    string `json:"exits"`
 	// TODO MOBs, Players, Objects ....
 }

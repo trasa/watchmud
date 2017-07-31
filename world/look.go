@@ -21,6 +21,7 @@ func (w *World) handleLook(msg *message.IncomingMessage) {
 			Response: message.Response{MessageType: "look", Successful: true},
 			RoomName: playerRoom.Name,
 			Value:    playerRoom.Description,
+			Exits:    playerRoom.GetExits(),
 			// TODO other occupants or objects in the room
 		}
 	}
