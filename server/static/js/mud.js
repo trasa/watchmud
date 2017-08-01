@@ -233,10 +233,9 @@
         };
 
         /* public */
-        // plugin.forceClose = function() {
-        //     console.log("force close!");
-        //     websocket.close();
-        // };
+        plugin.disconnect = function() {
+            websocket.close();
+        };
 
         plugin.init();
     };
@@ -264,6 +263,10 @@
                         displayMessage: displayMessage
                     }).data('mudclient');
                     mc.run();
+                });
+
+                $('#disconnect').click(function() {
+                    mc.disconnect();
                 });
 
                 $('#login').click(function() {
