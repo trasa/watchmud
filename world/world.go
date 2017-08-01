@@ -8,10 +8,11 @@ import (
 
 //noinspection GoNameStartsWithPackageName
 type World struct {
-	Zones      map[string]*Zone
-	StartRoom  *Room
-	VoidRoom   *Room
-	PlayerList *player.List
+	Zones       map[string]*Zone
+	StartRoom   *Room
+	VoidRoom    *Room
+	PlayerList  *player.List
+	PlayerRooms map[player.Player]*Room
 }
 
 var startZoneKey = "sample"
@@ -21,8 +22,9 @@ var startRoomKey = "start"
 func New() *World {
 	// Build a very boring world.
 	w := World{
-		Zones:      make(map[string]*Zone),
-		PlayerList: player.NewList(),
+		Zones:       make(map[string]*Zone),
+		PlayerList:  player.NewList(),
+		PlayerRooms: make(map[player.Player]*Room),
 	}
 	sampleZone := Zone{
 		Id:    startZoneKey,
@@ -55,35 +57,28 @@ func (w *World) getAllPlayers() []player.Player {
 	return w.PlayerList.All()
 }
 
-// TODO do we need this? merge into AddPlayer()?
-func (w *World) addPlayers(player ...player.Player) {
-	for _, p := range player {
-		w.AddPlayer(p)
-	}
-}
-
-// Add this Player to the world
-// putting them in the start room
-func (w *World) AddPlayer(p player.Player) {
-	w.PlayerList.Add(p)
-	w.StartRoom.Add(p)
-}
-
-func (w *World) MovePlayer(p player.Player, src *Room, dest *Room) {
-	src.Leave(p)
-	dest.Enter(p)
-}
-
-func (w *World) GetRoomContainingPlayer(p player.Player) *Room {
-	// TODO have to figure out this structure
-	if w.StartRoom.PlayerList.FindByName(p.GetName()) != nil {
-		return w.StartRoom
-	} else {
-		return nil
+// Add Player(s) to the world putting them in the start room,
+// Don't send room notifications.
+func (w *World) AddPlayer(players ...player.Player) {
+	for _, p := range players {
+		w.PlayerList.Add(p)
+		w.PlayerRooms[p] = w.StartRoom
+		w.StartRoom.Add(p)
 	}
 }
 
 // TODO remove player from world
+
+// Player is moving from src room to dest room.
+func (w *World) movePlayer(p player.Player, src *Room, dest *Room) {
+	src.Leave(p)
+	dest.Enter(p)
+	w.PlayerRooms[p] = dest
+}
+
+func (w *World) getRoomContainingPlayer(p player.Player) *Room {
+	return w.PlayerRooms[p]
+}
 
 func (w *World) findPlayerByName(name string) player.Player {
 	return w.PlayerList.FindByName(name)

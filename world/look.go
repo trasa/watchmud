@@ -7,7 +7,7 @@ func (w *World) handleLook(msg *message.IncomingMessage) {
 	// this will show the player the room they are in currently (if any)
 
 	// get room for player
-	playerRoom := w.GetRoomContainingPlayer(msg.Player)
+	playerRoom := w.getRoomContainingPlayer(msg.Player)
 	resp := message.LookResponse{
 		Response: message.NewSuccessfulResponse("look"),
 	}

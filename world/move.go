@@ -8,7 +8,7 @@ import (
 
 func (w *World) handleMove(msg *message.IncomingMessage) {
 	// go somewhere
-	playerRoom := w.GetRoomContainingPlayer(msg.Player)
+	playerRoom := w.getRoomContainingPlayer(msg.Player)
 	// get the direction we want to go to
 	dir := msg.Request.(message.MoveRequest).Direction
 
@@ -23,7 +23,7 @@ func (w *World) handleMove(msg *message.IncomingMessage) {
 	// can player go in that direction?
 	if targetRoom := playerRoom.Get(dir); targetRoom != nil {
 		// make it happen
-		w.MovePlayer(msg.Player, playerRoom, targetRoom)
+		w.movePlayer(msg.Player, playerRoom, targetRoom)
 		// send response message
 		msg.Player.Send(message.MoveResponse{
 			Response:        message.NewSuccessfulResponse("move"),

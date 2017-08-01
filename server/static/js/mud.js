@@ -52,6 +52,11 @@
         /* private */
         var handleMessage = function(msg) {
             switch(msg["msg_type"]) {
+
+                case "enter_room":
+                    handleEnterRoomNotification(msg);
+                break;
+
                 case "login_response":
                     handleLoginResponse(msg);
                     break;
@@ -61,8 +66,11 @@
                     break;
 
                 case "look":
-                case "move":
                     handleLookResponse(msg);
+                    break;
+
+                case "move":
+                    handleMoveResponse(msg);
                     break;
 
                 case "tell":
@@ -87,6 +95,10 @@
             }
         };
 
+        var handleEnterRoomNotification = function(msg) {
+            displayMessage(msg["player"] + " enters.");
+        };
+
         var handleLeaveRoomNotification = function(msg) {
             displayMessage(msg["player"] + " left.");
         };
@@ -99,6 +111,16 @@
         var handleLookResponse = function(msg) {
             if (msg["success"]) {
                 displayRoom(msg);
+            } else {
+                displayError(msg);
+            }
+        };
+
+        var handleMoveResponse = function(msg) {
+            if (msg["success"]) {
+                displayRoom(msg);
+            } else if (msg["result_code"] === "CANT_GO_THAT_WAY") {
+                displayMessage("There's no exit that way.");
             } else {
                 displayError(msg);
             }

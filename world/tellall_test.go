@@ -10,7 +10,7 @@ func TestHandleTellAll_success(t *testing.T) {
 	senderPlayer := NewTestPlayer("sender")
 	otherPlayer := NewTestPlayer("other")
 	bobPlayer := NewTestPlayer("bob")
-	w.addPlayers(senderPlayer, otherPlayer, bobPlayer)
+	w.AddPlayer(senderPlayer, otherPlayer, bobPlayer)
 
 	msg := message.IncomingMessage{
 		Player: senderPlayer,
@@ -46,7 +46,7 @@ func TestHandleTellAll_noValue(t *testing.T) {
 	w := newTestWorld()
 	senderPlayer := NewTestPlayer("sender")
 	otherPlayer := NewTestPlayer("other")
-	w.addPlayers(senderPlayer, otherPlayer)
+	w.AddPlayer(senderPlayer, otherPlayer)
 
 	msg := message.IncomingMessage{
 		Player: senderPlayer,
