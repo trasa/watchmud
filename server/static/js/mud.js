@@ -34,6 +34,15 @@
 
         var websocket;
 
+        var directionToString = {
+            0: "North",
+            1: "East",
+            2: "South",
+            3: "West",
+            4: "Up",
+            5: "Down"
+        };
+
         // ctor
         plugin.init = function () {
             plugin.settings = $.extend({}, defaults, options);
@@ -100,7 +109,7 @@
         };
 
         var handleLeaveRoomNotification = function(msg) {
-            displayMessage(msg["player"] + " left.");
+            displayMessage(msg["player"] + " departs " + directionToString[msg["direction"]] + ".");
         };
 
         var handleLoginResponse = function(msg) {

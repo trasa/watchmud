@@ -23,7 +23,7 @@ func (w *World) handleMove(msg *message.IncomingMessage) {
 	// can player go in that direction?
 	if targetRoom := playerRoom.Get(dir); targetRoom != nil {
 		// make it happen
-		w.movePlayer(msg.Player, playerRoom, targetRoom)
+		w.movePlayer(msg.Player, dir, playerRoom, targetRoom)
 		// send response message
 		msg.Player.Send(message.MoveResponse{
 			Response:        message.NewSuccessfulResponse("move"),

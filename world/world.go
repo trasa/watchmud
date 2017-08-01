@@ -1,6 +1,7 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/player"
 	"log"
@@ -70,8 +71,8 @@ func (w *World) AddPlayer(players ...player.Player) {
 // TODO remove player from world
 
 // Player is moving from src room to dest room.
-func (w *World) movePlayer(p player.Player, src *Room, dest *Room) {
-	src.Leave(p)
+func (w *World) movePlayer(p player.Player, dir direction.Direction, src *Room, dest *Room) {
+	src.Leave(p, dir)
 	dest.Enter(p)
 	w.PlayerRooms[p] = dest
 }

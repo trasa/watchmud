@@ -21,5 +21,6 @@ type EnterRoomNotification struct {
 
 type LeaveRoomNotification struct {
 	Notification
-	PlayerName string `json:"player"`
+	PlayerName string              `json:"player"`
+	Direction  direction.Direction `json:"direction"`
 }

@@ -38,11 +38,12 @@ func (r Room) String() string {
 }
 
 // Player leaves a room. Tells other room residents about it.
-func (r *Room) Leave(p player.Player) {
+func (r *Room) Leave(p player.Player, dir direction.Direction) {
 	r.PlayerList.Remove(p)
 	r.Send(message.LeaveRoomNotification{
 		Notification: message.Notification{MessageType: "leave_room"},
 		PlayerName:   p.GetName(),
+		Direction:    dir,
 	})
 }
 
