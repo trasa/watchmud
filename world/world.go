@@ -62,6 +62,7 @@ func (w *World) getAllPlayers() []player.Player {
 // Don't send room notifications.
 func (w *World) AddPlayer(players ...player.Player) {
 	for _, p := range players {
+		log.Printf("Adding Player: %s", p.GetName())
 		w.PlayerList.Add(p)
 		w.PlayerRooms[p] = w.StartRoom
 		w.StartRoom.Add(p)

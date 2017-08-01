@@ -53,20 +53,25 @@ func (c *Client) readPump() {
 		body := make(map[string]string)
 		if err := c.conn.ReadJSON(&body); err != nil {
 			log.Printf("read error: %s", err)
-			// TODO terminate / disconnect player
+			gameServerInstance.Logout(c, fmt.Sprintf("READ_ERROR: %s", err))
 			return
 		}
 
 		var request message.Request
 		var err error
 		if body["format"] == "line" {
+			// the 'line input' form of a request / command:
+			// "tell bob hi there"
 			request, err = translateLineToRequest(body["value"])
 		} else {
+			// the 'request input' form of a command:
+			// [msgtype:"tell", from:"me", to:"bob", value: "hi there" ... ]
 			request, err = translateToRequest(body)
 		}
 		if err != nil {
 			log.Printf("translation error: %s", err)
-			return // TODO terminate / disconnect player
+			gameServerInstance.Logout(c, fmt.Sprintf("TRANSLATE_ERROR: %s", err))
+			return
 		}
 		gameServerInstance.Receive(message.New(c, request))
 	}
@@ -82,15 +87,16 @@ func (c *Client) writePump() {
 			err := c.conn.WriteJSON(msg)
 			if err != nil {
 				log.Printf("Write Error: %v", err)
-				// TODO terminate/disconnect player
+				gameServerInstance.Logout(c, fmt.Sprintf("WRITE_ERROR: %s", err))
 				return
 			}
 		case <-c.quit:
+			gameServerInstance.Logout(c, "QUIT channel")
 			return // terminate the client
 		}
 	}
 }
 
 func (c *Client) String() string {
-	return fmt.Sprintf("(WebClient conn: %v, Player %s", c.conn != nil, c.Player)
+	return fmt.Sprintf("(WebClient conn: %v, Player %s)", c.conn != nil, c.Player)
 }

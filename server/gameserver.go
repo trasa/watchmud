@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/world"
 )
@@ -17,31 +18,38 @@ func NewGameServer() *GameServer {
 	}
 }
 
-func (server *GameServer) Start() {
+func (gs *GameServer) Start() {
 	// this is the loop that handles incoming requests
 	// needs to be organized around TICKs
 	for {
 		select {
 		// TODO add in tick time
-		case msg := <-server.incomingMessageBuffer:
+		case msg := <-gs.incomingMessageBuffer:
 			switch messageType := msg.Request.GetMessageType(); messageType {
 			case "login":
 				// login is special case, handled by server first and then
 				// sent down to world for further initialization
-				server.handleLogin(msg) // TODO error handling
+				gs.handleLogin(msg) // TODO error handling
 
 			default:
-				server.World.HandleIncomingMessage(msg)
+				gs.World.HandleIncomingMessage(msg)
 			}
 		}
 	}
 }
 
-func (server *GameServer) Receive(message *message.IncomingMessage) {
-	server.incomingMessageBuffer <- message
+func (gs *GameServer) Receive(message *message.IncomingMessage) {
+	gs.incomingMessageBuffer <- message
 }
 
-func (server *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO error handling
+func (gs *GameServer) Logout(c client.Client, cause string) {
+	gs.Receive(message.New(c, message.LogoutRequest{
+		Request: message.RequestBase{MessageType: "logout"},
+		Cause:   cause,
+	}))
+}
+
+func (gs *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO error handling
 	// is this connection already authenticated?
 	// see if we can find an existing player ..
 	if msg.Client.GetPlayer() != nil {
@@ -81,7 +89,7 @@ func (server *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO er
 	msg.Player = player
 
 	// add player to world
-	server.World.AddPlayer(player)
+	gs.World.AddPlayer(player)
 	player.Send(message.LoginResponse{
 		Response: message.Response{
 			MessageType: "login_response",
