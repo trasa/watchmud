@@ -17,7 +17,7 @@ func newTestWorld() *World {
 	w := &World{
 		Zones:       make(map[string]*Zone),
 		PlayerList:  player.NewList(),
-		PlayerRooms: make(map[player.Player]*Room),
+		PlayerRooms: NewPlayerRoomMap(),
 	}
 	w.Zones[testZone.Id] = &testZone
 

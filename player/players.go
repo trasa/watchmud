@@ -3,7 +3,7 @@ package player
 import "sync"
 
 type List struct {
-	sync.Mutex
+	sync.RWMutex
 	players map[Player]Player
 	byName  map[string]Player
 }
@@ -30,8 +30,8 @@ func (ps *List) Remove(p Player) {
 }
 
 func (ps *List) All() []Player {
-	ps.Lock()
-	defer ps.Unlock()
+	ps.RLock()
+	defer ps.RUnlock()
 	// copy the keys into a new slice
 	// and return that slice
 	keys := []Player{}
@@ -42,13 +42,15 @@ func (ps *List) All() []Player {
 }
 
 func (ps *List) Iter(routine func(Player)) {
-	ps.Lock()
-	defer ps.Unlock()
+	ps.RLock()
+	defer ps.RUnlock()
 	for p := range ps.players {
 		routine(p)
 	}
 }
 
 func (ps *List) FindByName(name string) Player {
+	ps.RLock()
+	defer ps.RUnlock()
 	return ps.byName[name]
 }

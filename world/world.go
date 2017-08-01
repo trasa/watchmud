@@ -13,7 +13,7 @@ type World struct {
 	StartRoom   *Room
 	VoidRoom    *Room
 	PlayerList  *player.List
-	PlayerRooms map[player.Player]*Room
+	PlayerRooms *PlayerRoomMap
 }
 
 var startZoneKey = "sample"
@@ -25,7 +25,7 @@ func New() *World {
 	w := World{
 		Zones:       make(map[string]*Zone),
 		PlayerList:  player.NewList(),
-		PlayerRooms: make(map[player.Player]*Room),
+		PlayerRooms: NewPlayerRoomMap(),
 	}
 	sampleZone := Zone{
 		Id:    startZoneKey,
@@ -64,22 +64,28 @@ func (w *World) AddPlayer(players ...player.Player) {
 	for _, p := range players {
 		log.Printf("Adding Player: %s", p.GetName())
 		w.PlayerList.Add(p)
-		w.PlayerRooms[p] = w.StartRoom
+		w.PlayerRooms.Add(p, w.StartRoom)
 		w.StartRoom.Add(p)
 	}
 }
 
-// TODO remove player from world
+func (w *World) RemovePlayer(players ...player.Player) {
+	for _, p := range players {
+		log.Printf("Removing Player: %s", p.GetName())
+		w.PlayerList.Remove(p)
+		w.PlayerRooms.Remove(p)
+	}
+}
 
 // Player is moving from src room to dest room.
 func (w *World) movePlayer(p player.Player, dir direction.Direction, src *Room, dest *Room) {
 	src.Leave(p, dir)
 	dest.Enter(p)
-	w.PlayerRooms[p] = dest
+	w.PlayerRooms.Add(p, dest)
 }
 
 func (w *World) getRoomContainingPlayer(p player.Player) *Room {
-	return w.PlayerRooms[p]
+	return w.PlayerRooms.Get(p)
 }
 
 func (w *World) findPlayerByName(name string) player.Player {
