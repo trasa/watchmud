@@ -56,8 +56,12 @@ func translateLineToRequest(line string) (request message.Request, err error) {
 		} else {
 			err = errors.New("usage: tellall [something]")
 		}
+	case "who":
+		request = message.WhoRequest{
+			Request: message.RequestBase{MessageType: "who"},
+		}
 	default:
-		err = errors.New("Unknown command: " + tokens[0])
+		err = errors.New("Unknown request: " + tokens[0])
 	}
 	return
 }

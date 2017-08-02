@@ -58,7 +58,7 @@ func TestTranslate_UnknownCommand(t *testing.T) {
 	req, err := translateLineToRequest(cmd)
 	assert.Nil(t, req, "req should be nil")
 	assert.NotNil(t, err, "should have error")
-	assert.Equal(t, "Unknown command: "+cmd, err.Error(), "err text")
+	assert.Equal(t, "Unknown request: "+cmd, err.Error(), "err text")
 }
 
 func TestTranslate_TellAll(t *testing.T) {

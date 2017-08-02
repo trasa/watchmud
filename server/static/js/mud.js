@@ -98,6 +98,10 @@
                     handleTellAllNotification(msg);
                     break;
 
+                case "who":
+                    handleWhoResponse(msg);
+                    break;
+
                 default:
                     displayMessage("Unknown message received: " + JSON.stringify(msg));
                     break;
@@ -199,6 +203,14 @@
             }
             return s;
         };
+
+        var handleWhoResponse = function(msg) {
+            for (var i =0, len = msg["player_info"].length; i <len; i++) {
+                p = msg["player_info"][i];
+                displayMessage(p["player_name"] + " - " + p["zone_name"] + " - " + p["room_name"]);
+            }
+        };
+
         /* public */
         plugin.run = function () {
             displayMessage("Connecting to " + plugin.settings["socketUrl"]);
