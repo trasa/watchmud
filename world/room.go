@@ -69,6 +69,8 @@ func (r *Room) Send(msg interface{}) { // TODO err
 }
 
 // Get all the valid exits from this room.
+//
+// TODO: exits can be locked and/or closed
 func (r *Room) GetExits() string {
 	exits := []string{}
 	if r.HasExit(direction.NORTH) {
@@ -93,6 +95,7 @@ func (r *Room) GetExits() string {
 }
 
 // Is there a valid exit in this direction in this room?
+// TODO what about exits that are locked or closed?
 func (r *Room) HasExit(dir direction.Direction) bool {
 	switch dir {
 	case direction.NORTH:
@@ -115,6 +118,7 @@ func (r *Room) HasExit(dir direction.Direction) bool {
 
 // Get the exit for this direction. Will return nil if there
 // isn't a valid exit that way.
+// TODO what about exits that are locked or closed?
 func (r *Room) Get(dir direction.Direction) *Room {
 	switch dir {
 	case direction.NORTH:

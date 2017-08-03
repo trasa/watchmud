@@ -175,7 +175,7 @@
         var displayRoom = function(msg) {
             displayMessage(msg["room_name"]);
             displayMessage(msg["description"]);
-            displayMessage("Exits: " + formatExits(msg["exits"]) + "\n")
+            displayMessage("Obvious Exits: " + formatExits(msg["exits"]) + "\n")
         };
 
         var formatExits = function(exitStr) {
