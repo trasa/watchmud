@@ -64,7 +64,11 @@
 
                 case "enter_room":
                     handleEnterRoomNotification(msg);
-                break;
+                    break;
+
+                case "error":
+                    handleErrorResponse(msg);
+                    break;
 
                 case "login_response":
                     handleLoginResponse(msg);
@@ -112,6 +116,10 @@
             displayMessage(msg["player"] + " enters.");
         };
 
+        var handleErrorResponse = function(msg) {
+            displayMessage("Error: " + msg["result_code"] + ": " + msg["error"])
+        };
+        
         var handleLeaveRoomNotification = function(msg) {
             displayMessage(msg["player"] + " departs " + directionToString[msg["direction"]] + ".");
         };
