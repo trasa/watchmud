@@ -69,3 +69,23 @@ func TestWho_sort(t *testing.T) {
 	assert.Equal(t, "z", z.sent[0].(message.WhoResponse).PlayerInfo[1].PlayerName)
 
 }
+
+func TestWho_logoutRemovesPlayer(t *testing.T) {
+	w := newTestWorld()
+	z := NewTestPlayer("z")
+	y := NewTestPlayer("y")
+	w.AddPlayer(z, y)
+	w.RemovePlayer(y)
+
+	msg := message.IncomingMessage{
+		Player: z,
+		Request: message.WhoRequest{
+			Request: message.RequestBase{MessageType: "who"},
+		},
+	}
+
+	w.handleWho(&msg)
+
+	assert.Equal(t, 1, len(z.sent[0].(message.WhoResponse).PlayerInfo))
+	assert.Equal(t, "z", z.sent[0].(message.WhoResponse).PlayerInfo[0].PlayerName)
+}
