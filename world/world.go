@@ -9,34 +9,31 @@ import (
 
 //noinspection GoNameStartsWithPackageName
 type World struct {
-	Zones       map[string]*Zone
-	StartRoom   *Room
-	VoidRoom    *Room
-	PlayerList  *player.List
-	PlayerRooms *PlayerRoomMap
+	zones       map[string]*Zone
+	startRoom   *Room
+	voidRoom    *Room
+	playerList  *player.List
+	playerRooms *PlayerRoomMap
 }
-
-var startZoneKey = "sample"
-var startRoomKey = "start"
 
 // Constructor for World
 func New() *World {
 	// Build a very boring world.
 	w := World{
-		Zones:       make(map[string]*Zone),
-		PlayerList:  player.NewList(),
-		PlayerRooms: NewPlayerRoomMap(),
+		zones:       make(map[string]*Zone),
+		playerList:  player.NewList(),
+		playerRooms: NewPlayerRoomMap(),
 	}
 	sampleZone := Zone{
-		Id:    startZoneKey,
+		Id:    "sample",
 		Name:  "Sample Zone",
 		Rooms: make(map[string]*Room),
 	}
-	w.Zones[sampleZone.Id] = &sampleZone
+	w.zones[sampleZone.Id] = &sampleZone
 
-	centralPortalRoom := NewRoom(&sampleZone, startRoomKey, "Central Portal", "It's a boring room, with boring stuff in it.")
+	centralPortalRoom := NewRoom(&sampleZone, "start", "Central Portal", "It's a boring room, with boring stuff in it.")
 	sampleZone.Rooms[centralPortalRoom.Id] = centralPortalRoom
-	w.StartRoom = centralPortalRoom
+	w.startRoom = centralPortalRoom
 
 	// north room
 	northRoom := NewRoom(&sampleZone, "northRoom", "North Room", "This room is north of the start.")
@@ -47,7 +44,7 @@ func New() *World {
 	northRoom.South = centralPortalRoom
 
 	// The VOID. When you're not really in a room.
-	w.VoidRoom = NewRoom(nil, "void", "The Void", "You see nothing but endless void.")
+	w.voidRoom = NewRoom(nil, "void", "The Void", "You see nothing but endless void.")
 
 	log.Print("World built.")
 	return &w
@@ -55,7 +52,7 @@ func New() *World {
 
 // TODO what uses this?
 func (w *World) getAllPlayers() []player.Player {
-	return w.PlayerList.All()
+	return w.playerList.All()
 }
 
 // Add Player(s) to the world putting them in the start room,
@@ -63,17 +60,17 @@ func (w *World) getAllPlayers() []player.Player {
 func (w *World) AddPlayer(players ...player.Player) {
 	for _, p := range players {
 		log.Printf("Adding Player: %s", p.GetName())
-		w.PlayerList.Add(p)
-		w.PlayerRooms.Add(p, w.StartRoom)
-		w.StartRoom.Add(p)
+		w.playerList.Add(p)
+		w.playerRooms.Add(p, w.startRoom)
+		w.startRoom.Add(p)
 	}
 }
 
 func (w *World) RemovePlayer(players ...player.Player) {
 	for _, p := range players {
 		log.Printf("Removing Player: %s", p.GetName())
-		w.PlayerList.Remove(p)
-		w.PlayerRooms.Remove(p)
+		w.playerList.Remove(p)
+		w.playerRooms.Remove(p)
 	}
 }
 
@@ -81,15 +78,15 @@ func (w *World) RemovePlayer(players ...player.Player) {
 func (w *World) movePlayer(p player.Player, dir direction.Direction, src *Room, dest *Room) {
 	src.Leave(p, dir)
 	dest.Enter(p)
-	w.PlayerRooms.Add(p, dest)
+	w.playerRooms.Add(p, dest)
 }
 
 func (w *World) getRoomContainingPlayer(p player.Player) *Room {
-	return w.PlayerRooms.Get(p)
+	return w.playerRooms.Get(p)
 }
 
 func (w *World) findPlayerByName(name string) player.Player {
-	return w.PlayerList.FindByName(name)
+	return w.playerList.FindByName(name)
 }
 
 func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
@@ -118,14 +115,14 @@ func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
 
 // Send a message to all players in the world.
 func (w *World) SendToAllPlayers(message interface{}) {
-	w.PlayerList.Iter(func(p player.Player) {
+	w.playerList.Iter(func(p player.Player) {
 		p.Send(message)
 	})
 }
 
 // Send a message to all players in the world except for one.
 func (w *World) SendToAllPlayersExcept(exception player.Player, message interface{}) {
-	w.PlayerList.Iter(func(p player.Player) {
+	w.playerList.Iter(func(p player.Player) {
 		if exception != p {
 			p.Send(message)
 		}

@@ -10,20 +10,20 @@ import (
 func newTestWorld() *World {
 
 	testZone := Zone{
-		Id:    startZoneKey,
+		Id:    "sample",
 		Name:  "Sample Zone",
 		Rooms: make(map[string]*Room),
 	}
 	w := &World{
-		Zones:       make(map[string]*Zone),
-		PlayerList:  player.NewList(),
-		PlayerRooms: NewPlayerRoomMap(),
+		zones:       make(map[string]*Zone),
+		playerList:  player.NewList(),
+		playerRooms: NewPlayerRoomMap(),
 	}
-	w.Zones[testZone.Id] = &testZone
+	w.zones[testZone.Id] = &testZone
 
-	testRoom := NewRoom(&testZone, startRoomKey, "test name", "this is a test room.")
+	testRoom := NewRoom(&testZone, "start", "test tame", "this is a test room.")
 	testZone.Rooms[testRoom.Id] = testRoom
-	w.StartRoom = testRoom
+	w.startRoom = testRoom
 	return w
 }
 

@@ -12,15 +12,12 @@ func (w *World) handleWho(msg *message.IncomingMessage) {
 
 	// playerName, (level, class, other things we don't have yet), zoneName, roomName
 	info := []message.WhoPlayerInfo{}
-	w.PlayerList.Iter(func(p player.Player) {
+	w.playerList.Iter(func(p player.Player) {
 		r := w.getRoomContainingPlayer(p)
 		var zoneName, roomName string
-		if r == nil {
+		if r != nil {
 			zoneName = r.Zone.Name
 			roomName = r.Name
-		} else {
-			zoneName = "(None)"
-			roomName = "(None)"
 		}
 		info = append(info, message.WhoPlayerInfo{
 			PlayerName: p.GetName(),

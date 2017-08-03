@@ -119,7 +119,7 @@
         var handleErrorResponse = function(msg) {
             displayMessage("Error: " + msg["result_code"] + ": " + msg["error"])
         };
-        
+
         var handleLeaveRoomNotification = function(msg) {
             displayMessage(msg["player"] + " departs " + directionToString[msg["direction"]] + ".");
         };
@@ -213,6 +213,7 @@
         };
 
         var handleWhoResponse = function(msg) {
+            displayMessage("-- Who Is Here --");
             for (var i =0, len = msg["player_info"].length; i <len; i++) {
                 p = msg["player_info"][i];
                 displayMessage(p["player_name"] + " - " + p["zone_name"] + " - " + p["room_name"]);
