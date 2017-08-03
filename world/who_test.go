@@ -28,7 +28,7 @@ func TestWho_success(t *testing.T) {
 	assert.NotEqual(t, "", resp.PlayerInfo[0].RoomName)
 }
 
-func TestWho_NotInRoom(t *testing.T) {
+func TestWho_notInRoom(t *testing.T) {
 	w := newTestWorld()
 	p := NewTestPlayer("guy")
 	w.AddPlayer(p)
@@ -48,4 +48,24 @@ func TestWho_NotInRoom(t *testing.T) {
 	assert.True(t, resp.Successful)
 	assert.Equal(t, "", resp.PlayerInfo[0].ZoneName)
 	assert.Equal(t, "", resp.PlayerInfo[0].RoomName)
+}
+
+func TestWho_sort(t *testing.T) {
+	w := newTestWorld()
+	z := NewTestPlayer("z")
+	y := NewTestPlayer("y")
+	w.AddPlayer(z, y)
+
+	msg := message.IncomingMessage{
+		Player: z,
+		Request: message.WhoRequest{
+			Request: message.RequestBase{MessageType: "who"},
+		},
+	}
+
+	w.handleWho(&msg)
+
+	assert.Equal(t, "y", z.sent[0].(message.WhoResponse).PlayerInfo[0].PlayerName)
+	assert.Equal(t, "z", z.sent[0].(message.WhoResponse).PlayerInfo[1].PlayerName)
+
 }

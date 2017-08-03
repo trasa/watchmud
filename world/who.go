@@ -3,6 +3,7 @@ package world
 import (
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/player"
+	"sort"
 )
 
 func (w *World) handleWho(msg *message.IncomingMessage) {
@@ -24,6 +25,11 @@ func (w *World) handleWho(msg *message.IncomingMessage) {
 			ZoneName:   zoneName,
 			RoomName:   roomName,
 		})
+	})
+
+	// sort results by name
+	sort.Slice(info, func(i, j int) bool {
+		return info[i].PlayerName < info[j].PlayerName
 	})
 
 	msg.Player.Send(message.WhoResponse{
