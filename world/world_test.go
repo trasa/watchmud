@@ -21,7 +21,7 @@ func newTestWorld() *World {
 	}
 	w.zones[testZone.Id] = &testZone
 
-	testRoom := NewRoom(&testZone, "start", "test tame", "this is a test room.")
+	testRoom := NewRoom(&testZone, "start", "Test Room", "this is a test room.")
 	testZone.Rooms[testRoom.Id] = testRoom
 	w.startRoom = testRoom
 	return w
