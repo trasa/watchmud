@@ -33,3 +33,10 @@ func TestRoomExits_some(t *testing.T) {
 	exits := r.GetExits()
 	assert.Equal(t, "neu", exits)
 }
+
+func NewTestRoom(name string) Room {
+	return Room{
+		Id:   name,
+		Name: name,
+	}
+}
