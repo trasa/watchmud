@@ -70,8 +70,14 @@ func (c *Client) readPump() {
 		}
 		if err != nil {
 			log.Printf("translation error: %s", err)
-			gameServerInstance.Logout(c, fmt.Sprintf("TRANSLATE_ERROR: %s", err))
-			return
+			// can't send this ourselves (not reentrant?)
+
+			request = message.ErrorRequest{
+				Request: message.RequestBase{
+					MessageType: "error",
+				},
+				Error: err,
+			}
 		}
 		gameServerInstance.Receive(message.New(c, request))
 	}

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/world"
@@ -31,6 +32,18 @@ func (gs *GameServer) Start() {
 				// login is special case, handled by server first and then
 				// sent down to world for further initialization
 				gs.handleLogin(msg) // TODO error handling
+
+			case "error":
+				// we received bad input, send response to client
+				// rather than processing message
+				msg.Client.Send(message.ErrorResponse{
+					Response: message.Response{
+						Successful:  false,
+						MessageType: "error",
+						ResultCode:  "TRANSLATE_ERROR",
+					},
+					Error: fmt.Sprintf("%s", msg.Request.(message.ErrorRequest).Error),
+				})
 
 			default:
 				gs.World.HandleIncomingMessage(msg)
