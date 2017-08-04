@@ -8,7 +8,7 @@ import (
 func main() {
 	//server.Init()
 	gameserver := server.NewGameServer()
-	go gameserver.Start()
+	go gameserver.Run()
 
 	web.Init(gameserver)
 	web.Start()

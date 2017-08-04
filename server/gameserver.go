@@ -5,11 +5,16 @@ import (
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/world"
+	"log"
+	"time"
 )
+
+const TICK_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
 
 type GameServer struct {
 	incomingMessageBuffer chan *message.IncomingMessage
 	World                 *world.World
+	tickInterval          time.Duration
 }
 
 func NewGameServer() *GameServer {
@@ -19,21 +24,31 @@ func NewGameServer() *GameServer {
 	}
 }
 
-func (gs *GameServer) Start() {
+func (gs *GameServer) Run() {
 	// this is the loop that handles incoming requests
 	// needs to be organized around TICKs
+	tstart := time.Now().UnixNano()
+	ticker := time.NewTicker(TICK_INTERVAL)
+
 	for {
+		select {
+		case <-ticker.C:
+			now := time.Now().UnixNano()
+			deltaSeconds := float64(now-tstart) / 1000000000
+			tstart = now
 
-		// beginning of game loop
-		// heartbeat stuff
-		// mobs, scripts, ...
-
-		// handle an incoming message if one exists
-		// TODO tick time: figure out how many incoming messages we can handle
-		gs.processIncomingMessageBuffer()
-
+			gs.heartbeat(deltaSeconds)
+		}
 	}
-	// when this method returns the game server is no longer running
+}
+
+func (gs *GameServer) heartbeat(delta float64) {
+	log.Printf("hb %d", delta)
+	// mobs, scripts, ...
+
+	// handle an incoming message if one exists
+	// TODO tick time: figure out how many incoming messages we can handle
+	gs.processIncomingMessageBuffer()
 }
 
 // read a message off of incomingMessageBuffer and do it
@@ -64,7 +79,10 @@ func (gs *GameServer) processIncomingMessageBuffer() {
 		default:
 			gs.World.HandleIncomingMessage(msg)
 		}
+	default:
+		log.Printf("incoming message buffer is empty")
 	}
+
 }
 
 func (gs *GameServer) Receive(message *message.IncomingMessage) {
