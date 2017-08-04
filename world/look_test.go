@@ -9,7 +9,9 @@ import (
 func TestLook_successful(t *testing.T) {
 	w := newTestWorld()
 	p := NewTestPlayer("testdood")
+	other:= NewTestPlayer("other")
 	w.AddPlayer(p)
+	w.AddPlayer(other)
 
 	msg := message.IncomingMessage{
 		Player: p,
@@ -24,4 +26,6 @@ func TestLook_successful(t *testing.T) {
 	assert.True(t, resp.Successful)
 	assert.NotNil(t, resp.Name)
 	assert.NotNil(t, resp.Description)
+	assert.Equal(t, 1, len(resp.Players))
+	assert.Equal(t, "other", resp.Players[0])
 }
