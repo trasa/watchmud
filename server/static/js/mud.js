@@ -175,6 +175,12 @@
         var displayRoom = function(msg) {
             displayMessage(msg["room_name"]);
             displayMessage(msg["description"]);
+            if (msg["players"] !== null &&  msg["players"].length > 0) {
+                displayMessage("Other Players:");
+                for (var i = 0, len = msg["players"].length; i < len; i++) {
+                    displayMessage(msg["players"][i])
+                }
+            }
             displayMessage("Obvious Exits: " + formatExits(msg["exits"]) + "\n")
         };
 

@@ -16,8 +16,9 @@ type LookNotification struct {
 }
 
 type RoomDescription struct {
-	Name        string `json:"room_name"`
-	Description string `json:"description"`
-	Exits       string `json:"exits"`
-	// TODO MOBs, Players, Objects ....
+	Name        string   `json:"room_name"`
+	Description string   `json:"description"`
+	Exits       string   `json:"exits"`
+	Players     []string `json:"players"`
+	// TODO MOBs, Objects ....
 }

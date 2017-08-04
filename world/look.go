@@ -16,6 +16,10 @@ func (w *World) handleLook(msg *message.IncomingMessage) {
 	}
 	resp.RoomDescription = playerRoom.CreateRoomDescription()
 	// add players (TODO: that you can see) to the room description
-	//w.playerRooms.roomToPlayer[playerRoom]
+	for _, p := range w.playerRooms.GetPlayers(playerRoom) {
+		if msg.Player != p {
+			resp.RoomDescription.Players = append(resp.RoomDescription.Players, p.GetName())
+		}
+	}
 	msg.Player.Send(resp)
 }
