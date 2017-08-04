@@ -9,7 +9,7 @@ import (
 func TestLook_successful(t *testing.T) {
 	w := newTestWorld()
 	p := NewTestPlayer("testdood")
-	other:= NewTestPlayer("other")
+	other := NewTestPlayer("other")
 	w.AddPlayer(p)
 	w.AddPlayer(other)
 

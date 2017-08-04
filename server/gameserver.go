@@ -5,7 +5,6 @@ import (
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/world"
-	"log"
 )
 
 type GameServer struct {
@@ -32,6 +31,8 @@ func (gs *GameServer) Start() {
 				// login is special case, handled by server first and then
 				// sent down to world for further initialization
 				gs.handleLogin(msg) // TODO error handling
+
+				// TODO does the gameserver need to do anything on logout?
 
 			case "error":
 				// we received bad input, send response to client
@@ -112,12 +113,4 @@ func (gs *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO error 
 		},
 		Player: message.NewPlayerData(player.GetName()),
 	})
-}
-
-func (gs *GameServer) handleLogout(msg *message.IncomingMessage) { // TODO error handling
-	if msg.Client.GetPlayer() != nil {
-		gs.World.RemovePlayer(msg.Client.GetPlayer())
-	} else {
-		log.Printf("Logout message with null player: %s", msg.Client)
-	}
 }
