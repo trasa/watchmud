@@ -78,6 +78,7 @@ func (w *World) RemovePlayer(players ...player.Player) {
 func (w *World) movePlayer(p player.Player, dir direction.Direction, src *Room, dest *Room) {
 	src.Leave(p, dir)
 	dest.Enter(p)
+	w.playerRooms.Remove(p)
 	w.playerRooms.Add(p, dest)
 }
 
@@ -97,6 +98,8 @@ func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
 		w.handleLook(msg)
 	case "move":
 		w.handleMove(msg)
+	case "say":
+		w.handleSay(msg)
 	case "tell":
 		w.handleTell(msg)
 	case "tell_all":
@@ -127,4 +130,20 @@ func (w *World) SendToAllPlayersExcept(exception player.Player, message interfac
 			p.Send(message)
 		}
 	})
+}
+
+// Send a message to all players in a specific room.
+func (w *World) SendToPlayersInRoom(room *Room, msg interface{}) {
+	for _, p := range w.playerRooms.GetPlayers(room) {
+		p.Send(msg)
+	}
+}
+
+// Send a message to all players in a room, except for one of those players.
+func (w *World) SendToPlayersInRoomExcept(exception player.Player, room *Room, msg interface{}) {
+	for _, p := range w.playerRooms.GetPlayers(room) {
+		if exception != p {
+			p.Send(msg)
+		}
+	}
 }

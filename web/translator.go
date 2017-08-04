@@ -36,6 +36,15 @@ func translateLineToRequest(line string) (request message.Request, err error) {
 				Direction: d,
 			}
 		}
+	case "'", "say":
+		if len(tokens) >= 2 {
+			request = message.SayRequest{
+				Request: message.RequestBase{MessageType: "say"},
+				Value:   strings.Join(tokens[1:], " "),
+			}
+		} else {
+			err = errors.New("What do you want to say?")
+		}
 	case "tell", "t":
 		if len(tokens) >= 3 {
 			request = message.TellRequest{

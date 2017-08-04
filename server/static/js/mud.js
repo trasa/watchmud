@@ -86,6 +86,14 @@
                     handleMoveResponse(msg);
                     break;
 
+                case "say":
+                    handleSayResponse(msg);
+                    break;
+
+                case "say_notification":
+                    handleSayNotification(msg);
+                    break;
+
                 case "tell":
                     handleTellResponse(msg);
                     break;
@@ -147,6 +155,22 @@
             }
         };
 
+        var handleSayResponse = function(msg) {
+            if (msg["success"]) {
+                displayMessage("You say '" + msg["value"] + "'")
+            } else {
+                if (msg["result_code"] === "NOT_IN_A_ROOM") {
+                    displayMessage("You yell into the darkness.")
+                } else {
+                    displayMessage("say failed: " + msg["result_code"])
+                }
+            }
+        };
+
+        var handleSayNotification = function(msg) {
+            displayMessage(msg["sender"] + " says '" + msg["value"] + "'");
+        };
+
         var handleTellResponse = function(msg) {
             if (msg["success"]) {
                 displayMessage("sent.");
@@ -156,7 +180,7 @@
         };
 
         var handleTellNotification = function(msg) {
-            displayMessage(msg["sender"] + " says '" + msg["value"] + "'");
+            displayMessage(msg["sender"] + " tells you '" + msg["value"] + "'");
         };
 
         var handleTellAllResponse = function(msg) {
