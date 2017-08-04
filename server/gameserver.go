@@ -23,32 +23,46 @@ func (gs *GameServer) Start() {
 	// this is the loop that handles incoming requests
 	// needs to be organized around TICKs
 	for {
-		select {
-		// TODO add in tick time
-		case msg := <-gs.incomingMessageBuffer:
-			switch messageType := msg.Request.GetMessageType(); messageType {
-			case "login":
-				// login is special case, handled by server first and then
-				// sent down to world for further initialization
-				gs.handleLogin(msg) // TODO error handling
 
-				// TODO does the gameserver need to do anything on logout?
+		// beginning of game loop
+		// heartbeat stuff
+		// mobs, scripts, ...
 
-			case "error":
-				// we received bad input, send response to client
-				// rather than processing message
-				msg.Client.Send(message.ErrorResponse{
-					Response: message.Response{
-						Successful:  false,
-						MessageType: "error",
-						ResultCode:  "TRANSLATE_ERROR",
-					},
-					Error: fmt.Sprintf("%s", msg.Request.(message.ErrorRequest).Error),
-				})
+		// handle an incoming message if one exists
+		// TODO tick time: figure out how many incoming messages we can handle
+		gs.processIncomingMessageBuffer()
 
-			default:
-				gs.World.HandleIncomingMessage(msg)
-			}
+	}
+	// when this method returns the game server is no longer running
+}
+
+// read a message off of incomingMessageBuffer and do it
+// this doesn't block so if the buffer is empty, the method returns immediately
+func (gs *GameServer) processIncomingMessageBuffer() {
+	select {
+	case msg := <-gs.incomingMessageBuffer:
+		switch messageType := msg.Request.GetMessageType(); messageType {
+		case "login":
+			// login is special case, handled by server first and then
+			// sent down to world for further initialization
+			gs.handleLogin(msg) // TODO error handling
+
+			// TODO does the gameserver need to do anything on logout?
+
+		case "error":
+			// we received bad input, send response to client
+			// rather than processing message
+			msg.Client.Send(message.ErrorResponse{
+				Response: message.Response{
+					Successful:  false,
+					MessageType: "error",
+					ResultCode:  "TRANSLATE_ERROR",
+				},
+				Error: fmt.Sprintf("%s", msg.Request.(message.ErrorRequest).Error),
+			})
+
+		default:
+			gs.World.HandleIncomingMessage(msg)
 		}
 	}
 }
