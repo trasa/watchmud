@@ -69,9 +69,8 @@ func (r *Room) Send(msg interface{}) { // TODO err
 }
 
 // Get all the valid exits from this room.
-//
 // TODO: exits can be locked and/or closed
-func (r *Room) GetExits() string {
+func (r *Room) GetExitString() string {
 	exits := []string{}
 	if r.HasExit(direction.NORTH) {
 		exits = append(exits, "n")
@@ -92,6 +91,37 @@ func (r *Room) GetExits() string {
 		exits = append(exits, "d")
 	}
 	return strings.Join(exits, "")
+}
+
+func (r *Room) forEachExit(context interface{}, foreach func(dir direction.Direction, context interface{})) interface{} {
+	if r.HasExit(direction.NORTH) {
+		foreach(direction.NORTH, context)
+	}
+	if r.HasExit(direction.EAST) {
+		foreach(direction.EAST, context)
+	}
+	if r.HasExit(direction.SOUTH) {
+		foreach(direction.SOUTH, context)
+	}
+	if r.HasExit(direction.WEST) {
+		foreach(direction.WEST, context)
+	}
+	if r.HasExit(direction.UP) {
+		foreach(direction.UP, context)
+	}
+	if r.HasExit(direction.DOWN) {
+		foreach(direction.DOWN, context)
+	}
+	return context
+}
+
+// Return a map of info about the rooms around:
+// directions that can be traveled and the short description of
+// the room
+// TODO some rooms can't be seen into, doors that are locked
+// or closed, etc etc...
+func (r *Room) GetExitInfo() map[string]string {
+
 }
 
 // Is there a valid exit in this direction in this room?

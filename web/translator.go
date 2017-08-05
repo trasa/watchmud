@@ -23,6 +23,10 @@ func translateLineToRequest(line string) (request message.Request, err error) {
 		return
 	}
 	switch tokens[0] {
+	case "exits", "ex":
+		request = message.ExitsRequest{
+			Request: message.RequestBase{MessageType:"exits"},
+		}
 	case "look", "l":
 		request = message.LookRequest{
 			Request:   message.RequestBase{MessageType: "look"},

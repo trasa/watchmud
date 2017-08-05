@@ -92,6 +92,8 @@ func (w *World) findPlayerByName(name string) player.Player {
 
 func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
 	switch messageType := msg.Request.GetMessageType(); messageType {
+	case "exits":
+		w.handleExits(msg)
 	case "logout":
 		w.handleLogout(msg)
 	case "look":
