@@ -9,7 +9,10 @@ import (
 	"time"
 )
 
-const TICK_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
+//const TICK_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
+const TICK_INTERVAL time.Duration = 1 * time.Millisecond // 0.1 seconds
+//const TICK_INTERVAL time.Duration = 1 * time.Second // 1 second
+var MAX_PULSE PulseCount = PulseCount(int64(1 / TICK_INTERVAL.Hours()) * 10) // 10 hours
 
 type GameServer struct {
 	incomingMessageBuffer chan *message.IncomingMessage
@@ -29,6 +32,7 @@ func (gs *GameServer) Run() {
 	// needs to be organized around TICKs
 	tstart := time.Now().UnixNano()
 	ticker := time.NewTicker(TICK_INTERVAL)
+	pulse := PulseCount(0)
 
 	for {
 		select {
@@ -36,14 +40,30 @@ func (gs *GameServer) Run() {
 			now := time.Now().UnixNano()
 			deltaSeconds := float64(now-tstart) / 1000000000
 			tstart = now
+			pulse++
+			gs.heartbeat(pulse, deltaSeconds)
 
-			gs.heartbeat(deltaSeconds)
+			//log.Printf("duration is %f seconds", pulse.toDuration().Seconds())
+
+			// do something every 5 seconds
+			//if pulse.checkInterval(5 * time.Second) {
+			//	log.Printf("5 seconds")
+			//}
+			//if pulse.checkInterval(1 * time.Minute) {
+			//	log.Printf("1 minute")
+			//}
+
+			// roll pulse over when it hits MAX_PULSE
+			if pulse > MAX_PULSE {
+				log.Printf("Resetting pulse: %d > %d", pulse, MAX_PULSE)
+				pulse = 0
+			}
 		}
 	}
 }
 
-func (gs *GameServer) heartbeat(delta float64) {
-	log.Printf("hb %d", delta)
+func (gs *GameServer) heartbeat(pulse PulseCount, delta float64) {
+	//log.Printf("pulse %d hb %d", pulse, delta)
 	// mobs, scripts, ...
 
 	// handle an incoming message if one exists
@@ -80,9 +100,8 @@ func (gs *GameServer) processIncomingMessageBuffer() {
 			gs.World.HandleIncomingMessage(msg)
 		}
 	default:
-		log.Printf("incoming message buffer is empty")
+		//log.Printf("incoming message buffer is empty")
 	}
-
 }
 
 func (gs *GameServer) Receive(message *message.IncomingMessage) {
