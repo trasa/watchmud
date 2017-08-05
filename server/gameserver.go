@@ -9,8 +9,7 @@ import (
 	"time"
 )
 
-//const TICK_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
-const TICK_INTERVAL time.Duration = 1 * time.Millisecond // 0.1 seconds
+const TICK_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
 //const TICK_INTERVAL time.Duration = 1 * time.Second // 1 second
 var MAX_PULSE PulseCount = PulseCount(int64(1 / TICK_INTERVAL.Hours()) * 10) // 10 hours
 
@@ -62,20 +61,37 @@ func (gs *GameServer) Run() {
 	}
 }
 
+// runs the heartbeat of the game. Use pulse to determine intervals
+// between things (ex. reset zones every 15 minutes...)
+// delta is the amount of time since the last heartbeat was run.
 func (gs *GameServer) heartbeat(pulse PulseCount, delta float64) {
 	//log.Printf("pulse %d hb %d", pulse, delta)
 	// mobs, scripts, ...
 
+	// pulse zone
+	// pulse mobs
+	// perform violence
+	// mud-hour ("player tick") -- affect weather, regen ..
+
+
 	// handle an incoming message if one exists
 	// TODO tick time: figure out how many incoming messages we can handle
-	gs.processIncomingMessageBuffer()
+	// for now, just process until buffer is empty...
+	// not really infinite as the method will return false if there was
+	// nothing to do.
+	//noinspection GoInfiniteFor
+	for ; gs.processIncomingMessage(); {}
 }
 
 // read a message off of incomingMessageBuffer and do it
 // this doesn't block so if the buffer is empty, the method returns immediately
-func (gs *GameServer) processIncomingMessageBuffer() {
+// If a message was procssed (even in error) return true.
+// Otherwise return false.
+func (gs *GameServer) processIncomingMessage() bool {
+	received := false
 	select {
 	case msg := <-gs.incomingMessageBuffer:
+		received = true
 		switch messageType := msg.Request.GetMessageType(); messageType {
 		case "login":
 			// login is special case, handled by server first and then
@@ -102,6 +118,7 @@ func (gs *GameServer) processIncomingMessageBuffer() {
 	default:
 		//log.Printf("incoming message buffer is empty")
 	}
+	return received
 }
 
 func (gs *GameServer) Receive(message *message.IncomingMessage) {
