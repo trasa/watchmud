@@ -11,7 +11,7 @@ import (
 
 const TICK_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
 //const TICK_INTERVAL time.Duration = 1 * time.Second // 1 second
-var MAX_PULSE PulseCount = PulseCount(int64(1 / TICK_INTERVAL.Hours()) * 10) // 10 hours
+var MAX_PULSE PulseCount = PulseCount(int64(1/TICK_INTERVAL.Hours()) * 10) // 10 hours
 
 type GameServer struct {
 	incomingMessageBuffer chan *message.IncomingMessage
@@ -73,14 +73,14 @@ func (gs *GameServer) heartbeat(pulse PulseCount, delta float64) {
 	// perform violence
 	// mud-hour ("player tick") -- affect weather, regen ..
 
-
 	// handle an incoming message if one exists
 	// TODO tick time: figure out how many incoming messages we can handle
 	// for now, just process until buffer is empty...
 	// not really infinite as the method will return false if there was
 	// nothing to do.
 	//noinspection GoInfiniteFor
-	for ; gs.processIncomingMessage(); {}
+	for gs.processIncomingMessage() {
+	}
 }
 
 // read a message off of incomingMessageBuffer and do it

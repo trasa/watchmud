@@ -2,7 +2,7 @@ package world
 
 import "github.com/trasa/watchmud/message"
 
-func (w *World) handleExits(msg message.IncomingMessage) {
+func (w *World) handleExits(msg *message.IncomingMessage) {
 	r := w.getRoomContainingPlayer(msg.Player)
 	if r == nil {
 		r = w.voidRoom

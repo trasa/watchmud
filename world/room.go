@@ -121,7 +121,7 @@ func (r *Room) forEachExit(context interface{}, foreach func(dir direction.Direc
 // TODO some rooms can't be seen into, doors that are locked
 // or closed, etc etc...
 func (r *Room) GetExitInfo() map[string]string {
-
+	return nil // TODO
 }
 
 // Is there a valid exit in this direction in this room?
@@ -173,7 +173,7 @@ func (r *Room) CreateRoomDescription() message.RoomDescription {
 	return message.RoomDescription{
 		Name:        r.Name,
 		Description: r.Description,
-		Exits:       r.GetExits(),
+		Exits:       r.GetExitString(),
 		// TODO other occupants or objects in the room
 	}
 }

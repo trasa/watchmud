@@ -9,5 +9,5 @@ func (pc PulseCount) toDuration() time.Duration {
 }
 
 func (pc PulseCount) checkInterval(i time.Duration) bool {
-	return pc.toDuration() % i == 0
+	return pc.toDuration()%i == 0
 }

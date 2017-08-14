@@ -8,4 +8,3 @@ type ExitsResponse struct {
 	Response
 	ExitInfo map[string]string `json:"exit_info"`
 }
-
