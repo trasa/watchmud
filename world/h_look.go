@@ -14,14 +14,6 @@ func (w *World) handleLook(msg *message.IncomingMessage) {
 	if playerRoom == nil {
 		playerRoom = w.voidRoom
 	}
-	resp.RoomDescription = playerRoom.CreateRoomDescription()
-	// add players to the room description
-	// TODO only add those players you can actually see
-	for _, p := range w.playerRooms.GetPlayers(playerRoom) {
-		// don't add yourself
-		if msg.Player != p {
-			resp.RoomDescription.Players = append(resp.RoomDescription.Players, p.GetName())
-		}
-	}
+	resp.RoomDescription = playerRoom.CreateRoomDescription(msg.Player)
 	msg.Player.Send(resp)
 }

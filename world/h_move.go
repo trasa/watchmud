@@ -27,7 +27,7 @@ func (w *World) handleMove(msg *message.IncomingMessage) {
 		// send response message
 		msg.Player.Send(message.MoveResponse{
 			Response:        message.NewSuccessfulResponse("move"),
-			RoomDescription: targetRoom.CreateRoomDescription(),
+			RoomDescription: targetRoom.CreateRoomDescription(msg.Player),
 		})
 	} else {
 		// you can't go that way, tell player about error

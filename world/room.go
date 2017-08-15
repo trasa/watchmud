@@ -178,13 +178,19 @@ func (r *Room) Get(dir direction.Direction) *Room {
 }
 
 // Describe this room.
-func (r *Room) CreateRoomDescription() message.RoomDescription {
-	return message.RoomDescription{
+func (r *Room) CreateRoomDescription(exclude player.Player) message.RoomDescription {
+	desc := message.RoomDescription{
 		Name:        r.Name,
 		Description: r.Description,
 		Exits:       r.GetExitString(),
-		// TODO other occupants or objects in the room
 	}
+	r.PlayerList.Iter(func(p player.Player) {
+		if p != exclude {
+			desc.Players = append(desc.Players, p.GetName())
+		}
+	})
+	// TODO objects
+	return desc
 }
 
 func (r *Room) AddObject(obj *object.Instance) {
