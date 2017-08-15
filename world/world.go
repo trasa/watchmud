@@ -64,11 +64,6 @@ func New() *World {
 	return &w
 }
 
-// TODO what uses this?
-func (w *World) getAllPlayers() []player.Player {
-	return w.playerList.All()
-}
-
 // Add Player(s) to the world putting them in the start room,
 // Don't send room notifications.
 func (w *World) AddPlayer(players ...player.Player) {
