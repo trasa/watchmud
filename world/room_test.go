@@ -5,6 +5,13 @@ import (
 	"testing"
 )
 
+func NewTestRoom(name string) Room {
+	return Room{
+		Id:   name,
+		Name: name,
+	}
+}
+
 func TestRoomExits_none(t *testing.T) {
 	r := &Room{}
 	exits := r.GetExitString()
@@ -34,9 +41,20 @@ func TestRoomExits_some(t *testing.T) {
 	assert.Equal(t, "neu", exits)
 }
 
-func NewTestRoom(name string) Room {
-	return Room{
-		Id:   name,
-		Name: name,
-	}
+func TestRoom_GetExitInfo(t *testing.T) {
+	center := NewTestRoom("center")
+	n := NewTestRoom("n")
+	s := NewTestRoom("s")
+
+	center.North = &n
+	n.South = &center
+
+	center.South = &s
+	s.North = &center
+
+	exitInfo := center.GetExitInfo()
+
+	assert.Equal(t, 2, len(exitInfo))
+	assert.Equal(t, "n", exitInfo["n"])
+	assert.Equal(t, "s", exitInfo["s"])
 }

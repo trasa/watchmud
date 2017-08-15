@@ -121,7 +121,17 @@ func (r *Room) forEachExit(context interface{}, foreach func(dir direction.Direc
 // TODO some rooms can't be seen into, doors that are locked
 // or closed, etc etc...
 func (r *Room) GetExitInfo() map[string]string {
-	return nil // TODO
+	exits := make(map[string]string)
+	r.forEachExit(exits, func(dir direction.Direction, context interface{}) {
+		s, e := direction.DirectionToString(dir)
+		if e == nil {
+			// TODO some rooms can't be seen into, etc ...
+			context.(map[string]string)[s] = r.Get(dir).Name
+		} else {
+			log.Printf("Couldn't DirectionToString: %s, %s", dir, e)
+		}
+	})
+	return exits
 }
 
 // Is there a valid exit in this direction in this room?
