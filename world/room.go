@@ -15,7 +15,7 @@ type Room struct {
 	Name        string
 	Description string
 	Zone        *Zone
-	PlayerList  *player.List  // map of players by name
+	PlayerList  *player.List // map of players by name
 	Objects     []*object.Instance
 	North       *Room
 	South       *Room
@@ -67,6 +67,15 @@ func (r *Room) Enter(p player.Player) {
 func (r *Room) Send(msg interface{}) { // TODO err
 	r.PlayerList.Iter(func(p player.Player) {
 		p.Send(msg)
+	})
+}
+
+// Send to all players in a room, except for one of them.
+func (r *Room) SendExcept(exception player.Player, msg interface{}) { // TODO err
+	r.PlayerList.Iter(func(p player.Player) {
+		if exception != p {
+			p.Send(msg)
+		}
 	})
 }
 

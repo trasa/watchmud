@@ -15,7 +15,7 @@ func (w *World) handleSay(msg *message.IncomingMessage) {
 			ResultCode:  "NOT_IN_A_ROOM",
 		})
 	} else {
-		w.SendToPlayersInRoomExcept(msg.Player, room, message.SayNotification{
+		room.SendExcept(msg.Player, message.SayNotification{
 			Notification: message.Notification{MessageType: "say_notification"},
 			Value:        sayRequest.Value,
 			Sender:       msg.Player.GetName(),

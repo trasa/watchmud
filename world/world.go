@@ -147,19 +147,3 @@ func (w *World) SendToAllPlayersExcept(exception player.Player, message interfac
 		}
 	})
 }
-
-// Send a message to all players in a specific room.
-func (w *World) SendToPlayersInRoom(room *Room, msg interface{}) {
-	for _, p := range w.playerRooms.GetPlayers(room) {
-		p.Send(msg)
-	}
-}
-
-// Send a message to all players in a room, except for one of those players.
-func (w *World) SendToPlayersInRoomExcept(exception player.Player, room *Room, msg interface{}) {
-	for _, p := range w.playerRooms.GetPlayers(room) {
-		if exception != p {
-			p.Send(msg)
-		}
-	}
-}
