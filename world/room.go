@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 	"log"
 	"strings"
@@ -13,14 +14,15 @@ type Room struct {
 	Id          string
 	Name        string
 	Description string
-	Zone        *Zone        `json:"-"`
-	PlayerList  *player.List `json:"-"` // map of players by name
-	North       *Room        `json:"-"`
-	South       *Room        `json:"-"`
-	East        *Room        `json:"-"`
-	West        *Room        `json:"-"`
-	Up          *Room        `json:"-"`
-	Down        *Room        `json:"-"`
+	Zone        *Zone
+	PlayerList  *player.List  // map of players by name
+	Objects     []*object.Instance
+	North       *Room
+	South       *Room
+	East        *Room
+	West        *Room
+	Up          *Room
+	Down        *Room
 }
 
 func NewRoom(zone *Zone, id string, name string, description string) *Room {
@@ -174,4 +176,8 @@ func (r *Room) CreateRoomDescription() message.RoomDescription {
 		Exits:       r.GetExitString(),
 		// TODO other occupants or objects in the room
 	}
+}
+
+func (r *Room) AddObject(obj *object.Instance) {
+	r.Objects = append(r.Objects, obj)
 }

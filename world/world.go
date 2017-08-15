@@ -3,6 +3,7 @@ package world
 import (
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 	"log"
 )
@@ -45,6 +46,19 @@ func New() *World {
 
 	// The VOID. When you're not really in a room.
 	w.voidRoom = NewRoom(nil, "void", "The Void", "You see nothing but endless void.")
+
+	// lets put "something" in the central portal room
+	fountainDefn := object.NewDefinition(
+		"fountain",
+		"fountain",
+		object.OTHER,
+		[]string{"fount"},
+		"fountain",
+		"A fountain burbles quietly.")
+
+	fountainObj := object.NewInstance(fountainDefn)
+	// put the obj in the room
+	centralPortalRoom.AddObject(fountainObj)
 
 	log.Print("World built.")
 	return &w
