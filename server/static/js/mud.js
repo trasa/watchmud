@@ -70,6 +70,10 @@
                     handleErrorResponse(msg);
                     break;
 
+                case "exits":
+                    handleExits(msg);
+                    break;
+
                 case "login_response":
                     handleLoginResponse(msg);
                     break;
@@ -126,6 +130,17 @@
 
         var handleErrorResponse = function(msg) {
             displayMessage("Error: " + msg["result_code"] + ": " + msg["error"])
+        };
+
+        var handleExits = function(msg) {
+            displayMessage("Obvious Exits:")
+            if ($.isEmptyObject(msg["exit_info"])) {
+                displayMessage("None!")
+            } else {
+                $.each(msg["exit_info"], function(k,v) {
+                    displayMessage(k + " - " + v);
+                });
+            }
         };
 
         var handleLeaveRoomNotification = function(msg) {
