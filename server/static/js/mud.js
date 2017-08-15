@@ -352,6 +352,7 @@
 
                 function doSend() {
                     var buf = $('#buf');
+                    displayMessage("> " + buf.val());
                     mc.send({
                         "format":"line",
                         "value" : buf.val()
