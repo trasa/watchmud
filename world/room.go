@@ -72,24 +72,12 @@ func (r *Room) Send(msg interface{}) { // TODO err
 // TODO: exits can be locked and/or closed
 func (r *Room) GetExitString() string {
 	exits := []string{}
-	if r.HasExit(direction.NORTH) {
-		exits = append(exits, "n")
-	}
-	if r.HasExit(direction.EAST) {
-		exits = append(exits, "e")
-	}
-	if r.HasExit(direction.SOUTH) {
-		exits = append(exits, "s")
-	}
-	if r.HasExit(direction.WEST) {
-		exits = append(exits, "w")
-	}
-	if r.HasExit(direction.UP) {
-		exits = append(exits, "u")
-	}
-	if r.HasExit(direction.DOWN) {
-		exits = append(exits, "d")
-	}
+	r.forEachExit(exits, func(dir direction.Direction, context interface{}) {
+		s, err := direction.DirectionToString(dir)
+		if err == nil {
+			exits = append(exits, s)
+		}
+	})
 	return strings.Join(exits, "")
 }
 
