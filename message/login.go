@@ -1,12 +1,12 @@
 package message
 
 type LoginRequest struct {
-	Request
-	PlayerName string `json:"player_name"`
-	Password   string `json:"password"`
+	Request    `mapstructure:"-"`
+	PlayerName string
+	Password   string
 }
 
 type LoginResponse struct {
 	Response
-	Player PlayerData `json:"player"`
+	Player PlayerData
 }

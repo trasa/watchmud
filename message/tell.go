@@ -2,8 +2,8 @@ package message
 
 type TellRequest struct {
 	Request
-	ReceiverPlayerName string `json:"receiver"`
-	Value              string `json:"value"`
+	ReceiverPlayerName string
+	Value              string
 }
 
 type TellNotification struct {

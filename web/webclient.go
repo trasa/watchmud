@@ -50,23 +50,31 @@ func (c *Client) readPump() {
 	defer c.conn.Close()
 
 	for {
-		body := make(map[string]string)
-		if err := c.conn.ReadJSON(&body); err != nil {
+		requestEnvelope := message.RequestEnvelope{}
+		err := c.conn.ReadJSON(&requestEnvelope)
+		if err != nil {
 			log.Printf("read error: %s", err)
 			gameServerInstance.Logout(c, fmt.Sprintf("READ_ERROR: %s", err))
 			return
 		}
+		if requestEnvelope.Format == "" || requestEnvelope.Value == nil {
+			log.Printf("Unmarshaling error: requestEnvelope format or value is nil")
+			gameServerInstance.Logout(c, "UNMARSHAL_ERROR")
+			return
+		}
 
 		var request message.Request
-		var err error
-		if body["format"] == "line" {
+		switch requestEnvelope.Format {
+		case "line":
 			// the 'line input' form of a request / command:
 			// "tell bob hi there"
-			request, err = translateLineToRequest(body["value"])
-		} else {
-			// the 'request input' form of a command:
-			// [msgtype:"tell", from:"me", to:"bob", value: "hi there" ... ]
-			request, err = translateToRequest(body)
+			request, err = translateLineToRequest(requestEnvelope.Value.(string))
+		case "request":
+			request, err = translateToRequest(requestEnvelope.Value.(map[string]interface{}))
+		default:
+			log.Println("Unhandled requestEnvelope.Format: ", requestEnvelope.Format)
+			gameServerInstance.Logout(c, fmt.Sprintf("UNKNOWN_FORMAT: %s", requestEnvelope.Format))
+			return
 		}
 		if err != nil {
 			log.Printf("translation error: %s", err)

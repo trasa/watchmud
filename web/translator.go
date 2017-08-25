@@ -2,6 +2,7 @@ package web
 
 import (
 	"errors"
+	"github.com/mitchellh/mapstructure"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/message"
 	"strings"
@@ -79,28 +80,36 @@ func translateLineToRequest(line string) (request message.Request, err error) {
 	return
 }
 
-func translateToRequest(body map[string]string) (request message.Request, err error) {
+func translateToRequest(body map[string]interface{}) (request message.Request, err error) {
 	err = nil
-	switch body["msg_type"] {
+	msgType := body["Request"].(map[string]interface{})["msg_type"].(string)
+	switch msgType {
 	case "login":
-		request = message.LoginRequest{
-			Request:    message.RequestBase{MessageType: body["msg_type"]},
-			PlayerName: body["player_name"],
-			Password:   body["password"],
-		}
+		//{
+		// 	"Request":{
+		// 			"msg_type":"login"
+		// 		},
+		// 	"player_name":"somedood",
+		// 	"password":"NotImplemented"
+		// }
+		var lr message.LoginRequest
+		err = mapstructure.Decode(body, &lr)
+		lr.Request = message.RequestBase{MessageType: msgType}
+		request = lr
+
 	case "tell":
 		request = message.TellRequest{
-			Request:            message.RequestBase{MessageType: body["msg_type"]},
-			ReceiverPlayerName: body["receiver"],
-			Value:              body["value"],
+			Request:            message.RequestBase{MessageType: msgType},
+			ReceiverPlayerName: body["receiver"].(string),
+			Value:              body["value"].(string),
 		}
 	case "tell_all":
 		request = message.TellAllRequest{
-			Request: message.RequestBase{MessageType: body["msg_type"]},
-			Value:   body["value"],
+			Request: message.RequestBase{MessageType: msgType},
+			Value:   body["value"].(string),
 		}
 	default:
-		err = &UnknownMessageTypeError{MessageType: body["msg_type"]}
+		err = &UnknownMessageTypeError{MessageType: msgType}
 	}
 	return
 }

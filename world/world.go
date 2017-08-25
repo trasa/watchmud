@@ -54,7 +54,7 @@ func New() *World {
 		object.OTHER,
 		[]string{"fount"},
 		"fountain",
-		"A fountain burbles quietly.")
+		"A fountain bubbles quietly.")
 
 	fountainObj := object.NewInstance(fountainDefn)
 	// put the obj in the room
