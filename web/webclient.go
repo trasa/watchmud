@@ -68,9 +68,9 @@ func (c *Client) readPump() {
 		case "line":
 			// the 'line input' form of a request / command:
 			// "tell bob hi there"
-			request, err = translateLineToRequest(requestEnvelope.Value.(string))
+			request, err = message.TranslateLineToRequest(requestEnvelope.Value.(string))
 		case "request":
-			request, err = translateToRequest(requestEnvelope.Value.(map[string]interface{}))
+			request, err = message.TranslateToRequest(requestEnvelope.Value.(map[string]interface{}))
 		default:
 			log.Println("Unhandled requestEnvelope.Format: ", requestEnvelope.Format)
 			gameServerInstance.Logout(c, fmt.Sprintf("UNKNOWN_FORMAT: %s", requestEnvelope.Format))

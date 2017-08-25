@@ -1,10 +1,9 @@
-package web
+package message
 
 import (
 	"errors"
 	"github.com/mitchellh/mapstructure"
 	"github.com/trasa/watchmud/direction"
-	"github.com/trasa/watchmud/message"
 	"strings"
 )
 
@@ -13,38 +12,38 @@ import (
 // turn into Request = message.TellRequest { "bob", "hi there" }
 // and so on.
 // note that not all commands can be parsed from line input
-func translateLineToRequest(line string) (request message.Request, err error) {
+func TranslateLineToRequest(line string) (request Request, err error) {
 
 	// first parse into tokens
 	tokens := strings.Fields(line)
 	if len(tokens) == 0 {
-		request = message.NoOpRequest{
-			Request: message.RequestBase{MessageType: "no_op"},
+		request = NoOpRequest{
+			Request: RequestBase{MessageType: "no_op"},
 		}
 		return
 	}
 	switch tokens[0] {
 	case "exits", "ex":
-		request = message.ExitsRequest{
-			Request: message.RequestBase{MessageType: "exits"},
+		request = ExitsRequest{
+			Request: RequestBase{MessageType: "exits"},
 		}
 	case "look", "l":
-		request = message.LookRequest{
-			Request:   message.RequestBase{MessageType: "look"},
+		request = LookRequest{
+			Request:   RequestBase{MessageType: "look"},
 			ValueList: tokens[1:],
 		}
 	case "n", "north", "s", "south", "e", "east", "w", "west", "u", "up", "d", "down":
 		var d direction.Direction
 		if d, err = direction.StringToDirection(tokens[0]); err == nil {
-			request = message.MoveRequest{
-				Request:   message.RequestBase{MessageType: "move"},
+			request = MoveRequest{
+				Request:   RequestBase{MessageType: "move"},
 				Direction: d,
 			}
 		}
 	case "'", "say":
 		if len(tokens) >= 2 {
-			request = message.SayRequest{
-				Request: message.RequestBase{MessageType: "say"},
+			request = SayRequest{
+				Request: RequestBase{MessageType: "say"},
 				Value:   strings.Join(tokens[1:], " "),
 			}
 		} else {
@@ -52,8 +51,8 @@ func translateLineToRequest(line string) (request message.Request, err error) {
 		}
 	case "tell", "t":
 		if len(tokens) >= 3 {
-			request = message.TellRequest{
-				Request:            message.RequestBase{MessageType: "tell"},
+			request = TellRequest{
+				Request:            RequestBase{MessageType: "tell"},
 				ReceiverPlayerName: tokens[1],
 				Value:              strings.Join(tokens[2:], " "),
 			}
@@ -63,16 +62,16 @@ func translateLineToRequest(line string) (request message.Request, err error) {
 		}
 	case "tellall", "ta":
 		if len(tokens) >= 2 {
-			request = message.TellAllRequest{
-				Request: message.RequestBase{MessageType: "tell_all"},
+			request = TellAllRequest{
+				Request: RequestBase{MessageType: "tell_all"},
 				Value:   strings.Join(tokens[1:], " "),
 			}
 		} else {
 			err = errors.New("usage: tellall [something]")
 		}
 	case "who":
-		request = message.WhoRequest{
-			Request: message.RequestBase{MessageType: "who"},
+		request = WhoRequest{
+			Request: RequestBase{MessageType: "who"},
 		}
 	default:
 		err = errors.New("Unknown request: " + tokens[0])
@@ -80,7 +79,7 @@ func translateLineToRequest(line string) (request message.Request, err error) {
 	return
 }
 
-func translateToRequest(body map[string]interface{}) (request message.Request, err error) {
+func TranslateToRequest(body map[string]interface{}) (request Request, err error) {
 	err = nil
 	msgType := body["Request"].(map[string]interface{})["msg_type"].(string)
 	switch msgType {
@@ -92,20 +91,20 @@ func translateToRequest(body map[string]interface{}) (request message.Request, e
 		// 	"player_name":"somedood",
 		// 	"password":"NotImplemented"
 		// }
-		var lr message.LoginRequest
+		var lr LoginRequest
 		err = mapstructure.Decode(body, &lr)
-		lr.Request = message.RequestBase{MessageType: msgType}
+		lr.Request = RequestBase{MessageType: msgType}
 		request = lr
 
 	case "tell":
-		request = message.TellRequest{
-			Request:            message.RequestBase{MessageType: msgType},
+		request = TellRequest{
+			Request:            RequestBase{MessageType: msgType},
 			ReceiverPlayerName: body["receiver"].(string),
 			Value:              body["value"].(string),
 		}
 	case "tell_all":
-		request = message.TellAllRequest{
-			Request: message.RequestBase{MessageType: msgType},
+		request = TellAllRequest{
+			Request: RequestBase{MessageType: msgType},
 			Value:   body["value"].(string),
 		}
 	default:
