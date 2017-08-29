@@ -11,7 +11,7 @@ type SayResponse struct {
 }
 
 type SayNotification struct {
-	Notification
+	Response
 	Sender string `json:"sender"`
 	Value  string `json:"value"`
 }

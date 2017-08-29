@@ -34,10 +34,10 @@ func TestHandleTellAll_success(t *testing.T) {
 		t.Fatalf("sender received wrong number of messages: %d", len(senderPlayer.sent))
 	}
 	senderResponse := senderPlayer.sent[0].(message.Response)
-	if senderResponse.MessageType != "tell_all" {
-		t.Errorf("incorrect sender response message type: %s", senderResponse.MessageType)
+	if senderResponse.GetMessageType() != "tell_all" {
+		t.Errorf("incorrect sender response message type: %s", senderResponse.GetMessageType())
 	}
-	if !senderResponse.Successful {
+	if !senderResponse.IsSuccessful() {
 		t.Error("sender response is not successful")
 	}
 }
@@ -67,10 +67,10 @@ func TestHandleTellAll_noValue(t *testing.T) {
 		t.Fatalf("sender received wrong number of messages: %d", len(senderPlayer.sent))
 	}
 	senderResponse := senderPlayer.sent[0].(message.Response)
-	if senderResponse.MessageType != "tell_all" {
-		t.Errorf("incorrect sender response message type: %s", senderResponse.MessageType)
+	if senderResponse.GetMessageType() != "tell_all" {
+		t.Errorf("incorrect sender response message type: %s", senderResponse.GetMessageType())
 	}
-	if senderResponse.Successful {
+	if senderResponse.IsSuccessful() {
 		t.Error("sender response should fail")
 	}
 }

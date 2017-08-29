@@ -21,7 +21,7 @@ func TestWho_success(t *testing.T) {
 
 	assert.Equal(t, 1, len(p.sent))
 	resp := p.sent[0].(message.WhoResponse)
-	assert.True(t, resp.Successful)
+	assert.True(t, resp.IsSuccessful())
 	assert.Equal(t, 1, len(resp.PlayerInfo))
 	assert.Equal(t, "guy", resp.PlayerInfo[0].PlayerName)
 	assert.NotEqual(t, "", resp.PlayerInfo[0].ZoneName)
@@ -45,7 +45,7 @@ func TestWho_notInRoom(t *testing.T) {
 
 	assert.Equal(t, 1, len(p.sent))
 	resp := p.sent[0].(message.WhoResponse)
-	assert.True(t, resp.Successful)
+	assert.True(t, resp.IsSuccessful())
 	assert.Equal(t, "", resp.PlayerInfo[0].ZoneName)
 	assert.Equal(t, "", resp.PlayerInfo[0].RoomName)
 }

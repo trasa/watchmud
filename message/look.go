@@ -11,7 +11,7 @@ type LookResponse struct {
 }
 
 type LookNotification struct {
-	Notification
+	Response
 	RoomDescription
 }
 

@@ -10,7 +10,7 @@ type TellAllResponse struct {
 }
 
 type TellAllNotification struct {
-	Notification
+	Response
 	Value  string `json:"value"`
 	Sender string `json:"sender"`
 }

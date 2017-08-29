@@ -28,7 +28,7 @@ func TestMove_butYouCant(t *testing.T) {
 		t.Fatalf("Expected message %s", p.sent)
 	}
 	resp := p.sent[0].(message.Response)
-	assert.False(t, resp.Successful)
-	assert.Equal(t, resp.MessageType, "move")
-	assert.Equal(t, resp.ResultCode, "CANT_GO_THAT_WAY")
+	assert.False(t, resp.IsSuccessful())
+	assert.Equal(t, resp.GetMessageType(), "move")
+	assert.Equal(t, resp.GetResultCode(), "CANT_GO_THAT_WAY")
 }

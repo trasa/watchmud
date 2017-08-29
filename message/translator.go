@@ -131,4 +131,5 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	}
 	log.Printf("loginResp %s %s", loginResp.Successful, loginResp.Player.Name)
 	response = loginResp
+	return
 }

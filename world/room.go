@@ -43,7 +43,7 @@ func (r Room) String() string {
 func (r *Room) Leave(p player.Player, dir direction.Direction) {
 	r.PlayerList.Remove(p)
 	r.Send(message.LeaveRoomNotification{
-		Notification: message.Notification{MessageType: "leave_room"},
+		Response: message.ResponseBase{MessageType: "leave_room"},
 		PlayerName:   p.GetName(),
 		Direction:    dir,
 	})
@@ -57,7 +57,7 @@ func (r *Room) Add(p player.Player) {
 // Player enters a room. Tells other room residents about it.
 func (r *Room) Enter(p player.Player) {
 	r.Send(message.EnterRoomNotification{
-		Notification: message.Notification{MessageType: "enter_room"},
+		Response: message.ResponseBase{MessageType: "enter_room"},
 		PlayerName:   p.GetName(),
 	})
 	r.Add(p)

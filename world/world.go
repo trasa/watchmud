@@ -119,7 +119,7 @@ func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
 		w.handleWho(msg) // TODO show connected players and the room they are in (if any)
 	default:
 		log.Printf("UNHANDLED messageType: %s, body %s", messageType, msg.Request)
-		msg.Player.Send(message.Response{
+		msg.Player.Send(message.ResponseBase{
 			MessageType: messageType,
 			Successful:  false,
 			ResultCode:  "UNKNOWN_MESSAGE_TYPE",

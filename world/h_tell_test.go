@@ -36,8 +36,8 @@ func TestHandleTell_success(t *testing.T) {
 	if recdMessage.Sender != senderPlayer.name {
 		t.Errorf("Didn't get expected senderPlayer.Name: %s", recdMessage.Sender)
 	}
-	if recdMessage.MessageType != "tell_notification" {
-		t.Errorf("MsgType wasn't tell: %s", recdMessage.MessageType)
+	if recdMessage.GetMessageType() != "tell_notification" {
+		t.Errorf("MsgType wasn't tell: %s", recdMessage.GetMessageType())
 	}
 	if recdMessage.Value != "hi" {
 		t.Errorf("value wasn't hi: %s", recdMessage.Value)
@@ -48,13 +48,13 @@ func TestHandleTell_success(t *testing.T) {
 		t.Errorf("expected sender to get a response %s", senderPlayer.sent)
 	}
 	senderResponse := senderPlayer.sent[0].(message.Response)
-	if senderResponse.MessageType != "tell" {
-		t.Errorf("expected sender response tell: %s", senderResponse.MessageType)
+	if senderResponse.GetMessageType() != "tell" {
+		t.Errorf("expected sender response tell: %s", senderResponse.GetMessageType())
 	}
-	if senderResponse.ResultCode != "OK" {
-		t.Errorf("expected sender response ok: %s", senderResponse.ResultCode)
+	if senderResponse.GetResultCode() != "OK" {
+		t.Errorf("expected sender response ok: %s", senderResponse.GetResultCode())
 	}
-	if !senderResponse.Successful {
+	if !senderResponse.IsSuccessful() {
 		t.Error("expected sender response to be successful")
 	}
 }
@@ -84,13 +84,13 @@ func TestHandleTell_receiverNotFound(t *testing.T) {
 	}
 
 	senderResponse := senderPlayer.sent[0].(message.Response)
-	if senderResponse.MessageType != "tell" {
-		t.Errorf("sender response message type: %s", senderResponse.MessageType)
+	if senderResponse.GetMessageType() != "tell" {
+		t.Errorf("sender response message type: %s", senderResponse.GetMessageType())
 	}
-	if senderResponse.ResultCode != "TO_PLAYER_NOT_FOUND" {
-		t.Errorf("sender response: %s", senderResponse.ResultCode)
+	if senderResponse.GetResultCode() != "TO_PLAYER_NOT_FOUND" {
+		t.Errorf("sender response: %s", senderResponse.GetResultCode())
 	}
-	if senderResponse.Successful {
+	if senderResponse.IsSuccessful() {
 		t.Error("expected sender response to be a failure")
 	}
 }

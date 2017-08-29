@@ -104,7 +104,7 @@ func (gs *GameServer) processIncomingMessage() bool {
 			// we received bad input, send response to client
 			// rather than processing message
 			msg.Client.Send(message.ErrorResponse{
-				Response: message.Response{
+				Response: message.ResponseBase{
 					Successful:  false,
 					MessageType: "error",
 					ResultCode:  "TRANSLATE_ERROR",
@@ -138,7 +138,7 @@ func (gs *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO error 
 	if msg.Client.GetPlayer() != nil {
 		// you've already got one
 		msg.Client.Send(message.LoginResponse{
-			Response: message.Response{
+			ResponseBase: message.ResponseBase{
 				MessageType: "login_response",
 				Successful:  false,
 				ResultCode:  "PLAYER_ALREADY_ATTACHED",
@@ -174,7 +174,7 @@ func (gs *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO error 
 	// add player to world
 	gs.World.AddPlayer(player)
 	player.Send(message.LoginResponse{
-		Response: message.Response{
+		ResponseBase: message.ResponseBase{
 			MessageType: "login_response",
 			Successful:  true,
 			ResultCode:  "OK",

@@ -40,10 +40,10 @@ func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
 	w.HandleIncomingMessage(&msg)
 
 	resp := p.GetSentResponse(0)
-	if resp.Successful {
+	if resp.IsSuccessful() {
 		t.Error("should not succeed")
 	}
-	if resp.ResultCode != "UNKNOWN_MESSAGE_TYPE" {
-		t.Errorf("unexpected result code: %s", resp.ResultCode)
+	if resp.GetResultCode() != "UNKNOWN_MESSAGE_TYPE" {
+		t.Errorf("unexpected result code: %s", resp.GetResultCode())
 	}
 }

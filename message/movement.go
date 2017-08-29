@@ -15,12 +15,12 @@ type MoveResponse struct {
 }
 
 type EnterRoomNotification struct {
-	Notification
+	Response
 	PlayerName string `json:"player"`
 }
 
 type LeaveRoomNotification struct {
-	Notification
+	Response
 	PlayerName string              `json:"player"`
 	Direction  direction.Direction `json:"direction"`
 }

@@ -11,18 +11,18 @@ func (w *World) handleTell(msg *message.IncomingMessage) {
 	value := tellRequest.Value
 
 	if receiver == nil {
-		msg.Player.Send(message.Response{
+		msg.Player.Send(message.ResponseBase{
 			MessageType: "tell",
 			Successful:  false,
 			ResultCode:  "TO_PLAYER_NOT_FOUND",
 		})
 	} else {
 		receiver.Send(message.TellNotification{
-			Notification: message.Notification{MessageType: "tell_notification"},
+			Response: message.ResponseBase{MessageType: "tell_notification"},
 			Sender:       sender,
 			Value:        value,
 		})
-		msg.Player.Send(message.Response{
+		msg.Player.Send(message.ResponseBase{
 			MessageType: "tell",
 			Successful:  true,
 			ResultCode:  "OK",
