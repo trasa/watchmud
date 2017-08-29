@@ -2,7 +2,7 @@ package message
 
 type TellAllRequest struct {
 	Request
-	Value string `json:"value"`
+	Value string
 }
 
 type TellAllResponse struct {

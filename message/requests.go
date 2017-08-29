@@ -17,6 +17,10 @@ func (r RequestBase) GetMessageType() string {
 	return r.MessageType
 }
 
+// Raps up a Format identifier and a 'value' which is
+// serialized by whatever 'Format' specifies.
+// Where Value might be a serialized String, or a
+// Map[string]interface{}
 type RequestEnvelope struct {
 	Format string      `json:"format"`
 	Value  interface{} `json:"value"`
@@ -28,6 +32,9 @@ type RequestEnvelope struct {
 //	return nil
 //}
 //
+
+
+// TODO dead code?
 func UnmarshalJSON(b []byte) error {
 	// TODO
 	log.Println("Unmarshal RequestEnv JSON:", string(b[:]))

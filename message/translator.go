@@ -5,8 +5,12 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/trasa/watchmud/direction"
 	"strings"
+	"encoding/json"
+	"log"
 )
 
+// Turn a request of format type "line" into a Request message
+//
 // have an input string like
 // tell bob hi there
 // turn into Request = message.TellRequest { "bob", "hi there" }
@@ -79,9 +83,12 @@ func TranslateLineToRequest(line string) (request Request, err error) {
 	return
 }
 
+// Turn a request of format type "request" into a Request object
 func TranslateToRequest(body map[string]interface{}) (request Request, err error) {
 	err = nil
 	msgType := body["Request"].(map[string]interface{})["msg_type"].(string)
+	requestBase := RequestBase{MessageType: msgType}
+
 	switch msgType {
 	case "login":
 		//{
@@ -93,22 +100,35 @@ func TranslateToRequest(body map[string]interface{}) (request Request, err error
 		// }
 		var lr LoginRequest
 		err = mapstructure.Decode(body, &lr)
-		lr.Request = RequestBase{MessageType: msgType}
+		lr.Request = requestBase
 		request = lr
 
 	case "tell":
-		request = TellRequest{
-			Request:            RequestBase{MessageType: msgType},
-			ReceiverPlayerName: body["receiver"].(string),
-			Value:              body["value"].(string),
-		}
+		var tr TellRequest
+		err = mapstructure.Decode(body, &tr)
+		tr.Request = requestBase
+		request = tr
+
 	case "tell_all":
-		request = TellAllRequest{
-			Request: RequestBase{MessageType: msgType},
-			Value:   body["value"].(string),
-		}
+		var tar TellAllRequest
+		err = mapstructure.Decode(body, &tar)
+		tar.Request = requestBase
+		request = tar
+
 	default:
 		err = &UnknownMessageTypeError{MessageType: msgType}
 	}
 	return
+}
+
+
+func TranslateToResponse(raw []byte) (response Response, err error) {
+	// TODO
+	// TODO turn received message into something ...
+	loginResp := &LoginResponse{}
+	if err := json.Unmarshal(raw, loginResp); err != nil {
+		log.Println("Unmarshall error: ", err)
+	}
+	log.Printf("loginResp %s %s", loginResp.Successful, loginResp.Player.Name)
+	response = loginResp
 }

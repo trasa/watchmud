@@ -94,7 +94,6 @@ func (c *Client) readPump() {
 func (c *Client) writePump() {
 	defer c.conn.Close()
 
-	c.source = make(chan interface{}, 10)
 	for {
 		select {
 		case msg := <-c.source:
