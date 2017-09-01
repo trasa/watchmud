@@ -7,6 +7,6 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	ResponseBase
+	Response
 	Player PlayerData
 }

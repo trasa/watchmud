@@ -104,12 +104,8 @@ func (gs *GameServer) processIncomingMessage() bool {
 			// we received bad input, send response to client
 			// rather than processing message
 			msg.Client.Send(message.ErrorResponse{
-				Response: message.ResponseBase{
-					Successful:  false,
-					MessageType: "error",
-					ResultCode:  "TRANSLATE_ERROR",
-				},
-				Error: fmt.Sprintf("%s", msg.Request.(message.ErrorRequest).Error),
+				Response: message.NewUnsuccessfulResponse("error", "TRANSLATE_ERROR"),
+				Error:    fmt.Sprintf("%s", msg.Request.(message.ErrorRequest).Error),
 			})
 
 		default:
@@ -138,11 +134,7 @@ func (gs *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO error 
 	if msg.Client.GetPlayer() != nil {
 		// you've already got one
 		msg.Client.Send(message.LoginResponse{
-			ResponseBase: message.ResponseBase{
-				MessageType: "login_response",
-				Successful:  false,
-				ResultCode:  "PLAYER_ALREADY_ATTACHED",
-			},
+			Response: message.NewUnsuccessfulResponse("login_response", "PLAYER_ALREADY_ATTACHED"),
 		})
 		return
 	}
@@ -174,11 +166,7 @@ func (gs *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO error 
 	// add player to world
 	gs.World.AddPlayer(player)
 	player.Send(message.LoginResponse{
-		ResponseBase: message.ResponseBase{
-			MessageType: "login_response",
-			Successful:  true,
-			ResultCode:  "OK",
-		},
-		Player: message.NewPlayerData(player.GetName()),
+		Response: message.NewSuccessfulResponse("login_response"),
+		Player:   message.NewPlayerData(player.GetName()),
 	})
 }

@@ -31,10 +31,8 @@ func (w *World) handleMove(msg *message.IncomingMessage) {
 		})
 	} else {
 		// you can't go that way, tell player about error
-		msg.Player.Send(message.ResponseBase{
-			MessageType: "move",
-			Successful:  false,
-			ResultCode:  "CANT_GO_THAT_WAY",
+		msg.Player.Send(message.MoveResponse{
+			Response: message.NewUnsuccessfulResponse("move", "CANT_GO_THAT_WAY"),
 		})
 	}
 }

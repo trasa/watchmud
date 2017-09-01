@@ -1,12 +1,12 @@
 package message
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/mitchellh/mapstructure"
 	"github.com/trasa/watchmud/direction"
-	"strings"
-	"encoding/json"
 	"log"
+	"strings"
 )
 
 // Turn a request of format type "line" into a Request message
@@ -121,15 +121,37 @@ func TranslateToRequest(body map[string]interface{}) (request Request, err error
 	return
 }
 
-
 func TranslateToResponse(raw []byte) (response Response, err error) {
-	// TODO
-	// TODO turn received message into something ...
-	loginResp := &LoginResponse{}
-	if err := json.Unmarshal(raw, loginResp); err != nil {
-		log.Println("Unmarshall error: ", err)
+	var rawMap map[string]interface{}
+	if err = json.Unmarshal(raw, &rawMap); err != nil {
+		log.Println("Unmarshal error: ", err)
+		return
 	}
-	log.Printf("loginResp %s %s", loginResp.Successful, loginResp.Player.Name)
-	response = loginResp
+	log.Println("rawMap:", rawMap)
+	responseMap := rawMap["Response"].(map[string]interface{})
+	switch responseMap["msg_type"].(string) {
+	case "login_response":
+		// allocate a LoginResponse and also a loginResponse.Response, or
+		// things will fail later on (must do this for all msg_types)
+		loginResp := &LoginResponse{
+			Response: NewSuccessfulResponse("login_response"),
+		}
+		mapstructure.Decode(rawMap, &loginResp)
+		response = loginResp
+		log.Println("player", loginResp.Player)
+
+	default:
+		err = &UnknownMessageTypeError{MessageType: rawMap["msg_type"].(string)}
+		log.Println("unknown message type: ", err)
+		return
+	}
+
+	// set the ResponseBase (doesn't work through mapstructure.Decode)
+	// note that response.Response must have been allocated above in the
+	// switch, or this code will fail with a nil pointer.
+	response.SetResultCode(responseMap["result_code"].(string))
+	response.SetSuccessful(responseMap["success"].(bool))
+	response.SetMessageType(responseMap["msg_type"].(string))
+
 	return
 }

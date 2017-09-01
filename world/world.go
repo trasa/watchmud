@@ -100,6 +100,7 @@ func (w *World) findPlayerByName(name string) player.Player {
 }
 
 func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
+	// TODO could switch this to type instead of strings?
 	switch messageType := msg.Request.GetMessageType(); messageType {
 	case "exits":
 		w.handleExits(msg)
@@ -119,11 +120,7 @@ func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
 		w.handleWho(msg) // TODO show connected players and the room they are in (if any)
 	default:
 		log.Printf("UNHANDLED messageType: %s, body %s", messageType, msg.Request)
-		msg.Player.Send(message.ResponseBase{
-			MessageType: messageType,
-			Successful:  false,
-			ResultCode:  "UNKNOWN_MESSAGE_TYPE",
-		})
+		msg.Player.Send(message.NewUnsuccessfulResponse(messageType, "UNKNOWN_MESSAGE_TYPE"))
 	}
 }
 

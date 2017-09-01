@@ -33,7 +33,6 @@ type RequestEnvelope struct {
 //}
 //
 
-
 // TODO dead code?
 func UnmarshalJSON(b []byte) error {
 	// TODO

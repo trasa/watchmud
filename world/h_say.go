@@ -16,17 +16,13 @@ func (w *World) handleSay(msg *message.IncomingMessage) {
 		})
 	} else {
 		room.SendExcept(msg.Player, message.SayNotification{
-			Response: message.ResponseBase{MessageType: "say_notification"},
-			Value:        sayRequest.Value,
-			Sender:       msg.Player.GetName(),
+			Response: message.NewSuccessfulResponse("say_notification"),
+			Value:    sayRequest.Value,
+			Sender:   msg.Player.GetName(),
 		})
 		msg.Player.Send(message.SayResponse{
-			Response: message.ResponseBase{
-				MessageType: "say",
-				Successful:  true,
-				ResultCode:  "OK",
-			},
-			Value: sayRequest.Value,
+			Response: message.NewSuccessfulResponse("say"),
+			Value:    sayRequest.Value,
 		})
 	}
 }

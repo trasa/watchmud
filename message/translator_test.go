@@ -2,6 +2,7 @@ package message
 
 import (
 	"github.com/stretchr/testify/assert"
+	"log"
 	"testing"
 )
 
@@ -83,4 +84,19 @@ func TestTranslate_TellAll_LongMessage(t *testing.T) {
 	assert.Nil(t, err, "no error")
 	tellAllReq := req.(TellAllRequest)
 	assert.Equal(t, "a b c d e f g h i j k l m n o p q r s t u v", tellAllReq.Value)
+}
+
+func TestTranslateToResponse_LoginResponse(t *testing.T) {
+	s := []byte("{\"Response\":{\"msg_type\":\"login_response\",\"success\":true,\"result_code\":\"OK\"},\"Player\":{\"Name\":\"somedood\"}}")
+	resp, err := TranslateToResponse(s)
+	log.Println("resp ", resp)
+	log.Println("err", err)
+	if err != nil {
+		t.Fatal("error", err)
+	}
+	lr := resp.(*LoginResponse)
+	assert.True(t, lr.IsSuccessful())
+	assert.Equal(t, "OK", lr.GetResultCode())
+	assert.Equal(t, "somedood", lr.Player.Name)
+
 }
