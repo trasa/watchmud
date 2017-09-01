@@ -128,18 +128,20 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		return
 	}
 	responseMap := rawMap["Response"].(map[string]interface{})
-	switch responseMap["msg_type"].(string) {
+	messageType := responseMap["msg_type"].(string)
+	innerResponse := NewSuccessfulResponse(messageType)
+	switch messageType {
 	case "login_response":
 		// allocate a LoginResponse and also a loginResponse.Response, or
 		// things will fail later on (must do this for all msg_types)
 		loginResp := &LoginResponse{
-			Response: NewSuccessfulResponse("login_response"),
+			Response: innerResponse,
 		}
 		mapstructure.Decode(rawMap, &loginResp)
 		response = loginResp
 
 	default:
-		err = &UnknownMessageTypeError{MessageType: rawMap["msg_type"].(string)}
+		err = &UnknownMessageTypeError{MessageType: messageType}
 		log.Println("unknown message type: ", err)
 		return
 	}
