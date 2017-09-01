@@ -127,7 +127,6 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		log.Println("Unmarshal error: ", err)
 		return
 	}
-	log.Println("rawMap:", rawMap)
 	responseMap := rawMap["Response"].(map[string]interface{})
 	switch responseMap["msg_type"].(string) {
 	case "login_response":
@@ -138,7 +137,6 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		}
 		mapstructure.Decode(rawMap, &loginResp)
 		response = loginResp
-		log.Println("player", loginResp.Player)
 
 	default:
 		err = &UnknownMessageTypeError{MessageType: rawMap["msg_type"].(string)}
