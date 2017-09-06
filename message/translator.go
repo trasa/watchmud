@@ -137,12 +137,27 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		loginResp := &LoginResponse{
 			Response: innerResponse,
 		}
+		// NOTE: must ignore error returned from decode as it triggers on things that
+		// do not appear to be errors in this particular case ...
+		// TODO clean this up..
 		mapstructure.Decode(rawMap, &loginResp)
 		response = loginResp
+
+	case "look":
+		lookResp := &LookResponse{
+			Response: innerResponse,
+		}
+		mapstructure.Decode(rawMap, &lookResp)
+		response = lookResp
 
 	default:
 		err = &UnknownMessageTypeError{MessageType: messageType}
 		log.Println("unknown message type: ", err)
+		return
+	}
+
+	if err != nil {
+		log.Println("Failed to decode rawMap:", rawMap, err)
 		return
 	}
 
