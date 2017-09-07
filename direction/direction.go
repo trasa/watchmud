@@ -63,7 +63,7 @@ func DirectionToString(dir Direction) (str string, err error) {
 
 // turn an abbreviation like "n" into
 // a direction string like "North"
-func abbreviationToString(abbrev string) (string, error) {
+func AbbreviationToString(abbrev string) (string, error) {
 	if len(abbrev) != 1 {
 		return "", errors.New("Expected abbrev to be 1 character")
 	}
@@ -94,7 +94,7 @@ func ExitsToString(exits string) (result string, err error) {
 	} else {
 		for _, dir := range strings.Split(exits, "") {
 			var str string
-			if str, err = abbreviationToString(dir); err != nil {
+			if str, err = AbbreviationToString(dir); err != nil {
 				result = ""
 				return
 			}

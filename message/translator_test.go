@@ -132,3 +132,14 @@ func TestTranslateToResponse_LookResponse(t *testing.T) {
 	assert.Equal(t, "desc", lr.RoomDescription.Description)
 	assert.Equal(t, []string{"player1", "player2"}, lr.RoomDescription.Players)
 }
+
+func TestTranslateToResponse_ExitsResponse(t *testing.T) {
+	s := []byte("{\"Response\":{\"msg_type\":\"exits\",\"success\":true,\"result_code\":\"OK\"},\"exitinfo\":{\"n\":\"North Room\"}}")
+	resp, err := TranslateToResponse(s)
+	assert.Nil(t, err)
+	r := resp.(*ExitsResponse)
+
+	assert.True(t, r.IsSuccessful())
+	assert.Equal(t, "OK", r.GetResultCode())
+	assert.Equal(t, "North Room", r.ExitInfo["n"])
+}

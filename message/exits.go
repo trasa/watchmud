@@ -6,5 +6,5 @@ type ExitsRequest struct {
 
 type ExitsResponse struct {
 	Response
-	ExitInfo map[string]string `json:"exit_info"`
+	ExitInfo map[string]string
 }

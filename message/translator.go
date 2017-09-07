@@ -128,9 +128,17 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		return
 	}
 	responseMap := rawMap["Response"].(map[string]interface{})
+	//noinspection GoNameStartsWithPackageName
 	messageType := responseMap["msg_type"].(string)
 	innerResponse := NewSuccessfulResponse(messageType)
 	switch messageType {
+	case "exits":
+		exitResp := &ExitsResponse{
+			Response: innerResponse,
+		}
+		mapstructure.Decode(rawMap, &exitResp)
+		response = exitResp
+
 	case "login_response":
 		// allocate a LoginResponse and also a loginResponse.Response, or
 		// things will fail later on (must do this for all msg_types)
