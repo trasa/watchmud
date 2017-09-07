@@ -21,11 +21,12 @@ func TestLook_successful(t *testing.T) {
 	}
 
 	w.HandleIncomingMessage(&msg)
+
 	resp := p.sent[0].(message.LookResponse)
 	assert.Equal(t, "look", resp.GetMessageType(), "wrong message type")
 	assert.True(t, resp.IsSuccessful())
-	assert.NotNil(t, resp.Name)
-	assert.NotNil(t, resp.Description)
-	assert.Equal(t, 1, len(resp.Players))
-	assert.Equal(t, "other", resp.Players[0])
+	assert.NotNil(t, resp.RoomDescription.Name)
+	assert.NotNil(t, resp.RoomDescription.Description)
+	assert.Equal(t, 1, len(resp.RoomDescription.Players))
+	assert.Equal(t, "other", resp.RoomDescription.Players[0])
 }

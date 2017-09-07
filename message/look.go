@@ -7,16 +7,16 @@ type LookRequest struct {
 
 type LookResponse struct {
 	Response
-	RoomDescription
+	RoomDescription RoomDescription
 }
 
 type LookNotification struct {
 	Response
-	RoomDescription
+	RoomDescription RoomDescription
 }
 
 type RoomDescription struct {
-	Name        string   `json:"room_name"`
+	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	Exits       string   `json:"exits"`
 	Players     []string `json:"players"`

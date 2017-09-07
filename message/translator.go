@@ -170,3 +170,9 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 
 	return
 }
+
+func TranslateToJson(obj interface{}) (result string, err error) {
+	raw, err := json.Marshal(obj)
+	result = string(raw)
+	return
+}

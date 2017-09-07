@@ -100,3 +100,35 @@ func TestTranslateToResponse_LoginResponse(t *testing.T) {
 	assert.Equal(t, "somedood", lr.Player.Name)
 
 }
+
+func TestTranslateToJson(t *testing.T) {
+
+	lr := LookResponse{
+		Response: NewSuccessfulResponse("look"),
+		RoomDescription: RoomDescription{
+			Name:        "foo",
+			Description: "desc",
+			Players:     []string{"player1", "player2"},
+			Exits:       "ns",
+		},
+	}
+	str, err := TranslateToJson(lr)
+	assert.Nil(t, err)
+	log.Println(str)
+}
+
+func TestTranslateToResponse_LookResponse(t *testing.T) {
+	s := []byte("{\"Response\":{\"msg_type\":\"look\",\"success\":true,\"result_code\":\"OK\"},\"RoomDescription\":{\"name\":\"Central Portal\",\"description\":\"desc\",\"exits\":\"ns\",\"players\":[\"player1\",\"player2\"]}}")
+	resp, err := TranslateToResponse(s)
+
+	assert.Nil(t, err)
+
+	lr := resp.(*LookResponse)
+
+	assert.True(t, lr.IsSuccessful())
+	assert.Equal(t, "OK", lr.GetResultCode())
+	assert.Equal(t, "ns", lr.RoomDescription.Exits)
+	assert.Equal(t, "Central Portal", lr.RoomDescription.Name)
+	assert.Equal(t, "desc", lr.RoomDescription.Description)
+	assert.Equal(t, []string{"player1", "player2"}, lr.RoomDescription.Players)
+}
