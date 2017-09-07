@@ -6,7 +6,7 @@ import (
 
 type MoveRequest struct {
 	Request
-	Direction direction.Direction `json:"direction"`
+	Direction direction.Direction
 }
 
 type MoveResponse struct {
@@ -16,11 +16,11 @@ type MoveResponse struct {
 
 type EnterRoomNotification struct {
 	Response
-	PlayerName string `json:"player"`
+	PlayerName string
 }
 
 type LeaveRoomNotification struct {
 	Response
-	PlayerName string              `json:"player"`
-	Direction  direction.Direction `json:"direction"`
+	PlayerName string
+	Direction  direction.Direction
 }

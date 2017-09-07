@@ -132,6 +132,13 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	messageType := responseMap["msg_type"].(string)
 	innerResponse := NewSuccessfulResponse(messageType)
 	switch messageType {
+	case "enter_room":
+		enterResp := &EnterRoomNotification{
+			Response: innerResponse,
+		}
+		mapstructure.Decode(rawMap, &enterResp)
+		response = enterResp
+
 	case "exits":
 		exitResp := &ExitsResponse{
 			Response: innerResponse,
