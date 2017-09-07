@@ -139,6 +139,13 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		mapstructure.Decode(rawMap, &enterResp)
 		response = enterResp
 
+	case "error":
+		errResp := &ErrorResponse {
+			Response: innerResponse,
+		}
+		mapstructure.Decode(rawMap, &errResp)
+		response = errResp
+
 	case "exits":
 		exitResp := &ExitsResponse{
 			Response: innerResponse,
