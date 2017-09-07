@@ -11,7 +11,7 @@ type MoveRequest struct {
 
 type MoveResponse struct {
 	Response
-	RoomDescription
+	RoomDescription RoomDescription
 }
 
 type EnterRoomNotification struct {

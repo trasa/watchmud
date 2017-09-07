@@ -41,7 +41,7 @@ func assertDirection(t *testing.T, dir Direction, s string) {
 
 func TestAbbreviationToString(t *testing.T) {
 	doit := func(dir string, expected string) {
-		str, err := abbreviationToString(dir)
+		str, err := AbbreviationToString(dir)
 		assert.Equal(t, expected, str)
 		assert.Nil(t, err)
 	}
@@ -55,12 +55,12 @@ func TestAbbreviationToString(t *testing.T) {
 }
 
 func TestAbbreviationIsUnknown(t *testing.T) {
-	_, err := abbreviationToString("x")
+	_, err := AbbreviationToString("x")
 	assert.NotNil(t, err)
 }
 
 func TestAbbreviationIsTooBig(t *testing.T) {
-	_, err := abbreviationToString("asdlfkjasdlf")
+	_, err := AbbreviationToString("asdlfkjasdlf")
 	assert.NotNil(t, err)
 }
 

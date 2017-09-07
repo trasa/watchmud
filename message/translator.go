@@ -158,6 +158,13 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		mapstructure.Decode(rawMap, &lookResp)
 		response = lookResp
 
+	case "move":
+		moveResp := &MoveResponse{
+			Response: innerResponse,
+		}
+		mapstructure.Decode(rawMap, &moveResp)
+		response = moveResp
+
 	default:
 		err = &UnknownMessageTypeError{MessageType: messageType}
 		log.Println("unknown message type: ", err)
