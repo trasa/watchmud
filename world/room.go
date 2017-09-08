@@ -84,7 +84,7 @@ func (r *Room) SendExcept(exception player.Player, msg interface{}) { // TODO er
 func (r *Room) GetExitString() string {
 	exits := []string{}
 	r.forEachExit(exits, func(dir direction.Direction, context interface{}) {
-		s, err := direction.DirectionToString(dir)
+		s, err := direction.DirectionToAbbreviation(dir)
 		if err == nil {
 			exits = append(exits, s)
 		}
@@ -122,7 +122,7 @@ func (r *Room) forEachExit(context interface{}, foreach func(dir direction.Direc
 func (r *Room) GetExitInfo() map[string]string {
 	exits := make(map[string]string)
 	r.forEachExit(exits, func(dir direction.Direction, context interface{}) {
-		s, e := direction.DirectionToString(dir)
+		s, e := direction.DirectionToAbbreviation(dir)
 		if e == nil {
 			// TODO some rooms can't be seen into, etc ...
 			context.(map[string]string)[s] = r.Get(dir).Name

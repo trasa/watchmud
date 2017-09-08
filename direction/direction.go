@@ -2,14 +2,15 @@ package direction
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 )
 
+//noinspection GoNameStartsWithPackageName
 type Direction int
 
 const (
-	NORTH Direction = iota
+	NONE Direction = iota
+	NORTH
 	EAST
 	SOUTH
 	WEST
@@ -17,78 +18,85 @@ const (
 	DOWN
 )
 
+var oneLetterToDirection = map[string]Direction{
+	"n": NORTH,
+	"s": SOUTH,
+	"e": EAST,
+	"w": WEST,
+	"u": UP,
+	"d": DOWN,
+}
+
+//noinspection GoNameStartsWithPackageName
+var directionToOneLetter = map[Direction]string{
+	NORTH: "n",
+	SOUTH: "s",
+	EAST:  "e",
+	WEST:  "w",
+	UP:    "u",
+	DOWN:  "d",
+}
+
+//noinspection GoNameStartsWithPackageName
+var directionToWord = map[Direction]string{
+	NONE:  "None!",
+	NORTH: "North",
+	SOUTH: "South",
+	EAST:  "East",
+	WEST:  "West",
+	UP:    "Up",
+	DOWN:  "Down",
+}
+
+// take an abbreviation such as "n" and turn it into a direction int const like Direction.NORTH
 func StringToDirection(s string) (dir Direction, err error) {
 	if len(s) == 0 {
 		err = errors.New("invalid direction string")
 		return
 	}
-	switch strings.ToLower(s[:1]) {
-	case "n":
-		dir = NORTH
-	case "e":
-		dir = EAST
-	case "w":
-		dir = WEST
-	case "s":
-		dir = SOUTH
-	case "u":
-		dir = UP
-	case "d":
-		dir = DOWN
-	default:
-		err = errors.New("Unknown direction: " + strings.ToLower(s[:1]))
+	lookup := strings.ToLower(s[:1])
+	dir = oneLetterToDirection[lookup]
+	if dir == NONE {
+		err = errors.New("Unknown direction: " + lookup)
 	}
 	return
 }
 
-func DirectionToString(dir Direction) (str string, err error) {
-	switch dir {
-	case NORTH:
-		str = "n"
-	case SOUTH:
-		str = "s"
-	case EAST:
-		str = "e"
-	case WEST:
-		str = "w"
-	case UP:
-		str = "u"
-	case DOWN:
-		str = "d"
-	default:
+// take a value such as Direction.NORTH and turn it into an abbreviation such as "n"
+//noinspection GoNameStartsWithPackageName
+func DirectionToAbbreviation(dir Direction) (str string, err error) {
+	str = directionToOneLetter[dir]
+	if str == "" {
 		err = errors.New("Unknown direction")
 	}
 	return
 }
 
-// turn an abbreviation like "n" into
-// a direction string like "North"
-func AbbreviationToString(abbrev string) (string, error) {
+// turn an abbreviation like "n" into a string like "North"
+func AbbreviationToString(abbrev string) (str string, err error) {
 	if len(abbrev) != 1 {
 		return "", errors.New("Expected abbrev to be 1 character")
 	}
-	switch abbrev {
-	case "n":
-		return "North", nil
-	case "s":
-		return "South", nil
-	case "e":
-		return "East", nil
-	case "w":
-		return "West", nil
-	case "u":
-		return "Up", nil
-	case "d":
-		return "Down", nil
-	default:
-		return "", errors.New(fmt.Sprintf("Unhandled Direction Abbreviation: %s", abbrev))
+	dir, err := StringToDirection(abbrev)
+	if err == nil {
+		str, err = DirectionToString(dir)
 	}
+	return
+}
+
+//noinspection GoNameStartsWithPackageName
+func DirectionToString(d Direction) (str string, err error) {
+	str = directionToWord[d]
+	if str == "" {
+		err = errors.New("Unknown direction")
+	}
+	return
 }
 
 // Given an 'exits' string like "nsed", return a formatted
 // string for the player with something like
 // "North, South, East, Down"
-func ExitsToString(exits string) (result string, err error) {
+func ExitsToFormattedString(exits string) (result string, err error) {
 	if len(exits) == 0 {
 		result = "None!"
 	} else {
