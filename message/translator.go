@@ -131,58 +131,29 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	responseMap := rawMap["Response"].(map[string]interface{})
 	//noinspection GoNameStartsWithPackageName
 	messageType := responseMap["msg_type"].(string)
-	innerResponse := NewSuccessfulResponse(messageType)
+
 	switch messageType {
 	case "enter_room":
 		response = decodeResponse(messageType, &EnterRoomNotification{}, rawMap)
-		//enterResp := &EnterRoomNotification{}
-		//mapstructure.Decode(rawMap, &enterResp)
-		//response = enterResp
 
 	case "error":
-		errResp := &ErrorResponse{
-			Response: innerResponse,
-		}
-		mapstructure.Decode(rawMap, &errResp)
-		response = errResp
+		response = decodeResponse(messageType, &ErrorResponse{}, rawMap)
 
 	case "exits":
-		exitResp := &ExitsResponse{
-			Response: innerResponse,
-		}
-		mapstructure.Decode(rawMap, &exitResp)
-		response = exitResp
+		response = decodeResponse(messageType, &ExitsResponse{}, rawMap)
 
 	case "login_response":
-		// allocate a LoginResponse and also a loginResponse.Response, or
-		// things will fail later on (must do this for all msg_types)
-		loginResp := &LoginResponse{
-			Response: innerResponse,
-		}
-		// NOTE: must ignore error returned from decode as it triggers on things that
-		// do not appear to be errors in this particular case ...
-		// TODO clean this up..
-		mapstructure.Decode(rawMap, &loginResp)
-		response = loginResp
+		response = decodeResponse(messageType, &LoginResponse{}, rawMap)
 
 	case "look":
-		lookResp := &LookResponse{
-			Response: innerResponse,
-		}
-		mapstructure.Decode(rawMap, &lookResp)
-		response = lookResp
+		response = decodeResponse(messageType, &LookResponse{}, rawMap)
 
 	case "move":
-		moveResp := &MoveResponse{
-			Response: innerResponse,
-		}
-		mapstructure.Decode(rawMap, &moveResp)
-		response = moveResp
+		response = decodeResponse(messageType, &MoveResponse{}, rawMap)
 
-	//case "say":
-	//	sayResp := &SayResponse{
-	//
-	//	}
+	case "say":
+		response = decodeResponse(messageType, &SayResponse{}, rawMap)
+
 	default:
 		err = &UnknownMessageTypeError{MessageType: messageType}
 		log.Println("unknown message type: ", err)
@@ -193,26 +164,37 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		log.Println("Failed to decode rawMap:", rawMap, err)
 		return
 	}
-
-	// set the ResponseBase (doesn't work through mapstructure.Decode)
-	// note that response.Response must have been allocated above in the
-	// switch, or this code will fail with a nil pointer.
-	response.SetResultCode(responseMap["result_code"].(string))
-	response.SetSuccessful(responseMap["success"].(bool))
-	response.SetMessageType(responseMap["msg_type"].(string))
-
+	fillResponseBase(response, responseMap)
 	return
 }
 
 // take rawmap and use it to create a Response
+//
+// sets the inner response to a blank successful response too
 func decodeResponse(messageType string, response interface{}, rawMap map[string]interface{}) Response {
 	// decode the map into the response structure
 	mapstructure.Decode(rawMap, response)
 
 	// extract the inner Response and set it to NewSuccessfulResponse (will set the real response later)
-	typ := reflect.ValueOf(response).Elem()
-	typ.FieldByName("Response").Set(reflect.ValueOf(NewSuccessfulResponse(messageType)))
+	// set the ResponseBase (doesn't work through mapstructure.Decode)
+	// just need to allocate response.Response here or the actual code to fill things in will fail with
+	// null pointer
+	// switch, or this code will fail with a nil pointer.
+	//typ := reflect.ValueOf(response).Elem()
+	//typ.FieldByName("Response").Set(reflect.ValueOf(NewSuccessfulResponse(messageType)))
+
 	return response.(Response) // identical to response arg
+}
+
+// set the ResponseBase (doesn't work through mapstructure.Decode)
+// expects response.Response to be allocated by decodeResponse
+func fillResponseBase(response Response, responseMap map[string]interface{}) {
+
+	messageType := responseMap["msg_type"].(string)
+	reflect.ValueOf(response).Elem().FieldByName("Response").Set(reflect.ValueOf(NewSuccessfulResponse(messageType)))
+	response.SetResultCode(responseMap["result_code"].(string))
+	response.SetSuccessful(responseMap["success"].(bool))
+	response.SetMessageType(responseMap["msg_type"].(string))
 }
 
 func TranslateToJson(obj interface{}) (result string, err error) {
