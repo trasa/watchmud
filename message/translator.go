@@ -134,25 +134,25 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 
 	switch messageType {
 	case "enter_room":
-		response = decodeResponse(messageType, &EnterRoomNotification{}, rawMap)
+		response = decodeResponse(&EnterRoomNotification{}, rawMap)
 
 	case "error":
-		response = decodeResponse(messageType, &ErrorResponse{}, rawMap)
+		response = decodeResponse(&ErrorResponse{}, rawMap)
 
 	case "exits":
-		response = decodeResponse(messageType, &ExitsResponse{}, rawMap)
+		response = decodeResponse(&ExitsResponse{}, rawMap)
 
 	case "login_response":
-		response = decodeResponse(messageType, &LoginResponse{}, rawMap)
+		response = decodeResponse(&LoginResponse{}, rawMap)
 
 	case "look":
-		response = decodeResponse(messageType, &LookResponse{}, rawMap)
+		response = decodeResponse(&LookResponse{}, rawMap)
 
 	case "move":
-		response = decodeResponse(messageType, &MoveResponse{}, rawMap)
+		response = decodeResponse(&MoveResponse{}, rawMap)
 
 	case "say":
-		response = decodeResponse(messageType, &SayResponse{}, rawMap)
+		response = decodeResponse(&SayResponse{}, rawMap)
 
 	default:
 		err = &UnknownMessageTypeError{MessageType: messageType}
@@ -171,25 +171,15 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 // take rawmap and use it to create a Response
 //
 // sets the inner response to a blank successful response too
-func decodeResponse(messageType string, response interface{}, rawMap map[string]interface{}) Response {
+func decodeResponse(response interface{}, rawMap map[string]interface{}) Response {
 	// decode the map into the response structure
 	mapstructure.Decode(rawMap, response)
-
-	// extract the inner Response and set it to NewSuccessfulResponse (will set the real response later)
-	// set the ResponseBase (doesn't work through mapstructure.Decode)
-	// just need to allocate response.Response here or the actual code to fill things in will fail with
-	// null pointer
-	// switch, or this code will fail with a nil pointer.
-	//typ := reflect.ValueOf(response).Elem()
-	//typ.FieldByName("Response").Set(reflect.ValueOf(NewSuccessfulResponse(messageType)))
-
 	return response.(Response) // identical to response arg
 }
 
 // set the ResponseBase (doesn't work through mapstructure.Decode)
 // expects response.Response to be allocated by decodeResponse
 func fillResponseBase(response Response, responseMap map[string]interface{}) {
-
 	messageType := responseMap["msg_type"].(string)
 	reflect.ValueOf(response).Elem().FieldByName("Response").Set(reflect.ValueOf(NewSuccessfulResponse(messageType)))
 	response.SetResultCode(responseMap["result_code"].(string))

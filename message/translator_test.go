@@ -148,16 +148,11 @@ func TestDecodeResponse(t *testing.T) {
 	rawMap := make(map[string]interface{})
 	rawMap["Value"] = "hello"
 	orig := &SayResponse{}
-	response := decodeResponse("say", orig, rawMap)
+	response := decodeResponse(orig, rawMap)
 
 	assert.Equal(t, "hello", orig.Value)
 	// response.ResponseBase stuff won't be set yet - only the
 	// values within the top level SayResponse
-
-	//assert.Equal(t, "OK", orig.GetResultCode())
-	//assert.Equal(t, "say", orig.GetMessageType())
-	//assert.Equal(t, true, orig.IsSuccessful())
-
 	assert.Equal(t, "hello", response.(*SayResponse).Value)
 
 }
@@ -172,13 +167,13 @@ func TestFillResponseBase(t *testing.T) {
 	rawMap := make(map[string]interface{})
 	rawMap["Value"] = "hello"
 	orig := &SayResponse{}
-	response := decodeResponse("say", orig, rawMap)
+	response := decodeResponse(orig, rawMap)
 
 	fillResponseBase(response, responseMap)
 
 	assert.Equal(t, "hello", orig.Value)
-
 	assert.Equal(t, "hello", response.(*SayResponse).Value)
+
 	assert.Equal(t, "FINE", response.GetResultCode())
 	assert.Equal(t, "say", response.GetMessageType())
 	assert.Equal(t, true, response.IsSuccessful())
