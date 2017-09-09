@@ -6,6 +6,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/trasa/watchmud/direction"
 	"log"
+	"reflect"
 	"strings"
 )
 
@@ -133,11 +134,10 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	innerResponse := NewSuccessfulResponse(messageType)
 	switch messageType {
 	case "enter_room":
-		enterResp := &EnterRoomNotification{
-			Response: innerResponse,
-		}
-		mapstructure.Decode(rawMap, &enterResp)
-		response = enterResp
+		response = decodeResponse(messageType, &EnterRoomNotification{}, rawMap)
+		//enterResp := &EnterRoomNotification{}
+		//mapstructure.Decode(rawMap, &enterResp)
+		//response = enterResp
 
 	case "error":
 		errResp := &ErrorResponse{
@@ -179,6 +179,10 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		mapstructure.Decode(rawMap, &moveResp)
 		response = moveResp
 
+	//case "say":
+	//	sayResp := &SayResponse{
+	//
+	//	}
 	default:
 		err = &UnknownMessageTypeError{MessageType: messageType}
 		log.Println("unknown message type: ", err)
@@ -198,6 +202,17 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	response.SetMessageType(responseMap["msg_type"].(string))
 
 	return
+}
+
+// take rawmap and use it to create a Response
+func decodeResponse(messageType string, response interface{}, rawMap map[string]interface{}) Response {
+	// decode the map into the response structure
+	mapstructure.Decode(rawMap, response)
+
+	// extract the inner Response and set it to NewSuccessfulResponse (will set the real response later)
+	typ := reflect.ValueOf(response).Elem()
+	typ.FieldByName("Response").Set(reflect.ValueOf(NewSuccessfulResponse(messageType)))
+	return response.(Response) // identical to response arg
 }
 
 func TranslateToJson(obj interface{}) (result string, err error) {

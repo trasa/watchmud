@@ -143,3 +143,21 @@ func TestTranslateToResponse_ExitsResponse(t *testing.T) {
 	assert.Equal(t, "OK", r.GetResultCode())
 	assert.Equal(t, "North Room", r.ExitInfo["n"])
 }
+
+func TestDecodeResponse(t *testing.T) {
+	rawMap := make(map[string]interface{})
+	rawMap["Value"] = "hello"
+	orig := &SayResponse{}
+	response := decodeResponse("say", orig, rawMap)
+
+	assert.Equal(t, "hello", orig.Value)
+	assert.Equal(t, "OK", orig.GetResultCode())
+	assert.Equal(t, "say", orig.GetMessageType())
+	assert.Equal(t, true, orig.IsSuccessful())
+
+	assert.Equal(t, "hello", response.(*SayResponse).Value)
+	assert.Equal(t, "OK", response.GetResultCode())
+	assert.Equal(t, "say", response.GetMessageType())
+	assert.Equal(t, true, response.IsSuccessful())
+
+}
