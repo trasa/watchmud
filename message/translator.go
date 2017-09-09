@@ -132,6 +132,10 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	//noinspection GoNameStartsWithPackageName
 	messageType := responseMap["msg_type"].(string)
 
+	responseRegistry := map[string]interface{}{
+		"say": reflect.TypeOf(SayResponse{}),
+	}
+
 	switch messageType {
 	case "enter_room":
 		response = decodeResponse(&EnterRoomNotification{}, rawMap)
@@ -152,8 +156,14 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		response = decodeResponse(&MoveResponse{}, rawMap)
 
 	case "say":
-		response = decodeResponse(&SayResponse{}, rawMap)
-
+		t := responseRegistry["say"]
+		log.Println("t", t)
+		sr := reflect.New(t).Elem()
+		log.Println("sr:" , sr)
+		log.Println("sr type", reflect.TypeOf(sr), reflect.TypeOf(&sr))
+		log.Println("more types", reflect.TypeOf(&SayResponse{}))
+		log.Println("kind", reflect.TypeOf(sr).Kind())
+		response = decodeResponse(&sr, rawMap)
 	default:
 		err = &UnknownMessageTypeError{MessageType: messageType}
 		log.Println("unknown message type: ", err)
@@ -169,17 +179,16 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 }
 
 // take rawmap and use it to create a Response
-//
-// sets the inner response to a blank successful response too
 func decodeResponse(response interface{}, rawMap map[string]interface{}) Response {
 	// decode the map into the response structure
+	log.Println("kind", reflect.TypeOf(response).Kind())
 	mapstructure.Decode(rawMap, response)
-	return response.(Response) // identical to response arg
+	return nil
 }
 
-// set the ResponseBase (doesn't work through mapstructure.Decode)
-// expects response.Response to be allocated by decodeResponse
+// set the ResponseBase members (they aren't set through mapstructure.Decode)
 func fillResponseBase(response Response, responseMap map[string]interface{}) {
+	//noinspection GoNameStartsWithPackageName
 	messageType := responseMap["msg_type"].(string)
 	reflect.ValueOf(response).Elem().FieldByName("Response").Set(reflect.ValueOf(NewSuccessfulResponse(messageType)))
 	response.SetResultCode(responseMap["result_code"].(string))

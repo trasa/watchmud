@@ -144,6 +144,16 @@ func TestTranslateToResponse_ExitsResponse(t *testing.T) {
 	assert.Equal(t, "North Room", r.ExitInfo["n"])
 }
 
+func TestTranslateToResponse_SayResponse(t *testing.T) {
+	s := []byte("{\"Response\":{\"msg_type\":\"say\",\"success\":true,\"result_code\":\"WHATEVER\"},\"value\":\"hello\"}")
+	resp, err := TranslateToResponse(s)
+	assert.Nil(t, err)
+	r := resp.(*SayResponse)
+	assert.True(t, r.IsSuccessful())
+	assert.Equal(t, "WHATEVER", r.GetResultCode())
+	assert.Equal(t, "hello", r.Value)
+}
+
 func TestDecodeResponse(t *testing.T) {
 	rawMap := make(map[string]interface{})
 	rawMap["Value"] = "hello"
