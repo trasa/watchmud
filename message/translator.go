@@ -177,12 +177,14 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		log.Printf("responsePrototypePtr %s is at addr %p", reflect.TypeOf(responsePrototypePtr), responsePrototypePtr)
 		// allocate a new response based off of prototype
 		// this allocates a **Response
-		responseObjPtr := reflect.New(reflect.TypeOf(&responsePrototypePtr)).Interface()
+		responseObjPtr := reflect.New(reflect.TypeOf(responsePrototypePtr)).Elem().Interface()
 		log.Printf("responseObjPtr type %s, string %s", reflect.TypeOf(responseObjPtr), responseObjPtr)
 
 		// now need to allocate a Response
-		responseObj := reflect.New(reflect.TypeOf(responseObjPtr))
+		//responseObj := reflect.New(reflect.TypeOf(responseObjPtr))
 		//responseObj = reflect.New(reflect.TypeOf(responseObjPtr.Elem().Interface().(Response)))
+		responseObj := responseObjPtr
+
 
 		log.Printf("responseObj type %s at addr %p", reflect.TypeOf(responseObj), responseObj)
 		log.Printf("&responseObj type %s", reflect.TypeOf(&responseObj))
