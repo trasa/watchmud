@@ -132,8 +132,8 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	//noinspection GoNameStartsWithPackageName
 	messageType := responseMap["msg_type"].(string)
 
-	responseRegistry := map[string]interface{}{
-		"say": reflect.TypeOf(SayResponse{}),
+	responseRegistry := map[string]Response{
+		"say": &SayResponse{},
 	}
 
 	switch messageType {
@@ -156,14 +156,14 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		response = decodeResponse(&MoveResponse{}, rawMap)
 
 	case "say":
+		// can we get this to work using the existing type from the map?
 		t := responseRegistry["say"]
-		log.Println("t", t)
-		sr := reflect.New(t).Elem()
-		log.Println("sr:" , sr)
-		log.Println("sr type", reflect.TypeOf(sr), reflect.TypeOf(&sr))
-		log.Println("more types", reflect.TypeOf(&SayResponse{}))
-		log.Println("kind", reflect.TypeOf(sr).Kind())
-		response = decodeResponse(&sr, rawMap)
+		log.Println("t is", reflect.TypeOf(t))
+		//sr := reflect.ValueOf(t).Interface()
+		//log.Println("sr type that i have", reflect.TypeOf(sr), reflect.TypeOf(&sr))
+		//log.Println("what im trying to get", reflect.TypeOf(&SayResponse{}))
+		//log.Println("sr kind", reflect.TypeOf(sr).Kind())
+		response = decodeResponse(t, rawMap)
 	default:
 		err = &UnknownMessageTypeError{MessageType: messageType}
 		log.Println("unknown message type: ", err)
@@ -181,9 +181,9 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 // take rawmap and use it to create a Response
 func decodeResponse(response interface{}, rawMap map[string]interface{}) Response {
 	// decode the map into the response structure
-	log.Println("kind", reflect.TypeOf(response).Kind())
+	log.Println("response kind", reflect.TypeOf(response).Kind())
 	mapstructure.Decode(rawMap, response)
-	return nil
+	return response.(Response)
 }
 
 // set the ResponseBase members (they aren't set through mapstructure.Decode)

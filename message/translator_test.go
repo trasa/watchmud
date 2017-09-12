@@ -152,6 +152,7 @@ func TestTranslateToResponse_SayResponse(t *testing.T) {
 	assert.True(t, r.IsSuccessful())
 	assert.Equal(t, "WHATEVER", r.GetResultCode())
 	assert.Equal(t, "hello", r.Value)
+	log.Println(r)
 }
 
 func TestDecodeResponse(t *testing.T) {
