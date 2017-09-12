@@ -122,19 +122,6 @@ func TranslateToRequest(body map[string]interface{}) (request Request, err error
 	return
 }
 
-// map messageTypes to pointers to base Response objects
-// these pointers will be used to create new Responses
-// (don't use these directly!)
-var responseRegistry = map[string]Response{
-	"enter_room": &EnterRoomNotification{},
-	"error": &ErrorResponse{},
-	"exits": &ExitsResponse{},
-	"login_response": &LoginResponse{},
-	"look": &LookResponse{},
-	"move": &MoveResponse{},
-	"say": &SayResponse{},
-}
-
 func TranslateToResponse(raw []byte) (response Response, err error) {
 	var rawMap map[string]interface{}
 	if err = json.Unmarshal(raw, &rawMap); err != nil {
@@ -144,13 +131,6 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	responseMap := rawMap["Response"].(map[string]interface{})
 	//noinspection GoNameStartsWithPackageName
 	messageType := responseMap["msg_type"].(string)
-
-
-	//responsePrototype := responseRegistry[messageType]
-	// create a new response to decode into
-	// TODO
-	// then fill the obj
-	//response = decodeResponse(response)
 
 	switch messageType {
 	case "enter_room":
@@ -172,30 +152,8 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		response = decodeResponse(&MoveResponse{}, rawMap)
 
 	case "say":
-		// can we get this to work using the existing type from the map?
-		responsePrototypePtr := responseRegistry["say"]
-		log.Printf("responsePrototypePtr %s is at addr %p", reflect.TypeOf(responsePrototypePtr), responsePrototypePtr)
-		// allocate a new response based off of prototype
-		// this allocates a **Response
-		responseObjPtr := reflect.New(reflect.TypeOf(responsePrototypePtr)).Elem().Interface()
-		log.Printf("responseObjPtr type %s, string %s", reflect.TypeOf(responseObjPtr), responseObjPtr)
+		response = decodeResponse(&SayResponse{}, rawMap)
 
-		// now need to allocate a Response
-		//responseObj := reflect.New(reflect.TypeOf(responseObjPtr))
-		//responseObj = reflect.New(reflect.TypeOf(responseObjPtr.Elem().Interface().(Response)))
-		responseObj := responseObjPtr
-
-
-		log.Printf("responseObj type %s at addr %p", reflect.TypeOf(responseObj), responseObj)
-		log.Printf("&responseObj type %s", reflect.TypeOf(&responseObj))
-		log.Println("what im trying to get:", reflect.TypeOf(&SayResponse{}))
-		log.Printf("does this equal? %s", reflect.TypeOf(&SayResponse{}) == reflect.TypeOf(responseObj))
-		if reflect.TypeOf(&SayResponse{}) != reflect.TypeOf(responseObj) {
-			panic("types are wrong")
-		}
-
-		log.Println("responseObj kind", reflect.TypeOf(responseObj).Kind())
-		response = decodeResponse(responseObj, rawMap)
 	default:
 		err = &UnknownMessageTypeError{MessageType: messageType}
 		log.Println("unknown message type: ", err)
