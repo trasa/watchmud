@@ -176,12 +176,21 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		responsePrototypePtr := responseRegistry["say"]
 		log.Printf("responsePrototypePtr %s is at addr %p", reflect.TypeOf(responsePrototypePtr), responsePrototypePtr)
 		// allocate a new response based off of prototype
-		responseObjPtr := reflect.New(reflect.TypeOf(responsePrototypePtr))
-		responseObj := responseObjPtr.Elem().Interface().(Response)
+		// this allocates a **Response
+		responseObjPtr := reflect.New(reflect.TypeOf(&responsePrototypePtr)).Interface()
 		log.Printf("responseObjPtr type %s, string %s", reflect.TypeOf(responseObjPtr), responseObjPtr)
-		log.Printf("responseObj type %s - %s at addr %p", reflect.TypeOf(responseObj), reflect.TypeOf(&responseObj), responseObj)
+
+		// now need to allocate a Response
+		responseObj := reflect.New(reflect.TypeOf(responseObjPtr))
+		//responseObj = reflect.New(reflect.TypeOf(responseObjPtr.Elem().Interface().(Response)))
+
+		log.Printf("responseObj type %s at addr %p", reflect.TypeOf(responseObj), responseObj)
+		log.Printf("&responseObj type %s", reflect.TypeOf(&responseObj))
 		log.Println("what im trying to get:", reflect.TypeOf(&SayResponse{}))
 		log.Printf("does this equal? %s", reflect.TypeOf(&SayResponse{}) == reflect.TypeOf(responseObj))
+		if reflect.TypeOf(&SayResponse{}) != reflect.TypeOf(responseObj) {
+			panic("types are wrong")
+		}
 
 		log.Println("responseObj kind", reflect.TypeOf(responseObj).Kind())
 		response = decodeResponse(responseObj, rawMap)
