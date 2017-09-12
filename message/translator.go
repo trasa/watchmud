@@ -122,6 +122,13 @@ func TranslateToRequest(body map[string]interface{}) (request Request, err error
 	return
 }
 
+// map messageTypes to pointers to base Response objects
+// these pointers will be used to create new Responses
+// (don't use these directly!)
+var responseRegistry = map[string]Response{
+	"say": &SayResponse{},
+}
+
 func TranslateToResponse(raw []byte) (response Response, err error) {
 	var rawMap map[string]interface{}
 	if err = json.Unmarshal(raw, &rawMap); err != nil {
@@ -131,10 +138,6 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	responseMap := rawMap["Response"].(map[string]interface{})
 	//noinspection GoNameStartsWithPackageName
 	messageType := responseMap["msg_type"].(string)
-
-	responseRegistry := map[string]Response{
-		"say": &SayResponse{},
-	}
 
 	switch messageType {
 	case "enter_room":
@@ -158,11 +161,12 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	case "say":
 		// can we get this to work using the existing type from the map?
 		t := responseRegistry["say"]
-		log.Println("t is", reflect.TypeOf(t))
+		log.Printf("t %s is at addr %p", reflect.TypeOf(t), t)
+		sr := reflect.New(reflect.TypeOf(t))
 		//sr := reflect.ValueOf(t).Interface()
-		//log.Println("sr type that i have", reflect.TypeOf(sr), reflect.TypeOf(&sr))
-		//log.Println("what im trying to get", reflect.TypeOf(&SayResponse{}))
-		//log.Println("sr kind", reflect.TypeOf(sr).Kind())
+		log.Printf("sr type that i have %s - %s at addr %p", reflect.TypeOf(sr), reflect.TypeOf(&sr), sr)
+		log.Println("what im trying to get", reflect.TypeOf(&SayResponse{}))
+		log.Println("sr kind", reflect.TypeOf(sr).Kind())
 		response = decodeResponse(t, rawMap)
 	default:
 		err = &UnknownMessageTypeError{MessageType: messageType}
