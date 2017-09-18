@@ -144,6 +144,9 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	case "exits":
 		response = decodeResponse(&ExitsResponse{}, rawMap)
 
+	case "leave_room":
+		response = decodeResponse(&LeaveRoomNotification{}, rawMap)
+
 	case "login_response":
 		response = decodeResponse(&LoginResponse{}, rawMap)
 
