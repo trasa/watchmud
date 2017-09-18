@@ -43,7 +43,7 @@ func Start() {
 	// all static goes to /static/ files
 	// NOTE: this expects that the program working directory is github.com/trasa/watchmud
 	// otherwise, all requests to /static will result in 404!
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./server/static/"))))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./web/static/"))))
 
 	// TODO write an api...
 	router.HandleFunc("/api/v1", someApi)

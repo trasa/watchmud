@@ -1,4 +1,9 @@
+/* obsolete, but still here so I can finish refining the
+   new client based in go (still need to refer back to this as
+   features get plumbed in ...
+ */
 ;(function($) {
+
 
 
     $.mudclient = function (element, options) {
