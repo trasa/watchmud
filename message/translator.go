@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const ENABLE_DECODE_LOGGING = false
+const ENABLE_DECODE_LOGGING = true
 
 // Turn a request of format type "line" into a Request message
 //
@@ -130,6 +130,12 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 		log.Println("Unmarshal error: ", err)
 		return
 	}
+
+	//noinspection GoBoolExpressions
+	if ENABLE_DECODE_LOGGING {
+		log.Printf("translateToResponse: raw: %s", string(raw))
+	}
+
 	responseMap := rawMap["Response"].(map[string]interface{})
 	//noinspection GoNameStartsWithPackageName
 	messageType := responseMap["msg_type"].(string)
@@ -179,7 +185,7 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 
 	default:
 		err = &UnknownMessageTypeError{MessageType: messageType}
-		log.Println("unknown message type: ", err)
+		log.Printf("translator.TranslateToResponse: unknown message type: %v", err)
 		return
 	}
 

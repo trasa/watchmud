@@ -12,6 +12,6 @@ type TellResponse struct {
 
 type TellNotification struct {
 	Response
-	Sender string `json:"sender"`
-	Value  string `json:"value"`
+	Sender string
+	Value  string
 }
