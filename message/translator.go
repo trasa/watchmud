@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+const ENABLE_DECODE_LOGGING = false
+
 // Turn a request of format type "line" into a Request message
 //
 // have an input string like
@@ -154,6 +156,12 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	case "say":
 		response = decodeResponse(&SayResponse{}, rawMap)
 
+	case "say_notification":
+		response = decodeResponse(&SayNotification{}, rawMap)
+
+	case "tell":
+		response = decodeResponse(&TellResponse{}, rawMap)
+
 	default:
 		err = &UnknownMessageTypeError{MessageType: messageType}
 		log.Println("unknown message type: ", err)
@@ -169,10 +177,15 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 }
 
 // take rawmap and use it to create a Response
+// decode the map into the response structure
 func decodeResponse(response interface{}, rawMap map[string]interface{}) Response {
-	// decode the map into the response structure
-	log.Println("method call type ", reflect.TypeOf(response))
-	log.Println("method call response kind", reflect.TypeOf(response).Kind())
+
+	// (no kidding this constant is always false or true ... )
+	//noinspection ALL
+	if ENABLE_DECODE_LOGGING {
+		log.Println("method call type ", reflect.TypeOf(response))
+		log.Println("method call response kind", reflect.TypeOf(response).Kind())
+	}
 	mapstructure.Decode(rawMap, response)
 	return response.(Response)
 }

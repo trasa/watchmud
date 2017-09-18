@@ -6,6 +6,10 @@ type TellRequest struct {
 	Value              string
 }
 
+type TellResponse struct {
+	Response
+}
+
 type TellNotification struct {
 	Response
 	Sender string `json:"sender"`
