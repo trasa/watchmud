@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const ENABLE_DECODE_LOGGING = true
+const ENABLE_DECODE_LOGGING = false
 
 // Turn a request of format type "line" into a Request message
 //
