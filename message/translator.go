@@ -30,7 +30,7 @@ func TranslateLineToRequest(line string) (request Request, err error) {
 		return
 	}
 	switch tokens[0] {
-	case "exits", "ex":
+	case "exits", "exit", "ex":
 		request = ExitsRequest{
 			Request: RequestBase{MessageType: "exits"},
 		}
@@ -164,6 +164,18 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 
 	case "tell":
 		response = decodeResponse(&TellResponse{}, rawMap)
+
+	case "tell_notification":
+		response = decodeResponse(&TellNotification{}, rawMap)
+
+	case "tell_all":
+		response = decodeResponse(&TellAllResponse{}, rawMap)
+
+	case "tell_all_notification":
+		response = decodeResponse(&TellAllNotification{}, rawMap)
+
+	case "who":
+		response = decodeResponse(&WhoResponse{}, rawMap)
 
 	default:
 		err = &UnknownMessageTypeError{MessageType: messageType}
