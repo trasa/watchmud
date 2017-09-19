@@ -184,12 +184,18 @@ func (r *Room) CreateRoomDescription(exclude player.Player) message.RoomDescript
 		Description: r.Description,
 		Exits:       r.GetExitString(),
 	}
+	// Note: the thread-safe iteration isn't necessary because only
+	// one message is processed at a time (our server isn't actually
+	// multithreaded...)
 	r.PlayerList.Iter(func(p player.Player) {
 		if p != exclude {
 			desc.Players = append(desc.Players, p.GetName())
 		}
 	})
-	// TODO objects
+	for _, o := range r.Objects {
+		desc.Objects = append(desc.Objects, o.Definition.DescriptionOnGround)
+	}
+
 	return desc
 }
 
