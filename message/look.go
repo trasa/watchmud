@@ -2,7 +2,7 @@ package message
 
 type LookRequest struct {
 	Request
-	ValueList []string `json:"value_list"`
+	ValueList []string
 }
 
 type LookResponse struct {

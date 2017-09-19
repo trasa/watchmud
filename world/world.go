@@ -15,6 +15,7 @@ type World struct {
 	voidRoom    *Room
 	playerList  *player.List
 	playerRooms *PlayerRoomMap
+	handlerMap  map[string]func(message *message.IncomingMessage)
 }
 
 // Constructor for World
@@ -25,6 +26,8 @@ func New() *World {
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
 	}
+	w.initializeHandlerMap()
+
 	sampleZone := Zone{
 		Id:    "sample",
 		Name:  "Sample Zone",
@@ -32,6 +35,13 @@ func New() *World {
 	}
 	w.zones[sampleZone.Id] = &sampleZone
 
+	/*
+		  north -- northeast
+		   |         |
+		central -- east
+
+	*/
+	// central room (Start)
 	centralPortalRoom := NewRoom(&sampleZone, "start", "Central Portal", "It's a boring room, with boring stuff in it.")
 	sampleZone.Rooms[centralPortalRoom.Id] = centralPortalRoom
 	w.startRoom = centralPortalRoom
@@ -40,9 +50,29 @@ func New() *World {
 	northRoom := NewRoom(&sampleZone, "northRoom", "North Room", "This room is north of the start.")
 	sampleZone.Rooms[northRoom.Id] = northRoom
 
-	// north room and central portal connect to each other
+	// northeast
+	northeastRoom := NewRoom(&sampleZone, "northeastRoom", "North East Room", "It's north, and also East.")
+	sampleZone.Rooms[northeastRoom.Id] = northeastRoom
+
+	// east
+	eastRoom := NewRoom(&sampleZone, "eastRoom", "East Room", "This room is east of the start.")
+	sampleZone.Rooms[eastRoom.Id] = eastRoom
+
+	// central <-> north
 	centralPortalRoom.North = northRoom
 	northRoom.South = centralPortalRoom
+
+	// central <-> east
+	centralPortalRoom.East = eastRoom
+	eastRoom.West = centralPortalRoom
+
+	// north <-> northeast
+	northRoom.East = northeastRoom
+	northeastRoom.West = northRoom
+
+	// east <-> northeast
+	eastRoom.North = northeastRoom
+	northeastRoom.South = eastRoom
 
 	// The VOID. When you're not really in a room.
 	w.voidRoom = NewRoom(nil, "void", "The Void", "You see nothing but endless void.")
@@ -59,6 +89,18 @@ func New() *World {
 	fountainObj := object.NewInstance(fountainDefn)
 	// put the obj in the room
 	centralPortalRoom.AddObject(fountainObj)
+
+	// that's not a knife....wait, yes it is.
+	knifeDefn := object.NewDefinition(
+		"knife",
+		"knife",
+		object.WEAPON,
+		[]string{},
+		"knife",
+		"A knife is on the ground.")
+	knifeObj := object.NewInstance(knifeDefn)
+	// knife is in room
+	centralPortalRoom.AddObject(knifeObj)
 
 	log.Print("World built.")
 	return &w
@@ -97,31 +139,6 @@ func (w *World) getRoomContainingPlayer(p player.Player) *Room {
 
 func (w *World) findPlayerByName(name string) player.Player {
 	return w.playerList.FindByName(name)
-}
-
-func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
-	// TODO could switch this to type instead of strings?
-	switch messageType := msg.Request.GetMessageType(); messageType {
-	case "exits":
-		w.handleExits(msg)
-	case "logout":
-		w.handleLogout(msg)
-	case "look":
-		w.handleLook(msg)
-	case "move":
-		w.handleMove(msg)
-	case "say":
-		w.handleSay(msg)
-	case "tell":
-		w.handleTell(msg)
-	case "tell_all":
-		w.handleTellAll(msg)
-	case "who":
-		w.handleWho(msg) // TODO show connected players and the room they are in (if any)
-	default:
-		log.Printf("UNHANDLED messageType: %s, body %s", messageType, msg.Request)
-		msg.Player.Send(message.NewUnsuccessfulResponse(messageType, "UNKNOWN_MESSAGE_TYPE"))
-	}
 }
 
 // Send a message to all players in the world.

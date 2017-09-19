@@ -34,11 +34,18 @@ func TranslateLineToRequest(line string) (request Request, err error) {
 		request = ExitsRequest{
 			Request: RequestBase{MessageType: "exits"},
 		}
+
+	case "inv", "inventory":
+		request = InventoryRequest{
+			Request: RequestBase{MessageType: "inv"},
+		}
+
 	case "look", "l":
 		request = LookRequest{
 			Request:   RequestBase{MessageType: "look"},
 			ValueList: tokens[1:],
 		}
+
 	case "n", "north", "s", "south", "e", "east", "w", "west", "u", "up", "d", "down":
 		var d direction.Direction
 		if d, err = direction.StringToDirection(tokens[0]); err == nil {
@@ -47,6 +54,7 @@ func TranslateLineToRequest(line string) (request Request, err error) {
 				Direction: d,
 			}
 		}
+
 	case "'", "say":
 		if len(tokens) >= 2 {
 			request = SayRequest{
@@ -56,6 +64,7 @@ func TranslateLineToRequest(line string) (request Request, err error) {
 		} else {
 			err = errors.New("What do you want to say?")
 		}
+
 	case "tell", "t":
 		if len(tokens) >= 3 {
 			request = TellRequest{
@@ -67,6 +76,7 @@ func TranslateLineToRequest(line string) (request Request, err error) {
 			// some sort of error about malformed tell request...
 			err = errors.New("usage: tell [somebody] [something]")
 		}
+
 	case "tellall", "ta":
 		if len(tokens) >= 2 {
 			request = TellAllRequest{
@@ -76,10 +86,12 @@ func TranslateLineToRequest(line string) (request Request, err error) {
 		} else {
 			err = errors.New("usage: tellall [something]")
 		}
+
 	case "who":
 		request = WhoRequest{
 			Request: RequestBase{MessageType: "who"},
 		}
+
 	default:
 		err = errors.New("Unknown request: " + tokens[0])
 	}
@@ -87,6 +99,7 @@ func TranslateLineToRequest(line string) (request Request, err error) {
 }
 
 // Turn a request of format type "request" into a Request object
+// this is deprecated in favor of line input, other than for login.
 func TranslateToRequest(body map[string]interface{}) (request Request, err error) {
 	err = nil
 	msgType := body["Request"].(map[string]interface{})["msg_type"].(string)
@@ -149,6 +162,9 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 
 	case "exits":
 		response = decodeResponse(&ExitsResponse{}, rawMap)
+
+	case "inv":
+		response = decodeResponse(&InventoryResponse{}, rawMap)
 
 	case "leave_room":
 		response = decodeResponse(&LeaveRoomNotification{}, rawMap)

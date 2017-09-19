@@ -19,6 +19,7 @@ func newTestWorld() *World {
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
 	}
+	w.initializeHandlerMap()
 	w.zones[testZone.Id] = &testZone
 
 	testRoom := NewRoom(&testZone, "start", "Test Room", "this is a test room.")
