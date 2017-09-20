@@ -4,13 +4,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/player"
 	"log"
 	"testing"
 )
 
 func TestMove_butYouCant(t *testing.T) {
 	w := newTestWorld()
-	p := NewTestPlayer("p")
+	p := player.NewTestPlayer("p")
 	w.AddPlayer(p)
 
 	msg := message.IncomingMessage{
@@ -23,11 +24,11 @@ func TestMove_butYouCant(t *testing.T) {
 
 	w.handleMove(&msg)
 
-	log.Printf("%d", len(p.sent))
-	if len(p.sent) != 1 {
-		t.Fatalf("Expected message %s", p.sent)
+	log.Printf("%d", p.SentMessageCount())
+	if p.SentMessageCount() != 1 {
+		t.Fatalf("Expected message count of 1: %d", p.SentMessageCount())
 	}
-	resp := p.sent[0].(message.Response)
+	resp := p.GetSentResponse(0).(message.Response)
 	assert.False(t, resp.IsSuccessful())
 	assert.Equal(t, resp.GetMessageType(), "move")
 	assert.Equal(t, resp.GetResultCode(), "CANT_GO_THAT_WAY")

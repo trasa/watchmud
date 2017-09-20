@@ -5,18 +5,6 @@ import (
 	"testing"
 )
 
-type TestPlayer struct {
-	name string
-}
-
-func (*TestPlayer) Send(message interface{}) {
-	log.Printf("send to player %s", message)
-}
-
-func (this *TestPlayer) GetName() string {
-	return this.name
-}
-
 func TestPlayers_Add(t *testing.T) {
 	players := NewList()
 	p := &TestPlayer{}

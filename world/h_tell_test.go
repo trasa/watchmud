@@ -2,6 +2,7 @@ package world
 
 import (
 	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/player"
 	"testing"
 )
 
@@ -9,8 +10,8 @@ import (
 func TestHandleTell_success(t *testing.T) {
 	// arrange
 	w := newTestWorld()
-	senderPlayer := NewTestPlayer("sender")
-	receiverPlayer := NewTestPlayer("receiver")
+	senderPlayer := player.NewTestPlayer("sender")
+	receiverPlayer := player.NewTestPlayer("receiver")
 	w.AddPlayer(receiverPlayer)
 	w.AddPlayer(senderPlayer)
 
@@ -29,11 +30,11 @@ func TestHandleTell_success(t *testing.T) {
 	// assert
 	// assert tell to receiver
 
-	if len(receiverPlayer.sent) != 1 {
-		t.Errorf("expected receiver to get a message %s", receiverPlayer.sent)
+	if receiverPlayer.SentMessageCount() != 1 {
+		t.Errorf("expected receiver to get a message: %d", receiverPlayer.SentMessageCount())
 	}
-	recdMessage := receiverPlayer.sent[0].(message.TellNotification)
-	if recdMessage.Sender != senderPlayer.name {
+	recdMessage := receiverPlayer.GetSentResponse(0).(message.TellNotification)
+	if recdMessage.Sender != senderPlayer.GetName() {
 		t.Errorf("Didn't get expected senderPlayer.Name: %s", recdMessage.Sender)
 	}
 	if recdMessage.GetMessageType() != "tell_notification" {
@@ -44,10 +45,10 @@ func TestHandleTell_success(t *testing.T) {
 	}
 
 	// assert tell-response to sender
-	if len(senderPlayer.sent) != 1 {
-		t.Errorf("expected sender to get a response %s", senderPlayer.sent)
+	if senderPlayer.SentMessageCount() != 1 {
+		t.Errorf("expected sender to get a response: %d", senderPlayer.SentMessageCount())
 	}
-	senderResponse := senderPlayer.sent[0].(message.Response)
+	senderResponse := senderPlayer.GetSentResponse(0).(message.Response)
 	if senderResponse.GetMessageType() != "tell" {
 		t.Errorf("expected sender response tell: %s", senderResponse.GetMessageType())
 	}
@@ -62,7 +63,7 @@ func TestHandleTell_success(t *testing.T) {
 func TestHandleTell_receiverNotFound(t *testing.T) {
 	// arrange
 	w := newTestWorld()
-	senderPlayer := NewTestPlayer("sender")
+	senderPlayer := player.NewTestPlayer("sender")
 	// note: receiver doesn't exist
 	w.AddPlayer(senderPlayer)
 
@@ -79,11 +80,11 @@ func TestHandleTell_receiverNotFound(t *testing.T) {
 	w.handleTell(&msg)
 
 	// assert tell-response to sender
-	if len(senderPlayer.sent) != 1 {
+	if senderPlayer.SentMessageCount() != 1 {
 		t.Error("expected sender to get a response")
 	}
 
-	senderResponse := senderPlayer.sent[0].(message.Response)
+	senderResponse := senderPlayer.GetSentResponse(0).(message.Response)
 	if senderResponse.GetMessageType() != "tell" {
 		t.Errorf("sender response message type: %s", senderResponse.GetMessageType())
 	}

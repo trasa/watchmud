@@ -30,7 +30,7 @@ func newTestWorld() *World {
 
 func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
 	w := newTestWorld()
-	p := NewTestPlayer("sender")
+	p := player.NewTestPlayer("sender")
 
 	msg := message.IncomingMessage{
 		Player: p,
@@ -40,7 +40,7 @@ func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
 	}
 	w.HandleIncomingMessage(&msg)
 
-	resp := p.GetSentResponse(0)
+	resp := p.GetSentResponse(0).(message.Response)
 	if resp.IsSuccessful() {
 		t.Error("should not succeed")
 	}

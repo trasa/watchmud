@@ -2,13 +2,14 @@ package world
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/trasa/watchmud/player"
 	"testing"
 )
 
 func TestPlayerRoomMap_GetPlayers(t *testing.T) {
 	m := NewPlayerRoomMap()
-	bob := NewTestPlayer("bob")
-	alice := NewTestPlayer("alice")
+	bob := player.NewTestPlayer("bob")
+	alice := player.NewTestPlayer("alice")
 
 	northRoom := NewTestRoom("north")
 

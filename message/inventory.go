@@ -1,6 +1,8 @@
 package message
 
-import "github.com/trasa/watchmud/object"
+import (
+	"github.com/trasa/watchmud/object"
+)
 
 type InventoryRequest struct {
 	Request
@@ -8,12 +10,12 @@ type InventoryRequest struct {
 
 type InventoryResponse struct {
 	Response
-	InventoryItems []InventoryItem
+	InventoryItems []InventoryDescription
 }
 
-// TODO: other stuff that makes up your inventory display ...
-type InventoryItem struct {
+type InventoryDescription struct {
 	Id               string
 	ShortDescription string
 	ObjectCategory   object.Category
+	Quantity         int
 }

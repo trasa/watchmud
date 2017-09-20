@@ -82,6 +82,7 @@ func New() *World {
 		"fountain",
 		"fountain",
 		object.OTHER,
+		false,
 		[]string{"fount"},
 		"fountain",
 		"A fountain bubbles quietly.")
@@ -95,6 +96,7 @@ func New() *World {
 		"knife",
 		"knife",
 		object.WEAPON,
+		false,
 		[]string{},
 		"knife",
 		"A knife is on the ground.")

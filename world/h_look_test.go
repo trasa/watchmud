@@ -3,13 +3,14 @@ package world
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/player"
 	"testing"
 )
 
 func TestLook_successful(t *testing.T) {
 	w := newTestWorld()
-	p := NewTestPlayer("testdood")
-	other := NewTestPlayer("other")
+	p := player.NewTestPlayer("testdood")
+	other := player.NewTestPlayer("other")
 	w.AddPlayer(p)
 	w.AddPlayer(other)
 
@@ -22,7 +23,7 @@ func TestLook_successful(t *testing.T) {
 
 	w.HandleIncomingMessage(&msg)
 
-	resp := p.sent[0].(message.LookResponse)
+	resp := p.GetSentResponse(0).(message.LookResponse)
 	assert.Equal(t, "look", resp.GetMessageType(), "wrong message type")
 	assert.True(t, resp.IsSuccessful())
 	assert.NotNil(t, resp.RoomDescription.Name)

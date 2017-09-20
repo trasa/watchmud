@@ -8,7 +8,7 @@ import (
 func (w *World) initializeHandlerMap() {
 	w.handlerMap = map[string]func(*message.IncomingMessage){
 		"exits":    w.handleExits,
-		"inv": w.handleInventory,
+		"inv":      w.handleInventory,
 		"logout":   w.handleLogout,
 		"look":     w.handleLook,
 		"move":     w.handleMove,

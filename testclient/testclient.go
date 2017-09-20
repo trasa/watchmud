@@ -1,4 +1,4 @@
-package world
+package testclient
 
 import (
 	"github.com/trasa/watchmud/player"
@@ -9,6 +9,12 @@ type TestClient struct {
 	Player player.Player
 	tosend []interface{}
 	open   bool
+}
+
+func NewTestClient(p player.Player) *TestClient {
+	return &TestClient{
+		Player: p,
+	}
 }
 
 func (c *TestClient) Send(msg interface{}) {
