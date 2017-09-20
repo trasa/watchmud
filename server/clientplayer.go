@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/testclient"
 )
 
 type ClientPlayer struct {
@@ -15,9 +14,9 @@ type ClientPlayer struct {
 
 // Create a ClientPlayer connected to a new TestClient
 // (for testing)
-func NewTestClientPlayer(name string) (p *ClientPlayer, cli *testclient.TestClient) {
+func NewTestClientPlayer(name string) (p *ClientPlayer, cli *client.TestClient) {
 	p = NewClientPlayer(name, nil)
-	cli = testclient.NewTestClient(p)
+	cli = client.NewTestClient(p)
 	p.Client = cli
 	return
 }

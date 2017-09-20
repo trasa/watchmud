@@ -1,4 +1,4 @@
-package testclient
+package client
 
 import (
 	"github.com/trasa/watchmud/player"
