@@ -16,6 +16,5 @@ type InventoryResponse struct {
 type InventoryDescription struct {
 	Id               string
 	ShortDescription string
-	ObjectCategory   object.Category
-	Quantity         int
+	ObjectCategories []object.Category
 }

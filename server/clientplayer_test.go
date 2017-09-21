@@ -3,22 +3,26 @@ package server
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/player"
 	"testing"
 )
 
 func TestAddInventory_New(t *testing.T) {
 
 	p, _ := NewTestClientPlayer("name")
-	p.AddInventory(player.InventoryItem{
-		Id:               "id",
-		Quantity:         3,
-		ObjectCategory:   object.FOOD,
-		ShortDescription: "short desc",
+	p.AddInventory(&object.Instance{
+		InstanceId: "id",
+		Definition: &object.Definition{
+			DefinitionId:        "defnid",
+			Categories:          object.CategorySet{object.FOOD: true},
+			Name:                "name",
+			ShortDescription:    "short desc",
+			DescriptionOnGround: "on ground",
+		},
 	})
 
-	invmap := p.GetInventory()
+	invmap := p.GetInventoryMap()
 	assert.Equal(t, 1, len(invmap))
-	obj := invmap["id"][0]
-	assert.Equal(t, 3, obj.Quantity)
+	obj := invmap["id"]
+	assert.Equal(t, "id", obj.InstanceId)
+	assert.Equal(t, "defnid", obj.Definition.DefinitionId)
 }

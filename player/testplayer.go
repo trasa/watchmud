@@ -1,20 +1,21 @@
 package player
 
 import (
+	"github.com/trasa/watchmud/object"
 	"log"
 )
 
 type TestPlayer struct {
 	name      string
 	sent      []interface{}
-	inventory map[string][]InventoryItem
+	inventory object.InstanceMap
 }
 
 // create a new test player that can track sent messages through 'sentmessages'
 func NewTestPlayer(name string) *TestPlayer {
 	p := &TestPlayer{
 		name:      name,
-		inventory: make(map[string][]InventoryItem),
+		inventory: make(object.InstanceMap),
 	}
 	return p
 }
@@ -36,14 +37,10 @@ func (p *TestPlayer) GetName() string {
 	return p.name
 }
 
-func (p *TestPlayer) GetInventory() map[string][]InventoryItem {
+func (p *TestPlayer) GetInventoryMap() object.InstanceMap {
 	return p.inventory
 }
 
-func (p *TestPlayer) AddInventory(item InventoryItem) {
-	if val, ok := p.inventory[item.Id]; ok {
-		val = append(val, item)
-	} else {
-		p.inventory[item.Id] = []InventoryItem{item}
-	}
+func (p *TestPlayer) AddInventory(instance *object.Instance) error {
+	return p.inventory.Add(instance)
 }

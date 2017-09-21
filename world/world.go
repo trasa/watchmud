@@ -82,27 +82,27 @@ func New() *World {
 		"fountain",
 		"fountain",
 		object.OTHER,
-		false,
 		[]string{"fount"},
 		"fountain",
 		"A fountain bubbles quietly.")
 
-	fountainObj := object.NewInstance(fountainDefn)
+	// TODO instance ids
+	fountainObj := object.NewInstance("fountain", fountainDefn)
 	// put the obj in the room
-	centralPortalRoom.AddObject(fountainObj)
+	centralPortalRoom.AddInventory(fountainObj)
 
 	// that's not a knife....wait, yes it is.
 	knifeDefn := object.NewDefinition(
 		"knife",
 		"knife",
 		object.WEAPON,
-		false,
 		[]string{},
 		"knife",
 		"A knife is on the ground.")
-	knifeObj := object.NewInstance(knifeDefn)
+	// TODO instance ids
+	knifeObj := object.NewInstance("knife", knifeDefn)
 	// knife is in room
-	centralPortalRoom.AddObject(knifeObj)
+	centralPortalRoom.AddInventory(knifeObj)
 
 	log.Print("World built.")
 	return &w

@@ -35,6 +35,11 @@ func TranslateLineToRequest(line string) (request Request, err error) {
 			Request: RequestBase{MessageType: "exits"},
 		}
 
+	case "get":
+		request = GetRequest{
+			Request: RequestBase{MessageType: "get"},
+			Targets: tokens[1:],
+		}
 	case "inv", "inventory":
 		request = InventoryRequest{
 			Request: RequestBase{MessageType: "inv"},
@@ -162,6 +167,9 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 
 	case "exits":
 		response = decodeResponse(&ExitsResponse{}, rawMap)
+
+	case "get":
+		response = decodeResponse(&GetResponse{}, rawMap)
 
 	case "inv":
 		response = decodeResponse(&InventoryResponse{}, rawMap)

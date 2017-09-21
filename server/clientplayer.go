@@ -3,13 +3,13 @@ package server
 import (
 	"fmt"
 	"github.com/trasa/watchmud/client"
-	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/object"
 )
 
 type ClientPlayer struct {
 	Name      string
 	Client    client.Client `json:"-"`
-	Inventory map[string][]player.InventoryItem
+	Inventory object.InstanceMap
 }
 
 // Create a ClientPlayer connected to a new TestClient
@@ -26,7 +26,7 @@ func NewClientPlayer(name string, client client.Client) *ClientPlayer {
 	p := ClientPlayer{
 		Name:      name,
 		Client:    client, // address of interface
-		Inventory: make(map[string][]player.InventoryItem),
+		Inventory: make(object.InstanceMap),
 	}
 	return &p
 }
@@ -43,14 +43,10 @@ func (p *ClientPlayer) String() string {
 	return fmt.Sprintf("(Player Name='%s')", p.Name)
 }
 
-func (p *ClientPlayer) GetInventory() map[string][]player.InventoryItem {
+func (p *ClientPlayer) GetInventoryMap() object.InstanceMap {
 	return p.Inventory
 }
 
-func (p *ClientPlayer) AddInventory(item player.InventoryItem) {
-	if val, ok := p.Inventory[item.Id]; ok {
-		val = append(val, item)
-	} else {
-		p.Inventory[item.Id] = []player.InventoryItem{item}
-	}
+func (p *ClientPlayer) AddInventory(instance *object.Instance) error {
+	return p.Inventory.Add(instance)
 }

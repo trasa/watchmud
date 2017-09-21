@@ -11,11 +11,14 @@ import (
 func TestInventory_success(t *testing.T) {
 	w := newTestWorld()
 	p := player.NewTestPlayer("guy")
-	p.AddInventory(player.InventoryItem{
-		Id:               "id",
-		ShortDescription: "short desc",
-		ObjectCategory:   object.TREASURE,
-		Quantity:         3,
+
+	p.AddInventory(&object.Instance{
+		InstanceId: "id",
+		Definition: &object.Definition{
+			DefinitionId:     "defnid",
+			ShortDescription: "short desc",
+			Categories:       object.CategorySet{object.TREASURE: true},
+		},
 	})
 
 	msg := message.IncomingMessage{

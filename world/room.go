@@ -16,7 +16,7 @@ type Room struct {
 	Description string
 	Zone        *Zone
 	PlayerList  *player.List // map of players by name
-	Objects     []*object.Instance
+	Inventory   object.InstanceMap
 	North       *Room
 	South       *Room
 	East        *Room
@@ -32,6 +32,7 @@ func NewRoom(zone *Zone, id string, name string, description string) *Room {
 		Description: description,
 		Zone:        zone,
 		PlayerList:  player.NewList(),
+		Inventory:   make(object.InstanceMap),
 	}
 }
 
@@ -192,13 +193,13 @@ func (r *Room) CreateRoomDescription(exclude player.Player) message.RoomDescript
 			desc.Players = append(desc.Players, p.GetName())
 		}
 	})
-	for _, o := range r.Objects {
+	for _, o := range r.Inventory {
 		desc.Objects = append(desc.Objects, o.Definition.DescriptionOnGround)
 	}
 
 	return desc
 }
 
-func (r *Room) AddObject(obj *object.Instance) {
-	r.Objects = append(r.Objects, obj)
+func (r *Room) AddInventory(inst *object.Instance) error {
+	return r.Inventory.Add(inst)
 }

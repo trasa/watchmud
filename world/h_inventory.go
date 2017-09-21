@@ -2,15 +2,13 @@ package world
 
 import (
 	"github.com/trasa/watchmud/message"
-	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/object"
 )
 
 func (w *World) handleInventory(msg *message.IncomingMessage) {
 	items := []message.InventoryDescription{}
-	for _, vals := range msg.Player.GetInventory() {
-		for _, val := range vals {
-			items = append(items, InventoryItemToDescription(val))
-		}
+	for _, instPtr := range msg.Player.GetInventoryMap() {
+		items = append(items, ObjectInstanceToDescription(*instPtr))
 	}
 	resp := message.InventoryResponse{
 		Response:       message.NewSuccessfulResponse("inv"),
@@ -19,11 +17,10 @@ func (w *World) handleInventory(msg *message.IncomingMessage) {
 	msg.Player.Send(resp)
 }
 
-func InventoryItemToDescription(item player.InventoryItem) message.InventoryDescription {
+func ObjectInstanceToDescription(item object.Instance) message.InventoryDescription {
 	return message.InventoryDescription{
-		Id:               item.Id,
-		ShortDescription: item.ShortDescription,
-		ObjectCategory:   item.ObjectCategory,
-		Quantity:         item.Quantity,
+		Id:               item.InstanceId,
+		ShortDescription: item.Definition.ShortDescription,
+		ObjectCategories: item.Definition.Categories.ToList(),
 	}
 }
