@@ -25,3 +25,14 @@ func TestCategorySet_ToList(t *testing.T) {
 	assert.Contains(t, list, WEAPON)
 	assert.NotContains(t, list, ARMOR)
 }
+
+func TestCategoriesToString(t *testing.T) {
+	cats := []Category{
+		FOOD, WEAPON, ARMOR,
+	}
+	str := CategoriesToString(cats)
+	assert.Equal(t, "FOOD, WEAPON, ARMOR", str)
+
+	// empty slice
+	assert.Equal(t, "", CategoriesToString([]Category{}))
+}
