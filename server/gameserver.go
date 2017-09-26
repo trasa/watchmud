@@ -76,6 +76,7 @@ func (gs *GameServer) heartbeat(pulse PulseCount, delta float64) {
 	// handle an incoming message if one exists
 	// TODO tick time: figure out how many incoming messages we can handle
 	// for now, just process until buffer is empty...
+
 	// not really infinite as the method will return false if there was
 	// nothing to do.
 	//noinspection GoInfiniteFor
