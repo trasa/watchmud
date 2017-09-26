@@ -30,6 +30,12 @@ func TranslateLineToRequest(line string) (request Request, err error) {
 		return
 	}
 	switch tokens[0] {
+	case "drop":
+		request = DropRequest{
+			Request: RequestBase{MessageType: "drop"},
+			Target:  tokens[1],
+		}
+
 	case "exits", "exit", "ex":
 		request = ExitsRequest{
 			Request: RequestBase{MessageType: "exits"},
@@ -40,6 +46,7 @@ func TranslateLineToRequest(line string) (request Request, err error) {
 			Request: RequestBase{MessageType: "get"},
 			Targets: tokens[1:],
 		}
+
 	case "inv", "inventory":
 		request = InventoryRequest{
 			Request: RequestBase{MessageType: "inv"},
@@ -159,6 +166,9 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	messageType := responseMap["msg_type"].(string)
 
 	switch messageType {
+	case "drop":
+		response = decodeResponse(&DropResponse{}, rawMap)
+
 	case "enter_room":
 		response = decodeResponse(&EnterRoomNotification{}, rawMap)
 

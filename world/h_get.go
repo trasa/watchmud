@@ -52,7 +52,5 @@ func (w *World) handleGet(msg *message.IncomingMessage) {
 		msg.Player.Send(message.GetResponse{
 			Response: message.NewUnsuccessfulResponse("get", "TARGET_NOT_FOUND"),
 		})
-
-		return
 	}
 }
