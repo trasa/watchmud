@@ -5,11 +5,8 @@ import (
 	"testing"
 )
 
-func NewTestRoom(name string) Room {
-	return Room{
-		Id:   name,
-		Name: name,
-	}
+func NewTestRoom(name string) *Room {
+	return NewRoom(nil, name, name, "")
 }
 
 func TestRoomExits_none(t *testing.T) {
@@ -46,11 +43,11 @@ func TestRoom_GetExitInfo(t *testing.T) {
 	n := NewTestRoom("n")
 	s := NewTestRoom("s")
 
-	center.North = &n
-	n.South = &center
+	center.North = n
+	n.South = center
 
-	center.South = &s
-	s.North = &center
+	center.South = s
+	s.North = center
 
 	exitInfo := center.GetExitInfo()
 

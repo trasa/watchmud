@@ -1,10 +1,10 @@
 package world
 
 import (
+	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/player"
 	"testing"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
@@ -27,7 +27,6 @@ func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
 		t.Errorf("unexpected result code: %s", resp.GetResultCode())
 	}
 }
-
 
 func TestWorld_RemovePlayer(t *testing.T) {
 	w := newTestWorld()

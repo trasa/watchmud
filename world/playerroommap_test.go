@@ -13,13 +13,13 @@ func TestPlayerRoomMap_GetPlayers(t *testing.T) {
 
 	northRoom := NewTestRoom("north")
 
-	m.Add(bob, &northRoom)
-	m.Add(alice, &northRoom)
+	m.Add(bob, northRoom)
+	m.Add(alice, northRoom)
 
-	assert.Equal(t, 2, len(m.GetPlayers(&northRoom)))
+	assert.Equal(t, 2, len(m.GetPlayers(northRoom)))
 
 	m.Remove(bob)
 
-	assert.Equal(t, 1, len(m.GetPlayers(&northRoom)))
+	assert.Equal(t, 1, len(m.GetPlayers(northRoom)))
 
 }
