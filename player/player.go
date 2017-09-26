@@ -10,4 +10,5 @@ type Player interface {
 	GetName() string
 	GetInventoryMap() object.InstanceMap
 	AddInventory(instance *object.Instance) error
+	RemoveInventory(instance *object.Instance) error
 }

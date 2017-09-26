@@ -26,11 +26,24 @@ func NewInstance(instanceId string, defn *Definition) *Instance {
 // map InstanceIDs to Instance objects
 type InstanceMap map[string]*Instance
 
+// Add an instance to the map.
+// If it's already there, thats' an error.
 func (m InstanceMap) Add(inst *Instance) error {
 	if _, exists := m[inst.InstanceId]; exists {
 		return errors.New(fmt.Sprintf("instance %s already exists in map", inst.InstanceId))
 	} else {
 		m[inst.InstanceId] = inst
+	}
+	return nil
+}
+
+// Remove an instance from the map.
+// If it doesn't exist in the map, that's an error.
+func (m InstanceMap) Remove(instance *Instance) error {
+	if _, exists := m[instance.InstanceId]; !exists {
+		return errors.New(fmt.Sprintf("instance %s can't be removed, it doesn't exist in map", instance.InstanceId))
+	} else {
+		delete(m, instance.InstanceId)
 	}
 	return nil
 }

@@ -50,3 +50,7 @@ func (p *ClientPlayer) GetInventoryMap() object.InstanceMap {
 func (p *ClientPlayer) AddInventory(instance *object.Instance) error {
 	return p.Inventory.Add(instance)
 }
+
+func (p *ClientPlayer) RemoveInventory(instance *object.Instance) error {
+	return p.Inventory.Remove(instance)
+}

@@ -44,3 +44,7 @@ func (p *TestPlayer) GetInventoryMap() object.InstanceMap {
 func (p *TestPlayer) AddInventory(instance *object.Instance) error {
 	return p.inventory.Add(instance)
 }
+
+func (p *TestPlayer) RemoveInventory(instance *object.Instance) error {
+	return p.inventory.Remove(instance)
+}
