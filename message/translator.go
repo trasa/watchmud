@@ -169,6 +169,9 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	case "drop":
 		response = decodeResponse(&DropResponse{}, rawMap)
 
+	case "drop_notification":
+		response = decodeResponse(&DropNotification{}, rawMap)
+
 	case "enter_room":
 		response = decodeResponse(&EnterRoomNotification{}, rawMap)
 

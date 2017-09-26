@@ -49,6 +49,13 @@ func (w *World) handleDrop(msg *message.IncomingMessage) {
 		msg.Player.Send(message.DropResponse{
 			Response: message.NewSuccessfulResponse("drop"),
 		})
+		// tell everybody about it
+		room.SendExcept(msg.Player,
+			message.DropNotification{
+				Response:   message.NewSuccessfulResponse("drop_notification"),
+				PlayerName: msg.Player.GetName(),
+				Target:     instPtr.Definition.Name, // what should this be?! "knife", "a knife", "those knives" ...
+			})
 	} else {
 		// not found
 		msg.Player.Send(message.DropResponse{

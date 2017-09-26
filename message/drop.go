@@ -8,3 +8,9 @@ type DropRequest struct {
 type DropResponse struct {
 	Response
 }
+
+type DropNotification struct {
+	Response
+	PlayerName string
+	Target     string
+}
