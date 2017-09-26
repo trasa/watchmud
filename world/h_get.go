@@ -46,6 +46,15 @@ func (w *World) handleGet(msg *message.IncomingMessage) {
 		msg.Player.Send(message.GetResponse{
 			Response: message.NewSuccessfulResponse("get"),
 		})
+
+		// tell everyone else in room too
+		room.SendExcept(msg.Player,
+			message.GetNotification{
+				Response:   message.NewSuccessfulResponse("get_notification"),
+				Target:     instPtr.Definition.Name, // what should be sent?! needs to handle various articles, plural...
+				PlayerName: msg.Player.GetName(),
+			})
+
 		return
 	} else {
 		// nothing here with that name

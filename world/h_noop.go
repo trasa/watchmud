@@ -5,7 +5,6 @@ import (
 	"log"
 )
 
-
 func (w *World) handleNoOp(msg *message.IncomingMessage) {
 	//noinspection ALL
 	if VERBOSE_LOGGING {

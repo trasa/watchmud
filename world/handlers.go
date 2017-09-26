@@ -14,7 +14,7 @@ func (w *World) initializeHandlerMap() {
 		"logout":   w.handleLogout,
 		"look":     w.handleLook,
 		"move":     w.handleMove,
-		"no_op":	w.handleNoOp,
+		"no_op":    w.handleNoOp,
 		"say":      w.handleSay,
 		"tell":     w.handleTell,
 		"tell_all": w.handleTellAll,

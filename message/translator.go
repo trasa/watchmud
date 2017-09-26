@@ -181,6 +181,9 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	case "get":
 		response = decodeResponse(&GetResponse{}, rawMap)
 
+	case "get_notification":
+		response = decodeResponse(&GetNotification{}, rawMap)
+
 	case "inv":
 		response = decodeResponse(&InventoryResponse{}, rawMap)
 
