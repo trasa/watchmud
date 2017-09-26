@@ -54,3 +54,9 @@ func (ps *List) FindByName(name string) Player {
 	defer ps.RUnlock()
 	return ps.byName[name]
 }
+
+func (ps *List) Count() int {
+	ps.RLock()
+	defer ps.RUnlock()
+	return len(ps.players)
+}

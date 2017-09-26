@@ -4,6 +4,7 @@ import (
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/player"
 	"testing"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
@@ -25,4 +26,17 @@ func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
 	if resp.GetResultCode() != "UNKNOWN_MESSAGE_TYPE" {
 		t.Errorf("unexpected result code: %s", resp.GetResultCode())
 	}
+}
+
+
+func TestWorld_RemovePlayer(t *testing.T) {
+	w := newTestWorld()
+	p := player.NewTestPlayer("dood")
+	w.AddPlayer(p)
+	w.RemovePlayer(p)
+
+	assert.Equal(t, 0, w.playerList.Count())
+	assert.Nil(t, w.playerRooms.playerToRoom[p])
+	assert.Equal(t, 0, len(w.playerRooms.roomToPlayers.Get(w.startRoom)))
+	assert.Equal(t, 0, w.startRoom.PlayerList.Count())
 }
