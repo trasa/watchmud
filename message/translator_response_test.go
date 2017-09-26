@@ -58,3 +58,12 @@ func TestTranslateToResponse_SayResponse(t *testing.T) {
 	assert.Equal(t, "hello", r.Value)
 	log.Println(r)
 }
+
+func TestTranslateToResponse_NoOp(t *testing.T) {
+	s := []byte("{\"Response\":{\"msg_type\":\"no_op\",\"success\":false,\"result_code\":\"UNKNOWN_MESSAGE_TYPE\"}}")
+	resp, err := TranslateToResponse(s)
+	r := resp.(*NoOpResponse)
+	assert.Nil(t, err)
+	assert.False(t, r.IsSuccessful())
+	assert.Equal(t, "UNKNOWN_MESSAGE_TYPE", r.GetResultCode())
+}

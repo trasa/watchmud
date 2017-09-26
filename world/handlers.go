@@ -27,7 +27,9 @@ func (w *World) HandleIncomingMessage(msg *message.IncomingMessage) {
 	handler := w.handlerMap[messageType]
 	if handler == nil {
 		log.Printf("world.HandleIncomingMessage: UNHANDLED messageType: %s, body %s", messageType, msg.Request)
-		msg.Player.Send(message.NewUnsuccessfulResponse(messageType, "UNKNOWN_MESSAGE_TYPE"))
+		msg.Player.Send(message.NoOpResponse{
+			Response: message.NewUnsuccessfulResponse(messageType, "UNKNOWN_MESSAGE_TYPE"),
+		})
 	} else {
 		handler(msg)
 	}

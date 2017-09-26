@@ -196,6 +196,9 @@ func TranslateToResponse(raw []byte) (response Response, err error) {
 	case "move":
 		response = decodeResponse(&MoveResponse{}, rawMap)
 
+	case "no_op":
+		response = decodeResponse(&NoOpResponse{}, rawMap)
+
 	case "say":
 		response = decodeResponse(&SayResponse{}, rawMap)
 
