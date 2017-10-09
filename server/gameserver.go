@@ -9,9 +9,12 @@ import (
 	"time"
 )
 
-const TICK_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
-//const TICK_INTERVAL time.Duration = 1 * time.Second // 1 second
-var MAX_PULSE PulseCount = PulseCount(int64(1/TICK_INTERVAL.Hours()) * 10) // 10 hours
+const PULSE_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
+//const PULSE_INTERVAL time.Duration = 1 * time.Second // 1 second
+var MAX_PULSE PulseCount = PulseCount(int64(1/PULSE_INTERVAL.Hours()) * 10) // 10 hours
+
+// Mobs consider doing something once every PULSE_MOBILE time
+const PULSE_MOBILE = 10 * time.Second
 
 type GameServer struct {
 	incomingMessageBuffer chan *message.IncomingMessage
@@ -26,11 +29,12 @@ func NewGameServer() *GameServer {
 	}
 }
 
+//noinspection SpellCheckingInspection
 func (gs *GameServer) Run() {
 	// this is the loop that handles incoming requests
-	// needs to be organized around TICKs
+	// needs to be organized around PULSEs
 	tstart := time.Now().UnixNano()
-	ticker := time.NewTicker(TICK_INTERVAL)
+	ticker := time.NewTicker(PULSE_INTERVAL)
 	pulse := PulseCount(0)
 
 	for {
@@ -69,12 +73,24 @@ func (gs *GameServer) heartbeat(pulse PulseCount, delta float64) {
 	// mobs, scripts, ...
 
 	// pulse zone
+	// (zone reset ...)
+
 	// pulse mobs
+	// (mobs walk around, initiate attack?)
+	if pulse.checkInterval(PULSE_MOBILE) {
+		log.Printf("pulse %d do mobs %s", pulse, time.Now())
+		gs.World.DoMobileActivity()
+	}
+
 	// perform violence
-	// mud-hour ("player tick") -- affect weather, regen ..
+	// do the attacking (players and mobs and everybody)
+
+	// mud-hour ("player tick")
+	// affect weather, regen ..
 
 	// handle an incoming message if one exists
 	// TODO tick time: figure out how many incoming messages we can handle
+	// see issue #4
 	// for now, just process until buffer is empty...
 
 	// not really infinite as the method will return false if there was

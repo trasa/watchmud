@@ -6,6 +6,7 @@ import (
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/thing"
 	"log"
 )
 
@@ -17,6 +18,7 @@ type World struct {
 	playerList  *player.List
 	playerRooms *PlayerRoomMap
 	handlerMap  map[string]func(message *message.IncomingMessage)
+	mobs        thing.Map
 }
 
 // Constructor for World
@@ -26,6 +28,7 @@ func New() *World {
 		zones:       make(map[string]*Zone),
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
+		mobs:        make(thing.Map),
 	}
 	w.initializeHandlerMap()
 
@@ -106,9 +109,14 @@ func New() *World {
 	centralPortalRoom.AddInventory(knifeObj)
 
 	// a mob - somebody to walk around.
-	walkerDefn := mobile.NewDefinition("walker", "walker", []string{}, "The Walker walks.", "The walker stands here...for now.")
+	walkerDefn := mobile.NewDefinition("walker", "walker", []string{}, "The Walker walks.",
+		"The walker stands here...for now.",
+		true)
+
 	// TODO instance ids
+	// TODO put in world as well as room - someone annoying, maybe fix into one method?
 	walkerObj := mobile.NewInstance("walker", walkerDefn)
+	w.mobs.Add(walkerObj)
 	centralPortalRoom.AddMobile(walkerObj)
 	log.Print("World built.")
 	return &w
@@ -163,4 +171,23 @@ func (w *World) SendToAllPlayersExcept(exception player.Player, message interfac
 			p.Send(message)
 		}
 	})
+}
+
+// Walk through all the mob instances that are in this world
+// right now and tell them all to do something, if they have
+// anything they want to do.
+func (w *World) DoMobileActivity() {
+	// for each mob in the world
+	// wake it up and tell it to do stuff
+	// don't limit this to per zone or per room or something
+	// remember that mobs can leave the zone they started out in
+	// (if programmed to)
+	// (or if they really really want to)
+	for _, t := range w.mobs {
+		mob := t.(*mobile.Instance)
+		log.Printf("checking %s", mob.Id())
+		if mob.Definition.CanWander {
+			log.Printf("can wander! ask about wandering..")
+		}
+	}
 }

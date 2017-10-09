@@ -5,7 +5,7 @@ import "time"
 type PulseCount int64
 
 func (pc PulseCount) toDuration() time.Duration {
-	return time.Duration(int64(pc) * TICK_INTERVAL.Nanoseconds())
+	return time.Duration(int64(pc) * PULSE_INTERVAL.Nanoseconds())
 }
 
 func (pc PulseCount) checkInterval(i time.Duration) bool {
