@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/thing"
 	"log"
 	"strings"
 )
@@ -16,7 +18,8 @@ type Room struct {
 	Description string
 	Zone        *Zone
 	PlayerList  *player.List // map of players by name
-	Inventory   object.InstanceMap
+	Inventory   thing.Map
+	Mobs        thing.Map
 	North       *Room
 	South       *Room
 	East        *Room
@@ -32,7 +35,8 @@ func NewRoom(zone *Zone, id string, name string, description string) *Room {
 		Description: description,
 		Zone:        zone,
 		PlayerList:  player.NewList(),
-		Inventory:   make(object.InstanceMap),
+		Inventory:   make(thing.Map),
+		Mobs:        make(thing.Map),
 	}
 }
 
@@ -41,7 +45,7 @@ func (r Room) String() string {
 }
 
 // Player leaves a room. Tells other room residents about it.
-func (r *Room) Leave(p player.Player, dir direction.Direction) {
+func (r *Room) PlayerLeaves(p player.Player, dir direction.Direction) {
 	r.PlayerList.Remove(p)
 	r.Send(message.LeaveRoomNotification{
 		Response:   message.NewSuccessfulResponse("leave_room"),
@@ -51,17 +55,17 @@ func (r *Room) Leave(p player.Player, dir direction.Direction) {
 }
 
 // Add a player to a room. Don't send notifications.
-func (r *Room) Add(p player.Player) {
+func (r *Room) AddPlayer(p player.Player) {
 	r.PlayerList.Add(p)
 }
 
 // Player enters a room. Tells other room residents about it.
-func (r *Room) Enter(p player.Player) {
+func (r *Room) PlayerEnters(p player.Player) {
 	r.Send(message.EnterRoomNotification{
 		Response:   message.NewSuccessfulResponse("enter_room"),
 		PlayerName: p.GetName(),
 	})
-	r.Add(p)
+	r.AddPlayer(p)
 }
 
 // Send to every player in the room.
@@ -194,7 +198,10 @@ func (r *Room) CreateRoomDescription(exclude player.Player) message.RoomDescript
 		}
 	})
 	for _, o := range r.Inventory {
-		desc.Objects = append(desc.Objects, o.Definition.DescriptionOnGround)
+		desc.Objects = append(desc.Objects, o.(*object.Instance).Definition.DescriptionOnGround)
+	}
+	for _, o := range r.Mobs {
+		desc.Mobs = append(desc.Mobs, o.(*mobile.Instance).Definition.DescriptionInRoom)
 	}
 
 	return desc
@@ -202,4 +209,8 @@ func (r *Room) CreateRoomDescription(exclude player.Player) message.RoomDescript
 
 func (r *Room) AddInventory(inst *object.Instance) error {
 	return r.Inventory.Add(inst)
+}
+
+func (r *Room) AddMobile(inst *mobile.Instance) error {
+	return r.Mobs.Add(inst)
 }

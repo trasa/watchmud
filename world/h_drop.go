@@ -2,6 +2,7 @@ package world
 
 import (
 	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/object"
 	"log"
 )
 
@@ -22,7 +23,7 @@ func (w *World) handleDrop(msg *message.IncomingMessage) {
 			// failed to add to room..
 			log.Printf("Drop: Error while adding to room, player %s id %s; %s",
 				msg.Player.GetName(),
-				instPtr.InstanceId,
+				instPtr.Id(),
 				err)
 			msg.Player.Send(message.DropResponse{
 				Response: message.NewUnsuccessfulResponse("drop", "ADD_TO_ROOM_ERROR"),
@@ -31,11 +32,11 @@ func (w *World) handleDrop(msg *message.IncomingMessage) {
 		}
 
 		// remove from player
-		if err := msg.Player.RemoveInventory(instPtr); err != nil {
+		if err := msg.Player.RemoveInventory(instPtr.(*object.Instance)); err != nil {
 			// failed to remove from player
 			log.Printf("Drop: error while removing from player: %s id %s; %s",
 				msg.Player.GetName(),
-				instPtr.InstanceId,
+				instPtr.Id(),
 				err)
 
 			room.Inventory.Remove(instPtr)
@@ -54,7 +55,7 @@ func (w *World) handleDrop(msg *message.IncomingMessage) {
 			message.DropNotification{
 				Response:   message.NewSuccessfulResponse("drop_notification"),
 				PlayerName: msg.Player.GetName(),
-				Target:     instPtr.Definition.Name, // what should this be?! "knife", "a knife", "those knives" ...
+				Target:     instPtr.(*object.Instance).Definition.Name, // what should this be?! "knife", "a knife", "those knives" ...
 			})
 	} else {
 		// not found

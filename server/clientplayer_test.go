@@ -23,6 +23,6 @@ func TestAddInventory_New(t *testing.T) {
 	invmap := p.GetInventoryMap()
 	assert.Equal(t, 1, len(invmap))
 	obj := invmap["id"]
-	assert.Equal(t, "id", obj.InstanceId)
-	assert.Equal(t, "defnid", obj.Definition.DefinitionId)
+	assert.Equal(t, "id", obj.Id())
+	assert.Equal(t, "defnid", obj.(*object.Instance).Definition.DefinitionId)
 }

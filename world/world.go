@@ -3,6 +3,7 @@ package world
 import (
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 	"log"
@@ -104,6 +105,11 @@ func New() *World {
 	// knife is in room
 	centralPortalRoom.AddInventory(knifeObj)
 
+	// a mob - somebody to walk around.
+	walkerDefn := mobile.NewDefinition("walker", "walker", []string{}, "The Walker walks.", "The walker stands here...for now.")
+	// TODO instance ids
+	walkerObj := mobile.NewInstance("walker", walkerDefn)
+	centralPortalRoom.AddMobile(walkerObj)
 	log.Print("World built.")
 	return &w
 }
@@ -115,7 +121,7 @@ func (w *World) AddPlayer(players ...player.Player) {
 		log.Printf("Adding Player: %s", p.GetName())
 		w.playerList.Add(p)
 		w.playerRooms.Add(p, w.startRoom)
-		w.startRoom.Add(p)
+		w.startRoom.AddPlayer(p)
 	}
 }
 
@@ -129,8 +135,8 @@ func (w *World) RemovePlayer(players ...player.Player) {
 
 // Player is moving from src room to dest room.
 func (w *World) movePlayer(p player.Player, dir direction.Direction, src *Room, dest *Room) {
-	src.Leave(p, dir)
-	dest.Enter(p)
+	src.PlayerLeaves(p, dir)
+	dest.PlayerEnters(p)
 	w.playerRooms.Remove(p)
 	w.playerRooms.Add(p, dest)
 }

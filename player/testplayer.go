@@ -2,20 +2,21 @@ package player
 
 import (
 	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/thing"
 	"log"
 )
 
 type TestPlayer struct {
 	name      string
 	sent      []interface{}
-	inventory object.InstanceMap
+	inventory thing.Map
 }
 
 // create a new test player that can track sent messages through 'sentmessages'
 func NewTestPlayer(name string) *TestPlayer {
 	p := &TestPlayer{
 		name:      name,
-		inventory: make(object.InstanceMap),
+		inventory: make(thing.Map),
 	}
 	return p
 }
@@ -37,7 +38,7 @@ func (p *TestPlayer) GetName() string {
 	return p.name
 }
 
-func (p *TestPlayer) GetInventoryMap() object.InstanceMap {
+func (p *TestPlayer) GetInventoryMap() thing.Map {
 	return p.inventory
 }
 

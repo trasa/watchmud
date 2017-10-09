@@ -21,4 +21,5 @@ type RoomDescription struct {
 	Exits       string
 	Players     []string
 	Objects     []string
+	Mobs        []string
 }

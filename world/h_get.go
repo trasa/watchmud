@@ -2,6 +2,7 @@ package world
 
 import (
 	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/object"
 	"log"
 )
 
@@ -22,10 +23,10 @@ func (w *World) handleGet(msg *message.IncomingMessage) {
 		// target is in room
 
 		// add to player
-		if err := msg.Player.AddInventory(instPtr); err != nil {
+		if err := msg.Player.AddInventory(instPtr.(*object.Instance)); err != nil {
 			// uh oh failed to add
 			log.Printf("Get: Error while getting, Player %s adding Inventory %s: %s",
-				msg.Player.GetName(), instPtr.InstanceId, err)
+				msg.Player.GetName(), instPtr.Id(), err)
 			msg.Player.Send(message.GetResponse{
 				Response: message.NewUnsuccessfulResponse("get", "ADD_INVENTORY_ERROR"),
 			})
@@ -35,8 +36,8 @@ func (w *World) handleGet(msg *message.IncomingMessage) {
 		// remove from room
 		if err := room.Inventory.Remove(instPtr); err != nil {
 			// uh oh failed to remove from room
-			log.Printf("Get: Error while removing from room: Player %s Inventory %s: %s", msg.Player.GetName(), instPtr.InstanceId, err)
-			msg.Player.RemoveInventory(instPtr)
+			log.Printf("Get: Error while removing from room: Player %s Inventory %s: %s", msg.Player.GetName(), instPtr.Id(), err)
+			msg.Player.RemoveInventory(instPtr.(*object.Instance))
 			msg.Player.Send(message.GetResponse{
 				Response: message.NewUnsuccessfulResponse("get", "REMOVE_FROM_ROOM_ERROR"),
 			})
@@ -51,7 +52,7 @@ func (w *World) handleGet(msg *message.IncomingMessage) {
 		room.SendExcept(msg.Player,
 			message.GetNotification{
 				Response:   message.NewSuccessfulResponse("get_notification"),
-				Target:     instPtr.Definition.Name, // what should be sent?! needs to handle various articles, plural...
+				Target:     instPtr.(*object.Instance).Definition.Name, // what should be sent?! needs to handle various articles, plural...
 				PlayerName: msg.Player.GetName(),
 			})
 

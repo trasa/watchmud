@@ -8,7 +8,7 @@ import (
 func (w *World) handleInventory(msg *message.IncomingMessage) {
 	items := []message.InventoryDescription{}
 	for _, instPtr := range msg.Player.GetInventoryMap() {
-		items = append(items, ObjectInstanceToDescription(*instPtr))
+		items = append(items, ObjectInstanceToDescription(*instPtr.(*object.Instance)))
 	}
 	resp := message.InventoryResponse{
 		Response:       message.NewSuccessfulResponse("inv"),
