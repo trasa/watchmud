@@ -16,11 +16,11 @@ type MoveResponse struct {
 
 type EnterRoomNotification struct {
 	Response
-	PlayerName string
+	Name string
 }
 
 type LeaveRoomNotification struct {
 	Response
-	PlayerName string
-	Direction  direction.Direction
+	Name      string
+	Direction direction.Direction
 }

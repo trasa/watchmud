@@ -9,7 +9,9 @@ import (
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/thing"
 	"log"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 type Room struct {
@@ -48,9 +50,18 @@ func (r Room) String() string {
 func (r *Room) PlayerLeaves(p player.Player, dir direction.Direction) {
 	r.PlayerList.Remove(p)
 	r.Send(message.LeaveRoomNotification{
-		Response:   message.NewSuccessfulResponse("leave_room"),
-		PlayerName: p.GetName(),
-		Direction:  dir,
+		Response:  message.NewSuccessfulResponse("leave_room"),
+		Name:      p.GetName(),
+		Direction: dir,
+	})
+}
+
+func (r *Room) MobileLeaves(mob *mobile.Instance, dir direction.Direction) {
+	r.Mobs.Remove(mob)
+	r.Send(message.LeaveRoomNotification{
+		Response:  message.NewSuccessfulResponse("leave_room"),
+		Name:      mob.Definition.Name, // TODO figure out name here...
+		Direction: dir,
 	})
 }
 
@@ -62,10 +73,22 @@ func (r *Room) AddPlayer(p player.Player) {
 // Player enters a room. Tells other room residents about it.
 func (r *Room) PlayerEnters(p player.Player) {
 	r.Send(message.EnterRoomNotification{
-		Response:   message.NewSuccessfulResponse("enter_room"),
-		PlayerName: p.GetName(),
+		Response: message.NewSuccessfulResponse("enter_room"),
+		Name:     p.GetName(),
 	})
 	r.AddPlayer(p)
+}
+
+func (r *Room) MobileEnters(mob *mobile.Instance) {
+	r.Send(message.EnterRoomNotification{
+		Response: message.NewSuccessfulResponse("enter_room"),
+		Name:     mob.Definition.Name,
+	})
+	r.AddMobile(mob)
+}
+
+func (r *Room) AddMobile(inst *mobile.Instance) error {
+	return r.Mobs.Add(inst)
 }
 
 // Send to every player in the room.
@@ -119,21 +142,29 @@ func (r *Room) forEachExit(context interface{}, foreach func(dir direction.Direc
 	return context
 }
 
+// Maps direction.Direction  to Name ("North Tower", "Garage")
+type ExitInfo map[direction.Direction]string
+
 // Return a map of info about the rooms around:
 // directions that can be traveled and the short description of
 // the room
 // TODO some rooms can't be seen into, doors that are locked
 // or closed, etc etc...
-func (r *Room) GetExitInfo() map[string]string {
-	exits := make(map[string]string)
-	r.forEachExit(exits, func(dir direction.Direction, context interface{}) {
-		s, e := direction.DirectionToAbbreviation(dir)
-		if e == nil {
-			// TODO some rooms can't be seen into, etc ...
-			context.(map[string]string)[s] = r.Get(dir).Name
-		} else {
-			log.Printf("Couldn't DirectionToString: %s, %s", dir, e)
-		}
+func (r *Room) GetExitInfo() ExitInfo {
+	exits := make(ExitInfo)
+	r.forEachExit(nil, func(dir direction.Direction, _ interface{}) {
+		// TODO some rooms can't be seen into, etc ...
+		exits[dir] = r.Get(dir).Name
+	})
+	return exits
+}
+
+// Return a map of info about the rooms around this one:
+// mapping the room IDs to the direction to take to get there.
+func (r *Room) GetExitsByRoomId() map[string]direction.Direction {
+	exits := make(map[string]direction.Direction)
+	r.forEachExit(nil, func(dir direction.Direction, _ interface{}) {
+		exits[r.Get(dir).Id] = dir
 	})
 	return exits
 }
@@ -182,6 +213,28 @@ func (r *Room) Get(dir direction.Direction) *Room {
 	}
 }
 
+// Of the directions available for travel (could be locked, closed...)
+// pick one of them. If there aren't any, return none.
+func (r *Room) PickRandomDirection() direction.Direction {
+	exits := r.GetExitInfo()
+	if len(exits) == 0 {
+		return direction.NONE
+	} else {
+		desired := rand.New(rand.NewSource(time.Now().Unix())).Int31n(int32(len(exits)))
+		// iterate to the ith member of exits
+		i := int32(0)
+		for dir := range exits {
+			if i == desired {
+				return dir
+			}
+			i++
+		}
+		// inconceivable!
+		log.Printf("Room.PickRandomDirection: Bizzare RandomDirection picked. len=%d, desired=%d", len(exits), desired)
+		return direction.NONE
+	}
+}
+
 // Describe this room.
 func (r *Room) CreateRoomDescription(exclude player.Player) message.RoomDescription {
 	desc := message.RoomDescription{
@@ -209,8 +262,4 @@ func (r *Room) CreateRoomDescription(exclude player.Player) message.RoomDescript
 
 func (r *Room) AddInventory(inst *object.Instance) error {
 	return r.Inventory.Add(inst)
-}
-
-func (r *Room) AddMobile(inst *mobile.Instance) error {
-	return r.Mobs.Add(inst)
 }

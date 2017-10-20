@@ -2,6 +2,7 @@ package world
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/trasa/watchmud/direction"
 	"testing"
 )
 
@@ -52,6 +53,28 @@ func TestRoom_GetExitInfo(t *testing.T) {
 	exitInfo := center.GetExitInfo()
 
 	assert.Equal(t, 2, len(exitInfo))
-	assert.Equal(t, "n", exitInfo["n"])
-	assert.Equal(t, "s", exitInfo["s"])
+	assert.Equal(t, "n", exitInfo[direction.NORTH])
+	assert.Equal(t, "s", exitInfo[direction.SOUTH])
+}
+
+func TestRoom_PickRandomDirection(t *testing.T) {
+	center := NewTestRoom("center")
+	// no rooms out
+	dir := center.PickRandomDirection()
+	assert.Equal(t, direction.NONE, dir)
+
+	n := NewTestRoom("n")
+	center.North = n
+	// one choice
+	dir = center.PickRandomDirection()
+	assert.Equal(t, direction.NORTH, dir)
+
+	// two choices
+	s := NewTestRoom("s")
+	center.South = s
+
+	dir = center.PickRandomDirection()
+	if !(dir == direction.NORTH || dir == direction.SOUTH) {
+		t.Errorf("expected NORTH or SOUTH but found %s", dir)
+	}
 }

@@ -4,7 +4,6 @@ import (
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/mobile"
-	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/thing"
 	"log"
@@ -17,6 +16,7 @@ type World struct {
 	voidRoom    *Room
 	playerList  *player.List
 	playerRooms *PlayerRoomMap
+	mobileRooms *MobileRoomMap
 	handlerMap  map[string]func(message *message.IncomingMessage)
 	mobs        thing.Map
 }
@@ -28,96 +28,11 @@ func New() *World {
 		zones:       make(map[string]*Zone),
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
+		mobileRooms: NewMobileRoomMap(),
 		mobs:        make(thing.Map),
 	}
 	w.initializeHandlerMap()
-
-	sampleZone := Zone{
-		Id:    "sample",
-		Name:  "Sample Zone",
-		Rooms: make(map[string]*Room),
-	}
-	w.zones[sampleZone.Id] = &sampleZone
-
-	/*
-		  north -- northeast
-		   |         |
-		central -- east
-
-	*/
-	// central room (Start)
-	centralPortalRoom := NewRoom(&sampleZone, "start", "Central Portal", "It's a boring room, with boring stuff in it.")
-	sampleZone.Rooms[centralPortalRoom.Id] = centralPortalRoom
-	w.startRoom = centralPortalRoom
-
-	// north room
-	northRoom := NewRoom(&sampleZone, "northRoom", "North Room", "This room is north of the start.")
-	sampleZone.Rooms[northRoom.Id] = northRoom
-
-	// northeast
-	northeastRoom := NewRoom(&sampleZone, "northeastRoom", "North East Room", "It's north, and also East.")
-	sampleZone.Rooms[northeastRoom.Id] = northeastRoom
-
-	// east
-	eastRoom := NewRoom(&sampleZone, "eastRoom", "East Room", "This room is east of the start.")
-	sampleZone.Rooms[eastRoom.Id] = eastRoom
-
-	// central <-> north
-	centralPortalRoom.North = northRoom
-	northRoom.South = centralPortalRoom
-
-	// central <-> east
-	centralPortalRoom.East = eastRoom
-	eastRoom.West = centralPortalRoom
-
-	// north <-> northeast
-	northRoom.East = northeastRoom
-	northeastRoom.West = northRoom
-
-	// east <-> northeast
-	eastRoom.North = northeastRoom
-	northeastRoom.South = eastRoom
-
-	// The VOID. When you're not really in a room.
-	w.voidRoom = NewRoom(nil, "void", "The Void", "You see nothing but endless void.")
-
-	// lets put "something" in the central portal room
-	fountainDefn := object.NewDefinition(
-		"fountain",
-		"fountain",
-		object.OTHER,
-		[]string{"fount"},
-		"fountain",
-		"A fountain bubbles quietly.")
-
-	// TODO instance ids
-	fountainObj := object.NewInstance("fountain", fountainDefn)
-	// put the obj in the room
-	centralPortalRoom.AddInventory(fountainObj)
-
-	// that's not a knife....wait, yes it is.
-	knifeDefn := object.NewDefinition(
-		"knife",
-		"knife",
-		object.WEAPON,
-		[]string{},
-		"knife",
-		"A knife is on the ground.")
-	// TODO instance ids
-	knifeObj := object.NewInstance("knife", knifeDefn)
-	// knife is in room
-	centralPortalRoom.AddInventory(knifeObj)
-
-	// a mob - somebody to walk around.
-	walkerDefn := mobile.NewDefinition("walker", "walker", []string{}, "The Walker walks.",
-		"The walker stands here...for now.",
-		true)
-
-	// TODO instance ids
-	// TODO put in world as well as room - someone annoying, maybe fix into one method?
-	walkerObj := mobile.NewInstance("walker", walkerDefn)
-	w.mobs.Add(walkerObj)
-	centralPortalRoom.AddMobile(walkerObj)
+	w.initialLoad()
 	log.Print("World built.")
 	return &w
 }
@@ -149,8 +64,31 @@ func (w *World) movePlayer(p player.Player, dir direction.Direction, src *Room, 
 	w.playerRooms.Add(p, dest)
 }
 
+// Add mobile(s) to the world putting them in the room indicated,
+// Don't send room notifications.
+func (w *World) AddMobiles(destRoom *Room, mobs ...*mobile.Instance) {
+	for _, mob := range mobs {
+		log.Printf("Adding Mobile: %s", mob.InstanceId)
+		w.mobs.Add(mob)
+		w.mobileRooms.Add(mob, destRoom)
+		destRoom.AddMobile(mob)
+	}
+}
+
+// Mobile is moving from src room to dest room.
+func (w *World) moveMobile(mob *mobile.Instance, dir direction.Direction, src *Room, dest *Room) {
+	src.MobileLeaves(mob, dir)
+	dest.MobileEnters(mob)
+	w.mobileRooms.Remove(mob)
+	w.mobileRooms.Add(mob, dest)
+}
+
 func (w *World) getRoomContainingPlayer(p player.Player) *Room {
 	return w.playerRooms.Get(p)
+}
+
+func (w *World) getRoomContainingMobile(mob *mobile.Instance) *Room {
+	return w.mobileRooms.Get(mob)
 }
 
 func (w *World) findPlayerByName(name string) player.Player {
@@ -171,23 +109,4 @@ func (w *World) SendToAllPlayersExcept(exception player.Player, message interfac
 			p.Send(message)
 		}
 	})
-}
-
-// Walk through all the mob instances that are in this world
-// right now and tell them all to do something, if they have
-// anything they want to do.
-func (w *World) DoMobileActivity() {
-	// for each mob in the world
-	// wake it up and tell it to do stuff
-	// don't limit this to per zone or per room or something
-	// remember that mobs can leave the zone they started out in
-	// (if programmed to)
-	// (or if they really really want to)
-	for _, t := range w.mobs {
-		mob := t.(*mobile.Instance)
-		log.Printf("checking %s", mob.Id())
-		if mob.Definition.CanWander {
-			log.Printf("can wander! ask about wandering..")
-		}
-	}
 }
