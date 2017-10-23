@@ -28,6 +28,7 @@ func newTestWorld() *World {
 	// put something in the start room
 	knifeDefn := object.NewDefinition("knife",
 		"knife",
+		testZone.Id,
 		object.WEAPON,
 		[]string{},
 		"knife",

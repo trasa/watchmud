@@ -10,7 +10,7 @@ import (
 
 func Test_getNextDirectionOnPath_Simple(t *testing.T) {
 	m := mobile.NewInstance("id",
-		mobile.NewDefinition("id", "name", []string{}, "desc", "room desc", mobile.WanderingDefinition{
+		mobile.NewDefinition("id", "name", "", []string{}, "desc", "room desc", mobile.WanderingDefinition{
 			CanWander:       true,
 			CheckFrequency:  time.Minute * 1,
 			CheckPercentage: 1.0,
@@ -37,7 +37,7 @@ func Test_getNextDirectionOnPath_Simple(t *testing.T) {
 
 func Test_getNextDirectionOnPath_FullPath(t *testing.T) {
 	m := mobile.NewInstance("id",
-		mobile.NewDefinition("id", "name", []string{}, "desc", "room desc", mobile.WanderingDefinition{
+		mobile.NewDefinition("id", "name", "", []string{}, "desc", "room desc", mobile.WanderingDefinition{
 			CanWander:       true,
 			CheckFrequency:  time.Minute * 1,
 			CheckPercentage: 1.0,

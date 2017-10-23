@@ -13,9 +13,10 @@ type Definition struct {
 	Name                string
 	ShortDescription    string // description of the object when being used: "a long, green stick" -> "The Beastly Fido picks up the long, green stick."
 	DescriptionOnGround string // description of the object when lying on the ground: "A shiny sword is lying here."
+	ZoneId              string
 }
 
-func NewDefinition(definitionId string, name string, category Category, aliases []string, shortDescription string, descriptionOnGround string) *Definition {
+func NewDefinition(definitionId string, name string, zoneId string, category Category, aliases []string, shortDescription string, descriptionOnGround string) *Definition {
 	d := &Definition{
 		DefinitionId:        definitionId,
 		Name:                name,
@@ -23,6 +24,7 @@ func NewDefinition(definitionId string, name string, category Category, aliases 
 		DescriptionOnGround: descriptionOnGround,
 		Categories:          make(map[Category]bool),
 		Aliases:             aliases,
+		ZoneId:              zoneId,
 	}
 	d.AddCategory(category)
 	return d

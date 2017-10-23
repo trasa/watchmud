@@ -61,6 +61,7 @@ func (w *World) initialLoad() {
 	fountainDefn := object.NewDefinition(
 		"fountain",
 		"fountain",
+		sampleZone.Id,
 		object.OTHER,
 		[]string{"fount"},
 		"fountain",
@@ -75,6 +76,7 @@ func (w *World) initialLoad() {
 	knifeDefn := object.NewDefinition(
 		"knife",
 		"knife",
+		sampleZone.Id,
 		object.WEAPON,
 		[]string{},
 		"knife",
@@ -85,7 +87,11 @@ func (w *World) initialLoad() {
 	centralPortalRoom.AddInventory(knifeObj)
 
 	// walker- somebody to walk around randomly
-	walkerDefn := mobile.NewDefinition("walker", "walker", []string{}, "The Walker walks.",
+	walkerDefn := mobile.NewDefinition("walker",
+		"walker",
+		sampleZone.Id,
+		[]string{},
+		"The Walker walks.",
 		"The walker stands here...for now.",
 		mobile.WanderingDefinition{
 			CanWander:       true,
@@ -99,7 +105,11 @@ func (w *World) initialLoad() {
 	w.AddMobiles(centralPortalRoom, walkerObj)
 
 	// scripty -- scripted action in a mob
-	scriptyDefn := mobile.NewDefinition("scripty", "scripty", []string{}, "Scripty thinks about things.",
+	scriptyDefn := mobile.NewDefinition("scripty",
+		"scripty",
+		sampleZone.Id,
+		[]string{},
+		"Scripty thinks about things.",
 		"Scripty is pondering something.",
 		mobile.WanderingDefinition{
 			CanWander:       true,

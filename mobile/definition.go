@@ -4,6 +4,7 @@ import "time"
 
 func NewDefinition(definitionId string,
 	name string,
+	zoneId string,
 	aliases []string,
 	shortDescription,
 	descriptionInRoom string,
@@ -15,6 +16,7 @@ func NewDefinition(definitionId string,
 		ShortDescription:  shortDescription,
 		DescriptionInRoom: descriptionInRoom,
 		Wandering:         wandering,
+		ZoneId:            zoneId,
 	}
 	return d
 }
@@ -26,6 +28,7 @@ type Definition struct {
 	Name              string
 	ShortDescription  string
 	DescriptionInRoom string // description when in a room "A giant lizard is here."
+	ZoneId            string
 	Wandering         WanderingDefinition
 }
 
