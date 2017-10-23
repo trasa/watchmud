@@ -150,11 +150,13 @@ type ExitInfo map[direction.Direction]string
 // the room
 // TODO some rooms can't be seen into, doors that are locked
 // or closed, etc etc...
-func (r *Room) GetExitInfo() ExitInfo {
+func (r *Room) GetExitInfo(limitToZone bool) ExitInfo {
 	exits := make(ExitInfo)
 	r.forEachExit(nil, func(dir direction.Direction, _ interface{}) {
 		// TODO some rooms can't be seen into, etc ...
-		exits[dir] = r.Get(dir).Name
+		if !limitToZone || r.Zone == r.Get(dir).Zone {
+			exits[dir] = r.Get(dir).Name
+		}
 	})
 	return exits
 }
@@ -215,8 +217,8 @@ func (r *Room) Get(dir direction.Direction) *Room {
 
 // Of the directions available for travel (could be locked, closed...)
 // pick one of them. If there aren't any, return none.
-func (r *Room) PickRandomDirection() direction.Direction {
-	exits := r.GetExitInfo()
+func (r *Room) PickRandomDirection(limitToZone bool) direction.Direction {
+	exits := r.GetExitInfo(limitToZone)
 	if len(exits) == 0 {
 		return direction.NONE
 	} else {

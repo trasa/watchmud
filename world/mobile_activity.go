@@ -48,7 +48,7 @@ func (w *World) doMobRandomWander(mob *mobile.Instance) error {
 	}
 	// test wandering percentage
 	if mob.CheckWanderChance() {
-		dir := mobRoom.PickRandomDirection()
+		dir := mobRoom.PickRandomDirection(true)
 		if dir == direction.NONE {
 			log.Printf("Mobile ID '%s' is in a room without exit and can't wander out of it.", mob.InstanceId)
 			return nil
@@ -119,7 +119,7 @@ func getNextDirectionOnPath(mob *mobile.Instance, mobRoom *Room) (dir direction.
 	roomToFind := mob.Definition.Wandering.Path[nextIndex]
 	dir = mobRoom.GetExitsByRoomId()[roomToFind]
 	if dir == direction.NONE {
-		return direction.NONE, false, errors.New(fmt.Sprintf("Couldn't find destination room %s from current room %s", roomToFind, mobRoom.GetExitInfo()))
+		return direction.NONE, false, errors.New(fmt.Sprintf("Couldn't find destination room %s from current room %s", roomToFind, mobRoom.GetExitInfo(false)))
 	}
 	return
 }

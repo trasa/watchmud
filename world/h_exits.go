@@ -12,7 +12,7 @@ func (w *World) handleExits(msg *message.IncomingMessage) {
 	}
 	// convert directions to strings because json
 	messageExitInfo := make(map[string]string)
-	for k, v := range r.GetExitInfo() {
+	for k, v := range r.GetExitInfo(false) {
 		s, _ := direction.DirectionToAbbreviation(k)
 		messageExitInfo[s] = v
 	}
