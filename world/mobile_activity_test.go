@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
+	"github.com/trasa/watchmud/spaces"
 	"testing"
 	"time"
 )
@@ -18,8 +19,8 @@ func Test_getNextDirectionOnPath_Simple(t *testing.T) {
 			Path:            []string{"a", "b"},
 		}))
 
-	r := NewTestRoom("a")
-	r.Up = NewTestRoom("b")
+	r := spaces.NewTestRoom("a")
+	r.Up = spaces.NewTestRoom("b")
 	r.Up.Down = r
 
 	// a -> b
@@ -46,9 +47,9 @@ func Test_getNextDirectionOnPath_FullPath(t *testing.T) {
 		}))
 
 	// a <-> b <-> c
-	a := NewTestRoom("a")
-	b := NewTestRoom("b")
-	c := NewTestRoom("c")
+	a := spaces.NewTestRoom("a")
+	b := spaces.NewTestRoom("b")
+	c := spaces.NewTestRoom("c")
 	a.East = b
 	b.West = a
 	b.East = c

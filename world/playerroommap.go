@@ -3,23 +3,24 @@ package world
 import (
 	"github.com/trasa/syncmap"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/spaces"
 	"sync"
 )
 
 type PlayerRoomMap struct {
 	sync.RWMutex
-	playerToRoom  map[player.Player]*Room
+	playerToRoom  map[player.Player]*spaces.Room
 	roomToPlayers syncmap.MapList
 }
 
 func NewPlayerRoomMap() *PlayerRoomMap {
 	return &PlayerRoomMap{
-		playerToRoom:  make(map[player.Player]*Room),
+		playerToRoom:  make(map[player.Player]*spaces.Room),
 		roomToPlayers: syncmap.NewMapList(),
 	}
 }
 
-func (m *PlayerRoomMap) Add(p player.Player, r *Room) {
+func (m *PlayerRoomMap) Add(p player.Player, r *spaces.Room) {
 	m.Lock()
 	defer m.Unlock()
 	m.playerToRoom[p] = r
@@ -37,13 +38,13 @@ func (m *PlayerRoomMap) Remove(p player.Player) {
 	}
 }
 
-func (m *PlayerRoomMap) Get(p player.Player) *Room {
+func (m *PlayerRoomMap) Get(p player.Player) *spaces.Room {
 	m.RLock()
 	defer m.RUnlock()
 	return m.playerToRoom[p]
 }
 
-func (m *PlayerRoomMap) GetPlayers(r *Room) []player.Player {
+func (m *PlayerRoomMap) GetPlayers(r *spaces.Room) []player.Player {
 	m.RLock()
 	defer m.RUnlock()
 

@@ -2,8 +2,10 @@ package world
 
 import (
 	"github.com/trasa/watchmud/direction"
+	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/spaces"
 	"time"
 )
 
@@ -41,14 +43,8 @@ func (w *World) initialLoad() {
 	w.AddMobiles(w.zones["void"].Rooms["start"], scriptyObj)
 }
 
-// Retrieve the zone manifest; prepare the zone objects to be
-// populated by rooms, objects, mobiles (but don't process the
-// zone commands yet)
 func (w *World) loadZoneManifest() {
-
-	// here, we'd look up something from the database, or something.
-	sampleZone := NewZone("void", "void zone")
-	w.zones[sampleZone.Id] = sampleZone
+	w.zones = loader.BuildWorld()
 }
 
 // Retrieve the room information for the world, creating the
@@ -59,7 +55,7 @@ func (w *World) loadRooms() {
 
 	// TODO get rid of void room?
 	// The VOID. When you're not really in a room.
-	w.voidRoom = NewRoom(nil, "void", "The Void", "You see nothing but endless void.")
+	w.voidRoom = spaces.NewRoom(nil, "void", "The Void", "You see nothing but endless void.")
 
 	// zone "void"
 	currentZone := w.zones["void"]
@@ -70,22 +66,22 @@ func (w *World) loadRooms() {
 
 	*/
 	// central room (Start)
-	centralPortalRoom := NewRoom(currentZone, "start", "Central Portal", "It's a boring room, with boring stuff in it.")
-	currentZone.addRoom(centralPortalRoom)
+	centralPortalRoom := spaces.NewRoom(currentZone, "start", "Central Portal", "It's a boring room, with boring stuff in it.")
+	currentZone.AddRoom(centralPortalRoom)
 	// TODO some better way of indicating the start room from configuration
 	w.startRoom = centralPortalRoom
 
 	// north room
-	northRoom := NewRoom(currentZone, "northRoom", "North Room", "This room is north of the start.")
-	currentZone.addRoom(northRoom)
+	northRoom := spaces.NewRoom(currentZone, "northRoom", "North Room", "This room is north of the start.")
+	currentZone.AddRoom(northRoom)
 
 	// northeast
-	northeastRoom := NewRoom(currentZone, "northeastRoom", "North East Room", "It's north, and also East.")
-	currentZone.addRoom(northeastRoom)
+	northeastRoom := spaces.NewRoom(currentZone, "northeastRoom", "North East Room", "It's north, and also East.")
+	currentZone.AddRoom(northeastRoom)
 
 	// east
-	eastRoom := NewRoom(currentZone, "eastRoom", "East Room", "This room is east of the start.")
-	currentZone.addRoom(eastRoom)
+	eastRoom := spaces.NewRoom(currentZone, "eastRoom", "East Room", "This room is east of the start.")
+	currentZone.AddRoom(eastRoom)
 
 	// once all the rooms for the zones are created, we can wire the directions up
 	// central <-> north
@@ -113,7 +109,7 @@ func (w *World) loadObjectDefinitions() {
 	// for each zone: create all object definitions
 	// lets put "something" in the central portal room
 	z := w.zones["void"]
-	z.addObjectDefinition(object.NewDefinition(
+	z.AddObjectDefinition(object.NewDefinition(
 		"fountain",
 		"fountain",
 		z.Id,
@@ -123,7 +119,7 @@ func (w *World) loadObjectDefinitions() {
 		"A fountain bubbles quietly."))
 
 	// that's not a knife....wait, yes it is.
-	z.addObjectDefinition(object.NewDefinition(
+	z.AddObjectDefinition(object.NewDefinition(
 		"knife",
 		"knife",
 		z.Id,
@@ -138,7 +134,7 @@ func (w *World) loadMobileDefinitions() {
 	z := w.zones["void"]
 
 	// walker- somebody to walk around randomly
-	z.addMobileDefinition(mobile.NewDefinition("walker",
+	z.AddMobileDefinition(mobile.NewDefinition("walker",
 		"walker",
 		"void",
 		[]string{},
@@ -152,7 +148,7 @@ func (w *World) loadMobileDefinitions() {
 		}))
 
 	// scripty -- scripted action in a mob
-	z.addMobileDefinition(mobile.NewDefinition("scripty",
+	z.AddMobileDefinition(mobile.NewDefinition("scripty",
 		"scripty",
 		"void",
 		[]string{},

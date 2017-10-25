@@ -3,10 +3,11 @@ package world
 import (
 	"github.com/trasa/syncmap"
 	"github.com/trasa/watchmud/mobile"
+	"github.com/trasa/watchmud/spaces"
 	"sync"
 )
 
-type mobileToRoom map[*mobile.Instance]*Room
+type mobileToRoom map[*mobile.Instance]*spaces.Room
 
 type MobileRoomMap struct {
 	sync.RWMutex
@@ -21,13 +22,13 @@ func NewMobileRoomMap() *MobileRoomMap {
 	}
 }
 
-func (m *MobileRoomMap) Get(mob *mobile.Instance) *Room {
+func (m *MobileRoomMap) Get(mob *mobile.Instance) *spaces.Room {
 	m.RLock()
 	defer m.RUnlock()
 	return m.mobileToRoom[mob]
 }
 
-func (m *MobileRoomMap) Add(mob *mobile.Instance, r *Room) {
+func (m *MobileRoomMap) Add(mob *mobile.Instance, r *spaces.Room) {
 	m.Lock()
 	defer m.Unlock()
 	m.mobileToRoom[mob] = r

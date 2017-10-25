@@ -1,4 +1,4 @@
-package world
+package spaces
 
 import (
 	"fmt"
@@ -24,17 +24,17 @@ func NewZone(id string, name string) *Zone {
 	}
 }
 
-func (z *Zone) addRoom(r *Room) {
+func (z *Zone) AddRoom(r *Room) {
 	r.Zone = z
 	z.Rooms[r.Id] = r
 }
 
-func (z *Zone) addObjectDefinition(obj *object.Definition) {
+func (z *Zone) AddObjectDefinition(obj *object.Definition) {
 	obj.ZoneId = z.Id
 	z.ObjectDefinitions[obj.Id] = obj
 }
 
-func (z *Zone) addMobileDefinition(mob *mobile.Definition) {
+func (z *Zone) AddMobileDefinition(mob *mobile.Definition) {
 	mob.ZoneId = z.Id
 	z.MobileDefinitions[mob.Id] = mob
 }

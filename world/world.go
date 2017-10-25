@@ -5,15 +5,16 @@ import (
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/spaces"
 	"github.com/trasa/watchmud/thing"
 	"log"
 )
 
 //noinspection GoNameStartsWithPackageName
 type World struct {
-	zones       map[string]*Zone
-	startRoom   *Room
-	voidRoom    *Room
+	zones       map[string]*spaces.Zone
+	startRoom   *spaces.Room
+	voidRoom    *spaces.Room
 	playerList  *player.List
 	playerRooms *PlayerRoomMap
 	mobileRooms *MobileRoomMap
@@ -25,7 +26,7 @@ type World struct {
 func New() *World {
 	// Build a very boring world.
 	w := World{
-		zones:       make(map[string]*Zone),
+		zones:       make(map[string]*spaces.Zone),
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
 		mobileRooms: NewMobileRoomMap(),
@@ -57,7 +58,7 @@ func (w *World) RemovePlayer(players ...player.Player) {
 }
 
 // Player is moving from src room to dest room.
-func (w *World) movePlayer(p player.Player, dir direction.Direction, src *Room, dest *Room) {
+func (w *World) movePlayer(p player.Player, dir direction.Direction, src *spaces.Room, dest *spaces.Room) {
 	src.PlayerLeaves(p, dir)
 	dest.PlayerEnters(p)
 	w.playerRooms.Remove(p)
@@ -66,7 +67,7 @@ func (w *World) movePlayer(p player.Player, dir direction.Direction, src *Room, 
 
 // Add mobile(s) to the world putting them in the room indicated,
 // Don't send room notifications.
-func (w *World) AddMobiles(destRoom *Room, mobs ...*mobile.Instance) {
+func (w *World) AddMobiles(destRoom *spaces.Room, mobs ...*mobile.Instance) {
 	for _, mob := range mobs {
 		log.Printf("Adding Mobile: %s", mob.InstanceId)
 		w.mobs.Add(mob)
@@ -76,18 +77,18 @@ func (w *World) AddMobiles(destRoom *Room, mobs ...*mobile.Instance) {
 }
 
 // Mobile is moving from src room to dest room.
-func (w *World) moveMobile(mob *mobile.Instance, dir direction.Direction, src *Room, dest *Room) {
+func (w *World) moveMobile(mob *mobile.Instance, dir direction.Direction, src *spaces.Room, dest *spaces.Room) {
 	src.MobileLeaves(mob, dir)
 	dest.MobileEnters(mob)
 	w.mobileRooms.Remove(mob)
 	w.mobileRooms.Add(mob, dest)
 }
 
-func (w *World) getRoomContainingPlayer(p player.Player) *Room {
+func (w *World) getRoomContainingPlayer(p player.Player) *spaces.Room {
 	return w.playerRooms.Get(p)
 }
 
-func (w *World) getRoomContainingMobile(mob *mobile.Instance) *Room {
+func (w *World) getRoomContainingMobile(mob *mobile.Instance) *spaces.Room {
 	return w.mobileRooms.Get(mob)
 }
 

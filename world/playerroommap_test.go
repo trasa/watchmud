@@ -3,6 +3,7 @@ package world
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/spaces"
 	"testing"
 )
 
@@ -11,7 +12,7 @@ func TestPlayerRoomMap_GetPlayers(t *testing.T) {
 	bob := player.NewTestPlayer("bob")
 	alice := player.NewTestPlayer("alice")
 
-	northRoom := NewTestRoom("north")
+	northRoom := spaces.NewTestRoom("north")
 
 	m.Add(bob, northRoom)
 	m.Add(alice, northRoom)

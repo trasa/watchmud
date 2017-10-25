@@ -1,14 +1,10 @@
-package world
+package spaces
 
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud/direction"
 	"testing"
 )
-
-func NewTestRoom(name string) *Room {
-	return NewRoom(nil, name, name, "")
-}
 
 func TestRoomExits_none(t *testing.T) {
 	r := &Room{}

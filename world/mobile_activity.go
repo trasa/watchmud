@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
+	"github.com/trasa/watchmud/spaces"
 	"log"
 	"time"
 )
@@ -87,7 +88,7 @@ func (w *World) doMobFollowPathWander(mob *mobile.Instance) error {
 // Takes mob.WanderingForward into account and will reverse index at the path bounaries,
 // returning changeDirection=true in that case, but WILL NOT update the state or
 // modify the mob or room instances in any way.
-func getNextDirectionOnPath(mob *mobile.Instance, mobRoom *Room) (dir direction.Direction, changeDirection bool, err error) {
+func getNextDirectionOnPath(mob *mobile.Instance, mobRoom *spaces.Room) (dir direction.Direction, changeDirection bool, err error) {
 	currentIndex, err := mob.GetIndexOnPath(mobRoom.Id)
 	if err != nil {
 		return direction.NONE, false, err

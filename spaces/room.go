@@ -1,4 +1,4 @@
-package world
+package spaces
 
 import (
 	"fmt"
@@ -30,6 +30,7 @@ type Room struct {
 	Down        *Room
 }
 
+// Create a new Room reference
 func NewRoom(zone *Zone, id string, name string, description string) *Room {
 	return &Room{
 		Id:          id,
@@ -40,6 +41,11 @@ func NewRoom(zone *Zone, id string, name string, description string) *Room {
 		Inventory:   make(thing.Map),
 		Mobs:        make(thing.Map),
 	}
+}
+
+// Build a strip down version of a Room, for testing
+func NewTestRoom(name string) *Room {
+	return NewRoom(nil, name, name, "")
 }
 
 func (r Room) String() string {
