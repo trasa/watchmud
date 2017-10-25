@@ -1,6 +1,7 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"time"
@@ -8,88 +9,38 @@ import (
 
 func (w *World) initialLoad() {
 
-	sampleZone := Zone{
-		Id:    "sample",
-		Name:  "Sample Zone",
-		Rooms: make(map[string]*Room),
-	}
-	w.zones[sampleZone.Id] = &sampleZone
+	// master list of zones to load (depending on server mode)
+	w.loadZoneManifest()
 
-	/*
-		  north -- northeast
-		   |         |
-		central -- east
+	w.loadRooms()
 
-	*/
-	// central room (Start)
-	centralPortalRoom := NewRoom(&sampleZone, "start", "Central Portal", "It's a boring room, with boring stuff in it.")
-	sampleZone.Rooms[centralPortalRoom.Id] = centralPortalRoom
-	w.startRoom = centralPortalRoom
-
-	// north room
-	northRoom := NewRoom(&sampleZone, "northRoom", "North Room", "This room is north of the start.")
-	sampleZone.Rooms[northRoom.Id] = northRoom
-
-	// northeast
-	northeastRoom := NewRoom(&sampleZone, "northeastRoom", "North East Room", "It's north, and also East.")
-	sampleZone.Rooms[northeastRoom.Id] = northeastRoom
-
-	// east
-	eastRoom := NewRoom(&sampleZone, "eastRoom", "East Room", "This room is east of the start.")
-	sampleZone.Rooms[eastRoom.Id] = eastRoom
-
-	// central <-> north
-	centralPortalRoom.North = northRoom
-	northRoom.South = centralPortalRoom
-
-	// central <-> east
-	centralPortalRoom.East = eastRoom
-	eastRoom.West = centralPortalRoom
-
-	// north <-> northeast
-	northRoom.East = northeastRoom
-	northeastRoom.West = northRoom
-
-	// east <-> northeast
-	eastRoom.North = northeastRoom
-	northeastRoom.South = eastRoom
-
-	// The VOID. When you're not really in a room.
-	w.voidRoom = NewRoom(nil, "void", "The Void", "You see nothing but endless void.")
-
+	// for each zone: create all object definitions
 	// lets put "something" in the central portal room
 	fountainDefn := object.NewDefinition(
 		"fountain",
 		"fountain",
-		sampleZone.Id,
+		"void",
 		object.OTHER,
 		[]string{"fount"},
 		"fountain",
 		"A fountain bubbles quietly.")
 
-	// TODO instance ids
-	fountainObj := object.NewInstance("fountain", fountainDefn)
-	// put the obj in the room
-	centralPortalRoom.AddInventory(fountainObj)
-
 	// that's not a knife....wait, yes it is.
 	knifeDefn := object.NewDefinition(
 		"knife",
 		"knife",
-		sampleZone.Id,
+		"void",
 		object.WEAPON,
 		[]string{},
 		"knife",
 		"A knife is on the ground.")
-	// TODO instance ids
-	knifeObj := object.NewInstance("knife", knifeDefn)
-	// knife is in room
-	centralPortalRoom.AddInventory(knifeObj)
+
+	// for each zone, create all mob definitions
 
 	// walker- somebody to walk around randomly
 	walkerDefn := mobile.NewDefinition("walker",
 		"walker",
-		sampleZone.Id,
+		"void",
 		[]string{},
 		"The Walker walks.",
 		"The walker stands here...for now.",
@@ -100,14 +51,10 @@ func (w *World) initialLoad() {
 			Style:           mobile.WANDER_RANDOM,
 		})
 
-	// TODO instance ids
-	walkerObj := mobile.NewInstance("walker", walkerDefn)
-	w.AddMobiles(centralPortalRoom, walkerObj)
-
 	// scripty -- scripted action in a mob
 	scriptyDefn := mobile.NewDefinition("scripty",
 		"scripty",
-		sampleZone.Id,
+		"void",
 		[]string{},
 		"Scripty thinks about things.",
 		"Scripty is pondering something.",
@@ -118,7 +65,92 @@ func (w *World) initialLoad() {
 			Style:           mobile.WANDER_FOLLOW_PATH,
 			Path:            []string{"start", "northRoom", "northeastRoom", "eastRoom"},
 		})
+
+	// once everything is loaded, we can process the zone information
+	// which says which mob instances to load and where to put them,
+	// and which objects to load and where to put them
+
+	// TODO instance ids
+	fountainObj := object.NewInstance("fountain", fountainDefn)
+	// put the obj in the room
+	w.zones["void"].Rooms["start"].AddInventory(fountainObj)
+
+	// TODO instance ids
+	knifeObj := object.NewInstance("knife", knifeDefn)
+	// knife is in room
+	w.zones["void"].Rooms["start"].AddInventory(knifeObj)
+
+	// TODO instance ids
+	walkerObj := mobile.NewInstance("walker", walkerDefn)
+	w.AddMobiles(w.zones["void"].Rooms["start"], walkerObj)
+
 	//TODO instance ids
 	scriptyObj := mobile.NewInstance("scripty", scriptyDefn)
-	w.AddMobiles(centralPortalRoom, scriptyObj)
+	w.AddMobiles(w.zones["void"].Rooms["start"], scriptyObj)
+}
+
+// Retrieve the zone manifest; prepare the zone objects to be
+// populated by rooms, objects, mobiles (but don't process the
+// zone commands yet)
+func (w *World) loadZoneManifest() {
+
+	// here, we'd look up something from the database, or something.
+	sampleZone := NewZone("void", "void zone")
+	w.zones[sampleZone.Id] = sampleZone
+}
+
+// Retrieve the room information for the world, creating the
+// room pointers and putting them in the world.
+func (w *World) loadRooms() {
+
+	// here, we'd look up something from the database...
+
+	// zone "void"
+	currentZone := w.zones["void"]
+	/*
+		  north -- northeast
+		   |         |
+		central -- east
+
+	*/
+	// central room (Start)
+	centralPortalRoom := NewRoom(currentZone, "start", "Central Portal", "It's a boring room, with boring stuff in it.")
+	currentZone.AddRoom(centralPortalRoom)
+	// TODO some better way of indicating the start room from configuration
+	w.startRoom = centralPortalRoom
+
+	// north room
+	northRoom := NewRoom(currentZone, "northRoom", "North Room", "This room is north of the start.")
+	currentZone.AddRoom(northRoom)
+
+	// northeast
+	northeastRoom := NewRoom(currentZone, "northeastRoom", "North East Room", "It's north, and also East.")
+	currentZone.AddRoom(northeastRoom)
+
+	// east
+	eastRoom := NewRoom(currentZone, "eastRoom", "East Room", "This room is east of the start.")
+	currentZone.AddRoom(eastRoom)
+
+	// once all the rooms for the zones are created, we can wire the directions up
+	// central <-> north
+	// void.start -> void.north
+	// void.north -> void.start
+	w.ConnectRooms("void", "start", direction.NORTH, "void", "northRoom")
+	w.ConnectRooms("void", "northRoom", direction.SOUTH, "void", "start")
+
+	// central <-> east
+	w.ConnectRooms("void", "start", direction.EAST, "void", "eastRoom")
+	w.ConnectRooms("void", "eastRoom", direction.WEST, "void", "start")
+
+	// north <-> northeast
+	w.ConnectRooms("void", "northRoom", direction.EAST, "void", "northeastRoom")
+	w.ConnectRooms("void", "northeastRoom", direction.WEST, "void", "northRoom")
+
+	// east <-> northeast
+	w.ConnectRooms("void", "eastRoom", direction.NORTH, "void", "northeastRoom")
+	w.ConnectRooms("void", "northeastRoom", direction.SOUTH, "void", "eastRoom")
+
+	// TODO get rid of void room?
+	// The VOID. When you're not really in a room.
+	w.voidRoom = NewRoom(nil, "void", "The Void", "You see nothing but endless void.")
 }

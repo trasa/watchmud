@@ -8,11 +8,29 @@ type Zone struct {
 	Name  string
 }
 
+func NewZone(id string, name string) *Zone {
+	return &Zone{
+		Id:    id,
+		Name:  name,
+		Rooms: make(map[string]*Room),
+	}
+}
+
 func (z *Zone) String() string {
 	return fmt.Sprintf("(Zone %s: '%s')", z.Id, z.Name)
 }
 
-// For all the mob instances in this zone, wake them
-// up and see if any of them want to do things.
-func (z *Zone) DoMobileActivity() {
+func (z *Zone) DoZoneActivity() error {
+
+	// Time to do a zone reset?
+	// Reset Modes:
+	// 0 - Never Reset
+	// 1 - Reset only when no players are present in the zone
+	// 2 - Reset even if players are present
+	// TODO http://www.circlemud.org/cdp/building/building-6.html
+	return nil
+}
+
+func (z *Zone) AddRoom(r *Room) {
+	z.Rooms[r.Id] = r
 }

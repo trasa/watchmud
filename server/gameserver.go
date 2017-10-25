@@ -74,7 +74,7 @@ func (gs *GameServer) heartbeat(pulse PulseCount, delta float64) {
 	if pulse.checkInterval(PULSE_ZONE) {
 		log.Printf("pulse %d zone reset %s", pulse, time.Now())
 		// TODO
-		//gs.World.DoZoneActivity()
+		gs.World.DoZoneActivity()
 	}
 
 	// pulse mobs

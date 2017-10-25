@@ -215,6 +215,25 @@ func (r *Room) Get(dir direction.Direction) *Room {
 	}
 }
 
+func (r *Room) Set(dir direction.Direction, destRoom *Room) {
+	switch dir {
+	case direction.NORTH:
+		r.North = destRoom
+	case direction.EAST:
+		r.East = destRoom
+	case direction.SOUTH:
+		r.South = destRoom
+	case direction.WEST:
+		r.West = destRoom
+	case direction.UP:
+		r.Up = destRoom
+	case direction.DOWN:
+		r.Down = destRoom
+	default:
+		log.Printf("Unknown direction to set: %s", dir)
+	}
+}
+
 // Of the directions available for travel (could be locked, closed...)
 // pick one of them. If there aren't any, return none.
 func (r *Room) PickRandomDirection(limitToZone bool) direction.Direction {

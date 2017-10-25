@@ -110,3 +110,28 @@ func (w *World) SendToAllPlayersExcept(exception player.Player, message interfac
 		}
 	})
 }
+
+func (w *World) ConnectRooms(sourceZoneId string, sourceRoomId string, dir direction.Direction, destZoneId string, destRoomId string) {
+	sourceZone := w.zones[sourceZoneId]
+	if sourceZone == nil {
+		log.Printf("ConnectRooms failed: sourceZoneId '%s' not found", sourceZoneId)
+		return
+	}
+	destZone := w.zones[destZoneId]
+	if destZone == nil {
+		log.Printf("ConnectRooms failed: destZoneId '%s' not found", destZoneId)
+		return
+	}
+	sourceRoom := sourceZone.Rooms[sourceRoomId]
+	log.Printf("source room is %s", sourceRoom)
+	if sourceRoom == nil {
+		log.Printf("ConnectRooms failed: zone %s sourceRoomId '%s' not found", sourceZoneId, sourceRoomId)
+		return
+	}
+	destRoom := destZone.Rooms[destRoomId]
+	if destRoom == nil {
+		log.Printf("ConnectRooms failed: zone %s destRoomId '%s' not found", destZoneId, destRoomId)
+		return
+	}
+	sourceRoom.Set(dir, destRoom)
+}
