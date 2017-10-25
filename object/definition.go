@@ -7,7 +7,7 @@ package object
 // properties of what it means to be a ShinySword. An actual
 // ShinySword lying around is an Instance.
 type Definition struct {
-	DefinitionId        string
+	Id                  string
 	Aliases             []string
 	Categories          CategorySet
 	Name                string
@@ -18,7 +18,7 @@ type Definition struct {
 
 func NewDefinition(definitionId string, name string, zoneId string, category Category, aliases []string, shortDescription string, descriptionOnGround string) *Definition {
 	d := &Definition{
-		DefinitionId:        definitionId,
+		Id:                  definitionId,
 		Name:                name,
 		ShortDescription:    shortDescription,
 		DescriptionOnGround: descriptionOnGround,

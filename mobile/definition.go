@@ -10,7 +10,7 @@ func NewDefinition(definitionId string,
 	descriptionInRoom string,
 	wandering WanderingDefinition) *Definition {
 	d := &Definition{
-		DefinitionId:      definitionId,
+		Id:                definitionId,
 		Name:              name,
 		Aliases:           aliases,
 		ShortDescription:  shortDescription,
@@ -23,7 +23,7 @@ func NewDefinition(definitionId string,
 
 // Defines what it means to be a mob.
 type Definition struct {
-	DefinitionId      string
+	Id                string
 	Aliases           []string
 	Name              string
 	ShortDescription  string

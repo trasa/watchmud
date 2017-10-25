@@ -1,19 +1,42 @@
 package world
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/trasa/watchmud/mobile"
+	"github.com/trasa/watchmud/object"
+)
 
 type Zone struct {
-	Id    string
-	Rooms map[string]*Room
-	Name  string
+	Id                string
+	Rooms             map[string]*Room
+	ObjectDefinitions map[string]*object.Definition // id -> object.Definition
+	MobileDefinitions map[string]*mobile.Definition // id -> mobile.Definition
+	Name              string
 }
 
 func NewZone(id string, name string) *Zone {
 	return &Zone{
-		Id:    id,
-		Name:  name,
-		Rooms: make(map[string]*Room),
+		Id:                id,
+		Name:              name,
+		Rooms:             make(map[string]*Room),
+		ObjectDefinitions: make(map[string]*object.Definition),
+		MobileDefinitions: make(map[string]*mobile.Definition),
 	}
+}
+
+func (z *Zone) addRoom(r *Room) {
+	r.Zone = z
+	z.Rooms[r.Id] = r
+}
+
+func (z *Zone) addObjectDefinition(obj *object.Definition) {
+	obj.ZoneId = z.Id
+	z.ObjectDefinitions[obj.Id] = obj
+}
+
+func (z *Zone) addMobileDefinition(mob *mobile.Definition) {
+	mob.ZoneId = z.Id
+	z.MobileDefinitions[mob.Id] = mob
 }
 
 func (z *Zone) String() string {
@@ -29,8 +52,4 @@ func (z *Zone) DoZoneActivity() error {
 	// 2 - Reset even if players are present
 	// TODO http://www.circlemud.org/cdp/building/building-6.html
 	return nil
-}
-
-func (z *Zone) AddRoom(r *Room) {
-	z.Rooms[r.Id] = r
 }

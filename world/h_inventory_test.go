@@ -15,7 +15,7 @@ func TestInventory_success(t *testing.T) {
 	p.AddInventory(&object.Instance{
 		InstanceId: "id",
 		Definition: &object.Definition{
-			DefinitionId:     "defnid",
+			Id:               "defnid",
 			ShortDescription: "short desc",
 			Categories:       object.CategorySet{object.TREASURE: true},
 		},

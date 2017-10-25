@@ -12,7 +12,7 @@ func TestAddInventory_New(t *testing.T) {
 	p.AddInventory(&object.Instance{
 		InstanceId: "id",
 		Definition: &object.Definition{
-			DefinitionId:        "defnid",
+			Id:                  "defnid",
 			Categories:          object.CategorySet{object.FOOD: true},
 			Name:                "name",
 			ShortDescription:    "short desc",
@@ -24,5 +24,5 @@ func TestAddInventory_New(t *testing.T) {
 	assert.Equal(t, 1, len(invmap))
 	obj := invmap["id"]
 	assert.Equal(t, "id", obj.Id())
-	assert.Equal(t, "defnid", obj.(*object.Instance).Definition.DefinitionId)
+	assert.Equal(t, "defnid", obj.(*object.Instance).Definition.Id)
 }
