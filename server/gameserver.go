@@ -9,12 +9,15 @@ import (
 	"time"
 )
 
-const PULSE_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
-//const PULSE_INTERVAL time.Duration = 1 * time.Second // 1 second
-var MAX_PULSE PulseCount = PulseCount(int64(1/PULSE_INTERVAL.Hours()) * 10) // 10 hours
+// Game Server ticks every PULSE_INTERVAL time
+//const PULSE_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
+const PULSE_INTERVAL time.Duration = 1 * time.Second // 1 second
 
 // Mobs consider doing something once every PULSE_MOBILE time
 const PULSE_MOBILE = 10 * time.Second
+
+// Zone reset every PULSE_ZONE time
+const PULSE_ZONE = 15 * time.Minute
 
 type GameServer struct {
 	incomingMessageBuffer chan *message.IncomingMessage
@@ -55,12 +58,6 @@ func (gs *GameServer) Run() {
 			//if pulse.checkInterval(1 * time.Minute) {
 			//	log.Printf("1 minute")
 			//}
-
-			// roll pulse over when it hits MAX_PULSE
-			if pulse > MAX_PULSE {
-				log.Printf("Resetting pulse: %d > %d", pulse, MAX_PULSE)
-				pulse = 0
-			}
 		}
 	}
 }
@@ -74,6 +71,11 @@ func (gs *GameServer) heartbeat(pulse PulseCount, delta float64) {
 
 	// pulse zone
 	// (zone reset ...)
+	if pulse.checkInterval(PULSE_ZONE) {
+		log.Printf("pulse %d zone reset %s", pulse, time.Now())
+		// TODO
+		//gs.World.DoZoneActivity()
+	}
 
 	// pulse mobs
 	// (mobs walk around, initiate attack?)
