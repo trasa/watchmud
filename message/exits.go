@@ -1,5 +1,7 @@
 package message
 
+import "github.com/trasa/watchmud/direction"
+
 type ExitsRequest struct {
 	Request
 }
@@ -7,5 +9,10 @@ type ExitsRequest struct {
 type ExitsResponse struct {
 	Response
 	// maps directionAbbreviation to name of room
-	ExitInfo map[string]string
+	ExitInfo []DirectionToRoomName
+}
+
+type DirectionToRoomName struct {
+	Direction direction.Direction
+	RoomName  string
 }

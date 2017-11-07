@@ -9,13 +9,13 @@ import (
 )
 
 func TestInstance_CanWander(t *testing.T) {
-	noWalk := NewInstance("nowalk", NewDefinition("id", "nowalk", "testZone", []string{}, "", "",
+	noWalk := NewInstance(NewDefinition("id", "nowalk", "testZone", []string{}, "", "",
 		WanderingDefinition{
 			CanWander: false,
 		}))
 	assert.False(t, noWalk.CanWander())
 
-	walker := NewInstance("walker", NewDefinition("", "", "", []string{}, "", "",
+	walker := NewInstance(NewDefinition("", "", "", []string{}, "", "",
 		WanderingDefinition{
 			CanWander:       true,
 			Style:           WANDER_RANDOM,
@@ -36,7 +36,7 @@ func TestInstance_CanWander(t *testing.T) {
 func TestInstance_CheckWanderChance_AlwaysFails(t *testing.T) {
 	r := rand.New(rand.NewSource(1))
 
-	noChance := NewInstance("walker", NewDefinition("", "", "", []string{}, "", "",
+	noChance := NewInstance(NewDefinition("", "", "", []string{}, "", "",
 		WanderingDefinition{
 			CanWander:       true,
 			Style:           WANDER_RANDOM,
@@ -50,7 +50,7 @@ func TestInstance_CheckWanderChance_AlwaysFails(t *testing.T) {
 
 func TestInstance_CheckWanderChance_AlwaysSucceeds(t *testing.T) {
 	r := rand.New(rand.NewSource(1))
-	fiftyFifty := NewInstance("walker", NewDefinition("", "", "", []string{}, "", "",
+	fiftyFifty := NewInstance(NewDefinition("", "", "", []string{}, "", "",
 		WanderingDefinition{
 			CanWander:       true,
 			Style:           WANDER_RANDOM,
@@ -64,7 +64,7 @@ func TestInstance_CheckWanderChance_AlwaysSucceeds(t *testing.T) {
 
 func TestInstance_CheckWanderChance_FiftyFifty(t *testing.T) {
 	r := rand.New(rand.NewSource(1))
-	fiftyFifty := NewInstance("walker", NewDefinition("", "", "", []string{}, "", "",
+	fiftyFifty := NewInstance(NewDefinition("", "", "", []string{}, "", "",
 		WanderingDefinition{
 			CanWander:       true,
 			Style:           WANDER_RANDOM,
@@ -83,7 +83,7 @@ func TestInstance_CheckWanderChance_FiftyFifty(t *testing.T) {
 }
 
 func TestInstance_GetIndexOnPath(t *testing.T) {
-	m := NewInstance("id",
+	m := NewInstance(
 		NewDefinition("id", "name", "", []string{}, "desc", "room desc", WanderingDefinition{
 			CanWander:       true,
 			CheckFrequency:  time.Minute * 1,
@@ -105,7 +105,7 @@ func TestInstance_GetIndexOnPath(t *testing.T) {
 }
 
 func TestInstance_GetIndexOnPath_NoPath(t *testing.T) {
-	m := NewInstance("id",
+	m := NewInstance(
 		NewDefinition("id", "name", "", []string{}, "desc", "room desc", WanderingDefinition{}))
 	idx, err := m.GetIndexOnPath("foo")
 	assert.Error(t, err)

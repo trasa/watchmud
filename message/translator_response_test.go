@@ -2,6 +2,7 @@ package message
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/trasa/watchmud/direction"
 	"log"
 	"testing"
 )
@@ -37,15 +38,27 @@ func TestTranslateToResponse_LookResponse(t *testing.T) {
 	assert.Equal(t, []string{"player1", "player2"}, lr.RoomDescription.Players)
 }
 
+func TestSerialize_ExitsResponse(t *testing.T) {
+	exitresponse := ExitsResponse{
+		Response: NewSuccessfulResponse("exits"),
+		ExitInfo: []DirectionToRoomName{
+			{Direction: direction.NORTH, RoomName: "North Room"},
+		},
+	}
+	s, err := TranslateToJson(exitresponse)
+	assert.NoError(t, err)
+	log.Printf(s)
+}
+
 func TestTranslateToResponse_ExitsResponse(t *testing.T) {
-	s := []byte("{\"Response\":{\"msg_type\":\"exits\",\"success\":true,\"result_code\":\"OK\"},\"exitinfo\":{\"n\":\"North Room\"}}")
+	s := []byte("{\"Response\":{\"msg_type\":\"exits\",\"success\":true,\"result_code\":\"OK\"},\"ExitInfo\":[{\"Direction\":1,\"RoomName\":\"North Room\"}]}")
 	resp, err := TranslateToResponse(s)
 	assert.Nil(t, err)
 	r := resp.(*ExitsResponse)
 
 	assert.True(t, r.IsSuccessful())
 	assert.Equal(t, "OK", r.GetResultCode())
-	assert.Equal(t, "North Room", r.ExitInfo["n"])
+	assert.Equal(t, "North Room", r.ExitInfo[0].RoomName)
 }
 
 func TestTranslateToResponse_SayResponse(t *testing.T) {

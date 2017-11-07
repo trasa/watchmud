@@ -16,8 +16,8 @@ const PULSE_INTERVAL time.Duration = 1 * time.Second // 1 second
 // Mobs consider doing something once every PULSE_MOBILE time
 const PULSE_MOBILE = 10 * time.Second
 
-// Zone reset every PULSE_ZONE time
-const PULSE_ZONE = 15 * time.Minute
+// zones reset based on their lifetime, check every pulse_zone (lifetime > pulse_zone)
+const PULSE_ZONE = 1 * time.Minute
 
 type GameServer struct {
 	incomingMessageBuffer chan *message.IncomingMessage

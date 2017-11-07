@@ -34,7 +34,7 @@ func (m *PlayerRoomMap) Remove(p player.Player) {
 	delete(m.playerToRoom, p)
 	if r != nil {
 		m.roomToPlayers.RemoveItem(r, p)
-		r.PlayerList.Remove(p)
+		r.RemovePlayer(p)
 	}
 }
 

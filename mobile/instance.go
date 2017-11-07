@@ -13,23 +13,17 @@ import (
 // immune to poison, but this instance of 'lizard' is wearing
 // a magic hat and has a sword in it's hand. (scary lizard)
 type Instance struct {
-	InstanceId        string
 	Definition        *Definition
 	LastWanderingTime time.Time // when was the last time this mob went wandering?
 	WanderingForward  bool      // do you wander forward on the path or backwards?
 }
 
-func NewInstance(instanceId string, defn *Definition) *Instance {
+func NewInstance(defn *Definition) *Instance {
 	return &Instance{
-		InstanceId:        instanceId,
 		Definition:        defn,
 		LastWanderingTime: time.Now(),
 		WanderingForward:  true, // by default
 	}
-}
-
-func (mob *Instance) Id() string {
-	return mob.InstanceId
 }
 
 func (mob *Instance) CanWander() bool {
@@ -50,7 +44,7 @@ func (mob *Instance) CheckWanderChance() bool {
 
 func (mob *Instance) checkWanderChance(r *rand.Rand) bool {
 	chance := r.Float32()
-	log.Printf("mob '%s' chance of walking %f vs. %f", mob.Id(), chance, mob.Definition.Wandering.CheckPercentage)
+	log.Printf("mob '%s' chance of walking %f vs. %f", mob.Definition.Id, chance, mob.Definition.Wandering.CheckPercentage)
 	return chance < mob.Definition.Wandering.CheckPercentage
 }
 

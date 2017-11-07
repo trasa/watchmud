@@ -5,6 +5,7 @@ import (
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/spaces"
+	"github.com/trasa/watchmud/zonereset"
 	"log"
 	"time"
 )
@@ -15,36 +16,42 @@ type WorldBuilder struct {
 
 func BuildWorld() map[string]*spaces.Zone {
 	worldBuilder := WorldBuilder{
-		make(map[string]*spaces.Zone),
+		zones: make(map[string]*spaces.Zone),
 	}
 
 	worldBuilder.loadZoneManifest()
 	worldBuilder.loadRooms()
 	worldBuilder.loadObjectDefinitions()
 	worldBuilder.loadMobileDefinitions()
+	worldBuilder.loadZoneInstructions()
 	return worldBuilder.zones
 }
 
 // Retrieve the zone manifest; prepare the zone objects to be
 // populated by rooms, objects, mobiles (but don't process the
 // zone commands yet)
-func (worldBuilder *WorldBuilder) loadZoneManifest() {
+func (wb *WorldBuilder) loadZoneManifest() {
 
 	// here, we'd look up something from the database, or something.
-	sampleZone := spaces.NewZone("void", "void zone")
-	worldBuilder.zones[sampleZone.Id] = sampleZone
+	voidZone := spaces.NewZone("void", "The Void", zonereset.NEVER, 0)
+	wb.zones[voidZone.Id] = voidZone
+
+	zoneResetDuration := time.Minute * 3
+	sampleZone := spaces.NewZone("sample", "sample zone", zonereset.ALWAYS, zoneResetDuration)
+	wb.zones[sampleZone.Id] = sampleZone
 }
 
 func (wb *WorldBuilder) loadRooms() {
 
 	// here, we'd look up something from the database...
 
-	// TODO get rid of void room?
 	// The VOID. When you're not really in a room.
-	//w.voidRoom = spaces.NewRoom(nil, "void", "The Void", "You see nothing but endless void.")
+	voidZone := wb.zones["void"]
+	voidZone.AddRoom(spaces.NewRoom(voidZone, "void", "The Void", "You see nothing but endless void."))
+	// void doesn't have any directions
 
-	// zone "void"
-	currentZone := wb.zones["void"]
+	// zone "sample"
+	currentZone := wb.zones["sample"]
 	/*
 		  north -- northeast
 		   |         |
@@ -52,41 +59,35 @@ func (wb *WorldBuilder) loadRooms() {
 
 	*/
 	// central room (Start)
-	centralPortalRoom := spaces.NewRoom(currentZone, "start", "Central Portal", "It's a boring room, with boring stuff in it.")
-	currentZone.AddRoom(centralPortalRoom)
-	// TODO some better way of indicating the start room from configuration
-	//w.startRoom = centralPortalRoom
+	currentZone.AddRoom(spaces.NewRoom(currentZone, "start", "Central Portal", "It's a boring room, with boring stuff in it."))
 
 	// north room
-	northRoom := spaces.NewRoom(currentZone, "northRoom", "North Room", "This room is north of the start.")
-	currentZone.AddRoom(northRoom)
+	currentZone.AddRoom(spaces.NewRoom(currentZone, "northRoom", "North Room", "This room is north of the start."))
 
 	// northeast
-	northeastRoom := spaces.NewRoom(currentZone, "northeastRoom", "North East Room", "It's north, and also East.")
-	currentZone.AddRoom(northeastRoom)
+	currentZone.AddRoom(spaces.NewRoom(currentZone, "northeastRoom", "North East Room", "It's north, and also East."))
 
 	// east
-	eastRoom := spaces.NewRoom(currentZone, "eastRoom", "East Room", "This room is east of the start.")
-	currentZone.AddRoom(eastRoom)
+	currentZone.AddRoom(spaces.NewRoom(currentZone, "eastRoom", "East Room", "This room is east of the start."))
 
 	// once all the rooms for the zones are created, we can wire the directions up
 	// central <-> north
 	// void.start -> void.north
 	// void.north -> void.start
-	wb.connectRooms("void", "start", direction.NORTH, "void", "northRoom")
-	wb.connectRooms("void", "northRoom", direction.SOUTH, "void", "start")
+	wb.connectRooms("sample", "start", direction.NORTH, "sample", "northRoom")
+	wb.connectRooms("sample", "northRoom", direction.SOUTH, "sample", "start")
 
 	// central <-> east
-	wb.connectRooms("void", "start", direction.EAST, "void", "eastRoom")
-	wb.connectRooms("void", "eastRoom", direction.WEST, "void", "start")
+	wb.connectRooms("sample", "start", direction.EAST, "sample", "eastRoom")
+	wb.connectRooms("sample", "eastRoom", direction.WEST, "sample", "start")
 
 	// north <-> northeast
-	wb.connectRooms("void", "northRoom", direction.EAST, "void", "northeastRoom")
-	wb.connectRooms("void", "northeastRoom", direction.WEST, "void", "northRoom")
+	wb.connectRooms("sample", "northRoom", direction.EAST, "sample", "northeastRoom")
+	wb.connectRooms("sample", "northeastRoom", direction.WEST, "sample", "northRoom")
 
 	// east <-> northeast
-	wb.connectRooms("void", "eastRoom", direction.NORTH, "void", "northeastRoom")
-	wb.connectRooms("void", "northeastRoom", direction.SOUTH, "void", "eastRoom")
+	wb.connectRooms("sample", "eastRoom", direction.NORTH, "sample", "northeastRoom")
+	wb.connectRooms("sample", "northeastRoom", direction.SOUTH, "sample", "eastRoom")
 
 }
 
@@ -114,11 +115,11 @@ func (wb *WorldBuilder) connectRooms(sourceZoneId string, sourceRoomId string, d
 	}
 	sourceRoom.Set(dir, destRoom)
 }
-func (w *WorldBuilder) loadObjectDefinitions() {
+func (wb *WorldBuilder) loadObjectDefinitions() {
 
 	// for each zone: create all object definitions
 	// lets put "something" in the central portal room
-	z := w.zones["void"]
+	z := wb.zones["sample"]
 	z.AddObjectDefinition(object.NewDefinition(
 		"fountain",
 		"fountain",
@@ -140,13 +141,13 @@ func (w *WorldBuilder) loadObjectDefinitions() {
 
 }
 
-func (w *WorldBuilder) loadMobileDefinitions() {
-	z := w.zones["void"]
+func (wb *WorldBuilder) loadMobileDefinitions() {
+	z := wb.zones["sample"]
 
 	// walker- somebody to walk around randomly
 	z.AddMobileDefinition(mobile.NewDefinition("walker",
 		"walker",
-		"void",
+		"sample",
 		[]string{},
 		"The Walker walks.",
 		"The walker stands here...for now.",
@@ -160,7 +161,7 @@ func (w *WorldBuilder) loadMobileDefinitions() {
 	// scripty -- scripted action in a mob
 	z.AddMobileDefinition(mobile.NewDefinition("scripty",
 		"scripty",
-		"void",
+		"sample",
 		[]string{},
 		"Scripty thinks about things.",
 		"Scripty is pondering something.",
@@ -171,4 +172,36 @@ func (w *WorldBuilder) loadMobileDefinitions() {
 			Style:           mobile.WANDER_FOLLOW_PATH,
 			Path:            []string{"start", "northRoom", "northeastRoom", "eastRoom"},
 		}))
+}
+
+func (wb *WorldBuilder) loadZoneInstructions() {
+	z := wb.zones["sample"]
+
+	// Object: put "fountain" instance in room "start", max of 1
+	z.AddCommand(spaces.CreateObject{
+		ObjectDefinitionId: "fountain",
+		RoomId:             "start",
+		InstanceMax:        1,
+	})
+
+	// Object: put "knife" instance in room "north", max of 1
+	z.AddCommand(spaces.CreateObject{
+		ObjectDefinitionId: "knife",
+		RoomId:             "northRoom",
+		InstanceMax:        1,
+	})
+
+	// Mob: put "walker" instance in room "start", max of 2
+	z.AddCommand(spaces.CreateMobile{
+		MobileDefinitionId: "walker",
+		RoomId:             "start",
+		InstanceMax:        2,
+	})
+
+	// Mob: put "scripty" instance in room "north", max of 1
+	z.AddCommand(spaces.CreateMobile{
+		MobileDefinitionId: "scripty",
+		RoomId:             "northRoom",
+		InstanceMax:        1,
+	})
 }

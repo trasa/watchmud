@@ -1,8 +1,8 @@
 package player
 
 import (
+	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/thing"
 )
 
 // see https://play.golang.org/p/zPLyr3ZOM0 (first attempt)
@@ -11,7 +11,9 @@ import (
 type Player interface {
 	Send(message interface{}) // todo return err
 	GetName() string
-	GetInventoryMap() thing.Map
 	AddInventory(instance *object.Instance) error
 	RemoveInventory(instance *object.Instance) error
+	GetInventoryByName(definitionId string) (*object.Instance, bool)
+	GetInventoryById(id uuid.UUID) (*object.Instance, bool)
+	GetAllInventory() []*object.Instance
 }

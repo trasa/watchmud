@@ -29,7 +29,7 @@ func (ps *List) Remove(p Player) {
 	delete(ps.byName, p.GetName())
 }
 
-func (ps *List) All() []Player {
+func (ps *List) GetAll() []Player {
 	ps.RLock()
 	defer ps.RUnlock()
 	// copy the keys into a new slice

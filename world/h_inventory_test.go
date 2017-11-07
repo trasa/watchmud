@@ -1,6 +1,7 @@
 package world
 
 import (
+	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/object"
@@ -12,14 +13,14 @@ func TestInventory_success(t *testing.T) {
 	w := newTestWorld()
 	p := player.NewTestPlayer("guy")
 
-	p.AddInventory(&object.Instance{
-		InstanceId: "id",
-		Definition: &object.Definition{
-			Id:               "defnid",
-			ShortDescription: "short desc",
-			Categories:       object.CategorySet{object.TREASURE: true},
-		},
-	})
+	defnPtr := object.NewDefinition("defnid", "name", "zone",
+		object.TREASURE, []string{}, "short desc", "in room")
+	instPtr := &object.Instance{
+		InstanceId: uuid.NewV4(),
+		Definition: defnPtr,
+	}
+
+	p.AddInventory(instPtr)
 
 	msg := message.IncomingMessage{
 		Player: p,
@@ -32,5 +33,5 @@ func TestInventory_success(t *testing.T) {
 	assert.Equal(t, 1, p.SentMessageCount())
 	resp := p.GetSentResponse(0).(message.InventoryResponse)
 	assert.Equal(t, 1, len(resp.InventoryItems))
-	assert.Equal(t, "id", resp.InventoryItems[0].Id)
+	assert.Equal(t, instPtr.Id(), resp.InventoryItems[0].Id)
 }

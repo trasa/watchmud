@@ -1,6 +1,7 @@
 package player
 
 import (
+	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/thing"
 	"log"
@@ -38,8 +39,29 @@ func (p *TestPlayer) GetName() string {
 	return p.name
 }
 
-func (p *TestPlayer) GetInventoryMap() thing.Map {
-	return p.inventory
+func (p *TestPlayer) GetInventoryById(id uuid.UUID) (inst *object.Instance, exists bool) {
+	t, exists := p.inventory[id.String()]
+	if exists {
+		inst = t.(*object.Instance)
+	}
+	return
+}
+
+func (p *TestPlayer) GetInventoryByName(name string) (*object.Instance, bool) {
+	// TODO needs to understand IDs vs Names vs Aliases...
+	for _, t := range p.inventory {
+		if name == t.(*object.Instance).Definition.Name {
+			return t.(*object.Instance), true
+		}
+	}
+	return nil, false
+}
+
+func (p *TestPlayer) GetAllInventory() (result []*object.Instance) {
+	for _, t := range p.inventory {
+		result = append(result, t.(*object.Instance))
+	}
+	return
 }
 
 func (p *TestPlayer) AddInventory(instance *object.Instance) error {

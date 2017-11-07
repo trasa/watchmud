@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/thing"
@@ -10,7 +11,7 @@ import (
 type ClientPlayer struct {
 	Name      string
 	Client    client.Client `json:"-"`
-	Inventory thing.Map
+	inventory thing.Map     // TODO replace with something better...
 }
 
 // Create a ClientPlayer connected to a new TestClient
@@ -27,7 +28,7 @@ func NewClientPlayer(name string, client client.Client) *ClientPlayer {
 	p := ClientPlayer{
 		Name:      name,
 		Client:    client, // address of interface
-		Inventory: make(thing.Map),
+		inventory: make(thing.Map),
 	}
 	return &p
 }
@@ -44,14 +45,35 @@ func (p *ClientPlayer) String() string {
 	return fmt.Sprintf("(Player Name='%s')", p.Name)
 }
 
-func (p *ClientPlayer) GetInventoryMap() thing.Map {
-	return p.Inventory
+func (p *ClientPlayer) GetInventoryById(id uuid.UUID) (inst *object.Instance, exists bool) {
+	t, exists := p.inventory.Get(id.String())
+	if exists {
+		inst = t.(*object.Instance)
+	}
+	return
+}
+
+func (p *ClientPlayer) GetInventoryByName(name string) (inst *object.Instance, exists bool) {
+	// TODO replace with something better
+	for _, t := range p.inventory {
+		if name == t.(*object.Instance).Definition.Name {
+			return t.(*object.Instance), true
+		}
+	}
+	return nil, false
+}
+
+func (p *ClientPlayer) GetAllInventory() (result []*object.Instance) {
+	for _, t := range p.inventory {
+		result = append(result, t.(*object.Instance))
+	}
+	return result
 }
 
 func (p *ClientPlayer) AddInventory(instance *object.Instance) error {
-	return p.Inventory.Add(instance)
+	return p.inventory.Add(instance)
 }
 
 func (p *ClientPlayer) RemoveInventory(instance *object.Instance) error {
-	return p.Inventory.Remove(instance)
+	return p.inventory.Remove(instance)
 }

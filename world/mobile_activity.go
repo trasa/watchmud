@@ -20,18 +20,17 @@ func (w *World) DoMobileActivity() {
 	// remember that mobs can leave the zone they started out in
 	// (if programmed to)
 	// (or if they really really want to)
-	for _, t := range w.mobs {
-		mob := t.(*mobile.Instance)
+	for _, mob := range w.mobileRooms.GetAllMobiles() {
 		if mob.CanWander() {
 			switch mob.Definition.Wandering.Style {
 			case mobile.WANDER_RANDOM:
 				// do random wander within the zone
 				if err := w.doMobRandomWander(mob); err != nil {
-					log.Printf("World.DoMobileActivity: %s error randomly wandering: %s", mob.Id(), err)
+					log.Printf("World.DoMobileActivity: %s error randomly wandering: %s", mob.Definition.Id, err)
 				}
 			case mobile.WANDER_FOLLOW_PATH:
 				if err := w.doMobFollowPathWander(mob); err != nil {
-					log.Printf("World.DoMobileActivity: %s error following path: %s", mob.Id(), err)
+					log.Printf("World.DoMobileActivity: %s error following path: %s", mob.Definition.Id, err)
 				}
 			default:
 				// unknown or unhandled wandering style, do nothing.
@@ -45,17 +44,17 @@ func (w *World) doMobRandomWander(mob *mobile.Instance) error {
 	mob.LastWanderingTime = time.Now()
 	mobRoom := w.getRoomContainingMobile(mob)
 	if mobRoom == nil {
-		return errors.New(fmt.Sprintf("Mobile ID '%s' can't randomly wander - not in a room at all!", mob.InstanceId))
+		return errors.New(fmt.Sprintf("Mobile ID '%s' can't randomly wander - not in a room at all!", mob.Definition.Id))
 	}
 	// test wandering percentage
 	if mob.CheckWanderChance() {
 		dir := mobRoom.PickRandomDirection(true)
 		if dir == direction.NONE {
-			log.Printf("Mobile ID '%s' is in a room without exit and can't wander out of it.", mob.InstanceId)
+			log.Printf("Mobile ID '%s' is in a room without exit and can't wander out of it.", mob.Definition.Id)
 			return nil
 		}
 		w.moveMobile(mob, dir, mobRoom, mobRoom.Get(dir))
-		log.Printf("World.doMobRandomWander: %s randomly wanders to %s", mob.Id(), mobRoom.Get(dir))
+		log.Printf("World.doMobRandomWander: %s randomly wanders to %s", mob.Definition.Id, mobRoom.Get(dir))
 	}
 	return nil
 }
@@ -64,7 +63,7 @@ func (w *World) doMobFollowPathWander(mob *mobile.Instance) error {
 	mob.LastWanderingTime = time.Now()
 	mobRoom := w.getRoomContainingMobile(mob)
 	if mobRoom == nil {
-		return errors.New(fmt.Sprintf("Mobile ID '%s' can't follow path - not in a room at all!", mob.InstanceId))
+		return errors.New(fmt.Sprintf("Mobile ID '%s' can't follow path - not in a room at all!", mob.Definition.Id))
 	}
 	if mob.CheckWanderChance() {
 		dir, changeDirection, err := getNextDirectionOnPath(mob, mobRoom)
@@ -73,13 +72,13 @@ func (w *World) doMobFollowPathWander(mob *mobile.Instance) error {
 		}
 		if dir == direction.NONE {
 			return errors.New(fmt.Sprintf("doMobFollowPathWander: mobile ID '%s' can't figure out next place to go to (current '%s', path '%s')",
-				mob.Id(), mobRoom.Id, mob.Definition.Wandering.Path))
+				mob.Definition.Id, mobRoom.Id, mob.Definition.Wandering.Path))
 		}
 		if changeDirection {
 			mob.WanderingForward = !mob.WanderingForward
 		}
 		w.moveMobile(mob, dir, mobRoom, mobRoom.Get(dir))
-		log.Printf("World.doMobFollowPathWander: %s moves to %s", mob.Id(), mobRoom.Get(dir))
+		log.Printf("World.doMobFollowPathWander: %s moves to %s", mob.Definition.Id, mobRoom.Get(dir))
 	}
 	return nil
 }
@@ -118,9 +117,14 @@ func getNextDirectionOnPath(mob *mobile.Instance, mobRoom *spaces.Room) (dir dir
 		}
 	}
 	roomToFind := mob.Definition.Wandering.Path[nextIndex]
-	dir = mobRoom.GetExitsByRoomId()[roomToFind]
+	for _, rexit := range mobRoom.GetRoomExits(false) {
+		if rexit.Room.Id == roomToFind {
+			dir = rexit.Direction
+			break
+		}
+	}
 	if dir == direction.NONE {
-		return direction.NONE, false, errors.New(fmt.Sprintf("Couldn't find destination room %s from current room %s", roomToFind, mobRoom.GetExitInfo(false)))
+		return direction.NONE, false, errors.New(fmt.Sprintf("Couldn't find destination room %s from current room exits %s", roomToFind, mobRoom.GetRoomExits(false)))
 	}
 	return
 }

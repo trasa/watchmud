@@ -38,8 +38,8 @@ func TestDrop_success(t *testing.T) {
 	dropresp := p.GetSentResponse(1).(message.DropResponse)
 	assert.True(t, dropresp.IsSuccessful())
 
-	assert.Equal(t, 0, len(p.GetInventoryMap()))
-	assert.Equal(t, 1, len(w.startRoom.Inventory))
+	assert.Equal(t, 0, len(p.GetAllInventory()))
+	assert.Equal(t, 1, len(w.startRoom.GetAllInventory()))
 }
 
 func TestDrop_NoTarget(t *testing.T) {
@@ -82,5 +82,5 @@ func TestDrop_NotFound(t *testing.T) {
 	dropresp := p.GetSentResponse(0).(message.DropResponse)
 	assert.False(t, dropresp.IsSuccessful())
 	assert.Equal(t, "TARGET_NOT_FOUND", dropresp.GetResultCode())
-	assert.Equal(t, 0, len(p.GetInventoryMap()))
+	assert.Equal(t, 0, len(p.GetAllInventory()))
 }

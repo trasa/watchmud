@@ -6,20 +6,22 @@ import (
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/spaces"
-	"github.com/trasa/watchmud/thing"
 	"log"
 )
 
 //noinspection GoNameStartsWithPackageName
 type World struct {
-	zones       map[string]*spaces.Zone
-	startRoom   *spaces.Room
-	voidRoom    *spaces.Room
-	playerList  *player.List
-	playerRooms *PlayerRoomMap
-	mobileRooms *MobileRoomMap
+	settings  map[string]string
+	zones     map[string]*spaces.Zone
+	startRoom *spaces.Room
+	voidRoom  *spaces.Room
+
+	// TODO merge playerList and playerRooms similar to MobileRoomMap merges mobList and mobRooms
+	playerList  *player.List   // list of players
+	playerRooms *PlayerRoomMap // player -> room; room -> players
+
+	mobileRooms *spaces.MobileRoomMap // mobile -> room; room -> mobiles
 	handlerMap  map[string]func(message *message.IncomingMessage)
-	mobs        thing.Map
 }
 
 // Constructor for World
@@ -29,8 +31,7 @@ func New() *World {
 		zones:       make(map[string]*spaces.Zone),
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
-		mobileRooms: NewMobileRoomMap(),
-		mobs:        make(thing.Map),
+		mobileRooms: spaces.NewMobileRoomMap(),
 	}
 	w.initializeHandlerMap()
 	w.initialLoad()
@@ -65,17 +66,6 @@ func (w *World) movePlayer(p player.Player, dir direction.Direction, src *spaces
 	w.playerRooms.Add(p, dest)
 }
 
-// Add mobile(s) to the world putting them in the room indicated,
-// Don't send room notifications.
-func (w *World) AddMobiles(destRoom *spaces.Room, mobs ...*mobile.Instance) {
-	for _, mob := range mobs {
-		log.Printf("Adding Mobile: %s", mob.InstanceId)
-		w.mobs.Add(mob)
-		w.mobileRooms.Add(mob, destRoom)
-		destRoom.AddMobile(mob)
-	}
-}
-
 // Mobile is moving from src room to dest room.
 func (w *World) moveMobile(mob *mobile.Instance, dir direction.Direction, src *spaces.Room, dest *spaces.Room) {
 	src.MobileLeaves(mob, dir)
@@ -89,7 +79,7 @@ func (w *World) getRoomContainingPlayer(p player.Player) *spaces.Room {
 }
 
 func (w *World) getRoomContainingMobile(mob *mobile.Instance) *spaces.Room {
-	return w.mobileRooms.Get(mob)
+	return w.mobileRooms.GetRoomForMobile(mob)
 }
 
 func (w *World) findPlayerByName(name string) player.Player {

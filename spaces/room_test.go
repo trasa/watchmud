@@ -7,29 +7,29 @@ import (
 )
 
 func TestRoomExits_none(t *testing.T) {
-	r := &Room{}
+	r := NewTestRoom("testing")
 	exits := r.GetExitString()
 	assert.Equal(t, "", exits)
 }
 
 func TestRoomExits_all(t *testing.T) {
-	r := &Room{}
-	r.North = r
-	r.South = r
-	r.East = r
-	r.West = r
-	r.Up = r
-	r.Down = r
+	r := NewTestRoom("testing")
+	r.Set(direction.NORTH, r)
+	r.Set(direction.SOUTH, r)
+	r.Set(direction.EAST, r)
+	r.Set(direction.WEST, r)
+	r.Set(direction.UP, r)
+	r.Set(direction.DOWN, r)
 
 	exits := r.GetExitString()
 	assert.Equal(t, "neswud", exits)
 }
 
 func TestRoomExits_some(t *testing.T) {
-	r := &Room{}
-	r.North = r
-	r.East = r
-	r.Up = r
+	r := NewTestRoom("test")
+	r.Set(direction.NORTH, r)
+	r.Set(direction.EAST, r)
+	r.Set(direction.UP, r)
 
 	exits := r.GetExitString()
 	assert.Equal(t, "neu", exits)
@@ -40,17 +40,17 @@ func TestRoom_GetExitInfo(t *testing.T) {
 	n := NewTestRoom("n")
 	s := NewTestRoom("s")
 
-	center.North = n
-	n.South = center
+	center.Set(direction.NORTH, n)
+	n.Set(direction.SOUTH, center)
 
-	center.South = s
-	s.North = center
+	center.Set(direction.SOUTH, s)
+	s.Set(direction.NORTH, center)
 
-	exitInfo := center.GetExitInfo(false)
+	exitInfo := center.GetRoomExits(false)
 
 	assert.Equal(t, 2, len(exitInfo))
-	assert.Equal(t, "n", exitInfo[direction.NORTH])
-	assert.Equal(t, "s", exitInfo[direction.SOUTH])
+	assert.Equal(t, direction.NORTH, exitInfo[0].Direction)
+	assert.Equal(t, direction.SOUTH, exitInfo[1].Direction)
 }
 
 func TestRoom_PickRandomDirection(t *testing.T) {
@@ -60,14 +60,14 @@ func TestRoom_PickRandomDirection(t *testing.T) {
 	assert.Equal(t, direction.NONE, dir)
 
 	n := NewTestRoom("n")
-	center.North = n
+	center.Set(direction.NORTH, n)
 	// one choice
 	dir = center.PickRandomDirection(false)
 	assert.Equal(t, direction.NORTH, dir)
 
 	// two choices
 	s := NewTestRoom("s")
-	center.South = s
+	center.Set(direction.SOUTH, s)
 
 	dir = center.PickRandomDirection(false)
 	if !(dir == direction.NORTH || dir == direction.SOUTH) {
@@ -86,14 +86,13 @@ func TestRoom_LimitToZone(t *testing.T) {
 	s := NewTestRoom("s")
 	s.Zone = zone2
 
-	center.North = n
-	n.South = center
+	center.Set(direction.NORTH, n)
+	n.Set(direction.SOUTH, center)
 
-	center.South = s
-	s.North = center
+	center.Set(direction.SOUTH, s)
+	s.Set(direction.NORTH, center)
 
-	result := center.GetExitInfo(true)
+	result := center.GetRoomExits(true)
 	assert.Equal(t, 1, len(result))
-	assert.Equal(t, "n", result[direction.NORTH])
-	assert.Equal(t, "", result[direction.SOUTH])
+	assert.Equal(t, direction.NORTH, result[0].Direction)
 }

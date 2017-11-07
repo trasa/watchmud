@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud/object"
 	"testing"
@@ -9,20 +10,18 @@ import (
 func TestAddInventory_New(t *testing.T) {
 
 	p, _ := NewTestClientPlayer("name")
-	p.AddInventory(&object.Instance{
-		InstanceId: "id",
-		Definition: &object.Definition{
-			Id:                  "defnid",
-			Categories:          object.CategorySet{object.FOOD: true},
-			Name:                "name",
-			ShortDescription:    "short desc",
-			DescriptionOnGround: "on ground",
-		},
-	})
+	defnPtr := object.NewDefinition("defnid", "name", "zone",
+		object.FOOD, []string{}, "short desc", "in room")
+	instPtr := &object.Instance{
+		InstanceId: uuid.NewV4(),
+		Definition: defnPtr,
+	}
 
-	invmap := p.GetInventoryMap()
-	assert.Equal(t, 1, len(invmap))
-	obj := invmap["id"]
-	assert.Equal(t, "id", obj.Id())
-	assert.Equal(t, "defnid", obj.(*object.Instance).Definition.Id)
+	p.AddInventory(instPtr)
+
+	invs := p.GetAllInventory()
+	assert.Equal(t, 1, len(invs))
+	obj := invs[0]
+	assert.Equal(t, instPtr.Id(), obj.Id())
+	assert.Equal(t, "defnid", obj.Definition.Identifier())
 }

@@ -2,17 +2,16 @@ package world
 
 import (
 	"github.com/trasa/watchmud/loader"
-	"github.com/trasa/watchmud/mobile"
-	"github.com/trasa/watchmud/object"
+	"log"
 )
 
 func (w *World) initialLoad() {
 
 	w.zones = loader.BuildWorld()
+	settings := loader.LoadWorldSettings()
 
-	// TODO startroom and void??
-	w.startRoom = w.zones["void"].Rooms["start"]
-	w.voidRoom = w.zones["void"].Rooms["void"]
+	w.startRoom = w.zones[settings["start.zone"]].Rooms[settings["start.room"]]
+	w.voidRoom = w.zones[settings["void.zone"]].Rooms[settings["void.room"]]
 
 	// once everything is loaded, we can process the zone information
 	// which says which mob instances to load and where to put them,
@@ -21,22 +20,9 @@ func (w *World) initialLoad() {
 	// (reading in zone, room, object and mob definitions)
 	// as this will happen throughout the runtime of the world
 
-	// TODO instance ids
-	fountainObj := object.NewInstance("fountain", w.zones["void"].ObjectDefinitions["fountain"])
-	// put the obj in the room
-	w.zones["void"].Rooms["start"].AddInventory(fountainObj)
-
-	// TODO instance ids
-	knifeObj := object.NewInstance("knife", w.zones["void"].ObjectDefinitions["knife"])
-	// knife is in room
-	w.zones["void"].Rooms["start"].AddInventory(knifeObj)
-
-	// TODO instance ids
-	walkerObj := mobile.NewInstance("walker", w.zones["void"].MobileDefinitions["walker"])
-	w.AddMobiles(w.zones["void"].Rooms["start"], walkerObj)
-
-	//TODO instance ids
-	scriptyObj := mobile.NewInstance("scripty", w.zones["void"].MobileDefinitions["scripty"])
-	w.AddMobiles(w.zones["void"].Rooms["start"], scriptyObj)
-
+	for zoneId, z := range w.zones {
+		if errs := z.Reset(w.mobileRooms); len(errs) != 0 {
+			log.Printf("Error running initial zone reset for %s: %s", zoneId, errs)
+		}
+	}
 }

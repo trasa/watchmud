@@ -34,3 +34,8 @@ func (m Map) Remove(t Thing) error {
 	}
 	return nil
 }
+
+func (m Map) Get(key string) (t Thing, exists bool) {
+	t, exists = m[key]
+	return
+}

@@ -50,19 +50,19 @@ func TestPlayers_Iter(t *testing.T) {
 	}
 }
 
-func TestPlayer_All(t *testing.T) {
+func TestPlayer_GetAll(t *testing.T) {
 	players := NewList()
 	p := &TestPlayer{name: "a"}
 	players.Add(p)
 
-	all := players.All()
+	all := players.GetAll()
 	players.Add(&TestPlayer{name: "b"})
 	log.Printf("addr of all: %p", &all)
 	if len(all) != 1 {
 		t.Error("expected len = 1")
 	}
 
-	moreAll := players.All()
+	moreAll := players.GetAll()
 	log.Printf("addr of moreAll: %p", &moreAll)
 	if len(all) != 1 {
 		t.Error("still expected len 1")

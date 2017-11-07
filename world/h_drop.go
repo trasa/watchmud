@@ -2,7 +2,6 @@ package world
 
 import (
 	"github.com/trasa/watchmud/message"
-	"github.com/trasa/watchmud/object"
 	"log"
 )
 
@@ -15,11 +14,11 @@ func (w *World) handleDrop(msg *message.IncomingMessage) {
 		return
 	}
 	room := w.getRoomContainingPlayer(msg.Player)
-	if instPtr, ok := msg.Player.GetInventoryMap()[dropReq.Target]; ok {
+	if instPtr, ok := msg.Player.GetInventoryByName(dropReq.Target); ok {
 		// player has target
 
 		// add to room
-		if err := room.Inventory.Add(instPtr); err != nil {
+		if err := room.AddInventory(instPtr); err != nil {
 			// failed to add to room..
 			log.Printf("Drop: Error while adding to room, player %s id %s; %s",
 				msg.Player.GetName(),
@@ -32,14 +31,14 @@ func (w *World) handleDrop(msg *message.IncomingMessage) {
 		}
 
 		// remove from player
-		if err := msg.Player.RemoveInventory(instPtr.(*object.Instance)); err != nil {
+		if err := msg.Player.RemoveInventory(instPtr); err != nil {
 			// failed to remove from player
 			log.Printf("Drop: error while removing from player: %s id %s; %s",
 				msg.Player.GetName(),
 				instPtr.Id(),
 				err)
 
-			room.Inventory.Remove(instPtr)
+			room.RemoveInventory(instPtr)
 			msg.Player.Send(message.DropResponse{
 				Response: message.NewUnsuccessfulResponse("drop", "REMOVE_FROM_PLAYER_ERROR"),
 			})
@@ -55,7 +54,7 @@ func (w *World) handleDrop(msg *message.IncomingMessage) {
 			message.DropNotification{
 				Response:   message.NewSuccessfulResponse("drop_notification"),
 				PlayerName: msg.Player.GetName(),
-				Target:     instPtr.(*object.Instance).Definition.Name, // what should this be?! "knife", "a knife", "those knives" ...
+				Target:     instPtr.Definition.Name, // what should this be?! "knife", "a knife", "those knives" ...
 			})
 	} else {
 		// not found

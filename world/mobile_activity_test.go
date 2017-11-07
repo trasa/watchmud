@@ -10,7 +10,7 @@ import (
 )
 
 func Test_getNextDirectionOnPath_Simple(t *testing.T) {
-	m := mobile.NewInstance("id",
+	m := mobile.NewInstance(
 		mobile.NewDefinition("id", "name", "", []string{}, "desc", "room desc", mobile.WanderingDefinition{
 			CanWander:       true,
 			CheckFrequency:  time.Minute * 1,
@@ -20,8 +20,8 @@ func Test_getNextDirectionOnPath_Simple(t *testing.T) {
 		}))
 
 	r := spaces.NewTestRoom("a")
-	r.Up = spaces.NewTestRoom("b")
-	r.Up.Down = r
+	r.Set(direction.UP, spaces.NewTestRoom("b"))
+	r.Get(direction.UP).Set(direction.DOWN, r)
 
 	// a -> b
 	dir, changeDirection, err := getNextDirectionOnPath(m, r)
@@ -30,14 +30,14 @@ func Test_getNextDirectionOnPath_Simple(t *testing.T) {
 	assert.False(t, changeDirection)
 
 	// b -> a
-	dir, changeDirection, err = getNextDirectionOnPath(m, r.Up)
+	dir, changeDirection, err = getNextDirectionOnPath(m, r.Get(direction.UP))
 	assert.NoError(t, err)
 	assert.Equal(t, direction.DOWN, dir)
 	assert.True(t, changeDirection)
 }
 
 func Test_getNextDirectionOnPath_FullPath(t *testing.T) {
-	m := mobile.NewInstance("id",
+	m := mobile.NewInstance(
 		mobile.NewDefinition("id", "name", "", []string{}, "desc", "room desc", mobile.WanderingDefinition{
 			CanWander:       true,
 			CheckFrequency:  time.Minute * 1,
@@ -50,10 +50,10 @@ func Test_getNextDirectionOnPath_FullPath(t *testing.T) {
 	a := spaces.NewTestRoom("a")
 	b := spaces.NewTestRoom("b")
 	c := spaces.NewTestRoom("c")
-	a.East = b
-	b.West = a
-	b.East = c
-	c.West = b
+	a.Set(direction.EAST, b)
+	b.Set(direction.WEST, a)
+	b.Set(direction.EAST, c)
+	c.Set(direction.WEST, b)
 
 	// a -> b
 	dir, changeDirection, err := getNextDirectionOnPath(m, a)

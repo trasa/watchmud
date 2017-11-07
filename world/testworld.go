@@ -34,7 +34,7 @@ func newTestWorld() *World {
 		[]string{},
 		"knife",
 		"A knife is on the ground.")
-	knifeObj := object.NewInstance("knife", knifeDefn)
+	knifeObj := object.NewInstance(knifeDefn)
 	testRoom.AddInventory(knifeObj)
 
 	return w

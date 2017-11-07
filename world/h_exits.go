@@ -1,7 +1,6 @@
 package world
 
 import (
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/message"
 )
 
@@ -11,10 +10,13 @@ func (w *World) handleExits(msg *message.IncomingMessage) {
 		r = w.voidRoom
 	}
 	// convert directions to strings because json
-	messageExitInfo := make(map[string]string)
-	for k, v := range r.GetExitInfo(false) {
-		s, _ := direction.DirectionToAbbreviation(k)
-		messageExitInfo[s] = v
+	messageExitInfo := []message.DirectionToRoomName{}
+	for _, rexit := range r.GetRoomExits(false) {
+		messageExitInfo = append(messageExitInfo,
+			message.DirectionToRoomName{
+				Direction: rexit.Direction,
+				RoomName:  rexit.Room.Name,
+			})
 	}
 	resp := message.ExitsResponse{
 		Response: message.NewSuccessfulResponse("exits"),
