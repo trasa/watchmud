@@ -105,14 +105,14 @@ func (r *Room) RemoveMobile(inst *mobile.Instance) {
 }
 
 // Send to every player in the room.
-func (r *Room) Send(msg interface{}) { // TODO err
+func (r *Room) Send(msg interface{}) {
 	r.playerList.Iter(func(p player.Player) {
 		p.Send(msg)
 	})
 }
 
 // Send to all players in a room, except for one of them.
-func (r *Room) SendExcept(exception player.Player, msg interface{}) { // TODO err
+func (r *Room) SendExcept(exception player.Player, msg interface{}) {
 	r.playerList.Iter(func(p player.Player) {
 		if exception != p {
 			p.Send(msg)

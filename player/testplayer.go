@@ -48,7 +48,6 @@ func (p *TestPlayer) GetInventoryById(id uuid.UUID) (inst *object.Instance, exis
 }
 
 func (p *TestPlayer) GetInventoryByName(name string) (*object.Instance, bool) {
-	// TODO needs to understand IDs vs Names vs Aliases...
 	for _, t := range p.inventory {
 		if name == t.(*object.Instance).Definition.Name {
 			return t.(*object.Instance), true

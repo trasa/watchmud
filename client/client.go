@@ -4,7 +4,7 @@ import "github.com/trasa/watchmud/player"
 
 //noinspection GoNameStartsWithPackageName
 type Client interface {
-	Send(message interface{}) // todo return err
+	Send(message interface{})
 	SetPlayer(player player.Player)
 	GetPlayer() player.Player
 	Close()

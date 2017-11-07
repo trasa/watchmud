@@ -54,7 +54,6 @@ func (p *ClientPlayer) GetInventoryById(id uuid.UUID) (inst *object.Instance, ex
 }
 
 func (p *ClientPlayer) GetInventoryByName(name string) (inst *object.Instance, exists bool) {
-	// TODO replace with something better
 	for _, t := range p.inventory {
 		if name == t.(*object.Instance).Definition.Name {
 			return t.(*object.Instance), true
