@@ -6,104 +6,104 @@ import (
 )
 
 func TestTranslate_NoOp(t *testing.T) {
-	req, err := TranslateLineToRequest("")
+	msg, err := TranslateLineToMessage("")
 
-	assert.Nil(t, err, "should not error")
-	assert.Equal(t, "no_op", req.GetMessageType(), "expected message_type no_op: %s", req)
+	assert.NoError(t, err)
+	assert.IsType(t, &GameMessage_Ping{}, msg.GetInner())
+	assert.NotNil(t, msg.GetPing())
 }
 
 func TestTranslate_Tell_shortest_message(t *testing.T) {
-	req, err := TranslateLineToRequest("tell bob hello")
+	msg, err := TranslateLineToMessage("tell bob hello")
 
-	assert.Nil(t, err, "no error")
-	assert.Equal(t, "tell", req.GetMessageType(), "message_type tell: %s", req)
+	assert.NoError(t, err)
 
-	tellReq := req.(TellRequest)
-	assert.Equal(t, "bob", tellReq.ReceiverPlayerName, "wrong rec name: %s", req)
-	assert.Equal(t, "hello", tellReq.Value, "wrong value: %s", req)
+	tellReq := msg.GetTellRequest()
+	assert.Equal(t, "bob", tellReq.ReceiverPlayerName, "wrong rec name: %s", msg)
+	assert.Equal(t, "hello", tellReq.Value, "wrong value: %s", msg)
 }
 
 func TestTranslate_Tell(t *testing.T) {
-	req, err := TranslateLineToRequest("tell bob hello there")
+	msg, err := TranslateLineToMessage("tell bob hello there")
 
-	assert.Nil(t, err, "no error")
-	assert.Equal(t, "tell", req.GetMessageType(), "message_type tell: %s", req)
+	assert.NoError(t, err)
 
-	tellReq := req.(TellRequest)
-	assert.Equal(t, "bob", tellReq.ReceiverPlayerName, "wrong rec name: %s", req)
-	assert.Equal(t, "hello there", tellReq.Value, "wrong value: %s", req)
+	tellReq := msg.GetTellRequest()
+	assert.Equal(t, "bob", tellReq.ReceiverPlayerName, "wrong rec name: %s", msg)
+	assert.Equal(t, "hello there", tellReq.Value, "wrong value: %s", msg)
 }
 
 func TestTranslate_Tell_shortcut(t *testing.T) {
-	req, err := TranslateLineToRequest("t bob hello there")
+	msg, err := TranslateLineToMessage("t bob hello there")
 
-	assert.Nil(t, err, "no error")
-	assert.Equal(t, "tell", req.GetMessageType(), "message_type tell: %s", req)
+	assert.NoError(t, err)
 
-	tellReq := req.(TellRequest)
-	assert.Equal(t, "bob", tellReq.ReceiverPlayerName, "wrong rec name: %s", req)
-	assert.Equal(t, "hello there", tellReq.Value, "wrong value: %s", req)
+	tellReq := msg.GetTellRequest()
+	assert.Equal(t, "bob", tellReq.ReceiverPlayerName, "wrong rec name: %s", msg)
+	assert.Equal(t, "hello there", tellReq.Value, "wrong value: %s", msg)
 }
 
 func TestTranslate_Tell_BadRequest(t *testing.T) {
-	req, err := TranslateLineToRequest("tell bob")
+	msg, err := TranslateLineToMessage("tell bob")
 
-	assert.NotNil(t, err, "expected error")
-	assert.Nil(t, req, "req should be nil")
+	assert.Error(t, err)
+	assert.Nil(t, msg, "should be nil")
 }
 
 func TestTranslate_UnknownCommand(t *testing.T) {
 	cmd := "asdjhfaksjdfhjk"
-	req, err := TranslateLineToRequest(cmd)
-	assert.Nil(t, req, "req should be nil")
-	assert.NotNil(t, err, "should have error")
+	msg, err := TranslateLineToMessage(cmd)
+	assert.Nil(t, msg, "req should be nil")
+	assert.Error(t, err)
 	assert.Equal(t, "Unknown request: "+cmd, err.Error(), "err text")
 }
 
 func TestTranslate_TellAll(t *testing.T) {
-	req, err := TranslateLineToRequest("tellall hello")
-	assert.Nil(t, err, "no error expected")
-	assert.Equal(t, "tell_all", req.GetMessageType(), "expected tell_all")
+	msg, err := TranslateLineToMessage("tellall hello")
 
-	tellAllReq := req.(TellAllRequest)
+	assert.NoError(t, err)
+	tellAllReq := msg.GetTellAllRequest()
 	assert.Equal(t, "hello", tellAllReq.Value)
 }
 
 func TestTranslate_TellAll_shortcut(t *testing.T) {
-	req, err := TranslateLineToRequest("ta hello")
-	assert.Nil(t, err, "no error expected")
-	assert.Equal(t, "tell_all", req.GetMessageType(), "expected tell_all")
+	msg, err := TranslateLineToMessage("ta hello")
 
-	tellAllReq := req.(TellAllRequest)
+	assert.NoError(t, err)
+	tellAllReq := msg.GetTellAllRequest()
 	assert.Equal(t, "hello", tellAllReq.Value)
 }
 
 func TestTranslate_TellAll_LongMessage(t *testing.T) {
-	req, err := TranslateLineToRequest("ta a b c d e f g h i j k l m n o p  q r s t    u v")
-	assert.Nil(t, err, "no error")
-	tellAllReq := req.(TellAllRequest)
+	msg, err := TranslateLineToMessage("ta a b c d e f g h i j k l m n o p  q r s t    u v")
+
+	assert.NoError(t, err)
+	tellAllReq := msg.GetTellAllRequest()
 	assert.Equal(t, "a b c d e f g h i j k l m n o p q r s t u v", tellAllReq.Value)
 }
 
 func TestTranslate_Get_NoTarget(t *testing.T) {
-	req, err := TranslateLineToRequest("get")
-	assert.Nil(t, err, "no error")
-	getreq := req.(GetRequest)
+	msg, err := TranslateLineToMessage("get")
+
+	assert.NoError(t, err)
+	getreq := msg.GetGetRequest()
 	assert.Equal(t, 0, len(getreq.Targets))
 }
 
 func TestTranslate_Get_OneTarget(t *testing.T) {
-	req, err := TranslateLineToRequest("get foo")
-	assert.Nil(t, err, "no error")
-	getreq := req.(GetRequest)
+	msg, err := TranslateLineToMessage("get foo")
+
+	assert.NoError(t, err)
+	getreq := msg.GetGetRequest()
 	assert.Equal(t, 1, len(getreq.Targets))
 	assert.Equal(t, "foo", getreq.Targets[0])
 }
 
 func TestTranslate_Get_TwoTargets(t *testing.T) {
-	req, err := TranslateLineToRequest("get foo bar")
-	assert.Nil(t, err, "no error")
-	getreq := req.(GetRequest)
+	msg, err := TranslateLineToMessage("get foo bar")
+
+	assert.NoError(t, err)
+	getreq := msg.GetGetRequest()
 	assert.Equal(t, 2, len(getreq.Targets))
 	assert.Equal(t, "foo", getreq.Targets[0])
 	assert.Equal(t, "bar", getreq.Targets[1])

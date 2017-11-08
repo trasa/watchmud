@@ -6,7 +6,7 @@ import (
 )
 
 //noinspection GoNameStartsWithPackageName
-type Direction int
+type Direction int32
 
 const (
 	NONE Direction = iota

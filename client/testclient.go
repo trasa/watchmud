@@ -17,9 +17,10 @@ func NewTestClient(p player.Player) *TestClient {
 	}
 }
 
-func (c *TestClient) Send(msg interface{}) {
+func (c *TestClient) Send(msg interface{}) error {
 	log.Printf("sending fake! %s p is %s", msg, c.Player.GetName())
 	c.tosend = append(c.tosend, msg)
+	return nil
 }
 
 func (c *TestClient) GetPlayer() player.Player {

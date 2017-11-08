@@ -1,20 +1,22 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
 )
 
 // Tell everybody in the game something.
-func (w *World) handleTellAll(msg *message.IncomingMessage) {
-	tellAllRequest := msg.Request.(message.TellAllRequest)
+func (w *World) handleTellAll(msg *gameserver.HandlerParameter) {
+	tellAllRequest := msg.Message.GetTellAllRequest()
 	if tellAllRequest.Value != "" {
 		w.SendToAllPlayersExcept(msg.Player, message.TellAllNotification{
-			Response: message.NewSuccessfulResponse("tell_all_notification"),
-			Value:    tellAllRequest.Value,
-			Sender:   msg.Player.GetName(),
+			Success:    true,
+			ResultCode: "OK",
+			Value:      tellAllRequest.Value,
+			Sender:     msg.Player.GetName(),
 		})
-		msg.Player.Send(message.NewSuccessfulResponse("tell_all"))
+		msg.Player.Send(message.TellAllResponse{Success: true, ResultCode: "OK"})
 	} else {
-		msg.Player.Send(message.NewUnsuccessfulResponse("tell_all", "NO_VALUE"))
+		msg.Player.Send(message.TellAllResponse{Success: false, ResultCode: "NO_VALUE"})
 	}
 }

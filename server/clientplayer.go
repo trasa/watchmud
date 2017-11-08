@@ -37,8 +37,8 @@ func (p *ClientPlayer) GetName() string {
 	return p.Name
 }
 
-func (p *ClientPlayer) Send(msg interface{}) {
-	p.Client.Send(msg)
+func (p *ClientPlayer) Send(msg interface{}) error {
+	return p.Client.Send(msg)
 }
 
 func (p *ClientPlayer) String() string {

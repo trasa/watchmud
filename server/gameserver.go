@@ -1,8 +1,8 @@
 package server
 
 import (
-	"fmt"
 	"github.com/trasa/watchmud/client"
+	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/world"
 	"log"
@@ -20,15 +20,15 @@ const PULSE_MOBILE = 10 * time.Second
 const PULSE_ZONE = 1 * time.Minute
 
 type GameServer struct {
-	incomingMessageBuffer chan *message.IncomingMessage
-	World                 *world.World
-	tickInterval          time.Duration
+	incomingBuffer chan *gameserver.HandlerParameter
+	World          *world.World
+	tickInterval   time.Duration
 }
 
 func NewGameServer() *GameServer {
 	return &GameServer{
-		incomingMessageBuffer: make(chan *message.IncomingMessage),
-		World: world.New(),
+		incomingBuffer: make(chan *gameserver.HandlerParameter),
+		World:          world.New(),
 	}
 }
 
@@ -109,51 +109,63 @@ func (gs *GameServer) heartbeat(pulse PulseCount, delta float64) {
 func (gs *GameServer) processIncomingMessage() bool {
 	received := false
 	select {
-	case msg := <-gs.incomingMessageBuffer:
+	case msg := <-gs.incomingBuffer:
 		received = true
-		switch messageType := msg.Request.GetMessageType(); messageType {
-		case "login":
-			// login is special case, handled by server first and then
-			// sent down to world for further initialization
+		switch msg.Message.Inner.(type) {
+		case *message.GameMessage_LoginRequest:
 			gs.handleLogin(msg) // TODO error handling
-
-			// TODO does the gameserver need to do anything on logout?
-
-		case "error":
-			// we received bad input, send response to client
-			// rather than processing message
-			msg.Client.Send(message.ErrorResponse{
-				Response: message.NewUnsuccessfulResponse("error", "TRANSLATE_ERROR"),
-				Error:    fmt.Sprintf("%s", msg.Request.(message.ErrorRequest).Error),
-			})
-
 		default:
 			gs.World.HandleIncomingMessage(msg)
 		}
+		/*
+			switch messageType := msg.Request.GetMessageType(); messageType {
+			case "login":
+				// login is special case, handled by server first and then
+				// sent down to world for further initialization
+				gs.handleLogin(msg) // TODO error handling
+
+				// TODO does the gameserver need to do anything on logout?
+
+			case "error":
+				// we received bad input, send response to client
+				// rather than processing message
+				msg.Client.Send(message.ErrorResponse{
+					Response: message.NewUnsuccessfulResponse("error", "TRANSLATE_ERROR"),
+					Error:    fmt.Sprintf("%s", msg.Request.(message.ErrorRequest).Error),
+				})
+
+			default:
+				gs.World.HandleIncomingMessage(msg)
+					}
+		*/
+
 	default:
 		//log.Printf("incoming message buffer is empty")
 	}
 	return received
 }
 
-func (gs *GameServer) Receive(message *message.IncomingMessage) {
-	gs.incomingMessageBuffer <- message
+func (gs *GameServer) Receive(msg *gameserver.HandlerParameter) {
+	gs.incomingBuffer <- msg
 }
 
 func (gs *GameServer) Logout(c client.Client, cause string) {
-	gs.Receive(message.New(c, message.LogoutRequest{
-		Request: message.RequestBase{MessageType: "logout"},
-		Cause:   cause,
-	}))
+	gm, err := message.NewGameMessage(message.LogoutRequest{Cause: cause})
+	if err != nil {
+		log.Printf("Error creating GameMessage for LogoutRequest: %v", err)
+	} else {
+		gs.Receive(gameserver.NewHandlerParameter(c, gm))
+	}
 }
 
-func (gs *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO error handling
+func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO error handling
 	// is this connection already authenticated?
 	// see if we can find an existing player ..
 	if msg.Client.GetPlayer() != nil {
 		// you've already got one
 		msg.Client.Send(message.LoginResponse{
-			Response: message.NewUnsuccessfulResponse("login_response", "PLAYER_ALREADY_ATTACHED"),
+			Success:    false,
+			ResultCode: "PLAYER_ALREADY_ATTACHED",
 		})
 		return
 	}
@@ -178,14 +190,15 @@ func (gs *GameServer) handleLogin(msg *message.IncomingMessage) { // TODO error 
 	*/
 
 	// todo authentication and stuff
-	player := NewClientPlayer(msg.Request.(message.LoginRequest).PlayerName, msg.Client)
+	player := NewClientPlayer(msg.Message.GetLoginRequest().PlayerName, msg.Client)
 	msg.Client.SetPlayer(player)
 	msg.Player = player
 
 	// add player to world
 	gs.World.AddPlayer(player)
 	player.Send(message.LoginResponse{
-		Response: message.NewSuccessfulResponse("login_response"),
-		Player:   message.NewPlayerData(player.GetName()),
+		Success:    true,
+		ResultCode: "OK",
+		PlayerName: player.GetName(),
 	})
 }

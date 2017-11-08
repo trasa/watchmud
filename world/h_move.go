@@ -2,15 +2,16 @@ package world
 
 import (
 	"github.com/trasa/watchmud/direction"
+	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
 	"log"
 )
 
-func (w *World) handleMove(msg *message.IncomingMessage) {
+func (w *World) handleMove(msg *gameserver.HandlerParameter) {
 	// go somewhere
 	playerRoom := w.getRoomContainingPlayer(msg.Player)
 	// get the direction we want to go to
-	dir := msg.Request.(message.MoveRequest).Direction
+	dir := direction.Direction(msg.Message.GetMoveRequest().Direction)
 
 	// dirstr only used for log message so we'll ignore errors
 	dirstr, _ := direction.DirectionToString(dir)
@@ -26,13 +27,15 @@ func (w *World) handleMove(msg *message.IncomingMessage) {
 		w.movePlayer(msg.Player, dir, playerRoom, targetRoom)
 		// send response message
 		msg.Player.Send(message.MoveResponse{
-			Response:        message.NewSuccessfulResponse("move"),
+			Success:         true,
+			ResultCode:      "OK",
 			RoomDescription: targetRoom.CreateRoomDescription(msg.Player),
 		})
 	} else {
 		// you can't go that way, tell player about error
 		msg.Player.Send(message.MoveResponse{
-			Response: message.NewUnsuccessfulResponse("move", "CANT_GO_THAT_WAY"),
+			Success:    false,
+			ResultCode: "CANT_GO_THAT_WAY",
 		})
 	}
 }

@@ -1,0 +1,288 @@
+syntax = "proto3";
+
+/* NEXT TODO !!
+convert comm.proto over to message, replace all the message types with
+their protobuf desecribed components!
+
+then can get rid of some of the translate stuff, begin moving
+everything over to gRPC.
+*/
+
+package message;
+
+// services
+service MudComm {
+    // Client sends and receives messages from the game server.
+    rpc SendReceive(stream GameMessage) returns (stream GameMessage) {}
+}
+
+// types
+message GameMessage {
+    oneof inner {
+        Ping ping = 50;
+        Pong pong = 51;
+
+        DropRequest dropRequest = 100;
+        DropResponse dropResponse = 101;
+        DropNotification dropNotification = 102;
+
+        ErrorRequest errorRequest = 110;
+        ErrorResponse errorResponse = 111;
+
+        ExitsRequest exitsRequest = 120;
+        ExitsResponse exitsResponse = 121;
+
+        GetRequest getRequest = 130;
+        GetResponse getResponse = 131;
+        GetNotification getNotification = 132;
+
+        InventoryRequest inventoryRequest = 140;
+        InventoryResponse inventoryResponse = 141;
+
+        LoginRequest loginRequest = 150;
+        LoginResponse loginResponse = 151;
+
+        LogoutRequest logoutRequest = 160;
+        LogoutResponse logoutResponse = 161;
+
+        LookRequest lookRequest = 170;
+        LookResponse lookResponse = 171;
+        LookNotification lookNotification = 172;
+
+        MoveRequest moveRequest = 180;
+        MoveResponse moveResponse = 181;
+        EnterRoomNotification enterRoomNotification = 182;
+        LeaveRoomNotification leaveRoomNotification = 183;
+
+        SayRequest sayRequest = 190;
+        SayResponse sayResponse = 191;
+        SayNotification sayNotification = 192;
+
+        TellRequest tellRequest = 200;
+        TellResponse tellResponse = 201;
+        TellNotification tellNotification = 202;
+
+        TellAllRequest tellAllRequest = 210;
+        TellAllResponse tellAllResponse = 211;
+        TellAllNotification tellAllNotification = 212;
+
+        WhoRequest whoRequest = 220;
+        WhoResponse whoResponse = 221;
+    }
+}
+
+
+message DropRequest {
+    string target = 1;
+}
+
+message DropResponse {
+    bool success = 1;
+    string resultCode = 2;
+}
+
+message DropNotification {
+    bool success = 1;
+    string resultCode = 2;
+    string playerName = 3;
+    string target = 4;
+}
+
+message ErrorRequest {
+    string error = 1;
+}
+
+message ErrorResponse {
+    bool success = 1;
+    string resultCode = 2;
+    string error = 3;
+}
+
+message ExitsRequest {
+}
+
+message ExitsResponse {
+    bool success = 1;
+    string resultCode = 2;
+    repeated ExitInfo exitInfo = 3;
+}
+
+message ExitInfo {
+    int32 direction = 1;
+    string roomName = 2;
+}
+
+message GetRequest {
+    repeated string targets = 1;
+}
+
+message GetResponse {
+    bool success = 1;
+    string resultCode = 2;
+}
+
+message GetNotification {
+    bool success = 1;
+    string resultCode = 2;
+    string playerName = 3;
+    string target = 4;
+}
+
+message InventoryRequest {
+}
+
+message InventoryResponse {
+    bool success = 1;
+    string resultCode = 2;
+    repeated InventoryItem inventoryItems = 3;
+
+    message InventoryItem {
+        string id = 1;
+        string shortDescription = 2;
+        repeated int32 objectCategories = 3;
+    }
+}
+
+message LoginRequest {
+    string playerName = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    bool success = 1;
+    string resultCode = 2;
+    string playerName = 3;
+}
+
+message LogoutRequest {
+    string cause = 1;
+}
+
+message LogoutResponse {
+    bool success = 1;
+    string resultCode = 2;
+}
+
+message LookRequest {
+    repeated string valueList = 1;
+}
+
+message LookResponse {
+    bool success = 1;
+    string resultCode = 2;
+    RoomDescription roomDescription = 3;
+}
+
+message LookNotification {
+    bool success = 1;
+    string resultCode = 2;
+    RoomDescription roomDescription = 3;
+}
+
+message RoomDescription {
+    string name = 1;
+    string description = 2;
+    string exits = 3;
+    repeated string players = 4;
+    repeated string objects = 5;
+    repeated string  mobs = 6;
+}
+
+message MoveRequest {
+    int32 direction = 1;
+}
+
+message MoveResponse {
+    bool success = 1;
+    string resultCode = 2;
+    RoomDescription roomDescription = 3;
+}
+
+message EnterRoomNotification {
+    bool success = 1;
+    string resultCode = 2;
+    string name = 3;
+}
+
+message LeaveRoomNotification {
+    bool success = 1;
+    string resultCode = 2;
+    string name = 3;
+    int32 direction = 4;
+}
+
+message Ping {
+    string target = 1;
+}
+
+message Pong {
+    bool success = 1;
+    string resultCode = 2;
+    string target = 3;
+}
+
+message SayRequest {
+    string value = 1;
+}
+
+message SayResponse {
+    bool success = 1;
+    string resultCode = 2;
+    string value = 3;
+}
+
+message SayNotification {
+    bool success = 1;
+    string resultCode = 2;
+    string sender = 3;
+    string value = 4;
+}
+
+message TellRequest {
+    string receiverPlayerName = 1;
+    string value = 2;
+}
+
+message TellResponse {
+    bool success = 1;
+    string resultCode = 2;
+}
+
+message TellNotification {
+    bool success = 1;
+    string resultCode = 2;
+    string sender = 3;
+    string value = 4;
+}
+
+message TellAllRequest {
+    string value = 1;
+}
+
+message TellAllResponse {
+    bool success = 1;
+    string resultCode = 2;
+}
+
+message TellAllNotification {
+    bool success = 1;
+    string resultCode = 2;
+    string sender = 3;
+    string value = 4;
+}
+
+message WhoRequest {
+}
+
+message WhoResponse {
+    bool success = 1;
+    string resultCode = 2;
+    repeated PlayerInfo playerInfo = 3;
+
+    message PlayerInfo {
+        string playerName = 1;
+        string zoneName = 2;
+        string roomName = 3;
+    }
+
+}

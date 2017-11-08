@@ -1,26 +1,22 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
-	"github.com/trasa/watchmud/object"
 )
 
-func (w *World) handleInventory(msg *message.IncomingMessage) {
-	items := []message.InventoryDescription{}
+func (w *World) handleInventory(msg *gameserver.HandlerParameter) {
+	items := []*message.InventoryResponse_InventoryItem{}
 	for _, instPtr := range msg.Player.GetAllInventory() {
-		items = append(items, ObjectInstanceToDescription(instPtr))
+		items = append(items, &message.InventoryResponse_InventoryItem{
+			Id:               instPtr.Id(),
+			ShortDescription: instPtr.Definition.ShortDescription,
+			ObjectCategories: instPtr.Definition.Categories.ToInt32List(),
+		})
 	}
-	resp := message.InventoryResponse{
-		Response:       message.NewSuccessfulResponse("inv"),
+	msg.Player.Send(message.InventoryResponse{
+		Success:        true,
+		ResultCode:     "OK",
 		InventoryItems: items,
-	}
-	msg.Player.Send(resp)
-}
-
-func ObjectInstanceToDescription(item *object.Instance) message.InventoryDescription {
-	return message.InventoryDescription{
-		Id:               item.Id(),
-		ShortDescription: item.Definition.ShortDescription,
-		ObjectCategories: item.Definition.Categories.ToList(),
-	}
+	})
 }

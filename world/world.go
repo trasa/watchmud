@@ -2,7 +2,7 @@ package world
 
 import (
 	"github.com/trasa/watchmud/direction"
-	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/spaces"
@@ -21,7 +21,7 @@ type World struct {
 	playerRooms *PlayerRoomMap // player -> room; room -> players
 
 	mobileRooms *spaces.MobileRoomMap // mobile -> room; room -> mobiles
-	handlerMap  map[string]func(message *message.IncomingMessage)
+	handlerMap  map[string]func(message *gameserver.HandlerParameter)
 }
 
 // Constructor for World

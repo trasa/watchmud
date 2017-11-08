@@ -3,15 +3,24 @@ package world
 import (
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/trasa/watchmud/client"
+	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 	"testing"
 )
 
+func newInventoryRequestHandlerParameter(t *testing.T, c *client.TestClient) *gameserver.HandlerParameter {
+	msg, err := message.NewGameMessage(message.InventoryRequest{})
+	assert.NoError(t, err)
+	return gameserver.NewHandlerParameter(c, msg)
+}
+
 func TestInventory_success(t *testing.T) {
 	w := newTestWorld()
 	p := player.NewTestPlayer("guy")
+	c := client.NewTestClient(p)
 
 	defnPtr := object.NewDefinition("defnid", "name", "zone",
 		object.TREASURE, []string{}, "short desc", "in room")
@@ -19,16 +28,10 @@ func TestInventory_success(t *testing.T) {
 		InstanceId: uuid.NewV4(),
 		Definition: defnPtr,
 	}
-
 	p.AddInventory(instPtr)
 
-	msg := message.IncomingMessage{
-		Player: p,
-		Request: message.InventoryRequest{
-			Request: message.RequestBase{MessageType: "inv"},
-		},
-	}
-	w.handleInventory(&msg)
+	invHP := newInventoryRequestHandlerParameter(t, c)
+	w.handleInventory(invHP)
 
 	assert.Equal(t, 1, p.SentMessageCount())
 	resp := p.GetSentResponse(0).(message.InventoryResponse)

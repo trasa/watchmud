@@ -2,6 +2,7 @@ package message
 
 import "fmt"
 
+// TODO do we still need this?
 type UnknownMessageTypeError struct {
 	MessageType string
 }

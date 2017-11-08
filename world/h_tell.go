@@ -1,27 +1,25 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
 )
 
-func (w *World) handleTell(msg *message.IncomingMessage) {
-	tellRequest := msg.Request.(message.TellRequest)
+func (w *World) handleTell(msg *gameserver.HandlerParameter) {
+	tellRequest := msg.Message.GetTellRequest()
 	sender := msg.Player.GetName()
 	receiver := w.findPlayerByName(tellRequest.ReceiverPlayerName)
 	value := tellRequest.Value
 
 	if receiver == nil {
-		msg.Player.Send(message.TellResponse{
-			Response: message.NewUnsuccessfulResponse("tell", "TO_PLAYER_NOT_FOUND"),
-		})
+		msg.Player.Send(message.TellResponse{Success: false, ResultCode: "TO_PLAYER_NOT_FOUND"})
 	} else {
 		receiver.Send(message.TellNotification{
-			Response: message.NewSuccessfulResponse("tell_notification"),
-			Sender:   sender,
-			Value:    value,
+			Success:    true,
+			ResultCode: "OK",
+			Sender:     sender,
+			Value:      value,
 		})
-		msg.Player.Send(message.TellResponse{
-			Response: message.NewSuccessfulResponse("tell"),
-		})
+		msg.Player.Send(message.TellResponse{Success: true, ResultCode: "OK"})
 	}
 }

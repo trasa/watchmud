@@ -1,10 +1,21 @@
 package world
 
 import (
+	"github.com/stretchr/testify/assert"
+	"github.com/trasa/watchmud/client"
+	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/player"
 	"testing"
 )
+
+func newTellAllRequestHandlerParameter(t *testing.T, c *client.TestClient, value string) *gameserver.HandlerParameter {
+	msg, err := message.NewGameMessage(message.TellAllRequest{
+		Value: value,
+	})
+	assert.NoError(t, err)
+	return gameserver.NewHandlerParameter(c, msg)
+}
 
 func TestHandleTellAll_success(t *testing.T) {
 	w := newTestWorld()
@@ -12,35 +23,17 @@ func TestHandleTellAll_success(t *testing.T) {
 	otherPlayer := player.NewTestPlayer("other")
 	bobPlayer := player.NewTestPlayer("bob")
 	w.AddPlayer(senderPlayer, otherPlayer, bobPlayer)
+	c := client.NewTestClient(senderPlayer)
 
-	msg := message.IncomingMessage{
-		Player: senderPlayer,
-		Request: message.TellAllRequest{
-			Request: message.RequestBase{MessageType: "tell_all"},
-			Value:   "hi",
-		},
-	}
-
-	w.handleTellAll(&msg)
+	w.handleTellAll(newTellAllRequestHandlerParameter(t, c, "hi"))
 
 	// did we tell otherPlayer?
-	if otherPlayer.SentMessageCount() != 1 {
-		t.Error("otherPlayer should have gotten a message")
-	}
-	if bobPlayer.SentMessageCount() != 1 {
-		t.Error("bob should have gotten a message")
-	}
+	assert.Equal(t, 1, otherPlayer.SentMessageCount())
+	assert.Equal(t, 1, bobPlayer.SentMessageCount())
 	// sender should have gotten response but NOT part of the send to all players
-	if senderPlayer.SentMessageCount() != 1 {
-		t.Fatalf("sender received wrong number of messages: %d", senderPlayer.SentMessageCount())
-	}
-	senderResponse := senderPlayer.GetSentResponse(0).(message.Response)
-	if senderResponse.GetMessageType() != "tell_all" {
-		t.Errorf("incorrect sender response message type: %s", senderResponse.GetMessageType())
-	}
-	if !senderResponse.IsSuccessful() {
-		t.Error("sender response is not successful")
-	}
+	assert.Equal(t, 1, senderPlayer.SentMessageCount())
+	senderResponse := senderPlayer.GetSentResponse(0).(message.TellAllResponse)
+	assert.True(t, senderResponse.Success)
 }
 
 func TestHandleTellAll_noValue(t *testing.T) {
@@ -48,30 +41,16 @@ func TestHandleTellAll_noValue(t *testing.T) {
 	senderPlayer := player.NewTestPlayer("sender")
 	otherPlayer := player.NewTestPlayer("other")
 	w.AddPlayer(senderPlayer, otherPlayer)
+	c := client.NewTestClient(senderPlayer)
 
-	msg := message.IncomingMessage{
-		Player: senderPlayer,
-		Request: message.TellAllRequest{
-			Request: message.RequestBase{MessageType: "tell_all"},
-			Value:   "",
-		},
-	}
+	w.handleTellAll(newTellAllRequestHandlerParameter(t, c, ""))
 
-	w.handleTellAll(&msg)
+	// did we tell otherPlayer? (should be 0)
+	assert.Equal(t, 0, otherPlayer.SentMessageCount())
 
-	// did we tell otherPlayer?
-	if otherPlayer.SentMessageCount() != 0 {
-		t.Error("no send")
-	}
 	// sender should have gotten response but NOT part of the send to all players
-	if senderPlayer.SentMessageCount() != 1 {
-		t.Fatalf("sender received wrong number of messages: %d", senderPlayer.SentMessageCount())
-	}
-	senderResponse := senderPlayer.GetSentResponse(0).(message.Response)
-	if senderResponse.GetMessageType() != "tell_all" {
-		t.Errorf("incorrect sender response message type: %s", senderResponse.GetMessageType())
-	}
-	if senderResponse.IsSuccessful() {
-		t.Error("sender response should fail")
-	}
+	assert.Equal(t, 1, senderPlayer.SentMessageCount())
+
+	senderResponse := senderPlayer.GetSentResponse(0).(message.TellAllResponse)
+	assert.False(t, senderResponse.Success)
 }

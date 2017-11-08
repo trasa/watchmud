@@ -1,19 +1,18 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
 	"log"
 )
 
-func (w *World) handleGet(msg *message.IncomingMessage) {
+func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 	// for now, just 'get' the first target if it is given
 	// (multitarget stuff we'll deal with another time)
-	getreq := msg.Request.(message.GetRequest)
+	getreq := msg.Message.GetGetRequest()
 
 	if len(getreq.Targets) == 0 {
-		msg.Player.Send(message.GetResponse{
-			Response: message.NewUnsuccessfulResponse("get", "NO_TARGET"),
-		})
+		msg.Player.Send(message.GetResponse{Success: false, ResultCode: "NO_TARGET"})
 		return
 	}
 
@@ -26,9 +25,7 @@ func (w *World) handleGet(msg *message.IncomingMessage) {
 			// uh oh failed to add
 			log.Printf("Get: Error while getting, Player %s adding Inventory %s: %s",
 				msg.Player.GetName(), instPtr, err)
-			msg.Player.Send(message.GetResponse{
-				Response: message.NewUnsuccessfulResponse("get", "ADD_INVENTORY_ERROR"),
-			})
+			msg.Player.Send(message.GetResponse{Success: false, ResultCode: "ADD_INVENTORY_ERROR"})
 			return
 		}
 
@@ -37,20 +34,17 @@ func (w *World) handleGet(msg *message.IncomingMessage) {
 			// uh oh failed to remove from room
 			log.Printf("Get: Error while removing from room: Player %s Inventory %s: %s", msg.Player.GetName(), instPtr.Id(), err)
 			msg.Player.RemoveInventory(instPtr)
-			msg.Player.Send(message.GetResponse{
-				Response: message.NewUnsuccessfulResponse("get", "REMOVE_FROM_ROOM_ERROR"),
-			})
+			msg.Player.Send(message.GetResponse{Success: false, ResultCode: "REMOVE_FROM_ROOM_ERROR"})
 			return
 		}
 		// success!
-		msg.Player.Send(message.GetResponse{
-			Response: message.NewSuccessfulResponse("get"),
-		})
+		msg.Player.Send(message.GetResponse{Success: true, ResultCode: "OK"})
 
 		// tell everyone else in room too
 		room.SendExcept(msg.Player,
 			message.GetNotification{
-				Response:   message.NewSuccessfulResponse("get_notification"),
+				Success:    true,
+				ResultCode: "OK",
 				Target:     instPtr.Definition.Name, // what should be sent?! needs to handle various articles, plural...
 				PlayerName: msg.Player.GetName(),
 			})
@@ -58,8 +52,6 @@ func (w *World) handleGet(msg *message.IncomingMessage) {
 		return
 	} else {
 		// nothing here with that name
-		msg.Player.Send(message.GetResponse{
-			Response: message.NewUnsuccessfulResponse("get", "TARGET_NOT_FOUND"),
-		})
+		msg.Player.Send(message.GetResponse{Success: false, ResultCode: "TARGET_NOT_FOUND"})
 	}
 }

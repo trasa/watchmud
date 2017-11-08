@@ -2,10 +2,9 @@ package gameserver
 
 import (
 	"github.com/trasa/watchmud/client"
-	"github.com/trasa/watchmud/message"
 )
 
 type Instance interface {
-	Receive(message *message.IncomingMessage)
+	Receive(handlerParam *HandlerParameter)
 	Logout(c client.Client, cause string)
 }

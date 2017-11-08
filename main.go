@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/trasa/watchmud/rpc"
 	"github.com/trasa/watchmud/server"
 	"github.com/trasa/watchmud/web"
 )
@@ -10,7 +11,11 @@ func main() {
 	gameserver := server.NewGameServer()
 	go gameserver.Run()
 
-	web.Init(gameserver)
+	// grpc server
+	rpcServer := rpc.NewServer(gameserver)
+	go rpcServer.Run()
+
+	//web.Init(gameserver)
 	web.Start()
 
 	// tell everybody to quit

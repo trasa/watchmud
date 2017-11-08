@@ -1,10 +1,22 @@
 package world
 
 import (
+	"github.com/stretchr/testify/assert"
+	"github.com/trasa/watchmud/client"
+	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/player"
 	"testing"
 )
+
+func newTellRequestHandlerParameter(t *testing.T, c *client.TestClient, receiver string, value string) *gameserver.HandlerParameter {
+	msg, err := message.NewGameMessage(message.TellRequest{
+		ReceiverPlayerName: receiver,
+		Value:              value,
+	})
+	assert.NoError(t, err)
+	return gameserver.NewHandlerParameter(c, msg)
+}
 
 // tell receiver about it
 func TestHandleTell_success(t *testing.T) {
@@ -14,84 +26,39 @@ func TestHandleTell_success(t *testing.T) {
 	receiverPlayer := player.NewTestPlayer("receiver")
 	w.AddPlayer(receiverPlayer)
 	w.AddPlayer(senderPlayer)
-
-	msg := message.IncomingMessage{
-		Player: senderPlayer,
-		Request: message.TellRequest{
-			Request:            message.RequestBase{MessageType: "tell"},
-			ReceiverPlayerName: "receiver",
-			Value:              "hi",
-		},
-	}
+	c := client.NewTestClient(senderPlayer)
 
 	// act
-	w.handleTell(&msg)
+	w.handleTell(newTellRequestHandlerParameter(t, c, "receiver", "hi"))
 
 	// assert
 	// assert tell to receiver
-
-	if receiverPlayer.SentMessageCount() != 1 {
-		t.Errorf("expected receiver to get a message: %d", receiverPlayer.SentMessageCount())
-	}
+	assert.Equal(t, 1, receiverPlayer.SentMessageCount())
 	recdMessage := receiverPlayer.GetSentResponse(0).(message.TellNotification)
-	if recdMessage.Sender != senderPlayer.GetName() {
-		t.Errorf("Didn't get expected senderPlayer.Name: %s", recdMessage.Sender)
-	}
-	if recdMessage.GetMessageType() != "tell_notification" {
-		t.Errorf("MsgType wasn't tell: %s", recdMessage.GetMessageType())
-	}
-	if recdMessage.Value != "hi" {
-		t.Errorf("value wasn't hi: %s", recdMessage.Value)
-	}
+	assert.Equal(t, senderPlayer.GetName(), recdMessage.Sender)
+	assert.Equal(t, "hi", recdMessage.Value)
 
 	// assert tell-response to sender
-	if senderPlayer.SentMessageCount() != 1 {
-		t.Errorf("expected sender to get a response: %d", senderPlayer.SentMessageCount())
-	}
-	senderResponse := senderPlayer.GetSentResponse(0).(message.Response)
-	if senderResponse.GetMessageType() != "tell" {
-		t.Errorf("expected sender response tell: %s", senderResponse.GetMessageType())
-	}
-	if senderResponse.GetResultCode() != "OK" {
-		t.Errorf("expected sender response ok: %s", senderResponse.GetResultCode())
-	}
-	if !senderResponse.IsSuccessful() {
-		t.Error("expected sender response to be successful")
-	}
+	assert.Equal(t, 1, senderPlayer.SentMessageCount())
+	senderResponse := senderPlayer.GetSentResponse(0).(message.TellResponse)
+	assert.Equal(t, "OK", senderResponse.ResultCode)
+	assert.True(t, senderResponse.Success)
 }
 
 func TestHandleTell_receiverNotFound(t *testing.T) {
 	// arrange
 	w := newTestWorld()
 	senderPlayer := player.NewTestPlayer("sender")
+	c := client.NewTestClient(senderPlayer)
 	// note: receiver doesn't exist
 	w.AddPlayer(senderPlayer)
 
-	msg := message.IncomingMessage{
-		Player: senderPlayer,
-		Request: message.TellRequest{
-			Request:            message.RequestBase{MessageType: "tell"},
-			ReceiverPlayerName: "receiver",
-			Value:              "hi",
-		},
-	}
-
 	// act
-	w.handleTell(&msg)
+	w.handleTell(newTellRequestHandlerParameter(t, c, "receiver", "hi"))
 
 	// assert tell-response to sender
-	if senderPlayer.SentMessageCount() != 1 {
-		t.Error("expected sender to get a response")
-	}
-
-	senderResponse := senderPlayer.GetSentResponse(0).(message.Response)
-	if senderResponse.GetMessageType() != "tell" {
-		t.Errorf("sender response message type: %s", senderResponse.GetMessageType())
-	}
-	if senderResponse.GetResultCode() != "TO_PLAYER_NOT_FOUND" {
-		t.Errorf("sender response: %s", senderResponse.GetResultCode())
-	}
-	if senderResponse.IsSuccessful() {
-		t.Error("expected sender response to be a failure")
-	}
+	assert.Equal(t, 1, senderPlayer.SentMessageCount())
+	senderResponse := senderPlayer.GetSentResponse(0).(message.TellResponse)
+	assert.Equal(t, "TO_PLAYER_NOT_FOUND", senderResponse.ResultCode)
+	assert.False(t, senderResponse.Success)
 }

@@ -2,7 +2,7 @@ package object
 
 import "strings"
 
-type Category int
+type Category int32
 
 //go:generate stringer -type=Category
 const (
@@ -17,10 +17,10 @@ const (
 
 type CategorySet map[Category]bool
 
-func (cs CategorySet) ToList() (result []Category) {
+func (cs CategorySet) ToInt32List() (result []int32) {
 	for k, v := range cs {
 		if v {
-			result = append(result, k)
+			result = append(result, int32(k))
 		}
 	}
 	return
@@ -28,6 +28,13 @@ func (cs CategorySet) ToList() (result []Category) {
 
 func (cs CategorySet) Add(c Category) {
 	cs[c] = true
+}
+
+func IntsToCategories(rawcats []int32) (result []Category) {
+	for _, i := range rawcats {
+		result = append(result, Category(i))
+	}
+	return
 }
 
 func CategoriesToString(cats []Category) string {

@@ -1,18 +1,19 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/player"
 	"sort"
 )
 
-func (w *World) handleWho(msg *message.IncomingMessage) {
+func (w *World) handleWho(msg *gameserver.HandlerParameter) {
 	// in the future we'll need to split this up by
 	// rank, security, other things, but for now show
 	// everybody everything.
 
 	// playerName, (level, class, other things we don't have yet), zoneName, roomName
-	info := []message.WhoPlayerInfo{}
+	info := []*message.WhoResponse_PlayerInfo{}
 	w.playerList.Iter(func(p player.Player) {
 		r := w.getRoomContainingPlayer(p)
 		var zoneName, roomName string
@@ -20,7 +21,7 @@ func (w *World) handleWho(msg *message.IncomingMessage) {
 			zoneName = r.Zone.Name
 			roomName = r.Name
 		}
-		info = append(info, message.WhoPlayerInfo{
+		info = append(info, &message.WhoResponse_PlayerInfo{
 			PlayerName: p.GetName(),
 			ZoneName:   zoneName,
 			RoomName:   roomName,
@@ -33,7 +34,8 @@ func (w *World) handleWho(msg *message.IncomingMessage) {
 	})
 
 	msg.Player.Send(message.WhoResponse{
-		Response:   message.NewSuccessfulResponse("who"),
+		Success:    true,
+		ResultCode: "OK",
 		PlayerInfo: info,
 	})
 }

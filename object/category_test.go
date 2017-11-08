@@ -20,10 +20,10 @@ func TestCategorySet_ToList(t *testing.T) {
 	cs.Add(FOOD)
 	cs.Add(WEAPON)
 
-	list := cs.ToList()
-	assert.Contains(t, list, FOOD)
-	assert.Contains(t, list, WEAPON)
-	assert.NotContains(t, list, ARMOR)
+	list := cs.ToInt32List()
+	assert.Contains(t, list, int32(FOOD))
+	assert.Contains(t, list, int32(WEAPON))
+	assert.NotContains(t, list, int32(ARMOR))
 }
 
 func TestCategoriesToString(t *testing.T) {

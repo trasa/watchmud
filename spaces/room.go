@@ -48,9 +48,10 @@ func (r Room) String() string {
 func (r *Room) PlayerLeaves(p player.Player, dir direction.Direction) {
 	r.playerList.Remove(p)
 	r.Send(message.LeaveRoomNotification{
-		Response:  message.NewSuccessfulResponse("leave_room"),
-		Name:      p.GetName(),
-		Direction: dir,
+		Success:    true,
+		ResultCode: "OK",
+		Name:       p.GetName(),
+		Direction:  int32(dir),
 	})
 }
 
@@ -58,9 +59,10 @@ func (r *Room) MobileLeaves(mob *mobile.Instance, dir direction.Direction) {
 	//r.Mobs.Remove(mob)
 	r.mobs[mob] = false
 	r.Send(message.LeaveRoomNotification{
-		Response:  message.NewSuccessfulResponse("leave_room"),
-		Name:      mob.Definition.Name, // TODO figure out name here...
-		Direction: dir,
+		Success:    true,
+		ResultCode: "OK",
+		Name:       mob.Definition.Name, // TODO figure out name here...
+		Direction:  int32(dir),
 	})
 }
 
@@ -80,16 +82,18 @@ func (r *Room) GetPlayers() []player.Player {
 // Player enters a room. Tells other room residents about it.
 func (r *Room) PlayerEnters(p player.Player) {
 	r.Send(message.EnterRoomNotification{
-		Response: message.NewSuccessfulResponse("enter_room"),
-		Name:     p.GetName(),
+		Success:    true,
+		ResultCode: "OK",
+		Name:       p.GetName(),
 	})
 	r.AddPlayer(p)
 }
 
 func (r *Room) MobileEnters(mob *mobile.Instance) {
 	r.Send(message.EnterRoomNotification{
-		Response: message.NewSuccessfulResponse("enter_room"),
-		Name:     mob.Definition.Name,
+		Success:    true,
+		ResultCode: "OK",
+		Name:       mob.Definition.Name,
 	})
 	r.AddMobile(mob)
 }
@@ -121,7 +125,7 @@ func (r *Room) SendExcept(exception player.Player, msg interface{}) {
 }
 
 // Describe this room.
-func (r *Room) CreateRoomDescription(exclude player.Player) message.RoomDescription {
+func (r *Room) CreateRoomDescription(exclude player.Player) *message.RoomDescription {
 	desc := message.RoomDescription{
 		Name:        r.Name,
 		Description: r.Description,
@@ -143,7 +147,7 @@ func (r *Room) CreateRoomDescription(exclude player.Player) message.RoomDescript
 			desc.Mobs = append(desc.Mobs, mob.Definition.DescriptionInRoom)
 		}
 	}
-	return desc
+	return &desc
 }
 
 func (r *Room) AddInventory(inst *object.Instance) error {

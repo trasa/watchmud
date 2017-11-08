@@ -22,9 +22,10 @@ func NewTestPlayer(name string) *TestPlayer {
 	return p
 }
 
-func (p *TestPlayer) Send(msg interface{}) {
+func (p *TestPlayer) Send(msg interface{}) error {
 	log.Printf("sending for player %s", msg)
 	p.sent = append(p.sent, msg)
+	return nil
 }
 
 func (p *TestPlayer) SentMessageCount() int {

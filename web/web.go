@@ -3,7 +3,6 @@ package web
 import (
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
 	"html"
 	"log"
 	"net/http"
@@ -11,27 +10,12 @@ import (
 
 const port = 8888
 
-var upgrader = websocket.Upgrader{} // default options
-
 func index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/static/index.html", 302)
 }
 
 func someApi(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Some Api!! %q", html.EscapeString(r.URL.Path))
-}
-
-func mudsocket(w http.ResponseWriter, r *http.Request) {
-	c, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Printf("upgrade error: %s", err)
-		return
-	}
-	// new client object, add to clients and
-	// set up reader/writer
-	client := newClient(c)
-	go client.writePump()
-	client.readPump()
 }
 
 // Start Up the HttpServer
@@ -47,9 +31,6 @@ func Start() {
 
 	// TODO write an api...
 	router.HandleFunc("/api/v1", someApi)
-
-	// websocket handler
-	router.HandleFunc("/ws", mudsocket)
 
 	log.Printf("http listening on port %d", port)
 	http.Handle("/", router)

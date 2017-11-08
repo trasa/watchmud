@@ -1,15 +1,16 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
 	"log"
 )
 
-func (w *World) handleDrop(msg *message.IncomingMessage) {
-	dropReq := msg.Request.(message.DropRequest)
+func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
+	dropReq := msg.Message.GetDropRequest()
 	if dropReq.Target == "" {
 		msg.Player.Send(message.DropResponse{
-			Response: message.NewUnsuccessfulResponse("drop", "NO_TARGET"),
+			Success: false, ResultCode: "NO_TARGET",
 		})
 		return
 	}
@@ -25,7 +26,7 @@ func (w *World) handleDrop(msg *message.IncomingMessage) {
 				instPtr.Id(),
 				err)
 			msg.Player.Send(message.DropResponse{
-				Response: message.NewUnsuccessfulResponse("drop", "ADD_TO_ROOM_ERROR"),
+				Success: false, ResultCode: "ADD_TO_ROOM_ERROR",
 			})
 			return
 		}
@@ -40,26 +41,27 @@ func (w *World) handleDrop(msg *message.IncomingMessage) {
 
 			room.RemoveInventory(instPtr)
 			msg.Player.Send(message.DropResponse{
-				Response: message.NewUnsuccessfulResponse("drop", "REMOVE_FROM_PLAYER_ERROR"),
+				Success: false, ResultCode: "REMOVE_FROM_PLAYER_ERROR",
 			})
 			return
 		}
 
 		// success
 		msg.Player.Send(message.DropResponse{
-			Response: message.NewSuccessfulResponse("drop"),
+			Success: true, ResultCode: "OK",
 		})
 		// tell everybody about it
 		room.SendExcept(msg.Player,
 			message.DropNotification{
-				Response:   message.NewSuccessfulResponse("drop_notification"),
+				Success:    true,
+				ResultCode: "OK",
 				PlayerName: msg.Player.GetName(),
 				Target:     instPtr.Definition.Name, // what should this be?! "knife", "a knife", "those knives" ...
 			})
 	} else {
 		// not found
 		msg.Player.Send(message.DropResponse{
-			Response: message.NewUnsuccessfulResponse("drop", "TARGET_NOT_FOUND"),
+			Success: false, ResultCode: "TARGET_NOT_FOUND",
 		})
 	}
 }
