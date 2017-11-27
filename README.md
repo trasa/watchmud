@@ -2,14 +2,33 @@
 
 ### Really Simple Text-Based MUD engine
 
-I started out writing something in Go and using eJabber as a backbone.
-This was fun, but XMPP / Jabber has an awful lot of overhead. So this
-is the same idea, but using web sockets instead and trying to keep
-things simple...ish.
+This is a straightforward text MUD, written in Go and using gRPC instead
+of telnet. 
 
-## Building and Running the Server
+### History
 
-Makefile will compile and test the server:
+I started out writing something in Java and using eJabber for communication.
+This was fun, but XMPP has an awful lot of overhead and that turned into
+a lot of work. Also, Go seemed like a fun language to learn. So the Java
+code was scrapped for Go, and eventually the XMPP / eJabber implementation
+was scrapped for JSON over Web Sockets. The original client was a single
+web page app using JQuery, with the intention of replacing JQuery with 
+something better...
+
+I found that I was having to write a great amount of code translating
+JSON to Go structs and back, both on the server and in the client. So
+I replaced the JQuery web page with a Go Client application, 
+[watchmud-client](https://github.com/trasa/watchmud-client).
+
+But there was still too much serializing-deserializing code between
+client and server and websocket. So I replaced that with gRPC.
+
+What will I rewrite next??
+
+
+## Building the Server
+
+To compile, test the server::
 
     $ make
     
@@ -21,8 +40,7 @@ Settings and clever command line switches are still TODO, so for now
 
     $ ./watchmud
     
-Ctrl-C to terminate the server. There's also no console or anything yet,
-... also TODO.    
+Ctrl-C to terminate the server. 
 
 ## Building and running the Client
 
