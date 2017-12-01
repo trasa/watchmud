@@ -48,16 +48,6 @@ func (gs *GameServer) Run() {
 			tstart = now
 			pulse++
 			gs.heartbeat(pulse, deltaSeconds)
-
-			//log.Printf("duration is %f seconds", pulse.toDuration().Seconds())
-
-			// do something every 5 seconds
-			//if pulse.checkInterval(5 * time.Second) {
-			//	log.Printf("5 seconds")
-			//}
-			//if pulse.checkInterval(1 * time.Minute) {
-			//	log.Printf("1 minute")
-			//}
 		}
 	}
 }
@@ -72,15 +62,12 @@ func (gs *GameServer) heartbeat(pulse PulseCount, delta float64) {
 	// pulse zone
 	// (zone reset ...)
 	if pulse.checkInterval(PULSE_ZONE) {
-		log.Printf("pulse %d zone reset %s", pulse, time.Now())
-		// TODO
 		gs.World.DoZoneActivity()
 	}
 
 	// pulse mobs
 	// (mobs walk around, initiate attack?)
 	if pulse.checkInterval(PULSE_MOBILE) {
-		log.Printf("pulse %d do mobs %s", pulse, time.Now())
 		gs.World.DoMobileActivity()
 	}
 
@@ -117,30 +104,8 @@ func (gs *GameServer) processIncomingMessage() bool {
 		default:
 			gs.World.HandleIncomingMessage(msg)
 		}
-		/*
-			switch messageType := msg.Request.GetMessageType(); messageType {
-			case "login":
-				// login is special case, handled by server first and then
-				// sent down to world for further initialization
-				gs.handleLogin(msg) // TODO error handling
-
-				// TODO does the gameserver need to do anything on logout?
-
-			case "error":
-				// we received bad input, send response to client
-				// rather than processing message
-				msg.Client.Send(message.ErrorResponse{
-					Response: message.NewUnsuccessfulResponse("error", "TRANSLATE_ERROR"),
-					Error:    fmt.Sprintf("%s", msg.Request.(message.ErrorRequest).Error),
-				})
-
-			default:
-				gs.World.HandleIncomingMessage(msg)
-					}
-		*/
-
 	default:
-		//log.Printf("incoming message buffer is empty")
+		// do nothing
 	}
 	return received
 }

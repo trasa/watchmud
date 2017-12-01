@@ -50,11 +50,10 @@ func (w *World) doMobRandomWander(mob *mobile.Instance) error {
 	if mob.CheckWanderChance() {
 		dir := mobRoom.PickRandomDirection(true)
 		if dir == direction.NONE {
-			log.Printf("Mobile ID '%s' is in a room without exit and can't wander out of it.", mob.Definition.Id)
-			return nil
+			return errors.New(fmt.Sprintf("Mobile ID '%s' is in a room without exit and can't wander out of it.", mob.Definition.Id))
 		}
 		w.moveMobile(mob, dir, mobRoom, mobRoom.Get(dir))
-		log.Printf("World.doMobRandomWander: %s randomly wanders to %s", mob.Definition.Id, mobRoom.Get(dir))
+		//log.Printf("World.doMobRandomWander: %s randomly wanders to %s", mob.Definition.Id, mobRoom.Get(dir))
 	}
 	return nil
 }
@@ -78,7 +77,7 @@ func (w *World) doMobFollowPathWander(mob *mobile.Instance) error {
 			mob.WanderingForward = !mob.WanderingForward
 		}
 		w.moveMobile(mob, dir, mobRoom, mobRoom.Get(dir))
-		log.Printf("World.doMobFollowPathWander: %s moves to %s", mob.Definition.Id, mobRoom.Get(dir))
+		//log.Printf("World.doMobFollowPathWander: %s moves to %s", mob.Definition.Id, mobRoom.Get(dir))
 	}
 	return nil
 }

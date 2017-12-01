@@ -1,12 +1,13 @@
 package loader
 
 import (
+	"errors"
+	"fmt"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/spaces"
 	"github.com/trasa/watchmud/zonereset"
-	"log"
 	"time"
 )
 
@@ -74,6 +75,7 @@ func (wb *WorldBuilder) loadRooms() {
 	// central <-> north
 	// void.start -> void.north
 	// void.north -> void.start
+	// TODO print out the error message if err != nil
 	wb.connectRooms("sample", "start", direction.NORTH, "sample", "northRoom")
 	wb.connectRooms("sample", "northRoom", direction.SOUTH, "sample", "start")
 
@@ -91,29 +93,25 @@ func (wb *WorldBuilder) loadRooms() {
 
 }
 
-func (wb *WorldBuilder) connectRooms(sourceZoneId string, sourceRoomId string, dir direction.Direction, destZoneId string, destRoomId string) {
+func (wb *WorldBuilder) connectRooms(sourceZoneId string, sourceRoomId string, dir direction.Direction, destZoneId string, destRoomId string) error {
 	sourceZone := wb.zones[sourceZoneId]
 	if sourceZone == nil {
-		log.Printf("ConnectRooms failed: sourceZoneId '%s' not found", sourceZoneId)
-		return
+		return errors.New(fmt.Sprintf("connectRooms failed: sourceZoneId '%s' not found", sourceZoneId))
 	}
 	destZone := wb.zones[destZoneId]
 	if destZone == nil {
-		log.Printf("ConnectRooms failed: destZoneId '%s' not found", destZoneId)
-		return
+		return errors.New(fmt.Sprintf("connectRooms failed: destZoneId '%s' not found", destZoneId))
 	}
 	sourceRoom := sourceZone.Rooms[sourceRoomId]
-	log.Printf("source room is %s", sourceRoom)
 	if sourceRoom == nil {
-		log.Printf("ConnectRooms failed: zone %s sourceRoomId '%s' not found", sourceZoneId, sourceRoomId)
-		return
+		return errors.New(fmt.Sprintf("connectRooms failed: zone %s sourceRoomId '%s' not found", sourceZoneId, sourceRoomId))
 	}
 	destRoom := destZone.Rooms[destRoomId]
 	if destRoom == nil {
-		log.Printf("ConnectRooms failed: zone %s destRoomId '%s' not found", destZoneId, destRoomId)
-		return
+		return errors.New(fmt.Sprintf("ConnectRooms failed: zone %s destRoomId '%s' not found", destZoneId, destRoomId))
 	}
 	sourceRoom.Set(dir, destRoom)
+	return nil
 }
 func (wb *WorldBuilder) loadObjectDefinitions() {
 

@@ -2,8 +2,8 @@ package world
 
 import (
 	"github.com/trasa/watchmud/gameserver"
-	"log"
 	"github.com/trasa/watchmud/message"
+	"log"
 )
 
 func (w *World) handleLogout(msg *gameserver.HandlerParameter) {
@@ -13,7 +13,7 @@ func (w *World) handleLogout(msg *gameserver.HandlerParameter) {
 		w.RemovePlayer(msg.Player)
 		if playerRoom != nil {
 			playerRoom.Send(message.LogoutNotification{
-				Success: true,
+				Success:    true,
 				ResultCode: "OK",
 				PlayerName: msg.Player.GetName(),
 			})

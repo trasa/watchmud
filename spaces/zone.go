@@ -58,8 +58,8 @@ func (z *Zone) String() string {
 }
 
 func (z *Zone) Reset(mobileRoomMap *MobileRoomMap) (errors []error) {
+	log.Printf("Zone '%s': Reset", z.Name)
 	for _, cmd := range z.Commands {
-		log.Printf("Zone %s: Consider executing command: %s", z.Id, cmd)
 		switch cmd.(type) {
 		case CreateMobile:
 			var err error
@@ -78,7 +78,6 @@ func (z *Zone) Reset(mobileRoomMap *MobileRoomMap) (errors []error) {
 		}
 
 	}
-	log.Printf("zone %s: resetting time to now", z.Id)
 	z.LastReset = time.Now()
 	return nil
 }

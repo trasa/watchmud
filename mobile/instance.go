@@ -3,7 +3,6 @@ package mobile
 import (
 	"errors"
 	"fmt"
-	"log"
 	"math/rand"
 	"time"
 )
@@ -44,7 +43,7 @@ func (mob *Instance) CheckWanderChance() bool {
 
 func (mob *Instance) checkWanderChance(r *rand.Rand) bool {
 	chance := r.Float32()
-	log.Printf("mob '%s' chance of walking %f vs. %f", mob.Definition.Id, chance, mob.Definition.Wandering.CheckPercentage)
+	//log.Printf("mob '%s' chance of walking %f vs. %f", mob.Definition.Id, chance, mob.Definition.Wandering.CheckPercentage)
 	return chance < mob.Definition.Wandering.CheckPercentage
 }
 
@@ -52,7 +51,7 @@ func (mob *Instance) checkWanderChance(r *rand.Rand) bool {
 // returns error if we're not wandering on a path
 func (mob *Instance) GetIndexOnPath(currentRoom string) (int, error) {
 	if len(mob.Definition.Wandering.Path) == 0 {
-		return -1, errors.New("Mob not defined to be on a path")
+		return -1, errors.New("instance not defined to be on a path")
 	}
 	for i, s := range mob.Definition.Wandering.Path {
 		if s == currentRoom {
