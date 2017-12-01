@@ -44,6 +44,7 @@ message GameMessage {
 
         LogoutRequest logoutRequest = 160;
         LogoutResponse logoutResponse = 161;
+        LogoutNotification logoutNotification = 162;
 
         LookRequest lookRequest = 170;
         LookResponse lookResponse = 171;
@@ -161,6 +162,12 @@ message LogoutRequest {
 message LogoutResponse {
     bool success = 1;
     string resultCode = 2;
+}
+
+message LogoutNotification {
+    bool success = 1;
+    string resultCode = 2;
+    string playerName = 3;
 }
 
 message LookRequest {
