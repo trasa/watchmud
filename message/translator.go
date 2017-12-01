@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+// Parse line into tokens
+func Tokenize(line string) []string {
+	return strings.Fields(line)
+}
+
 // Turn a request of format type "line" into a Game Message
 //
 // have an input string like
@@ -14,11 +19,10 @@ import (
 // turn into Message.Inner = message.TellRequest { "bob", "hi there" }
 // and so on.
 // note that not all commands can be parsed from line input.
-func TranslateLineToMessage(line string) (msg *GameMessage, err error) {
+func TranslateLineToMessage(tokens []string) (msg *GameMessage, err error) {
 
 	var payload interface{}
 	// first parse into tokens
-	tokens := strings.Fields(line)
 	if len(tokens) == 0 {
 		log.Printf("no tokens")
 		payload = Ping{Target: "x"}

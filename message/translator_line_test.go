@@ -6,7 +6,7 @@ import (
 )
 
 func TestTranslate_NoOp(t *testing.T) {
-	msg, err := TranslateLineToMessage("")
+	msg, err := TranslateLineToMessage(Tokenize(""))
 
 	assert.NoError(t, err)
 	assert.IsType(t, &GameMessage_Ping{}, msg.GetInner())
@@ -14,7 +14,7 @@ func TestTranslate_NoOp(t *testing.T) {
 }
 
 func TestTranslate_Tell_shortest_message(t *testing.T) {
-	msg, err := TranslateLineToMessage("tell bob hello")
+	msg, err := TranslateLineToMessage(Tokenize("tell bob hello"))
 
 	assert.NoError(t, err)
 
@@ -24,7 +24,7 @@ func TestTranslate_Tell_shortest_message(t *testing.T) {
 }
 
 func TestTranslate_Tell(t *testing.T) {
-	msg, err := TranslateLineToMessage("tell bob hello there")
+	msg, err := TranslateLineToMessage(Tokenize("tell bob hello there"))
 
 	assert.NoError(t, err)
 
@@ -34,7 +34,7 @@ func TestTranslate_Tell(t *testing.T) {
 }
 
 func TestTranslate_Tell_shortcut(t *testing.T) {
-	msg, err := TranslateLineToMessage("t bob hello there")
+	msg, err := TranslateLineToMessage(Tokenize("t bob hello there"))
 
 	assert.NoError(t, err)
 
@@ -44,7 +44,7 @@ func TestTranslate_Tell_shortcut(t *testing.T) {
 }
 
 func TestTranslate_Tell_BadRequest(t *testing.T) {
-	msg, err := TranslateLineToMessage("tell bob")
+	msg, err := TranslateLineToMessage(Tokenize("tell bob"))
 
 	assert.Error(t, err)
 	assert.Nil(t, msg, "should be nil")
@@ -52,14 +52,14 @@ func TestTranslate_Tell_BadRequest(t *testing.T) {
 
 func TestTranslate_UnknownCommand(t *testing.T) {
 	cmd := "asdjhfaksjdfhjk"
-	msg, err := TranslateLineToMessage(cmd)
+	msg, err := TranslateLineToMessage(Tokenize(cmd))
 	assert.Nil(t, msg, "req should be nil")
 	assert.Error(t, err)
 	assert.Equal(t, "Unknown request: "+cmd, err.Error(), "err text")
 }
 
 func TestTranslate_TellAll(t *testing.T) {
-	msg, err := TranslateLineToMessage("tellall hello")
+	msg, err := TranslateLineToMessage(Tokenize("tellall hello"))
 
 	assert.NoError(t, err)
 	tellAllReq := msg.GetTellAllRequest()
@@ -67,7 +67,7 @@ func TestTranslate_TellAll(t *testing.T) {
 }
 
 func TestTranslate_TellAll_shortcut(t *testing.T) {
-	msg, err := TranslateLineToMessage("ta hello")
+	msg, err := TranslateLineToMessage(Tokenize("ta hello"))
 
 	assert.NoError(t, err)
 	tellAllReq := msg.GetTellAllRequest()
@@ -75,7 +75,7 @@ func TestTranslate_TellAll_shortcut(t *testing.T) {
 }
 
 func TestTranslate_TellAll_LongMessage(t *testing.T) {
-	msg, err := TranslateLineToMessage("ta a b c d e f g h i j k l m n o p  q r s t    u v")
+	msg, err := TranslateLineToMessage(Tokenize("ta a b c d e f g h i j k l m n o p  q r s t    u v"))
 
 	assert.NoError(t, err)
 	tellAllReq := msg.GetTellAllRequest()
@@ -83,7 +83,7 @@ func TestTranslate_TellAll_LongMessage(t *testing.T) {
 }
 
 func TestTranslate_Get_NoTarget(t *testing.T) {
-	msg, err := TranslateLineToMessage("get")
+	msg, err := TranslateLineToMessage(Tokenize("get"))
 
 	assert.NoError(t, err)
 	getreq := msg.GetGetRequest()
@@ -91,7 +91,7 @@ func TestTranslate_Get_NoTarget(t *testing.T) {
 }
 
 func TestTranslate_Get_OneTarget(t *testing.T) {
-	msg, err := TranslateLineToMessage("get foo")
+	msg, err := TranslateLineToMessage(Tokenize("get foo"))
 
 	assert.NoError(t, err)
 	getreq := msg.GetGetRequest()
@@ -100,7 +100,7 @@ func TestTranslate_Get_OneTarget(t *testing.T) {
 }
 
 func TestTranslate_Get_TwoTargets(t *testing.T) {
-	msg, err := TranslateLineToMessage("get foo bar")
+	msg, err := TranslateLineToMessage(Tokenize("get foo bar"))
 
 	assert.NoError(t, err)
 	getreq := msg.GetGetRequest()
