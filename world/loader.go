@@ -5,9 +5,11 @@ import (
 	"log"
 )
 
-func (w *World) initialLoad() {
-
-	w.zones = loader.BuildWorld()
+func (w *World) initialLoad(worldFilesDirectory string) (err error) {
+	w.zones, err = loader.BuildWorld(worldFilesDirectory)
+	if err != nil {
+		return err
+	}
 	settings := loader.LoadWorldSettings()
 
 	w.startRoom = w.zones[settings["start.zone"]].Rooms[settings["start.room"]]
@@ -25,4 +27,5 @@ func (w *World) initialLoad() {
 			log.Printf("Error running initial zone reset for %s: %s", zoneId, errs)
 		}
 	}
+	return nil
 }

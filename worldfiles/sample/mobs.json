@@ -1,0 +1,27 @@
+[
+  {
+    "id": "walker",
+    "name": "walker",
+    "short_description": "The Walker walks.",
+    "description_in_room": "The walker stands here...for now.",
+    "wandering_definition": {
+      "can_wander": true,
+      "check_frequency_seconds": 30,
+      "check_percentage": 50,
+      "wander_style": 1
+    }
+  },
+  {
+    "id": "scripty",
+    "name": "scripty",
+    "short_description": "Scripty thinks about things.",
+    "description_in_room": "Scripty is pondering something.",
+    "wandering_definition": {
+      "can_wander": true,
+      "check_frequency_seconds": 10,
+      "check_percentage": 100,
+      "wander_style": 2,
+      "path": [ "start", "northRoom", "northeastRoom", "eastRoom" ]
+    }
+  }
+]

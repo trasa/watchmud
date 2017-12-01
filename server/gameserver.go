@@ -25,11 +25,13 @@ type GameServer struct {
 	tickInterval   time.Duration
 }
 
-func NewGameServer() *GameServer {
-	return &GameServer{
+func NewGameServer(worldFilesDirectory string) (gs *GameServer, err error) {
+	w, err := world.New(worldFilesDirectory)
+	gs = &GameServer{
 		incomingBuffer: make(chan *gameserver.HandlerParameter),
-		World:          world.New(),
+		World:          w,
 	}
+	return
 }
 
 //noinspection SpellCheckingInspection

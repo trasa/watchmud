@@ -1,0 +1,17 @@
+[
+  {
+    "id": "fountain",
+    "name": "fountain",
+    "category": 6,
+    "aliases": ["fount"],
+    "short_description": "fountain",
+    "description_on_ground": "A fountain bubbles quietly."
+  },
+  {
+    "id": "knife",
+    "name": "knife",
+    "category": 0,
+    "short_description": "knife",
+    "description_on_ground": "A knife is on the ground."
+  }
+]

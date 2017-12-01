@@ -8,89 +8,97 @@ import (
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/spaces"
 	"github.com/trasa/watchmud/zonereset"
+	"path/filepath"
 	"time"
 )
 
 type WorldBuilder struct {
-	zones map[string]*spaces.Zone
+	zones         map[string]*spaces.Zone
+	worldFilesDir string
 }
 
-func BuildWorld() map[string]*spaces.Zone {
+// Build the world, using the files found under the worldFilesDirectory
+func BuildWorld(worldFilesDirectory string) (map[string]*spaces.Zone, error) {
 	worldBuilder := WorldBuilder{
-		zones: make(map[string]*spaces.Zone),
+		zones:         make(map[string]*spaces.Zone),
+		worldFilesDir: worldFilesDirectory,
 	}
 
-	worldBuilder.loadZoneManifest()
-	worldBuilder.loadRooms()
-	worldBuilder.loadObjectDefinitions()
-	worldBuilder.loadMobileDefinitions()
-	worldBuilder.loadZoneInstructions()
-	return worldBuilder.zones
+	if err := worldBuilder.loadZoneManifest(); err != nil {
+		return nil, err
+	}
+
+	if err := worldBuilder.loadRooms(); err != nil {
+		return nil, err
+	}
+
+	if err := worldBuilder.loadObjectDefinitions(); err != nil {
+		return nil, err
+	}
+
+	if err := worldBuilder.loadMobileDefinitions(); err != nil {
+		return nil, err
+	}
+
+	if err := worldBuilder.loadZoneInstructions(); err != nil {
+		return nil, err
+	}
+
+	return worldBuilder.zones, nil
 }
 
 // Retrieve the zone manifest; prepare the zone objects to be
 // populated by rooms, objects, mobiles (but don't process the
 // zone commands yet)
-func (wb *WorldBuilder) loadZoneManifest() {
+func (wb *WorldBuilder) loadZoneManifest() error {
 
-	// here, we'd look up something from the database, or something.
-	voidZone := spaces.NewZone("void", "The Void", zonereset.NEVER, 0)
-	wb.zones[voidZone.Id] = voidZone
-
-	zoneResetDuration := time.Minute * 3
-	sampleZone := spaces.NewZone("sample", "sample zone", zonereset.ALWAYS, zoneResetDuration)
-	wb.zones[sampleZone.Id] = sampleZone
+	zonemanifests, err := readZoneManifest(filepath.Join(wb.worldFilesDir, "zone_manifest.json"))
+	if err != nil {
+		return err
+	}
+	for _, manifest := range zonemanifests {
+		z := spaces.NewZone(manifest.Id, manifest.Name, zonereset.Mode(manifest.ResetMode), time.Minute*time.Duration(manifest.LifetimeMinutes))
+		wb.addZone(z)
+	}
+	return nil
 }
 
-func (wb *WorldBuilder) loadRooms() {
+// Read all the room files from all the zones
+func (wb *WorldBuilder) loadRooms() error {
 
-	// here, we'd look up something from the database...
+	// have to create all the room objects before we can
+	// create all the connections - so must store the
+	// information for later
+	roomMap := make(map[string][]roomFileEntry)
 
-	// The VOID. When you're not really in a room.
-	voidZone := wb.zones["void"]
-	voidZone.AddRoom(spaces.NewRoom(voidZone, "void", "The Void", "You see nothing but endless void."))
-	// void doesn't have any directions
+	for _, zonename := range wb.zoneNames() {
+		fileEntries, err := readRoomFile(filepath.Join(wb.worldFilesDir, zonename, "rooms.json"))
+		if err != nil {
+			return err
+		}
+		roomMap[zonename] = fileEntries
+		for _, roomEntry := range fileEntries {
+			r := spaces.NewRoom(wb.zones[zonename], roomEntry.Id, roomEntry.Name, roomEntry.Description)
+			wb.zones[zonename].AddRoom(r)
+		}
+	}
 
-	// zone "sample"
-	currentZone := wb.zones["sample"]
-	/*
-		  north -- northeast
-		   |         |
-		central -- east
-
-	*/
-	// central room (Start)
-	currentZone.AddRoom(spaces.NewRoom(currentZone, "start", "Central Portal", "It's a boring room, with boring stuff in it."))
-
-	// north room
-	currentZone.AddRoom(spaces.NewRoom(currentZone, "northRoom", "North Room", "This room is north of the start."))
-
-	// northeast
-	currentZone.AddRoom(spaces.NewRoom(currentZone, "northeastRoom", "North East Room", "It's north, and also East."))
-
-	// east
-	currentZone.AddRoom(spaces.NewRoom(currentZone, "eastRoom", "East Room", "This room is east of the start."))
-
-	// once all the rooms for the zones are created, we can wire the directions up
-	// central <-> north
-	// void.start -> void.north
-	// void.north -> void.start
-	// TODO print out the error message if err != nil
-	wb.connectRooms("sample", "start", direction.NORTH, "sample", "northRoom")
-	wb.connectRooms("sample", "northRoom", direction.SOUTH, "sample", "start")
-
-	// central <-> east
-	wb.connectRooms("sample", "start", direction.EAST, "sample", "eastRoom")
-	wb.connectRooms("sample", "eastRoom", direction.WEST, "sample", "start")
-
-	// north <-> northeast
-	wb.connectRooms("sample", "northRoom", direction.EAST, "sample", "northeastRoom")
-	wb.connectRooms("sample", "northeastRoom", direction.WEST, "sample", "northRoom")
-
-	// east <-> northeast
-	wb.connectRooms("sample", "eastRoom", direction.NORTH, "sample", "northeastRoom")
-	wb.connectRooms("sample", "northeastRoom", direction.SOUTH, "sample", "eastRoom")
-
+	// all the rooms are created, now can loop over and create
+	// all the connections
+	for zonename, roomEntries := range roomMap {
+		for _, roomEntry := range roomEntries {
+			for _, exitInfo := range roomEntry.Exits {
+				if err := wb.connectRooms(zonename,
+					roomEntry.Id,
+					direction.Direction(exitInfo.Direction),
+					exitInfo.DestinationZoneId,
+					exitInfo.DestinationRoomId); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func (wb *WorldBuilder) connectRooms(sourceZoneId string, sourceRoomId string, dir direction.Direction, destZoneId string, destRoomId string) error {
@@ -113,93 +121,92 @@ func (wb *WorldBuilder) connectRooms(sourceZoneId string, sourceRoomId string, d
 	sourceRoom.Set(dir, destRoom)
 	return nil
 }
-func (wb *WorldBuilder) loadObjectDefinitions() {
+
+func (wb *WorldBuilder) addZone(z *spaces.Zone) {
+	wb.zones[z.Id] = z
+}
+
+func (wb *WorldBuilder) zoneNames() (result []string) {
+	for k := range wb.zones {
+		result = append(result, k)
+	}
+	return
+}
+
+func (wb *WorldBuilder) loadObjectDefinitions() error {
 
 	// for each zone: create all object definitions
-	// lets put "something" in the central portal room
-	z := wb.zones["sample"]
-	z.AddObjectDefinition(object.NewDefinition(
-		"fountain",
-		"fountain",
-		z.Id,
-		object.OTHER,
-		[]string{"fount"},
-		"fountain",
-		"A fountain bubbles quietly."))
-
-	// that's not a knife....wait, yes it is.
-	z.AddObjectDefinition(object.NewDefinition(
-		"knife",
-		"knife",
-		z.Id,
-		object.WEAPON,
-		[]string{},
-		"knife",
-		"A knife is on the ground."))
-
+	for _, zonename := range wb.zoneNames() {
+		objEntries, err := readObjectFile(filepath.Join(wb.worldFilesDir, zonename, "objects.json"))
+		if err != nil {
+			return err
+		}
+		for _, obj := range objEntries {
+			wb.zones[zonename].AddObjectDefinition(
+				object.NewDefinition(obj.Id,
+					obj.Name,
+					zonename,
+					object.Category(obj.Category),
+					obj.Aliases,
+					obj.ShortDescription,
+					obj.DescriptionOnGround))
+		}
+	}
+	return nil
 }
 
-func (wb *WorldBuilder) loadMobileDefinitions() {
-	z := wb.zones["sample"]
+func (wb *WorldBuilder) loadMobileDefinitions() error {
 
-	// walker- somebody to walk around randomly
-	z.AddMobileDefinition(mobile.NewDefinition("walker",
-		"walker",
-		"sample",
-		[]string{},
-		"The Walker walks.",
-		"The walker stands here...for now.",
-		mobile.WanderingDefinition{
-			CanWander:       true,
-			CheckFrequency:  time.Second * 30, // check for movement every N seconds
-			CheckPercentage: 0.50,             // % chance of movement on each check
-			Style:           mobile.WANDER_RANDOM,
-		}))
-
-	// scripty -- scripted action in a mob
-	z.AddMobileDefinition(mobile.NewDefinition("scripty",
-		"scripty",
-		"sample",
-		[]string{},
-		"Scripty thinks about things.",
-		"Scripty is pondering something.",
-		mobile.WanderingDefinition{
-			CanWander:       true,
-			CheckFrequency:  time.Second * 10,
-			CheckPercentage: 1.0,
-			Style:           mobile.WANDER_FOLLOW_PATH,
-			Path:            []string{"start", "northRoom", "northeastRoom", "eastRoom"},
-		}))
+	for _, zonename := range wb.zoneNames() {
+		mobEntries, err := readMobFile(filepath.Join(wb.worldFilesDir, zonename, "mobs.json"))
+		if err != nil {
+			return err
+		}
+		for _, mob := range mobEntries {
+			wb.zones[zonename].AddMobileDefinition(
+				mobile.NewDefinition(mob.Id,
+					mob.Name,
+					zonename,
+					mob.Aliases,
+					mob.ShortDescription,
+					mob.DescriptionInRoom,
+					mobile.WanderingDefinition{
+						CanWander:       mob.WanderingDefinition.CanWander,
+						CheckFrequency:  time.Second * time.Duration(mob.WanderingDefinition.CheckFrequencySeconds),
+						CheckPercentage: float32(mob.WanderingDefinition.CheckPercentage) / 100.0,
+						Style:           mobile.WanderingStyle(mob.WanderingDefinition.WanderStyle),
+						Path:            mob.WanderingDefinition.Path,
+					}))
+		}
+	}
+	return nil
 }
 
-func (wb *WorldBuilder) loadZoneInstructions() {
-	z := wb.zones["sample"]
+func (wb *WorldBuilder) loadZoneInstructions() error {
 
-	// Object: put "fountain" instance in room "start", max of 1
-	z.AddCommand(spaces.CreateObject{
-		ObjectDefinitionId: "fountain",
-		RoomId:             "start",
-		InstanceMax:        1,
-	})
-
-	// Object: put "knife" instance in room "north", max of 1
-	z.AddCommand(spaces.CreateObject{
-		ObjectDefinitionId: "knife",
-		RoomId:             "northRoom",
-		InstanceMax:        1,
-	})
-
-	// Mob: put "walker" instance in room "start", max of 2
-	z.AddCommand(spaces.CreateMobile{
-		MobileDefinitionId: "walker",
-		RoomId:             "start",
-		InstanceMax:        2,
-	})
-
-	// Mob: put "scripty" instance in room "north", max of 1
-	z.AddCommand(spaces.CreateMobile{
-		MobileDefinitionId: "scripty",
-		RoomId:             "northRoom",
-		InstanceMax:        1,
-	})
+	for _, zonename := range wb.zoneNames() {
+		insts, err := readInstructionFile(filepath.Join(wb.worldFilesDir, zonename, "instructions.json"))
+		if err != nil {
+			return err
+		}
+		for _, entry := range insts {
+			switch entry.Type {
+			case "CreateObject":
+				wb.zones[zonename].AddCommand(spaces.CreateObject{
+					ObjectDefinitionId: entry.ObjectId,
+					RoomId:             entry.RoomId,
+					InstanceMax:        entry.InstanceMax,
+				})
+			case "CreateMobile":
+				wb.zones[zonename].AddCommand(spaces.CreateMobile{
+					MobileDefinitionId: entry.MobileId,
+					RoomId:             entry.RoomId,
+					InstanceMax:        entry.InstanceMax,
+				})
+			default:
+				return errors.New(fmt.Sprintf("Unhandled Instruction type: %s", entry.Type))
+			}
+		}
+	}
+	return nil
 }

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "void",
+    "name": "The Void",
+    "reset_mode": 0,
+    "lifetime_minutes": 0
+  },
+  {
+    "id": "sample",
+    "name": "Sample Zone",
+    "reset_mode": 2,
+    "lifetime_minutes": 3
+  }
+]

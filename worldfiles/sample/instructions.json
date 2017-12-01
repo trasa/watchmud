@@ -1,0 +1,26 @@
+[
+  {
+    "type": "CreateObject",
+    "object_id": "fountain",
+    "room_id": "start",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateObject",
+    "object_id": "knife",
+    "room_id": "northRoom",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "walker",
+    "room_id": "start",
+    "instance_max": 2
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "scripty",
+    "room_id": "northRoom",
+    "instance_max": 1
+  }
+]

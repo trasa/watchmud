@@ -9,13 +9,13 @@ import (
 type Direction int32
 
 const (
-	NONE Direction = iota
-	NORTH
-	EAST
-	SOUTH
-	WEST
-	UP
-	DOWN
+	NONE  Direction = iota // 0
+	NORTH                  // 1
+	EAST                   // 2
+	SOUTH                  // 3
+	WEST                   // 4
+	UP                     // 5
+	DOWN                   // 6
 )
 
 var oneLetterToDirection = map[string]Direction{

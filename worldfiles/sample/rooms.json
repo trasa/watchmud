@@ -1,0 +1,70 @@
+[
+  {
+    "id": "start",
+    "name": "Central Portal",
+    "description": "It's a boring room, with boring stuff in it.",
+    "exits": [
+      {
+        "direction": 1,
+        "dest_zone": "sample",
+        "dest_room": "northRoom"
+      },
+      {
+        "direction": 2,
+        "dest_zone": "sample",
+        "dest_room": "eastRoom"
+      }
+    ]
+  },
+  {
+    "id": "northRoom",
+    "name": "North Room",
+    "description": "This room is north of the start.",
+    "exits": [
+      {
+        "direction": 3,
+        "dest_zone": "sample",
+        "dest_room": "start"
+      },
+      {
+        "direction": 2,
+        "dest_zone": "sample",
+        "dest_room": "northeastRoom"
+      }
+    ]
+  },
+  {
+    "id": "northeastRoom",
+    "name": "North East Room",
+    "description": "This room is north, and also east.",
+    "exits": [
+      {
+        "direction": 4,
+        "dest_zone": "sample",
+        "dest_room": "northRoom"
+      },
+      {
+        "direction": 3,
+        "dest_zone": "sample",
+        "dest_room": "eastRoom"
+      }
+    ]
+  },
+  {
+    "id": "eastRoom",
+    "name": "East Room",
+    "description": "This room is east of the start.",
+    "exits": [
+      {
+        "direction": 4,
+        "dest_zone": "sample",
+        "dest_room": "start"
+      },
+      {
+        "direction": 1,
+        "dest_zone": "sample",
+        "dest_room": "northeastRoom"
+      }
+    ]
+  }
+]

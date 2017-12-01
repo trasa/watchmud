@@ -25,18 +25,21 @@ type World struct {
 }
 
 // Constructor for World
-func New() *World {
+func New(worldFilesDirectory string) (w *World, err error) {
 	// Build a very boring world.
-	w := World{
+	w = &World{
 		zones:       make(map[string]*spaces.Zone),
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
 		mobileRooms: spaces.NewMobileRoomMap(),
 	}
 	w.initializeHandlerMap()
-	w.initialLoad()
+	err = w.initialLoad(worldFilesDirectory)
 	log.Print("World built.")
-	return &w
+	if err != nil {
+		log.Printf("world.New: There were errors: %v", err)
+	}
+	return
 }
 
 // Add Player(s) to the world putting them in the start room,
