@@ -13,13 +13,11 @@ type server struct {
 	gameServerInstance gameserver.Instance
 }
 
-const PORT = 10000
-
 // Begin listening on address and port
-func (s *server) Run() {
+func (s *server) Run(port int) {
 	// TODO get from configuration
-	log.Printf("gRPC listening on port %d", PORT)
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", PORT))
+	log.Printf("gRPC listening on port %d", port)
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

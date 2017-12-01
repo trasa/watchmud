@@ -8,8 +8,6 @@ import (
 	"net/http"
 )
 
-const port = 8888
-
 func index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/static/index.html", 302)
 }
@@ -19,7 +17,7 @@ func someApi(w http.ResponseWriter, r *http.Request) {
 }
 
 // Start Up the HttpServer
-func Start() {
+func Start(port int) {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/", index)
