@@ -57,8 +57,10 @@ func (wb *WorldBuilder) loadZoneManifest() error {
 		return err
 	}
 	for _, manifest := range zonemanifests {
-		z := spaces.NewZone(manifest.Id, manifest.Name, zonereset.Mode(manifest.ResetMode), time.Minute*time.Duration(manifest.LifetimeMinutes))
-		wb.addZone(z)
+		if manifest.Enabled {
+			z := spaces.NewZone(manifest.Id, manifest.Name, zonereset.Mode(manifest.ResetMode), time.Minute*time.Duration(manifest.LifetimeMinutes))
+			wb.addZone(z)
+		}
 	}
 	return nil
 }

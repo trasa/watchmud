@@ -10,6 +10,7 @@ type zoneManifestFileEntry struct {
 	Name            string `json:"name"`
 	ResetMode       int    `json:"reset_mode"`
 	LifetimeMinutes int    `json:"lifetime_minutes"`
+	Enabled         bool   `json:"enabled"`
 }
 
 func readZoneManifest(filename string) ([]zoneManifestFileEntry, error) {
