@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import {Zone} from "../../../zone";
-import {ZONES} from "../../../mock-zones";
+import {Zone} from "../zone";
+import {ZONES} from "../mock-zones";
 
 @Component({
   selector: 'app-zones',

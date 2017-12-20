@@ -19,8 +19,8 @@ import { SolarComponent } from './solar/solar.component';
 import { PlayerComponent } from './rooms/player/player.component';
 import { TrafficComponent } from './traffic/traffic.component';
 import { TrafficChartComponent } from './traffic/traffic-chart.component';
-import { ZoneDetailComponent } from "./zone-detail/zone-detail.component";
-import { ZonesComponent } from "./zones/zones.component";
+import { ZoneDetailComponent } from "../../zone-detail/zone-detail.component";
+import { ZonesComponent } from "../../zones/zones.component";
 
 @NgModule({
   imports: [
