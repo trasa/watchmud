@@ -1,0 +1,6 @@
+<div *ngIf="zone">
+  <h2>{{ zone.name | uppercase }}</h2>
+  <label>id: <input [(ngModel)]="zone.id" placeholder="id"/></label>
+  <div><span>id: </span>{{zone.id}}</div>
+  <div><span>name: </span>{{zone.name}}</div>
+</div>

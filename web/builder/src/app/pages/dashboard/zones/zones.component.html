@@ -4,9 +4,4 @@
     <span>{{zone.id}}</span> {{zone.name}}
   </li>
 </ul>
-<div *ngIf="selectedZone">
-  <label>id: <input [(ngModel)]="selectedZone.id" placeholder="id"/></label>
-  <div><span>id: </span>{{selectedZone.id}}</div>
-  <div><span>name: </span>{{selectedZone.name}}</div>
-</div>
-
+<app-zone-detail [zone]="selectedZone"></app-zone-detail>
