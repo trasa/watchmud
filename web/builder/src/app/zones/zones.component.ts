@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {Zone} from "../zone";
-import {ZONES} from "../mock-zones";
+import { ZoneService } from '../zone.service';
 
 @Component({
   selector: 'app-zones',
@@ -8,7 +8,7 @@ import {ZONES} from "../mock-zones";
   styleUrls: ['./zones.component.scss']
 })
 export class ZonesComponent implements OnInit {
-  zones = ZONES;
+  zones: Zone[];
   selectedZone: Zone;
 
   zone: Zone = {
@@ -18,9 +18,14 @@ export class ZonesComponent implements OnInit {
     lifetimeMinutes: 0,
     enabled: true,
   };
-  constructor() { }
+  constructor(private zoneService: ZoneService) { }
 
   ngOnInit() {
+    this.loadZones();
+  }
+
+  loadZones(): void {
+    this.zones = this.zoneService.getZones();
   }
 
   onSelect(zone: Zone): void {

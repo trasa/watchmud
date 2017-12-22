@@ -21,6 +21,7 @@ import { TrafficComponent } from './traffic/traffic.component';
 import { TrafficChartComponent } from './traffic/traffic-chart.component';
 import { ZoneDetailComponent } from "../../zone-detail/zone-detail.component";
 import { ZonesComponent } from "../../zones/zones.component";
+import { ZoneService } from "../../zone.service";
 
 @NgModule({
   imports: [
@@ -48,5 +49,8 @@ import { ZonesComponent } from "../../zones/zones.component";
     ZonesComponent,
     ZoneDetailComponent
   ],
+  providers: [
+    ZoneService
+  ]
 })
 export class DashboardModule { }
