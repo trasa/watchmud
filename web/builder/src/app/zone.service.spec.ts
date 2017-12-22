@@ -5,7 +5,7 @@ import { ZoneService } from './zone.service';
 describe('ZoneService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ZoneService]
+      providers: [ZoneService],
     });
   });
 

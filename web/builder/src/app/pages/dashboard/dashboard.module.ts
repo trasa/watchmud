@@ -19,9 +19,9 @@ import { SolarComponent } from './solar/solar.component';
 import { PlayerComponent } from './rooms/player/player.component';
 import { TrafficComponent } from './traffic/traffic.component';
 import { TrafficChartComponent } from './traffic/traffic-chart.component';
-import { ZoneDetailComponent } from "../../zone-detail/zone-detail.component";
-import { ZonesComponent } from "../../zones/zones.component";
-import { ZoneService } from "../../zone.service";
+import { ZoneDetailComponent } from '../../zone-detail/zone-detail.component';
+import { ZonesComponent } from '../../zones/zones.component';
+import { ZoneService } from '../../zone.service';
 
 @NgModule({
   imports: [
@@ -47,10 +47,10 @@ import { ZoneService } from "../../zone.service";
     TrafficComponent,
     TrafficChartComponent,
     ZonesComponent,
-    ZoneDetailComponent
+    ZoneDetailComponent,
   ],
   providers: [
-    ZoneService
-  ]
+    ZoneService,
+  ],
 })
 export class DashboardModule { }
