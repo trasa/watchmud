@@ -13,15 +13,20 @@ import (
 )
 
 type WorldBuilder struct {
-	zones         map[string]*spaces.Zone
+	Zones         map[string]*spaces.Zone
+	Settings      *SettingsFile
 	worldFilesDir string
 }
 
 // Build the world, using the files found under the worldFilesDirectory
-func BuildWorld(worldFilesDirectory string) (map[string]*spaces.Zone, error) {
-	worldBuilder := WorldBuilder{
-		zones:         make(map[string]*spaces.Zone),
+func BuildWorld(worldFilesDirectory string) (*WorldBuilder, error) {
+	worldBuilder := &WorldBuilder{
+		Zones:         make(map[string]*spaces.Zone),
 		worldFilesDir: worldFilesDirectory,
+	}
+
+	if err := worldBuilder.loadSettings(); err != nil {
+		return nil, err
 	}
 
 	if err := worldBuilder.loadZoneManifest(); err != nil {
@@ -44,7 +49,16 @@ func BuildWorld(worldFilesDirectory string) (map[string]*spaces.Zone, error) {
 		return nil, err
 	}
 
-	return worldBuilder.zones, nil
+	return worldBuilder, nil
+}
+
+func (wb *WorldBuilder) loadSettings() error {
+	settings, err := readSettingsFile(filepath.Join(wb.worldFilesDir, "settings.json"))
+	if err != nil {
+		return err
+	}
+	wb.Settings = settings
+	return nil
 }
 
 // Retrieve the zone manifest; prepare the zone objects to be
@@ -80,8 +94,8 @@ func (wb *WorldBuilder) loadRooms() error {
 		}
 		roomMap[zonename] = fileEntries
 		for _, roomEntry := range fileEntries {
-			r := spaces.NewRoom(wb.zones[zonename], roomEntry.Id, roomEntry.Name, roomEntry.Description)
-			wb.zones[zonename].AddRoom(r)
+			r := spaces.NewRoom(wb.Zones[zonename], roomEntry.Id, roomEntry.Name, roomEntry.Description)
+			wb.Zones[zonename].AddRoom(r)
 			// If the direction zone/room doesn't indicate the zone,
 			// assume that the direction is to a zoome in the current zone
 			for _, exitInfo := range roomEntry.Exits {
@@ -111,11 +125,11 @@ func (wb *WorldBuilder) loadRooms() error {
 }
 
 func (wb *WorldBuilder) connectRooms(sourceZoneId string, sourceRoomId string, dir direction.Direction, destZoneId string, destRoomId string) error {
-	sourceZone := wb.zones[sourceZoneId]
+	sourceZone := wb.Zones[sourceZoneId]
 	if sourceZone == nil {
 		return errors.New(fmt.Sprintf("connectRooms failed: sourceZoneId '%s' not found", sourceZoneId))
 	}
-	destZone := wb.zones[destZoneId]
+	destZone := wb.Zones[destZoneId]
 	if destZone == nil {
 		return errors.New(fmt.Sprintf("connectRooms failed: destZoneId '%s' not found", destZoneId))
 	}
@@ -132,11 +146,11 @@ func (wb *WorldBuilder) connectRooms(sourceZoneId string, sourceRoomId string, d
 }
 
 func (wb *WorldBuilder) addZone(z *spaces.Zone) {
-	wb.zones[z.Id] = z
+	wb.Zones[z.Id] = z
 }
 
 func (wb *WorldBuilder) zoneNames() (result []string) {
-	for k := range wb.zones {
+	for k := range wb.Zones {
 		result = append(result, k)
 	}
 	return
@@ -151,7 +165,7 @@ func (wb *WorldBuilder) loadObjectDefinitions() error {
 			return err
 		}
 		for _, obj := range objEntries {
-			wb.zones[zonename].AddObjectDefinition(
+			wb.Zones[zonename].AddObjectDefinition(
 				object.NewDefinition(obj.Id,
 					obj.Name,
 					zonename,
@@ -172,7 +186,7 @@ func (wb *WorldBuilder) loadMobileDefinitions() error {
 			return err
 		}
 		for _, mob := range mobEntries {
-			wb.zones[zonename].AddMobileDefinition(
+			wb.Zones[zonename].AddMobileDefinition(
 				mobile.NewDefinition(mob.Id,
 					mob.Name,
 					zonename,
@@ -201,13 +215,13 @@ func (wb *WorldBuilder) loadZoneInstructions() error {
 		for _, entry := range insts {
 			switch entry.Type {
 			case "CreateObject":
-				wb.zones[zonename].AddCommand(spaces.CreateObject{
+				wb.Zones[zonename].AddCommand(spaces.CreateObject{
 					ObjectDefinitionId: entry.ObjectId,
 					RoomId:             entry.RoomId,
 					InstanceMax:        entry.InstanceMax,
 				})
 			case "CreateMobile":
-				wb.zones[zonename].AddCommand(spaces.CreateMobile{
+				wb.Zones[zonename].AddCommand(spaces.CreateMobile{
 					MobileDefinitionId: entry.MobileId,
 					RoomId:             entry.RoomId,
 					InstanceMax:        entry.InstanceMax,

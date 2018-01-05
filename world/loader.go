@@ -6,14 +6,15 @@ import (
 )
 
 func (w *World) initialLoad(worldFilesDirectory string) (err error) {
-	w.zones, err = loader.BuildWorld(worldFilesDirectory)
+	wb, err := loader.BuildWorld(worldFilesDirectory)
 	if err != nil {
 		return err
 	}
-	settings := loader.LoadWorldSettings()
+	w.zones = wb.Zones
+	settings := wb.Settings
 
-	w.startRoom = w.zones[settings["start.zone"]].Rooms[settings["start.room"]]
-	w.voidRoom = w.zones[settings["void.zone"]].Rooms[settings["void.room"]]
+	w.startRoom = w.zones[settings.StartZone].Rooms[settings.StartRoom]
+	w.voidRoom = w.zones[settings.VoidZone].Rooms[settings.VoidRoom]
 
 	// once everything is loaded, we can process the zone information
 	// which says which mob instances to load and where to put them,
