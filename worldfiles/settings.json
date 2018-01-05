@@ -1,6 +1,8 @@
 {
   "void.zone": "void",
   "void.zoom": "void",
-  "start.zone": "sample",
-  "start.room": "start"
+  "start.zone": "wrathrock",
+  "start.room": "temple_square",
+  "donation.zone": "wrathrock",
+  "donation.room": "donation_room"
 }
