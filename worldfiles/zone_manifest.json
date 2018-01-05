@@ -12,5 +12,12 @@
     "reset_mode": 2,
     "lifetime_minutes": 3,
     "enabled": true
+  },
+  {
+    "id":"wrathrock",
+    "name":"Wrathrock",
+    "reset_mode": 2,
+    "lifetime_minutes": 3,
+    "enabled": true
   }
 ]

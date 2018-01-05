@@ -82,6 +82,13 @@ func (wb *WorldBuilder) loadRooms() error {
 		for _, roomEntry := range fileEntries {
 			r := spaces.NewRoom(wb.zones[zonename], roomEntry.Id, roomEntry.Name, roomEntry.Description)
 			wb.zones[zonename].AddRoom(r)
+			// If the direction zone/room doesn't indicate the zone,
+			// assume that the direction is to a zoome in the current zone
+			for _, exitInfo := range roomEntry.Exits {
+				if exitInfo.DestinationZoneId == "" {
+					exitInfo.DestinationZoneId = zonename
+				}
+			}
 		}
 	}
 

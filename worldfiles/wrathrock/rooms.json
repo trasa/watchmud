@@ -1,0 +1,73 @@
+[
+  {
+    "id": "temple_square",
+    "name": "Temple Square",
+    "description": "The main square of the town. People come and go. East is a donation room, south is the marketplace.",
+    "exits": [
+      {
+        "direction": 2,
+        "dest_room": "donation_room"
+      },
+      {
+        "direction": 3,
+        "dest_room": "market_square"
+      }
+    ]
+  },
+  {
+    "id": "donation_room",
+    "name": "Donation Room",
+    "description": "Donations for needy adventurers can be found here.",
+    "exits": [
+      {
+        "direction": 4,
+        "dest_room": "temple_square"
+      }
+    ]
+  },
+  {
+    "id": "market_square",
+    "name": "Market Square",
+    "description": "The center of town, where people come to trade. To the east is the general store.",
+    "exits": [
+      {
+        "direction": 1,
+        "dest_room": "temple_square"
+      },
+      {
+        "direction": 2,
+        "dest_room": "general_store"
+      },
+      {
+        "direction": 3,
+        "dest_room": "south_gate"
+      }
+    ]
+  },
+  {
+    "id": "general_store",
+    "name": "General Store",
+    "description": "Empty shelves, empty counters. A store might be here some day, but not today.",
+    "exits": [
+      {
+        "direction": 4,
+        "dest_room": "market_square"
+      },
+      {
+        "direction": 2,
+        "dest_room": "general_store"
+      }
+    ]
+  },
+  {
+    "id": "south_gate",
+    "name": "South Gate",
+    "description": "The gate to the southern wastes.",
+    "exits": [
+      {
+        "direction": 1,
+        "dest_room": "market_square"
+      }
+    ]
+  }
+]

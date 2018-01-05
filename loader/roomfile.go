@@ -6,10 +6,10 @@ import (
 )
 
 type roomFileEntry struct {
-	Id          string               `json:"id"`
-	Name        string               `json:"name"`
-	Description string               `json:"description"`
-	Exits       []roomFileEntryExits `json:"exits"`
+	Id          string                `json:"id"`
+	Name        string                `json:"name"`
+	Description string                `json:"description"`
+	Exits       []*roomFileEntryExits `json:"exits"`
 }
 
 type roomFileEntryExits struct {
