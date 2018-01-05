@@ -13,6 +13,11 @@
         "direction": 2,
         "dest_zone": "sample",
         "dest_room": "eastRoom"
+      },
+      {
+        "direction": 3,
+        "dest_zone": "wrathrock",
+        "dest_room": "temple_square"
       }
     ]
   },

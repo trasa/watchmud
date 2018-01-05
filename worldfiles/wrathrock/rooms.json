@@ -5,6 +5,11 @@
     "description": "The main square of the town. People come and go. East is a donation room, south is the marketplace.",
     "exits": [
       {
+        "direction": 1,
+        "dest_zone": "sample",
+        "dest_room": "start"
+      },
+      {
         "direction": 2,
         "dest_room": "donation_room"
       },
