@@ -23,5 +23,14 @@
       "wander_style": 2,
       "path": [ "start", "northRoom", "northeastRoom", "eastRoom" ]
     }
+  },
+  {
+    "id": "ratman",
+    "name": "ratman",
+    "short_description": "Ratman glares at you.",
+    "description_in_room": "Ratman glares at you.",
+    "wandering_definition": {
+      "can_wander": false
+    }
   }
 ]
