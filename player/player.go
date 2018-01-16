@@ -16,4 +16,6 @@ type Player interface {
 	GetInventoryByName(definitionId string) (*object.Instance, bool)
 	GetInventoryById(id uuid.UUID) (*object.Instance, bool)
 	GetAllInventory() []*object.Instance
+	GetEquippedPrimaryWeapon() *object.Instance
+	SetEquippedPrimaryWeapon(*object.Instance) error
 }

@@ -15,6 +15,9 @@ type Instance struct {
 func (i *Instance) Id() string {
 	return i.InstanceId.String()
 }
+func (i *Instance) CanEquipWeapon() bool {
+	return i.Definition.CanEquipWeapon()
+}
 
 func NewInstance(defn *Definition) *Instance {
 	return &Instance{

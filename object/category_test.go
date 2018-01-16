@@ -36,3 +36,11 @@ func TestCategoriesToString(t *testing.T) {
 	// empty slice
 	assert.Equal(t, "", CategoriesToString([]Category{}))
 }
+
+func TestCategorySet_Contains(t *testing.T) {
+	cs := make(CategorySet)
+	cs.Add(WEAPON)
+
+	assert.True(t, cs.Contains(WEAPON))
+	assert.False(t, cs.Contains(FOOD))
+}

@@ -46,3 +46,8 @@ func (d *Definition) Identifier() string {
 func (d *Definition) AddCategory(cat Category) {
 	d.Categories.Add(cat)
 }
+
+func (d *Definition) CanEquipWeapon() bool {
+	// for now, you can equip this if it is a weapon
+	return d.Categories.Contains(WEAPON)
+}

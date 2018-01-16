@@ -30,6 +30,10 @@ func (cs CategorySet) Add(c Category) {
 	cs[c] = true
 }
 
+func (cs CategorySet) Contains(c Category) bool {
+	return cs[c]
+}
+
 func IntsToCategories(rawcats []int32) (result []Category) {
 	for _, i := range rawcats {
 		result = append(result, Category(i))

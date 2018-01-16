@@ -8,9 +8,10 @@ import (
 )
 
 type TestPlayer struct {
-	name      string
-	sent      []interface{}
-	inventory thing.Map
+	name          string
+	sent          []interface{}
+	inventory     thing.Map
+	primaryWeapon *object.Instance
 }
 
 // create a new test player that can track sent messages through 'sentmessages'
@@ -70,4 +71,16 @@ func (p *TestPlayer) AddInventory(instance *object.Instance) error {
 
 func (p *TestPlayer) RemoveInventory(instance *object.Instance) error {
 	return p.inventory.Remove(instance)
+}
+
+func (p *TestPlayer) GetEquippedPrimaryWeapon() *object.Instance {
+	return p.primaryWeapon
+}
+
+// Warning: this doesn't check anything at all, and will
+// set primary weapon to whatever you tell it even if that makes
+// no sense.
+func (p *TestPlayer) SetEquippedPrimaryWeapon(weapon *object.Instance) error {
+	p.primaryWeapon = weapon
+	return nil
 }

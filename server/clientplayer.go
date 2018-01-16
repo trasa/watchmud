@@ -9,9 +9,10 @@ import (
 )
 
 type ClientPlayer struct {
-	Name      string
-	Client    client.Client `json:"-"`
-	inventory thing.Map     // TODO replace with something better...
+	Name          string
+	Client        client.Client `json:"-"`
+	inventory     thing.Map     // TODO replace with something better...
+	primaryWeapon *object.Instance
 }
 
 // Create a ClientPlayer connected to a new TestClient
@@ -75,4 +76,27 @@ func (p *ClientPlayer) AddInventory(instance *object.Instance) error {
 
 func (p *ClientPlayer) RemoveInventory(instance *object.Instance) error {
 	return p.inventory.Remove(instance)
+}
+
+func (p *ClientPlayer) GetEquippedPrimaryWeapon() *object.Instance {
+	return p.primaryWeapon
+}
+
+func (p *ClientPlayer) SetEquippedPrimaryWeapon(weapon *object.Instance) error {
+	// do you have this in your inventory?
+	if _, exists := p.inventory.Get(weapon.Id()); !exists {
+		return &object.InstanceNotFoundError{Id: weapon.Id()}
+	}
+
+	// is it already being used somewhere else?
+	// TODO
+
+	// is this instance valid to be a primary weapon?
+	if !weapon.CanEquipWeapon() {
+		return &object.InstanceNotWeaponError{Id: weapon.Id()}
+	}
+
+	// make it so
+	p.primaryWeapon = weapon
+	return nil
 }
