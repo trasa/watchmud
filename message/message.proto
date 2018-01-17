@@ -1,13 +1,5 @@
 syntax = "proto3";
 
-/* NEXT TODO !!
-convert comm.proto over to message, replace all the message types with
-their protobuf desecribed components!
-
-then can get rid of some of the translate stuff, begin moving
-everything over to gRPC.
-*/
-
 package message;
 
 // services
