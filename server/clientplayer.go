@@ -10,8 +10,8 @@ import (
 
 type ClientPlayer struct {
 	Name      string
-	Client    client.Client `json:"-"`
-	inventory thing.Map     // TODO replace with something better...
+	Client    client.Client
+	inventory thing.Map
 }
 
 // Create a ClientPlayer connected to a new TestClient
