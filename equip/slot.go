@@ -9,9 +9,9 @@ type Slot int32
 
 //go:generate stringer -type=Slot
 const (
-	NONE Slot = iota
-	PRIMARY_HAND
-	SECONDARY_HAND
+	None Slot = iota
+	PrimaryHand
+	SecondaryHand
 )
 
 type Slots struct {
@@ -26,7 +26,7 @@ func NewSlots() *Slots {
 }
 
 func (slots Slots) Get(s Slot) *object.Instance {
-	if s == NONE {
+	if s == None {
 		return nil
 	}
 	return slots.slotMap[s]
@@ -50,7 +50,7 @@ func (slots Slots) Set(s Slot, obj *object.Instance) error {
 
 func verifyObjectForSlot(s Slot, obj *object.Instance) error {
 	switch s {
-	case PRIMARY_HAND, SECONDARY_HAND:
+	case PrimaryHand, SecondaryHand:
 		// is this instance valid to be a primary weapon?
 		if !obj.CanEquipWeapon() {
 			return &object.InstanceNotWeaponError{Id: obj.Id()}

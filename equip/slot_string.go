@@ -4,9 +4,9 @@ package equip
 
 import "fmt"
 
-const _Slot_name = "NONEPRIMARY_HANDSECONDARY_HAND"
+const _Slot_name = "NonePrimaryHandSecondaryHand"
 
-var _Slot_index = [...]uint8{0, 4, 16, 30}
+var _Slot_index = [...]uint8{0, 4, 15, 28}
 
 func (i Slot) String() string {
 	if i < 0 || i >= Slot(len(_Slot_index)-1) {

@@ -39,7 +39,7 @@ func (suite *SlotsSuite) TestSetEquippedPrimaryWeapon() {
 		Definition: object.NewDefinition("weapon", "weapon", "zone", object.WEAPON, []string{}, "weapon", "weapon"),
 	}
 	suite.slotInventory.m.Add(weaponInst)
-	err := suite.slots.Set(PRIMARY_HAND, weaponInst)
+	err := suite.slots.Set(PrimaryHand, weaponInst)
 	assert.NoError(suite.T(), err)
 }
 
@@ -49,7 +49,7 @@ func (suite *SlotsSuite) TestSetEquippedSecondaryWeapon() {
 		Definition: object.NewDefinition("weapon", "weapon", "zone", object.WEAPON, []string{}, "weapon", "weapon"),
 	}
 	suite.slotInventory.m.Add(weaponInst)
-	err := suite.slots.Set(SECONDARY_HAND, weaponInst)
+	err := suite.slots.Set(SecondaryHand, weaponInst)
 	assert.NoError(suite.T(), err)
 }
 
@@ -58,7 +58,7 @@ func (suite *SlotsSuite) TestCantEquipYouDontHaveOne() {
 		InstanceId: uuid.NewV4(),
 		Definition: object.NewDefinition("nothere", "nothere", "zone", object.WEAPON, []string{}, "youdonthaveone", "youdonthaveone"),
 	}
-	assert.IsType(suite.T(), &object.InstanceNotFoundError{}, suite.slots.Set(PRIMARY_HAND, youdonthaveoneInst))
+	assert.IsType(suite.T(), &object.InstanceNotFoundError{}, suite.slots.Set(PrimaryHand, youdonthaveoneInst))
 }
 
 func (suite *SlotsSuite) TestNotEquipableWeapon() {
@@ -69,6 +69,6 @@ func (suite *SlotsSuite) TestNotEquipableWeapon() {
 	suite.slotInventory.m.Add(cantequipthat)
 
 	// that isn't a weapon
-	assert.IsType(suite.T(), &object.InstanceNotWeaponError{}, suite.slots.Set(PRIMARY_HAND, cantequipthat))
-	assert.IsType(suite.T(), &object.InstanceNotWeaponError{}, suite.slots.Set(SECONDARY_HAND, cantequipthat))
+	assert.IsType(suite.T(), &object.InstanceNotWeaponError{}, suite.slots.Set(PrimaryHand, cantequipthat))
+	assert.IsType(suite.T(), &object.InstanceNotWeaponError{}, suite.slots.Set(SecondaryHand, cantequipthat))
 }
