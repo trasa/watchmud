@@ -3,6 +3,7 @@ package player
 import (
 	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/thing"
 )
 
 // see https://play.golang.org/p/zPLyr3ZOM0 (first attempt)
@@ -16,6 +17,5 @@ type Player interface {
 	GetInventoryByName(definitionId string) (*object.Instance, bool)
 	GetInventoryById(id uuid.UUID) (*object.Instance, bool)
 	GetAllInventory() []*object.Instance
-	GetEquippedPrimaryWeapon() *object.Instance
-	SetEquippedPrimaryWeapon(*object.Instance) error
+	Inventory() thing.Map
 }

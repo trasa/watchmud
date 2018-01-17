@@ -65,6 +65,10 @@ func (p *TestPlayer) GetAllInventory() (result []*object.Instance) {
 	return
 }
 
+func (p *TestPlayer) Inventory() thing.Map {
+	return p.inventory
+}
+
 func (p *TestPlayer) AddInventory(instance *object.Instance) error {
 	return p.inventory.Add(instance)
 }

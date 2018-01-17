@@ -38,33 +38,3 @@ func (suite *ClientPlayerSuite) TestAddInventory_New() {
 	assert.Equal(suite.T(), instPtr.Id(), obj.Id())
 	assert.Equal(suite.T(), "defnid", obj.Definition.Identifier())
 }
-
-func (suite *ClientPlayerSuite) TestSetEquippedPrimaryWeapon() {
-	weaponInst := &object.Instance{
-		InstanceId: uuid.NewV4(),
-		Definition: object.NewDefinition("weapon", "weapon", "zone", object.WEAPON, []string{}, "weapon", "weapon"),
-	}
-	suite.player.AddInventory(weaponInst)
-
-	// success
-	assert.NoError(suite.T(), suite.player.SetEquippedPrimaryWeapon(weaponInst))
-}
-
-func (suite *ClientPlayerSuite) TestCantEquipYouDontHaveOne() {
-	youdonthaveoneInst := &object.Instance{
-		InstanceId: uuid.NewV4(),
-		Definition: object.NewDefinition("nothere", "nothere", "zone", object.WEAPON, []string{}, "youdonthaveone", "youdonthaveone"),
-	}
-	assert.IsType(suite.T(), &object.InstanceNotFoundError{}, suite.player.SetEquippedPrimaryWeapon(youdonthaveoneInst))
-}
-
-func (suite *ClientPlayerSuite) TestNotEquipableWeapon() {
-	cantequipthat := &object.Instance{
-		InstanceId: uuid.NewV4(),
-		Definition: object.NewDefinition("treasure", "treasure", "zone", object.TREASURE, []string{}, "treasure", "treasure"),
-	}
-	suite.player.AddInventory(cantequipthat)
-
-	// that isn't a weapon
-	assert.IsType(suite.T(), &object.InstanceNotWeaponError{}, suite.player.SetEquippedPrimaryWeapon(cantequipthat))
-}
