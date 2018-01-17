@@ -71,7 +71,7 @@ func TestRoom_PickRandomDirection(t *testing.T) {
 
 	dir = center.PickRandomDirection(false)
 	if !(dir == direction.NORTH || dir == direction.SOUTH) {
-		t.Errorf("expected NORTH or SOUTH but found %s", dir)
+		t.Errorf("expected NORTH or SOUTH but found %d", dir)
 	}
 }
 

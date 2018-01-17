@@ -23,7 +23,7 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 		// add to player
 		if err := msg.Player.AddInventory(instPtr); err != nil {
 			// uh oh failed to add
-			log.Printf("Get: Error while getting, Player %s adding Inventory %s: %s",
+			log.Printf("Get: Error while getting, Player %s adding Inventory %v: %s",
 				msg.Player.GetName(), instPtr, err)
 			msg.Player.Send(message.GetResponse{Success: false, ResultCode: "ADD_INVENTORY_ERROR"})
 			return

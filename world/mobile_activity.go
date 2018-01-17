@@ -123,7 +123,7 @@ func getNextDirectionOnPath(mob *mobile.Instance, mobRoom *spaces.Room) (dir dir
 		}
 	}
 	if dir == direction.NONE {
-		return direction.NONE, false, errors.New(fmt.Sprintf("Couldn't find destination room %s from current room exits %s", roomToFind, mobRoom.GetRoomExits(false)))
+		return direction.NONE, false, errors.New(fmt.Sprintf("Couldn't find destination room %s from current room exits %v", roomToFind, mobRoom.GetRoomExits(false)))
 	}
 	return
 }
