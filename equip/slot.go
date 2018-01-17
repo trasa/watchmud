@@ -19,9 +19,10 @@ type Slots struct {
 	inv     Inventoryer
 }
 
-func NewSlots() *Slots {
+func NewSlots(inv Inventoryer) *Slots {
 	return &Slots{
 		slotMap: make(map[Slot]*object.Instance),
+		inv: inv,
 	}
 }
 
@@ -40,8 +41,7 @@ func (slots Slots) Set(s Slot, obj *object.Instance) error {
 	// is it already being used somewhere else?
 	// TODO
 
-	err := verifyObjectForSlot(s, obj)
-	if err != nil {
+	if err := verifyObjectForSlot(s, obj); err != nil {
 		return err
 	}
 	slots.slotMap[s] = obj
