@@ -18,6 +18,9 @@ message GameMessage {
         DropResponse dropResponse = 101;
         DropNotification dropNotification = 102;
 
+        EquipRequest equipRequest = 105;
+        EquipResponse equipResponse = 106;
+
         ErrorRequest errorRequest = 110;
         ErrorResponse errorResponse = 111;
 
@@ -79,6 +82,15 @@ message DropNotification {
     string resultCode = 2;
     string playerName = 3;
     string target = 4;
+}
+
+message EquipRequest {
+    string target = 1;
+}
+
+message EquipResponse {
+    bool success = 1;
+    string resultCode = 2;
 }
 
 message ErrorRequest {
@@ -283,5 +295,4 @@ message WhoResponse {
         string zoneName = 2;
         string roomName = 3;
     }
-
 }
