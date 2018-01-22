@@ -4,6 +4,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/slot"
 	"testing"
 )
 
@@ -25,7 +26,7 @@ func TestRoomInventory_Empty(t *testing.T) {
 func TestRoomInventory_AddOne(t *testing.T) {
 	ri := NewRoomInventory()
 
-	defn := object.NewDefinition("id", "name", "zoneid", object.OTHER, []string{}, "short desc", "on ground")
+	defn := object.NewDefinition("id", "name", "zoneid", object.OTHER, []string{}, "short desc", "on ground", slot.None)
 	inst := object.NewInstance(defn)
 
 	ri.Add(inst)
@@ -46,7 +47,7 @@ func TestRoomInventory_AddOne(t *testing.T) {
 func TestRoomInventory_AddMany(t *testing.T) {
 	ri := NewRoomInventory()
 
-	defn := object.NewDefinition("id", "name", "zoneid", object.OTHER, []string{}, "short desc", "on ground")
+	defn := object.NewDefinition("id", "name", "zoneid", object.OTHER, []string{}, "short desc", "on ground", slot.None)
 	instOne := object.NewInstance(defn)
 	instTwo := object.NewInstance(defn)
 
@@ -76,7 +77,7 @@ func TestRoomInventory_AddMany(t *testing.T) {
 func TestRoomInventory_Remove(t *testing.T) {
 	ri := NewRoomInventory()
 
-	defn := object.NewDefinition("id", "name", "zoneid", object.OTHER, []string{}, "short desc", "on ground")
+	defn := object.NewDefinition("id", "name", "zoneid", object.OTHER, []string{}, "short desc", "on ground", slot.None)
 	inst := object.NewInstance(defn)
 
 	assert.NoError(t, ri.Add(inst))
@@ -96,7 +97,7 @@ func TestRoomInventory_Remove(t *testing.T) {
 func TestRoomInventory_RemoveEmpty(t *testing.T) {
 	ri := NewRoomInventory()
 
-	defn := object.NewDefinition("id", "name", "zoneid", object.OTHER, []string{}, "short desc", "on ground")
+	defn := object.NewDefinition("id", "name", "zoneid", object.OTHER, []string{}, "short desc", "on ground", slot.None)
 	inst := object.NewInstance(defn)
 
 	assert.Error(t, ri.Remove(inst))

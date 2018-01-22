@@ -8,6 +8,7 @@ import (
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/slot"
 	"testing"
 )
 
@@ -23,7 +24,7 @@ func TestInventory_success(t *testing.T) {
 	c := client.NewTestClient(p)
 
 	defnPtr := object.NewDefinition("defnid", "name", "zone",
-		object.TREASURE, []string{}, "short desc", "in room")
+		object.TREASURE, []string{}, "short desc", "in room", slot.None)
 	instPtr := &object.Instance{
 		InstanceId: uuid.NewV4(),
 		Definition: defnPtr,

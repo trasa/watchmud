@@ -6,6 +6,7 @@ import (
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/slot"
 	"github.com/trasa/watchmud/spaces"
 	"github.com/trasa/watchmud/zonereset"
 	"path/filepath"
@@ -172,7 +173,8 @@ func (wb *WorldBuilder) loadObjectDefinitions() error {
 					object.Category(obj.Category),
 					obj.Aliases,
 					obj.ShortDescription,
-					obj.DescriptionOnGround))
+					obj.DescriptionOnGround,
+					slot.Location(obj.WearLocation)))
 		}
 	}
 	return nil

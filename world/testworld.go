@@ -3,6 +3,7 @@ package world
 import (
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/slot"
 	"github.com/trasa/watchmud/spaces"
 )
 
@@ -33,7 +34,8 @@ func newTestWorld() *World {
 		object.WEAPON,
 		[]string{},
 		"knife",
-		"A knife is on the ground.")
+		"A knife is on the ground.",
+		slot.None)
 	knifeObj := object.NewInstance(knifeDefn)
 	testRoom.AddInventory(knifeObj)
 

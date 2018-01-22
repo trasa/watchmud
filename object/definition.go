@@ -1,5 +1,7 @@
 package object
 
+import "github.com/trasa/watchmud/slot"
+
 // Definition of what it means to be an "object"
 // the "platonic form" of an object, if you will.
 //
@@ -14,13 +16,14 @@ type Definition struct {
 	ShortDescription    string // description of the object when being used: "a long, green stick" -> "The Beastly Fido picks up the long, green stick."
 	DescriptionOnGround string // description of the object when lying on the ground: "A shiny sword is lying here."
 	ZoneId              string
+	WearLocation        slot.Location
 }
 
 func BuildDefinitionId(zoneId string, definition string) string {
 	return zoneId + ":" + definition
 }
 
-func NewDefinition(definitionId string, name string, zoneId string, category Category, aliases []string, shortDescription string, descriptionOnGround string) *Definition {
+func NewDefinition(definitionId string, name string, zoneId string, category Category, aliases []string, shortDescription string, descriptionOnGround string, wearLocation slot.Location) *Definition {
 	d := &Definition{
 		id:                  definitionId,
 		Name:                name,
@@ -29,6 +32,7 @@ func NewDefinition(definitionId string, name string, zoneId string, category Cat
 		Categories:          make(map[Category]bool),
 		Aliases:             aliases,
 		ZoneId:              zoneId,
+		WearLocation:        wearLocation,
 	}
 	d.AddCategory(category)
 	return d

@@ -1,41 +1,32 @@
-package equip
+package object
 
 import (
-	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/slot"
 	"github.com/trasa/watchmud/thing"
 )
 
-type Slot int32
-
-//go:generate stringer -type=Slot
-const (
-	None Slot = iota
-	PrimaryHand
-	SecondaryHand
-)
-
 type Slots struct {
-	slotMap map[Slot]*object.Instance
+	slotMap map[slot.Location]*Instance
 	inv     Inventoryer
 }
 
 func NewSlots(inv Inventoryer) *Slots {
 	return &Slots{
-		slotMap: make(map[Slot]*object.Instance),
-		inv: inv,
+		slotMap: make(map[slot.Location]*Instance),
+		inv:     inv,
 	}
 }
 
-func (slots Slots) Get(s Slot) *object.Instance {
-	if s == None {
+func (slots Slots) Get(s slot.Location) *Instance {
+	if s == slot.None {
 		return nil
 	}
 	return slots.slotMap[s]
 }
 
-func (slots Slots) Set(s Slot, obj *object.Instance) error {
+func (slots Slots) Set(s slot.Location, obj *Instance) error {
 	if _, exists := slots.inv.Inventory().Get(obj.Id()); !exists {
-		return &object.InstanceNotFoundError{Id: obj.Id()}
+		return &InstanceNotFoundError{Id: obj.Id()}
 	}
 
 	// is it already being used somewhere else?
@@ -48,12 +39,12 @@ func (slots Slots) Set(s Slot, obj *object.Instance) error {
 	return nil
 }
 
-func verifyObjectForSlot(s Slot, obj *object.Instance) error {
+func verifyObjectForSlot(s slot.Location, obj *Instance) error {
 	switch s {
-	case PrimaryHand, SecondaryHand:
+	case slot.PrimaryHand, slot.SecondaryHand:
 		// is this instance valid to be a primary weapon?
 		if !obj.CanEquipWeapon() {
-			return &object.InstanceNotWeaponError{Id: obj.Id()}
+			return &InstanceNotWeaponError{Id: obj.Id()}
 		}
 	}
 	return nil
