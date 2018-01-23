@@ -3,6 +3,7 @@ package loader
 import (
 	"errors"
 	"fmt"
+	"github.com/trasa/watchmud/behavior"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
@@ -171,15 +172,25 @@ func (wb *WorldBuilder) loadObjectDefinitions() error {
 			if err != nil {
 				return err
 			}
-			wb.Zones[zonename].AddObjectDefinition(
-				object.NewDefinition(obj.Id,
-					obj.Name,
-					zonename,
-					cat,
-					obj.Aliases,
-					obj.ShortDescription,
-					obj.DescriptionOnGround,
-					slot.Location(obj.WearLocation)))
+
+			d := object.NewDefinition(obj.Id,
+				obj.Name,
+				zonename,
+				cat,
+				obj.Aliases,
+				obj.ShortDescription,
+				obj.DescriptionOnGround,
+				slot.Location(obj.WearLocation))
+
+			for _, bstr := range obj.Behaviors {
+				if b, err := behavior.StringToBehavior(bstr); err != nil {
+					return err
+				} else {
+					d.Behaviors.Add(b)
+				}
+			}
+
+			wb.Zones[zonename].AddObjectDefinition(d)
 		}
 	}
 	return nil

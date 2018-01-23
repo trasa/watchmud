@@ -20,6 +20,14 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 	if instPtr, ok := room.GetInventoryByName(getreq.Targets[0]); ok {
 		// target is in room
 
+		if !instPtr.IsGettable() {
+			msg.Player.Send(message.GetResponse{
+				Success: false,
+				ResultCode: "NO_TAKE",
+			})
+			return
+		}
+
 		// add to player
 		if err := msg.Player.AddInventory(instPtr); err != nil {
 			// uh oh failed to add

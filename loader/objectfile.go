@@ -14,6 +14,7 @@ type objectFileEntry struct {
 	ShortDescription    string   `json:"short_description"`
 	DescriptionOnGround string   `json:"description_on_ground"`
 	WearLocation        int      `json:"wear_location"`
+	Behaviors           []string `json:"behaviors"`
 }
 
 func readObjectFile(filename string) ([]objectFileEntry, error) {

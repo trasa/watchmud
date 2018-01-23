@@ -5,7 +5,8 @@
     "category": "OTHER",
     "aliases": ["fount"],
     "short_description": "fountain",
-    "description_on_ground": "A fountain bubbles quietly."
+    "description_on_ground": "A fountain bubbles quietly.",
+    "behaviors": [ "NoTake" ]
   },
   {
     "id": "knife",

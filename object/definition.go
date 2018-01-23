@@ -1,6 +1,9 @@
 package object
 
-import "github.com/trasa/watchmud/slot"
+import (
+	"github.com/trasa/watchmud/behavior"
+	"github.com/trasa/watchmud/slot"
+)
 
 // Definition of what it means to be an "object"
 // the "platonic form" of an object, if you will.
@@ -17,6 +20,7 @@ type Definition struct {
 	DescriptionOnGround string // description of the object when lying on the ground: "A shiny sword is lying here."
 	ZoneId              string
 	WearLocation        slot.Location
+	Behaviors           behavior.BehaviorSet
 }
 
 func BuildDefinitionId(zoneId string, definition string) string {
@@ -29,10 +33,11 @@ func NewDefinition(definitionId string, name string, zoneId string, category Cat
 		Name:                name,
 		ShortDescription:    shortDescription,
 		DescriptionOnGround: descriptionOnGround,
-		Categories:          make(map[Category]bool),
+		Categories:          make(CategorySet),
 		Aliases:             aliases,
 		ZoneId:              zoneId,
 		WearLocation:        wearLocation,
+		Behaviors:           behavior.NewBehaviorSet(),
 	}
 	d.AddCategory(category)
 	return d

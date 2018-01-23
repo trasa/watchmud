@@ -1,6 +1,9 @@
 package object
 
-import "github.com/satori/go.uuid"
+import (
+	"github.com/satori/go.uuid"
+	"github.com/trasa/watchmud/behavior"
+)
 
 // The Instances of the Definitions in the world around you.
 // That ShinySword in your hand has certain properties, some of
@@ -17,6 +20,10 @@ func (i *Instance) Id() string {
 }
 func (i *Instance) CanEquipWeapon() bool {
 	return i.Definition.CanEquipWeapon()
+}
+
+func (i *Instance) IsGettable() bool {
+	return !i.Definition.Behaviors.Contains(behavior.NoTake)
 }
 
 func NewInstance(defn *Definition) *Instance {
