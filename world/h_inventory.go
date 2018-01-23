@@ -6,7 +6,7 @@ import (
 )
 
 func (w *World) handleInventory(msg *gameserver.HandlerParameter) {
-	items := []*message.InventoryResponse_InventoryItem{}
+	var items []*message.InventoryResponse_InventoryItem
 	for _, instPtr := range msg.Player.GetAllInventory() {
 		items = append(items, &message.InventoryResponse_InventoryItem{
 			Id:               instPtr.Id(),

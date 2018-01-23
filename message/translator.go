@@ -39,6 +39,9 @@ func TranslateLineToMessage(tokens []string) (msg *GameMessage, err error) {
 				Target: tokens[1],
 			}
 
+		case "equipment", "equip":
+			payload = ShowEquipmentRequest{}
+
 		case "exits", "exit", "ex":
 			payload = ExitsRequest{}
 

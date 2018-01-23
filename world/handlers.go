@@ -8,19 +8,20 @@ import (
 
 func (w *World) initializeHandlerMap() {
 	w.handlerMap = map[string]func(parameter *gameserver.HandlerParameter){
-		"GameMessage_DropRequest":      w.handleDrop,
-		"GameMessage_EquipRequest": 	w.handleEquip,
-		"GameMessage_ExitsRequest":     w.handleExits,
-		"GameMessage_GetRequest":       w.handleGet,
-		"GameMessage_InventoryRequest": w.handleInventory,
-		"GameMessage_LogoutRequest":    w.handleLogout,
-		"GameMessage_LookRequest":      w.handleLook,
-		"GameMessage_MoveRequest":      w.handleMove,
-		"GameMessage_PingRequest":      w.handlePing,
-		"GameMessage_SayRequest":       w.handleSay,
-		"GameMessage_TellRequest":      w.handleTell,
-		"GameMessage_TellAllRequest":   w.handleTellAll,
-		"GameMessage_WhoRequest":       w.handleWho,
+		"GameMessage_DropRequest":          w.handleDrop,
+		"GameMessage_EquipRequest":         w.handleEquip,
+		"GameMessage_ExitsRequest":         w.handleExits,
+		"GameMessage_GetRequest":           w.handleGet,
+		"GameMessage_InventoryRequest":     w.handleInventory,
+		"GameMessage_LogoutRequest":        w.handleLogout,
+		"GameMessage_LookRequest":          w.handleLook,
+		"GameMessage_MoveRequest":          w.handleMove,
+		"GameMessage_PingRequest":          w.handlePing,
+		"GameMessage_SayRequest":           w.handleSay,
+		"GameMessage_ShowEquipmentRequest": w.handleShowEquipment,
+		"GameMessage_TellRequest":          w.handleTell,
+		"GameMessage_TellAllRequest":       w.handleTellAll,
+		"GameMessage_WhoRequest":           w.handleWho,
 	}
 	return
 }

@@ -54,6 +54,9 @@ message GameMessage {
         SayResponse sayResponse = 191;
         SayNotification sayNotification = 192;
 
+        ShowEquipmentRequest showEquipmentRequest = 196;
+        ShowEquipmentResponse showEquipmentResponse = 197;
+
         TellRequest tellRequest = 200;
         TellResponse tellResponse = 201;
         TellNotification tellNotification = 202;
@@ -248,6 +251,21 @@ message SayNotification {
     string resultCode = 2;
     string sender = 3;
     string value = 4;
+}
+
+message ShowEquipmentRequest {
+}
+
+message ShowEquipmentResponse {
+    bool success = 1;
+    string resultCode = 2;
+    repeated EquipmentInfo equipmentInfo = 3;
+
+    message EquipmentInfo {
+        int32 slotLocation = 1;
+        string id = 2;
+        string shortDescription = 3;
+    }
 }
 
 message TellRequest {
