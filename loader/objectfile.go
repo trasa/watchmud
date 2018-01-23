@@ -9,7 +9,7 @@ import (
 type objectFileEntry struct {
 	Id                  string   `json:"id"`
 	Name                string   `json:"name"`
-	Category            int      `json:"category"`
+	Category            string   `json:"category"`
 	Aliases             []string `json:"aliases"`
 	ShortDescription    string   `json:"short_description"`
 	DescriptionOnGround string   `json:"description_on_ground"`

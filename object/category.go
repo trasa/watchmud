@@ -1,12 +1,17 @@
 package object
 
-import "strings"
+import (
+	"errors"
+	"fmt"
+	"strings"
+)
 
 type Category int32
 
 //go:generate stringer -type=Category
 const (
-	WEAPON Category = iota
+	NONE Category = iota
+	WEAPON
 	WAND
 	STAFF
 	TREASURE
@@ -51,4 +56,22 @@ func CategoriesToString(cats []Category) string {
 		}
 		return strings.Join(strs, ", ")
 	}
+}
+
+func StringToCategory(categoryName string) (Category, error) {
+	if categoryName == "" {
+		return NONE, errors.New("categoryName is required")
+	}
+	stridx := strings.Index(_Category_name, categoryName)
+	if stridx < 0 {
+		return NONE, fmt.Errorf("category '%s' not found", categoryName)
+	}
+
+	for pos, catidx := range _Category_index {
+		if stridx == int(catidx) {
+			return Category(pos), nil
+		}
+	}
+	// shouldn't happen?
+	return NONE, fmt.Errorf("could not find index %d for category '%s'", stridx, categoryName)
 }

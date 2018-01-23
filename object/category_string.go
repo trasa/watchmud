@@ -4,9 +4,9 @@ package object
 
 import "fmt"
 
-const _Category_name = "WEAPONWANDSTAFFTREASUREARMORFOODOTHER"
+const _Category_name = "NONEWEAPONWANDSTAFFTREASUREARMORFOODOTHER"
 
-var _Category_index = [...]uint8{0, 6, 10, 15, 23, 28, 32, 37}
+var _Category_index = [...]uint8{0, 4, 10, 14, 19, 27, 32, 36, 41}
 
 func (i Category) String() string {
 	if i < 0 || i >= Category(len(_Category_index)-1) {

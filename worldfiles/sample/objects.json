@@ -2,7 +2,7 @@
   {
     "id": "fountain",
     "name": "fountain",
-    "category": 6,
+    "category": "OTHER",
     "aliases": ["fount"],
     "short_description": "fountain",
     "description_on_ground": "A fountain bubbles quietly."
@@ -10,7 +10,7 @@
   {
     "id": "knife",
     "name": "knife",
-    "category": 0,
+    "category": "WEAPON",
     "short_description": "knife",
     "description_on_ground": "A knife is on the ground."
   }

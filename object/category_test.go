@@ -44,3 +44,26 @@ func TestCategorySet_Contains(t *testing.T) {
 	assert.True(t, cs.Contains(WEAPON))
 	assert.False(t, cs.Contains(FOOD))
 }
+
+func TestStringToCategory(t *testing.T) {
+	runTest := func(c Category) {
+		result, err := StringToCategory(c.String())
+		assert.NoError(t, err)
+		assert.Equal(t, c, result)
+	}
+
+	runTest(NONE)
+	runTest(WEAPON)
+	runTest(WAND)
+	runTest(STAFF)
+	runTest(TREASURE)
+	runTest(ARMOR)
+	runTest(FOOD)
+	runTest(OTHER)
+
+	_, err := StringToCategory("")
+	assert.Error(t, err)
+
+	_, err = StringToCategory("asdflkjas")
+	assert.Error(t, err)
+}

@@ -166,11 +166,16 @@ func (wb *WorldBuilder) loadObjectDefinitions() error {
 			return err
 		}
 		for _, obj := range objEntries {
+			// translate category string to category int
+			cat, err := object.StringToCategory(obj.Category)
+			if err != nil {
+				return err
+			}
 			wb.Zones[zonename].AddObjectDefinition(
 				object.NewDefinition(obj.Id,
 					obj.Name,
 					zonename,
-					object.Category(obj.Category),
+					cat,
 					obj.Aliases,
 					obj.ShortDescription,
 					obj.DescriptionOnGround,
