@@ -3,6 +3,7 @@ package message
 import (
 	"errors"
 	"github.com/trasa/watchmud/direction"
+	"github.com/trasa/watchmud/slot"
 	"log"
 	"strings"
 )
@@ -89,6 +90,16 @@ func TranslateLineToMessage(tokens []string) (msg *GameMessage, err error) {
 				}
 			} else {
 				err = errors.New("usage: tellall [something]")
+			}
+
+		case "wield":
+			if len(tokens) >= 2 {
+				payload = EquipRequest{
+					Target:       tokens[1],
+					SlotLocation: int32(slot.Wield),
+				}
+			} else {
+				err = errors.New("What do you want to wield?")
 			}
 
 		case "who":

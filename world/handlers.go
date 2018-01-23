@@ -9,6 +9,7 @@ import (
 func (w *World) initializeHandlerMap() {
 	w.handlerMap = map[string]func(parameter *gameserver.HandlerParameter){
 		"GameMessage_DropRequest":      w.handleDrop,
+		"GameMessage_EquipRequest": 	w.handleEquip,
 		"GameMessage_ExitsRequest":     w.handleExits,
 		"GameMessage_GetRequest":       w.handleGet,
 		"GameMessage_InventoryRequest": w.handleInventory,

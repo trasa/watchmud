@@ -4,9 +4,9 @@ package slot
 
 import "fmt"
 
-const _Location_name = "NonePrimaryHandSecondaryHand"
+const _Location_name = "NoneWieldHold"
 
-var _Location_index = [...]uint8{0, 4, 15, 28}
+var _Location_index = [...]uint8{0, 4, 9, 13}
 
 func (i Location) String() string {
 	if i < 0 || i >= Location(len(_Location_index)-1) {

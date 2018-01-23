@@ -86,6 +86,7 @@ message DropNotification {
 
 message EquipRequest {
     string target = 1;
+    int32 slotLocation = 2;
 }
 
 message EquipResponse {

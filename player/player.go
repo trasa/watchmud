@@ -18,4 +18,5 @@ type Player interface {
 	GetInventoryById(id uuid.UUID) (*object.Instance, bool)
 	GetAllInventory() []*object.Instance
 	Inventory() thing.Map
+	Slots() *object.Slots
 }

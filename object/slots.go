@@ -41,7 +41,7 @@ func (slots Slots) Set(s slot.Location, obj *Instance) error {
 
 func verifyObjectForSlot(s slot.Location, obj *Instance) error {
 	switch s {
-	case slot.PrimaryHand, slot.SecondaryHand:
+	case slot.Wield:
 		// is this instance valid to be a primary weapon?
 		if !obj.CanEquipWeapon() {
 			return &InstanceNotWeaponError{Id: obj.Id()}

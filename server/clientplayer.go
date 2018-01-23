@@ -12,6 +12,7 @@ type ClientPlayer struct {
 	Name      string
 	Client    client.Client
 	inventory thing.Map
+	slots     *object.Slots
 }
 
 // Create a ClientPlayer connected to a new TestClient
@@ -30,6 +31,8 @@ func NewClientPlayer(name string, client client.Client) *ClientPlayer {
 		Client:    client, // address of interface
 		inventory: make(thing.Map),
 	}
+	s := object.NewSlots(p)
+	p.slots = s
 	return &p
 }
 
@@ -69,7 +72,7 @@ func (p *ClientPlayer) GetAllInventory() (result []*object.Instance) {
 	return result
 }
 
-func (p *ClientPlayer) Inventory() thing.Map {
+func (p ClientPlayer) Inventory() thing.Map {
 	return p.inventory
 }
 
@@ -79,4 +82,8 @@ func (p *ClientPlayer) AddInventory(instance *object.Instance) error {
 
 func (p *ClientPlayer) RemoveInventory(instance *object.Instance) error {
 	return p.inventory.Remove(instance)
+}
+
+func (p *ClientPlayer) Slots() *object.Slots {
+	return p.slots
 }
