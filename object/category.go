@@ -10,14 +10,14 @@ type Category int32
 
 //go:generate stringer -type=Category
 const (
-	NONE Category = iota
-	WEAPON
-	WAND
-	STAFF
-	TREASURE
-	ARMOR
-	FOOD
-	OTHER
+	None Category = iota
+	Weapon
+	Wand
+	Staff
+	Treasure
+	Armor
+	Food
+	Other
 )
 
 type CategorySet map[Category]bool
@@ -60,11 +60,12 @@ func CategoriesToString(cats []Category) string {
 
 func StringToCategory(categoryName string) (Category, error) {
 	if categoryName == "" {
-		return NONE, errors.New("categoryName is required")
+		return None, errors.New("categoryName is required")
 	}
-	stridx := strings.Index(_Category_name, categoryName)
+	categoryName = strings.ToUpper(categoryName)
+	stridx := strings.Index(strings.ToUpper(_Category_name), categoryName)
 	if stridx < 0 {
-		return NONE, fmt.Errorf("category '%s' not found", categoryName)
+		return None, fmt.Errorf("category '%s' not found", categoryName)
 	}
 
 	for pos, catidx := range _Category_index {
@@ -73,5 +74,5 @@ func StringToCategory(categoryName string) (Category, error) {
 		}
 	}
 	// shouldn't happen?
-	return NONE, fmt.Errorf("could not find index %d for category '%s'", stridx, categoryName)
+	return None, fmt.Errorf("could not find index %d for category '%s'", stridx, categoryName)
 }

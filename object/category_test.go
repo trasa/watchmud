@@ -2,36 +2,37 @@ package object
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
 func TestCategorySet_Add(t *testing.T) {
 	cs := make(CategorySet)
-	cs.Add(FOOD)
-	cs.Add(WEAPON)
+	cs.Add(Food)
+	cs.Add(Weapon)
 
-	assert.True(t, cs[FOOD])
-	assert.True(t, cs[WEAPON])
-	assert.False(t, cs[ARMOR])
+	assert.True(t, cs[Food])
+	assert.True(t, cs[Weapon])
+	assert.False(t, cs[Armor])
 }
 
 func TestCategorySet_ToList(t *testing.T) {
 	cs := make(CategorySet)
-	cs.Add(FOOD)
-	cs.Add(WEAPON)
+	cs.Add(Food)
+	cs.Add(Weapon)
 
 	list := cs.ToInt32List()
-	assert.Contains(t, list, int32(FOOD))
-	assert.Contains(t, list, int32(WEAPON))
-	assert.NotContains(t, list, int32(ARMOR))
+	assert.Contains(t, list, int32(Food))
+	assert.Contains(t, list, int32(Weapon))
+	assert.NotContains(t, list, int32(Armor))
 }
 
 func TestCategoriesToString(t *testing.T) {
 	cats := []Category{
-		FOOD, WEAPON, ARMOR,
+		Food, Weapon, Armor,
 	}
 	str := CategoriesToString(cats)
-	assert.Equal(t, "FOOD, WEAPON, ARMOR", str)
+	assert.Equal(t, "Food, Weapon, Armor", str)
 
 	// empty slice
 	assert.Equal(t, "", CategoriesToString([]Category{}))
@@ -39,10 +40,10 @@ func TestCategoriesToString(t *testing.T) {
 
 func TestCategorySet_Contains(t *testing.T) {
 	cs := make(CategorySet)
-	cs.Add(WEAPON)
+	cs.Add(Weapon)
 
-	assert.True(t, cs.Contains(WEAPON))
-	assert.False(t, cs.Contains(FOOD))
+	assert.True(t, cs.Contains(Weapon))
+	assert.False(t, cs.Contains(Food))
 }
 
 func TestStringToCategory(t *testing.T) {
@@ -50,16 +51,20 @@ func TestStringToCategory(t *testing.T) {
 		result, err := StringToCategory(c.String())
 		assert.NoError(t, err)
 		assert.Equal(t, c, result)
+
+		result, err = StringToCategory(strings.ToUpper(c.String()))
+		assert.NoError(t, err)
+		assert.Equal(t, c, result)
 	}
 
-	runTest(NONE)
-	runTest(WEAPON)
-	runTest(WAND)
-	runTest(STAFF)
-	runTest(TREASURE)
-	runTest(ARMOR)
-	runTest(FOOD)
-	runTest(OTHER)
+	runTest(None)
+	runTest(Weapon)
+	runTest(Wand)
+	runTest(Staff)
+	runTest(Treasure)
+	runTest(Armor)
+	runTest(Food)
+	runTest(Other)
 
 	_, err := StringToCategory("")
 	assert.Error(t, err)

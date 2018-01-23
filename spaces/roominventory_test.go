@@ -26,7 +26,7 @@ func TestRoomInventory_Empty(t *testing.T) {
 func TestRoomInventory_AddOne(t *testing.T) {
 	ri := NewRoomInventory()
 
-	defn := object.NewDefinition("id", "name", "zoneid", object.OTHER, []string{}, "short desc", "on ground", slot.None)
+	defn := object.NewDefinition("id", "name", "zoneid", object.Other, []string{}, "short desc", "on ground", slot.None)
 	inst := object.NewInstance(defn)
 
 	ri.Add(inst)
@@ -47,7 +47,7 @@ func TestRoomInventory_AddOne(t *testing.T) {
 func TestRoomInventory_AddMany(t *testing.T) {
 	ri := NewRoomInventory()
 
-	defn := object.NewDefinition("id", "name", "zoneid", object.OTHER, []string{}, "short desc", "on ground", slot.None)
+	defn := object.NewDefinition("id", "name", "zoneid", object.Other, []string{}, "short desc", "on ground", slot.None)
 	instOne := object.NewInstance(defn)
 	instTwo := object.NewInstance(defn)
 
@@ -77,7 +77,7 @@ func TestRoomInventory_AddMany(t *testing.T) {
 func TestRoomInventory_Remove(t *testing.T) {
 	ri := NewRoomInventory()
 
-	defn := object.NewDefinition("id", "name", "zoneid", object.OTHER, []string{}, "short desc", "on ground", slot.None)
+	defn := object.NewDefinition("id", "name", "zoneid", object.Other, []string{}, "short desc", "on ground", slot.None)
 	inst := object.NewInstance(defn)
 
 	assert.NoError(t, ri.Add(inst))
@@ -97,7 +97,7 @@ func TestRoomInventory_Remove(t *testing.T) {
 func TestRoomInventory_RemoveEmpty(t *testing.T) {
 	ri := NewRoomInventory()
 
-	defn := object.NewDefinition("id", "name", "zoneid", object.OTHER, []string{}, "short desc", "on ground", slot.None)
+	defn := object.NewDefinition("id", "name", "zoneid", object.Other, []string{}, "short desc", "on ground", slot.None)
 	inst := object.NewInstance(defn)
 
 	assert.Error(t, ri.Remove(inst))

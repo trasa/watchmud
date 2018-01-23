@@ -4,7 +4,7 @@ package object
 
 import "fmt"
 
-const _Category_name = "NONEWEAPONWANDSTAFFTREASUREARMORFOODOTHER"
+const _Category_name = "NoneWeaponWandStaffTreasureArmorFoodOther"
 
 var _Category_index = [...]uint8{0, 4, 10, 14, 19, 27, 32, 36, 41}
 

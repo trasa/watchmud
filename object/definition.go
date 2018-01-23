@@ -53,5 +53,5 @@ func (d *Definition) AddCategory(cat Category) {
 
 func (d *Definition) CanEquipWeapon() bool {
 	// for now, you can equip this if it is a weapon
-	return d.Categories.Contains(WEAPON)
+	return d.Categories.Contains(Weapon)
 }

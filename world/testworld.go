@@ -31,7 +31,7 @@ func newTestWorld() *World {
 	knifeDefn := object.NewDefinition("knife",
 		"knife",
 		testZone.Id,
-		object.WEAPON,
+		object.Weapon,
 		[]string{},
 		"knife",
 		"A knife is on the ground.",
