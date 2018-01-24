@@ -1,7 +1,6 @@
 package object
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -60,7 +59,7 @@ func CategoriesToString(cats []Category) string {
 
 func StringToCategory(categoryName string) (Category, error) {
 	if categoryName == "" {
-		return None, errors.New("categoryName is required")
+		return None, nil
 	}
 	categoryName = strings.ToUpper(categoryName)
 	stridx := strings.Index(strings.ToUpper(_Category_name), categoryName)

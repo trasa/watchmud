@@ -1,8 +1,8 @@
 package loader
 
 import (
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/trasa/watchmud/behavior"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
@@ -164,13 +164,18 @@ func (wb *WorldBuilder) loadObjectDefinitions() error {
 	for _, zonename := range wb.zoneNames() {
 		objEntries, err := readObjectFile(filepath.Join(wb.worldFilesDir, zonename, "objects.json"))
 		if err != nil {
-			return err
+			return errors.Wrap(err, fmt.Sprintf("failed to read objects.json for %s", zonename))
 		}
 		for _, obj := range objEntries {
 			// translate category string to category int
 			cat, err := object.StringToCategory(obj.Category)
 			if err != nil {
-				return err
+				return errors.Wrap(err, fmt.Sprintf("can't convert category for %s: %s", zonename, obj.Id))
+			}
+
+			wearLoc, err := slot.StringToLocation(obj.WearLocation)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("can't convert wear location for %s: %s", zonename, obj.Id))
 			}
 
 			d := object.NewDefinition(obj.Id,
@@ -180,11 +185,11 @@ func (wb *WorldBuilder) loadObjectDefinitions() error {
 				obj.Aliases,
 				obj.ShortDescription,
 				obj.DescriptionOnGround,
-				slot.Location(obj.WearLocation))
+				wearLoc)
 
 			for _, bstr := range obj.Behaviors {
 				if b, err := behavior.StringToBehavior(bstr); err != nil {
-					return err
+					return errors.Wrap(err, fmt.Sprintf("can't convert behavior for %s: %s", zonename, obj.Id))
 				} else {
 					d.Behaviors.Add(b)
 				}

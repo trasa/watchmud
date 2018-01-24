@@ -66,8 +66,9 @@ func TestStringToCategory(t *testing.T) {
 	runTest(Food)
 	runTest(Other)
 
-	_, err := StringToCategory("")
-	assert.Error(t, err)
+	c, err := StringToCategory("")
+	assert.Equal(t, c, None)
+	assert.NoError(t, err)
 
 	_, err = StringToCategory("asdflkjas")
 	assert.Error(t, err)

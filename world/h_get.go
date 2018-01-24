@@ -22,7 +22,7 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 
 		if !instPtr.IsGettable() {
 			msg.Player.Send(message.GetResponse{
-				Success: false,
+				Success:    false,
 				ResultCode: "NO_TAKE",
 			})
 			return

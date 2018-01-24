@@ -1,7 +1,6 @@
 package behavior
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -30,7 +29,7 @@ func (bs BehaviorSet) Contains(b Behavior) bool {
 
 func StringToBehavior(name string) (Behavior, error) {
 	if name == "" {
-		return None, errors.New("name is required")
+		return None, nil
 	}
 	name = strings.ToUpper(name)
 	stridx := strings.Index(strings.ToUpper(_Behavior_name), name)

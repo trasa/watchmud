@@ -13,6 +13,16 @@
     "name": "knife",
     "category": "WEAPON",
     "short_description": "knife",
-    "description_on_ground": "A knife is on the ground."
+    "description_on_ground": "A knife is on the ground.",
+    "wear_location": "Wield"
+  },
+  {
+    "id": "iron_helmet",
+    "name": "iron helmet",
+    "category": "ARMOR",
+    "aliases": [ "helm" ],
+    "short_description": "iron helmet",
+    "description_on_ground": "A plain iron helmet lies here.",
+    "wear_location": "head"
   }
 ]
