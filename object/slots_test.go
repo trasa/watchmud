@@ -2,7 +2,6 @@ package object
 
 import (
 	"github.com/satori/go.uuid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/slot"
 	"github.com/trasa/watchmud/thing"
@@ -29,7 +28,7 @@ func TestSlotsSuite(t *testing.T) {
 
 func (suite *SlotsSuite) SetupTest() {
 	suite.slotInventory = &SlotInventory{m: make(thing.Map)}
-	suite.slots = NewSlots(suite.slotInventory)
+	suite.slots = NewSlots()
 }
 
 func (suite *SlotsSuite) TestSetEquippedPrimaryWeapon() {
@@ -38,8 +37,7 @@ func (suite *SlotsSuite) TestSetEquippedPrimaryWeapon() {
 		Definition: NewDefinition("weapon", "weapon", "zone", Weapon, []string{}, "weapon", "weapon", slot.Wield),
 	}
 	suite.slotInventory.m.Add(weaponInst)
-	err := suite.slots.Set(slot.Wield, weaponInst)
-	assert.NoError(suite.T(), err)
+	suite.slots.Set(slot.Wield, weaponInst)
 }
 
 func (suite *SlotsSuite) TestSetEquippedSecondaryWeapon() {
@@ -48,8 +46,7 @@ func (suite *SlotsSuite) TestSetEquippedSecondaryWeapon() {
 		Definition: NewDefinition("weapon", "weapon", "zone", Weapon, []string{}, "weapon", "weapon", slot.Wield),
 	}
 	suite.slotInventory.m.Add(weaponInst)
-	err := suite.slots.Set(slot.Wield, weaponInst)
-	assert.NoError(suite.T(), err)
+	suite.slots.Set(slot.Wield, weaponInst)
 }
 
 func (suite *SlotsSuite) TestCantEquipYouDontHaveOne() {
@@ -57,7 +54,7 @@ func (suite *SlotsSuite) TestCantEquipYouDontHaveOne() {
 		InstanceId: uuid.NewV4(),
 		Definition: NewDefinition("nothere", "nothere", "zone", Weapon, []string{}, "youdonthaveone", "youdonthaveone", slot.Wield),
 	}
-	assert.IsType(suite.T(), &InstanceNotFoundError{}, suite.slots.Set(slot.Wield, youdonthaveoneInst))
+	suite.slots.Set(slot.Wield, youdonthaveoneInst)
 }
 
 func (suite *SlotsSuite) TestNotEquipableWeapon() {
@@ -68,5 +65,5 @@ func (suite *SlotsSuite) TestNotEquipableWeapon() {
 	suite.slotInventory.m.Add(cantequipthat)
 
 	// that isn't a weapon
-	assert.IsType(suite.T(), &InstanceNotWeaponError{}, suite.slots.Set(slot.Wield, cantequipthat))
+	suite.slots.Set(slot.Wield, cantequipthat)
 }

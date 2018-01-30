@@ -4,11 +4,12 @@ import (
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/slot"
-	"reflect"
 )
 
 func (w *World) handleEquip(msg *gameserver.HandlerParameter) {
 	equipReq := msg.Message.GetEquipRequest()
+	requestedLocation := slot.Location(equipReq.SlotLocation)
+
 	if equipReq.SlotLocation <= 0 {
 		msg.Player.Send(message.EquipResponse{
 			Success:    false,
@@ -33,16 +34,26 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter) {
 		})
 		return
 	}
-	// player has target
-	err := msg.Player.Slots().Set(slot.Location(equipReq.SlotLocation), instPtr)
-	if err != nil {
+
+	// do you already have something equipped in that location?
+	if msg.Player.Slots().Get(requestedLocation) != nil {
 		msg.Player.Send(message.EquipResponse{
 			Success:    false,
-			ResultCode: reflect.TypeOf(err).Name(),
+			ResultCode: "LOCATION_IN_USE",
 		})
 		return
 	}
 
+	// can this object be equiped there?
+	if requestedLocation != instPtr.Definition.WearLocation {
+		msg.Player.Send(message.EquipResponse{
+			Success:    false,
+			ResultCode: "CANT_WEAR_THERE",
+		})
+		return
+	}
+	// success
+	msg.Player.Slots().Set(requestedLocation, instPtr)
 	msg.Player.Send(message.EquipResponse{
 		Success:    true,
 		ResultCode: "OK",

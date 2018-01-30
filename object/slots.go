@@ -2,18 +2,15 @@ package object
 
 import (
 	"github.com/trasa/watchmud/slot"
-	"github.com/trasa/watchmud/thing"
 )
 
 type Slots struct {
 	slotMap map[slot.Location]*Instance
-	inv     Inventoryer
 }
 
-func NewSlots(inv Inventoryer) *Slots {
+func NewSlots() *Slots {
 	return &Slots{
 		slotMap: make(map[slot.Location]*Instance),
-		inv:     inv,
 	}
 }
 
@@ -32,32 +29,6 @@ func (slots *Slots) Get(s slot.Location) *Instance {
 	return slots.slotMap[s]
 }
 
-func (slots *Slots) Set(s slot.Location, obj *Instance) error {
-	if _, exists := slots.inv.Inventory().Get(obj.Id()); !exists {
-		return &InstanceNotFoundError{Id: obj.Id()}
-	}
-
-	// is it already being used somewhere else?
-	// TODO
-
-	if err := verifyObjectForSlot(s, obj); err != nil {
-		return err
-	}
+func (slots *Slots) Set(s slot.Location, obj *Instance) {
 	slots.slotMap[s] = obj
-	return nil
-}
-
-func verifyObjectForSlot(s slot.Location, obj *Instance) error {
-	switch s {
-	case slot.Wield:
-		// is this instance valid to be a primary weapon?
-		if !obj.CanEquipWeapon() {
-			return &InstanceNotWeaponError{Id: obj.Id()}
-		}
-	}
-	return nil
-}
-
-type Inventoryer interface {
-	Inventory() thing.Map
 }

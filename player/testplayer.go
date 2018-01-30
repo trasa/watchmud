@@ -19,9 +19,8 @@ func NewTestPlayer(name string) *TestPlayer {
 	p := &TestPlayer{
 		name:      name,
 		inventory: make(thing.Map),
+		slots:     object.NewSlots(),
 	}
-	s := object.NewSlots(p)
-	p.slots = s
 	return p
 }
 

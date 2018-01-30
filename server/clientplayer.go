@@ -30,9 +30,8 @@ func NewClientPlayer(name string, client client.Client) *ClientPlayer {
 		Name:      name,
 		Client:    client, // address of interface
 		inventory: make(thing.Map),
+		slots:     object.NewSlots(),
 	}
-	s := object.NewSlots(p)
-	p.slots = s
 	return &p
 }
 
