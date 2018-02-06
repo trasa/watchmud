@@ -15,8 +15,8 @@ type HandleEquipSuite struct {
 	world      *World
 	player     *player.TestPlayer
 	testClient *client.TestClient
-	msg *message.GameMessage
-	handle *gameserver.HandlerParameter
+	msg        *message.GameMessage
+	handle     *gameserver.HandlerParameter
 }
 
 func TestHandleEquipSuite(t *testing.T) {
@@ -44,7 +44,6 @@ func (suite *HandleEquipSuite) TestNoSlot() {
 	assert.False(suite.T(), resp.Success)
 	assert.Equal(suite.T(), "NO_SLOT_GIVEN", resp.ResultCode)
 }
-
 
 func (suite *HandleEquipSuite) TestNoTarget() {
 
