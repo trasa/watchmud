@@ -12,6 +12,12 @@
     "instance_max": 1
   },
   {
+    "type": "CreateObject",
+    "object_id": "iron_helmet",
+    "room_id": "northRoom",
+    "instance_max": 1
+  },
+  {
     "type": "CreateMobile",
     "mobile_id": "walker",
     "room_id": "start",

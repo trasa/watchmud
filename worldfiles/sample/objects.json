@@ -20,7 +20,7 @@
     "id": "iron_helmet",
     "name": "iron helmet",
     "category": "ARMOR",
-    "aliases": [ "helm" ],
+    "aliases": [ "helm", "iron", "helmet" ],
     "short_description": "iron helmet",
     "description_on_ground": "A plain iron helmet lies here.",
     "wear_location": "head"
