@@ -10,14 +10,14 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 	// for now, just 'get' the first target if it is given
 	// (multitarget stuff we'll deal with another time)
 	getreq := msg.Message.GetGetRequest()
-
-	if len(getreq.Targets) == 0 {
+	findMode := message.FindMode(getreq.FindMode)
+	if findMode == message.FindIndividual && len(getreq.Target) == 0 {
 		msg.Player.Send(message.GetResponse{Success: false, ResultCode: "NO_TARGET"})
 		return
 	}
 
 	room := w.getRoomContainingPlayer(msg.Player)
-	if instPtr, ok := room.GetInventoryByName(getreq.Targets[0]); ok {
+	if instPtr, ok := room.FindInventory(findMode, getreq.Index, getreq.Target); ok {
 		// target is in room
 
 		if !instPtr.IsGettable() {

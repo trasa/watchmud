@@ -122,7 +122,9 @@ message ExitInfo {
 }
 
 message GetRequest {
-    repeated string targets = 1;
+    string target = 1;
+    int32 findMode = 2; // FIND_INDIV = 0; FIND_ALL = 1; FIND_ALLDOT = 2;
+    string index = 3; // which one to find? (could be "", "all", "1"...)
 }
 
 message GetResponse {

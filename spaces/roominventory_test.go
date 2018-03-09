@@ -2,103 +2,62 @@ package spaces
 
 import (
 	"github.com/satori/go.uuid"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/slot"
 	"testing"
 )
 
-func TestRoomInventory_Empty(t *testing.T) {
-	ri := NewRoomInventory()
-
-	inst, exists := ri.GetByName("nothere")
-	assert.False(t, exists)
-	assert.Nil(t, inst)
-
-	all := ri.GetAll()
-	assert.Equal(t, 0, len(all))
-
-	nothing, exists := ri.GetByInstanceId(uuid.NewV4())
-	assert.Nil(t, nothing)
-	assert.False(t, exists)
+type RoomInventorySuite struct {
+	suite.Suite
+	roomInventory *RoomInventory
+	defn          *object.Definition
+	inst          *object.Instance
+	instTwo       *object.Instance
 }
 
-func TestRoomInventory_AddOne(t *testing.T) {
-	ri := NewRoomInventory()
-
-	defn := object.NewDefinition("id", "name", "zoneid", object.Other, []string{}, "short desc", "on ground", slot.None)
-	inst := object.NewInstance(defn)
-
-	ri.Add(inst)
-
-	bydefn, exists := ri.GetByName("name")
-	assert.True(t, exists)
-	assert.Equal(t, inst, bydefn)
-
-	retrieved, exists := ri.GetByInstanceId(inst.InstanceId)
-	assert.True(t, exists)
-	assert.Equal(t, inst, retrieved)
-
-	all := ri.GetAll()
-	assert.Equal(t, 1, len(all))
-	assert.Equal(t, inst, all[0])
+func TestRoomInventorySuite(t *testing.T) {
+	suite.Run(t, new(RoomInventorySuite))
 }
 
-func TestRoomInventory_AddMany(t *testing.T) {
-	ri := NewRoomInventory()
-
-	defn := object.NewDefinition("id", "name", "zoneid", object.Other, []string{}, "short desc", "on ground", slot.None)
-	instOne := object.NewInstance(defn)
-	instTwo := object.NewInstance(defn)
-
-	ri.Add(instOne)
-	ri.Add(instTwo)
-
-	inst, exists := ri.GetByName("name")
-	assert.True(t, exists)
-	assert.NotNil(t, inst)
-
-	all := ri.GetAll()
-	assert.Equal(t, 2, len(all))
-
-	retone, exists := ri.GetByInstanceId(instOne.InstanceId)
-	assert.True(t, exists)
-	assert.Equal(t, retone, instOne)
-
-	rettwo, exists := ri.GetByInstanceId(instTwo.InstanceId)
-	assert.True(t, exists)
-	assert.Equal(t, rettwo, instTwo)
-
-	nothing, exists := ri.GetByInstanceId(uuid.NewV4())
-	assert.False(t, exists)
-	assert.Nil(t, nothing)
+func (suite *RoomInventorySuite) SetupTest() {
+	suite.roomInventory = NewRoomInventory()
+	suite.defn = object.NewDefinition("id", "name", "zoneid", object.Other, []string{}, "short desc", "on ground", slot.None)
+	suite.inst = object.NewInstance(suite.defn)
+	suite.instTwo = object.NewInstance(suite.defn)
+	suite.roomInventory.Add(suite.inst)
+	suite.roomInventory.Add(suite.instTwo)
 }
 
-func TestRoomInventory_Remove(t *testing.T) {
-	ri := NewRoomInventory()
+func (suite *RoomInventorySuite) TestRoomInventory_AddMany() {
 
-	defn := object.NewDefinition("id", "name", "zoneid", object.Other, []string{}, "short desc", "on ground", slot.None)
-	inst := object.NewInstance(defn)
+	inst, exists := suite.roomInventory.GetByName("name")
+	suite.Assert().True(exists)
+	suite.Assert().NotNil(inst)
 
-	assert.NoError(t, ri.Add(inst))
+	all := suite.roomInventory.GetAll()
+	suite.Assert().Equal(2, len(all))
 
-	assert.NoError(t, ri.Remove(inst))
+	retone, exists := suite.roomInventory.GetByInstanceId(suite.inst.InstanceId)
+	suite.Assert().True(exists)
+	suite.Assert().Equal(retone, suite.inst)
 
-	assert.Equal(t, 0, len(ri.GetAll()))
-	i, exists := ri.GetByName("name")
-	assert.Nil(t, i)
-	assert.False(t, exists)
+	rettwo, exists := suite.roomInventory.GetByInstanceId(suite.instTwo.InstanceId)
+	suite.Assert().True(exists)
+	suite.Assert().Equal(rettwo, suite.instTwo)
 
-	ret, exists := ri.GetByInstanceId(inst.InstanceId)
-	assert.False(t, exists)
-	assert.Nil(t, ret)
+	nothing, exists := suite.roomInventory.GetByInstanceId(uuid.NewV4())
+	suite.Assert().False(exists)
+	suite.Assert().Nil(nothing)
 }
 
-func TestRoomInventory_RemoveEmpty(t *testing.T) {
-	ri := NewRoomInventory()
+func (suite *RoomInventorySuite) TestRoomInventory_Remove() {
 
-	defn := object.NewDefinition("id", "name", "zoneid", object.Other, []string{}, "short desc", "on ground", slot.None)
-	inst := object.NewInstance(defn)
+	suite.Assert().NoError(suite.roomInventory.Remove(suite.inst))
 
-	assert.Error(t, ri.Remove(inst))
+	suite.Assert().Equal(1, len(suite.roomInventory.GetAll()))
+
+	ret, exists := suite.roomInventory.GetByInstanceId(suite.inst.InstanceId)
+	suite.Assert().False(exists)
+	suite.Assert().Nil(ret)
 }

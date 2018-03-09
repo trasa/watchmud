@@ -172,3 +172,10 @@ func (r *Room) GetInventoryByName(name string) (inst *object.Instance, exists bo
 func (r *Room) GetAllInventory() []*object.Instance {
 	return r.inventory.GetAll()
 }
+
+// Attempt to find an inventory object in this room which matches the
+// terms given. Search the object name and aliases.
+func (r *Room) FindInventory(findMode message.FindMode, index string, target string) (inst *object.Instance, exists bool) {
+	inst, exists = r.inventory.Find(findMode, index, target)
+	return
+}

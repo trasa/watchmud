@@ -83,11 +83,9 @@ func TestTranslate_TellAll_LongMessage(t *testing.T) {
 }
 
 func TestTranslate_Get_NoTarget(t *testing.T) {
-	msg, err := TranslateLineToMessage(Tokenize("get"))
+	_, err := TranslateLineToMessage(Tokenize("get"))
 
-	assert.NoError(t, err)
-	getreq := msg.GetGetRequest()
-	assert.Equal(t, 0, len(getreq.Targets))
+	assert.Error(t, err)
 }
 
 func TestTranslate_Get_OneTarget(t *testing.T) {
@@ -95,16 +93,37 @@ func TestTranslate_Get_OneTarget(t *testing.T) {
 
 	assert.NoError(t, err)
 	getreq := msg.GetGetRequest()
-	assert.Equal(t, 1, len(getreq.Targets))
-	assert.Equal(t, "foo", getreq.Targets[0])
+	assert.Equal(t, "foo", getreq.Target)
+	assert.Equal(t, int32(FindIndividual), getreq.FindMode)
+	assert.Equal(t, "", getreq.Index)
 }
 
-func TestTranslate_Get_TwoTargets(t *testing.T) {
-	msg, err := TranslateLineToMessage(Tokenize("get foo bar"))
+func TestTranslate_Get_Dots(t *testing.T) {
+	msg, err := TranslateLineToMessage(Tokenize("get 2.foo"))
 
 	assert.NoError(t, err)
 	getreq := msg.GetGetRequest()
-	assert.Equal(t, 2, len(getreq.Targets))
-	assert.Equal(t, "foo", getreq.Targets[0])
-	assert.Equal(t, "bar", getreq.Targets[1])
+	assert.Equal(t, "foo", getreq.Target)
+	assert.Equal(t, int32(FindIndividual), getreq.FindMode)
+	assert.Equal(t, "2", getreq.Index)
+}
+
+func TestTranslate_Get_All(t *testing.T) {
+	msg, err := TranslateLineToMessage(Tokenize("get all"))
+
+	assert.NoError(t, err)
+	getreq := msg.GetGetRequest()
+	assert.Equal(t, "all", getreq.Target)
+	assert.Equal(t, int32(FindAll), getreq.FindMode)
+	assert.Equal(t, "", getreq.Index)
+}
+
+func TestTranslate_Get_All_Dot(t *testing.T) {
+	msg, err := TranslateLineToMessage(Tokenize("get all.foo"))
+
+	assert.NoError(t, err)
+	getreq := msg.GetGetRequest()
+	assert.Equal(t, "foo", getreq.Target)
+	assert.Equal(t, int32(FindAllDot), getreq.FindMode)
+	assert.Equal(t, "all", getreq.Index)
 }

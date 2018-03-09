@@ -46,8 +46,15 @@ func TranslateLineToMessage(tokens []string) (msg *GameMessage, err error) {
 			payload = ExitsRequest{}
 
 		case "get":
-			payload = GetRequest{
-				Targets: tokens[1:],
+			if len(tokens) >= 2 {
+				findMode, dotPart, target := parseFindToken(tokens[1])
+				payload = GetRequest{
+					FindMode: int32(findMode),
+					Index:    dotPart,
+					Target:   target,
+				}
+			} else {
+				err = errors.New("Get what?")
 			}
 
 		case "inv", "inventory":

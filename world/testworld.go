@@ -39,5 +39,15 @@ func newTestWorld() *World {
 	knifeObj := object.NewInstance(knifeDefn)
 	testRoom.AddInventory(knifeObj)
 
+	ironHelmetDefn := object.NewDefinition("helmet",
+		"iron_helmet",
+		testZone.Id,
+		object.Armor,
+		[]string{"helm", "iron", "helmet"},
+		"iron helmet",
+		"An iron helmet is on the ground.",
+		slot.Head)
+	ironHelmetObj := object.NewInstance(ironHelmetDefn)
+	testRoom.AddInventory(ironHelmetObj)
 	return w
 }

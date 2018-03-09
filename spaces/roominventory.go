@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/satori/go.uuid"
+	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/object"
 )
 
@@ -42,6 +43,34 @@ func (ri *RoomInventory) GetByName(name string) (inst *object.Instance, exists b
 		}
 	}
 	return nil, false
+}
+
+func (ri *RoomInventory) GetByNameOrAlias(target string) (inst *object.Instance, exists bool) {
+	for _, inst := range ri.GetAll() {
+		if inst.Definition.Name == target {
+			return inst, true
+		}
+		if inst.Definition.HasAlias(target) {
+			return inst, true
+		}
+	}
+	return nil, false
+}
+
+// Find an instance in this inventory with a name or alias
+// matching the terms given.
+func (ri *RoomInventory) Find(findMode message.FindMode, index string, target string) (inst *object.Instance, exists bool) {
+	switch findMode {
+	case message.FindIndividual:
+		// for now, just find the thing with this name or alias.
+		return ri.GetByNameOrAlias(target)
+	case message.FindAll:
+		return nil, false
+	case message.FindAllDot:
+		return nil, false
+	default:
+		return nil, false
+	}
 }
 
 func (ri *RoomInventory) Add(inst *object.Instance) (err error) {

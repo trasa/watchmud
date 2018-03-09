@@ -1,7 +1,7 @@
 package world
 
 import (
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
@@ -9,20 +9,34 @@ import (
 	"testing"
 )
 
-func TestDrop_success(t *testing.T) {
-	w := newTestWorld()
-	p := player.NewTestPlayer("foo")
-	w.AddPlayer(p)
-	testClient := client.NewTestClient(p)
+type HandleDropSuite struct {
+	suite.Suite
+	world      *World
+	player     *player.TestPlayer
+	testClient *client.TestClient
+}
 
+func TestHandleDropSuite(t *testing.T) {
+	suite.Run(t, new(HandleDropSuite))
+}
+
+func (suite *HandleDropSuite) SetupTest() {
+	suite.world = newTestWorld()
+	suite.player = player.NewTestPlayer("foo")
+	suite.world.AddPlayer(suite.player)
+	suite.testClient = client.NewTestClient(suite.player)
+}
+
+func (suite *HandleDropSuite) TestDrop_success() {
 	// get first
 	getGameMessage, err := message.NewGameMessage(
 		message.GetRequest{
-			Targets: []string{"knife"},
+			Target: "knife",
 		})
-	assert.NoError(t, err)
-	getHP := gameserver.NewHandlerParameter(testClient, getGameMessage)
-	w.handleGet(getHP)
+	suite.Assert().NoError(err)
+
+	getHP := gameserver.NewHandlerParameter(suite.testClient, getGameMessage)
+	suite.world.handleGet(getHP)
 
 	// now drop
 	dropGameMessage, err := message.NewGameMessage(
@@ -30,53 +44,49 @@ func TestDrop_success(t *testing.T) {
 			Target: "knife",
 		},
 	)
-	assert.NoError(t, err)
-	dropHP := gameserver.NewHandlerParameter(testClient, dropGameMessage)
-	w.handleDrop(dropHP)
+	suite.Assert().NoError(err)
 
-	assert.Equal(t, 2, p.SentMessageCount())
-	getresp := p.GetSentResponse(0).(message.GetResponse)
-	assert.True(t, getresp.Success)
-	dropresp := p.GetSentResponse(1).(message.DropResponse)
-	assert.True(t, dropresp.Success)
+	dropHP := gameserver.NewHandlerParameter(suite.testClient, dropGameMessage)
+	suite.world.handleDrop(dropHP)
 
-	assert.Equal(t, 0, len(p.GetAllInventory()))
-	assert.Equal(t, 1, len(w.startRoom.GetAllInventory()))
+	suite.Assert().Equal(2, suite.player.SentMessageCount())
+	getresp := suite.player.GetSentResponse(0).(message.GetResponse)
+	suite.Assert().True(getresp.Success)
+
+	dropresp := suite.player.GetSentResponse(1).(message.DropResponse)
+	suite.Assert().True(dropresp.Success)
+
+	// player now has zero items, room has its starting two
+	suite.Assert().Equal(0, len(suite.player.GetAllInventory()))
+	suite.Assert().Equal(2, len(suite.world.startRoom.GetAllInventory()))
 }
 
-func TestDrop_NoTarget(t *testing.T) {
-	w := newTestWorld()
-	p := player.NewTestPlayer("foo")
-	w.AddPlayer(p)
-	testClient := client.NewTestClient(p)
-
+func (suite *HandleDropSuite) TestDrop_NoTarget() {
 	// drop
 	dropGameMessage, err := message.NewGameMessage(message.DropRequest{Target: ""})
-	assert.NoError(t, err)
-	dropHP := gameserver.NewHandlerParameter(testClient, dropGameMessage)
-	w.handleDrop(dropHP)
+	suite.Assert().NoError(err)
 
-	assert.Equal(t, 1, p.SentMessageCount())
-	dropresp := p.GetSentResponse(0).(message.DropResponse)
-	assert.False(t, dropresp.Success)
-	assert.Equal(t, "NO_TARGET", dropresp.GetResultCode())
+	dropHP := gameserver.NewHandlerParameter(suite.testClient, dropGameMessage)
+	suite.world.handleDrop(dropHP)
+
+	suite.Assert().Equal(1, suite.player.SentMessageCount())
+
+	dropresp := suite.player.GetSentResponse(0).(message.DropResponse)
+	suite.Assert().False(dropresp.Success)
+	suite.Assert().Equal("NO_TARGET", dropresp.GetResultCode())
 }
 
-func TestDrop_NotFound(t *testing.T) {
-	w := newTestWorld()
-	p := player.NewTestPlayer("foo")
-	w.AddPlayer(p)
-	testClient := client.NewTestClient(p)
-
+func (suite *HandleDropSuite) TestDrop_NotFound() {
 	// drop (but you don't have one)
 	dropGameMessage, err := message.NewGameMessage(message.DropRequest{Target: "knife"})
-	assert.NoError(t, err)
-	dropHP := gameserver.NewHandlerParameter(testClient, dropGameMessage)
-	w.handleDrop(dropHP)
+	suite.Assert().NoError(err)
 
-	assert.Equal(t, 1, p.SentMessageCount())
-	dropresp := p.GetSentResponse(0).(message.DropResponse)
-	assert.False(t, dropresp.Success)
-	assert.Equal(t, "TARGET_NOT_FOUND", dropresp.GetResultCode())
-	assert.Equal(t, 0, len(p.GetAllInventory()))
+	dropHP := gameserver.NewHandlerParameter(suite.testClient, dropGameMessage)
+	suite.world.handleDrop(dropHP)
+
+	suite.Assert().Equal(1, suite.player.SentMessageCount())
+	dropresp := suite.player.GetSentResponse(0).(message.DropResponse)
+	suite.Assert().False(dropresp.Success)
+	suite.Assert().Equal("TARGET_NOT_FOUND", dropresp.GetResultCode())
+	suite.Assert().Equal(0, len(suite.player.GetAllInventory()))
 }
