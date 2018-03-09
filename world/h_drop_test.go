@@ -61,6 +61,40 @@ func (suite *HandleDropSuite) TestDrop_success() {
 	suite.Assert().Equal(2, len(suite.world.startRoom.GetAllInventory()))
 }
 
+func (suite *HandleDropSuite) TestDrop_Alias() {
+	// get first
+	getGameMessage, err := message.NewGameMessage(
+		message.GetRequest{
+			Target: "helmet",
+		})
+	suite.Assert().NoError(err)
+
+	getHP := gameserver.NewHandlerParameter(suite.testClient, getGameMessage)
+	suite.world.handleGet(getHP)
+
+	// now drop
+	dropGameMessage, err := message.NewGameMessage(
+		message.DropRequest{
+			Target: "helmet",
+		},
+	)
+	suite.Assert().NoError(err)
+
+	dropHP := gameserver.NewHandlerParameter(suite.testClient, dropGameMessage)
+	suite.world.handleDrop(dropHP)
+
+	suite.Assert().Equal(2, suite.player.SentMessageCount())
+	getresp := suite.player.GetSentResponse(0).(message.GetResponse)
+	suite.Assert().True(getresp.Success)
+
+	dropresp := suite.player.GetSentResponse(1).(message.DropResponse)
+	suite.Assert().True(dropresp.Success)
+
+	// player now has zero items, room has its starting two
+	suite.Assert().Equal(0, len(suite.player.GetAllInventory()))
+	suite.Assert().Equal(2, len(suite.world.startRoom.GetAllInventory()))
+}
+
 func (suite *HandleDropSuite) TestDrop_NoTarget() {
 	// drop
 	dropGameMessage, err := message.NewGameMessage(message.DropRequest{Target: ""})

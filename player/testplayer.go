@@ -3,14 +3,13 @@ package player
 import (
 	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/thing"
 	"log"
 )
 
 type TestPlayer struct {
 	name      string
 	sent      []interface{}
-	inventory thing.Map
+	inventory *PlayerInventory
 	slots     *object.Slots
 }
 
@@ -18,7 +17,7 @@ type TestPlayer struct {
 func NewTestPlayer(name string) *TestPlayer {
 	p := &TestPlayer{
 		name:      name,
-		inventory: make(thing.Map),
+		inventory: NewPlayerInventory(),
 		slots:     object.NewSlots(),
 	}
 	return p
@@ -42,32 +41,20 @@ func (p *TestPlayer) GetName() string {
 	return p.name
 }
 
-func (p *TestPlayer) GetInventoryById(id uuid.UUID) (inst *object.Instance, exists bool) {
-	t, exists := p.inventory[id.String()]
-	if exists {
-		inst = t.(*object.Instance)
-	}
-	return
+func (p *TestPlayer) GetInventoryById(id uuid.UUID) (*object.Instance, bool) {
+	return p.inventory.GetByInstanceId(id)
 }
 
 func (p *TestPlayer) GetInventoryByName(name string) (*object.Instance, bool) {
-	for _, t := range p.inventory {
-		if name == t.(*object.Instance).Definition.Name {
-			return t.(*object.Instance), true
-		}
-	}
-	return nil, false
+	return p.inventory.GetByName(name)
 }
 
-func (p *TestPlayer) GetAllInventory() (result []*object.Instance) {
-	for _, t := range p.inventory {
-		result = append(result, t.(*object.Instance))
-	}
-	return
+func (p *TestPlayer) FindInventory(target string) (*object.Instance, bool) {
+	return p.inventory.Find(target)
 }
 
-func (p *TestPlayer) Inventory() thing.Map {
-	return p.inventory
+func (p *TestPlayer) GetAllInventory() []*object.Instance {
+	return p.inventory.GetAll()
 }
 
 func (p *TestPlayer) AddInventory(instance *object.Instance) error {

@@ -5,13 +5,13 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/thing"
+	"github.com/trasa/watchmud/player"
 )
 
 type ClientPlayer struct {
 	Name      string
 	Client    client.Client
-	inventory thing.Map
+	inventory *player.PlayerInventory
 	slots     *object.Slots
 }
 
@@ -29,7 +29,7 @@ func NewClientPlayer(name string, client client.Client) *ClientPlayer {
 	p := ClientPlayer{
 		Name:      name,
 		Client:    client, // address of interface
-		inventory: make(thing.Map),
+		inventory: player.NewPlayerInventory(),
 		slots:     object.NewSlots(),
 	}
 	return &p
@@ -47,32 +47,16 @@ func (p *ClientPlayer) String() string {
 	return fmt.Sprintf("(Player Name='%s')", p.Name)
 }
 
-func (p *ClientPlayer) GetInventoryById(id uuid.UUID) (inst *object.Instance, exists bool) {
-	t, exists := p.inventory.Get(id.String())
-	if exists {
-		inst = t.(*object.Instance)
-	}
-	return
+func (p *ClientPlayer) GetInventoryById(id uuid.UUID) (*object.Instance, bool) {
+	return p.inventory.GetByInstanceId(id)
 }
 
-func (p *ClientPlayer) GetInventoryByName(name string) (inst *object.Instance, exists bool) {
-	for _, t := range p.inventory {
-		if name == t.(*object.Instance).Definition.Name {
-			return t.(*object.Instance), true
-		}
-	}
-	return nil, false
+func (p *ClientPlayer) GetInventoryByName(name string) (*object.Instance, bool) {
+	return p.inventory.GetByName(name)
 }
 
-func (p *ClientPlayer) GetAllInventory() (result []*object.Instance) {
-	for _, t := range p.inventory {
-		result = append(result, t.(*object.Instance))
-	}
-	return result
-}
-
-func (p ClientPlayer) Inventory() thing.Map {
-	return p.inventory
+func (p *ClientPlayer) GetAllInventory() []*object.Instance {
+	return p.inventory.GetAll()
 }
 
 func (p *ClientPlayer) AddInventory(instance *object.Instance) error {
@@ -81,6 +65,10 @@ func (p *ClientPlayer) AddInventory(instance *object.Instance) error {
 
 func (p *ClientPlayer) RemoveInventory(instance *object.Instance) error {
 	return p.inventory.Remove(instance)
+}
+
+func (p *ClientPlayer) FindInventory(target string) (*object.Instance, bool) {
+	return p.inventory.Find(target)
 }
 
 func (p *ClientPlayer) Slots() *object.Slots {

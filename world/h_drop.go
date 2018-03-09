@@ -15,7 +15,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 		return
 	}
 	room := w.getRoomContainingPlayer(msg.Player)
-	if instPtr, ok := msg.Player.GetInventoryByName(dropReq.Target); ok {
+	if instPtr, ok := msg.Player.FindInventory(dropReq.Target); ok {
 		// player has target
 
 		// add to room
