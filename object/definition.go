@@ -60,6 +60,11 @@ func (d *Definition) CanEquipWeapon() bool {
 	// for now, you can equip this if it is a weapon
 	return d.Categories.Contains(Weapon)
 }
+
+func (d *Definition) CanWear() bool {
+	return d.WearLocation != slot.None
+}
+
 func (d *Definition) HasAlias(target string) bool {
 	for _, a := range d.Aliases {
 		if target == a {

@@ -65,6 +65,9 @@ message GameMessage {
         TellAllResponse tellAllResponse = 211;
         TellAllNotification tellAllNotification = 212;
 
+        WearRequest wearRequest = 216;
+        WearResponse wearResponse = 217;
+
         WhoRequest whoRequest = 220;
         WhoResponse whoResponse = 221;
     }
@@ -316,4 +319,14 @@ message WhoResponse {
         string zoneName = 2;
         string roomName = 3;
     }
+}
+
+message WearRequest {
+    string target = 1;
+    string location = 2;
+}
+
+message WearResponse {
+    bool success = 1;
+    string resultCode = 2;
 }

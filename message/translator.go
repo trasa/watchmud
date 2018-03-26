@@ -112,6 +112,16 @@ func TranslateLineToMessage(tokens []string) (msg *GameMessage, err error) {
 				err = errors.New("What do you want to wield?")
 			}
 
+		case "wear":
+			if len(tokens) >= 2 {
+				payload = WearRequest{
+					Target: tokens[1],
+					//					Location: tokens[2], // for now, setting location isn't supported
+				}
+			} else {
+				err = errors.New("Wear what?")
+			}
+
 		case "who":
 			payload = WhoRequest{}
 

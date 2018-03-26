@@ -32,3 +32,8 @@ func (slots *Slots) Get(s slot.Location) *Instance {
 func (slots *Slots) Set(s slot.Location, obj *Instance) {
 	slots.slotMap[s] = obj
 }
+
+func (slots *Slots) IsInUse(s slot.Location) (result bool) {
+	_, result = slots.slotMap[s]
+	return
+}
