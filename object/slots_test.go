@@ -12,6 +12,8 @@ type SlotsSuite struct {
 	suite.Suite
 	slots         *Slots
 	slotInventory *SlotInventory
+	weaponInst    *Instance
+	armorInst     *Instance
 }
 
 type SlotInventory struct {
@@ -29,24 +31,24 @@ func TestSlotsSuite(t *testing.T) {
 func (suite *SlotsSuite) SetupTest() {
 	suite.slotInventory = &SlotInventory{m: make(thing.Map)}
 	suite.slots = NewSlots()
+	suite.weaponInst = &Instance{
+		InstanceId: uuid.NewV4(),
+		Definition: NewDefinition("weapon", "weapon", "zone", Weapon, []string{}, "weapon", "weapon", slot.Wield),
+	}
+	suite.armorInst = &Instance{
+		InstanceId: uuid.NewV4(),
+		Definition: NewDefinition("armor", "armor", "zone", Armor, []string{}, "armor", "armor", slot.Head),
+	}
 }
 
 func (suite *SlotsSuite) TestSetEquippedPrimaryWeapon() {
-	weaponInst := &Instance{
-		InstanceId: uuid.NewV4(),
-		Definition: NewDefinition("weapon", "weapon", "zone", Weapon, []string{}, "weapon", "weapon", slot.Wield),
-	}
-	suite.slotInventory.m.Add(weaponInst)
-	suite.slots.Set(slot.Wield, weaponInst)
+	suite.slotInventory.m.Add(suite.weaponInst)
+	suite.slots.Set(slot.Wield, suite.weaponInst)
 }
 
 func (suite *SlotsSuite) TestSetEquippedSecondaryWeapon() {
-	weaponInst := &Instance{
-		InstanceId: uuid.NewV4(),
-		Definition: NewDefinition("weapon", "weapon", "zone", Weapon, []string{}, "weapon", "weapon", slot.Wield),
-	}
-	suite.slotInventory.m.Add(weaponInst)
-	suite.slots.Set(slot.Wield, weaponInst)
+	suite.slotInventory.m.Add(suite.weaponInst)
+	suite.slots.Set(slot.Wield, suite.weaponInst)
 }
 
 func (suite *SlotsSuite) TestCantEquipYouDontHaveOne() {
@@ -57,7 +59,7 @@ func (suite *SlotsSuite) TestCantEquipYouDontHaveOne() {
 	suite.slots.Set(slot.Wield, youdonthaveoneInst)
 }
 
-func (suite *SlotsSuite) TestNotEquipableWeapon() {
+func (suite *SlotsSuite) TestNotEquippableWeapon() {
 	cantequipthat := &Instance{
 		InstanceId: uuid.NewV4(),
 		Definition: NewDefinition("treasure", "treasure", "zone", Treasure, []string{}, "treasure", "treasure", slot.None),
@@ -66,4 +68,12 @@ func (suite *SlotsSuite) TestNotEquipableWeapon() {
 
 	// that isn't a weapon
 	suite.slots.Set(slot.Wield, cantequipthat)
+}
+
+func (suite *SlotsSuite) TestSlotInUse() {
+	suite.slots.Set(slot.Head, suite.armorInst)
+	suite.Assert().True(suite.slots.IsSlotInUse(slot.Head))
+
+	suite.Assert().True(suite.slots.IsItemInUse(suite.armorInst))
+	suite.Assert().False(suite.slots.IsItemInUse(suite.weaponInst))
 }

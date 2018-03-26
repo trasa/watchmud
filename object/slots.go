@@ -33,7 +33,16 @@ func (slots *Slots) Set(s slot.Location, obj *Instance) {
 	slots.slotMap[s] = obj
 }
 
-func (slots *Slots) IsInUse(s slot.Location) (result bool) {
+func (slots *Slots) IsSlotInUse(s slot.Location) (result bool) {
 	_, result = slots.slotMap[s]
 	return
+}
+
+func (slots *Slots) IsItemInUse(obj *Instance) bool {
+	for _, inst := range slots.slotMap {
+		if inst == obj {
+			return true
+		}
+	}
+	return false
 }

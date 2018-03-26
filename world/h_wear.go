@@ -20,7 +20,7 @@ func (w *World) handleWear(msg *gameserver.HandlerParameter) {
 		loc := instPtr.Definition.WearLocation
 
 		// is something else already in the location?
-		if msg.Player.Slots().IsInUse(loc) {
+		if msg.Player.Slots().IsSlotInUse(loc) {
 			msg.Player.Send(message.WearResponse{Success: false, ResultCode: "IN_USE"})
 			return
 		}
