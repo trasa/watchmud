@@ -60,6 +60,13 @@ func TranslateLineToMessage(tokens []string) (msg *GameMessage, err error) {
 		case "inv", "inventory":
 			payload = InventoryRequest{}
 
+		case "kill", "k", "attack":
+			if len(tokens) >= 2 {
+				payload = KillRequest{Target: tokens[1]}
+			} else {
+				err = errors.New("What do you want to attack?")
+			}
+
 		case "look", "l":
 			payload = LookRequest{
 				ValueList: tokens[1:],

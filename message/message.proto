@@ -34,6 +34,9 @@ message GameMessage {
         InventoryRequest inventoryRequest = 140;
         InventoryResponse inventoryResponse = 141;
 
+        KillRequest killRequest = 146;
+        KillResponse killResponse = 147;
+
         LoginRequest loginRequest = 150;
         LoginResponse loginResponse = 151;
 
@@ -155,6 +158,15 @@ message InventoryResponse {
         string shortDescription = 2;
         repeated int32 objectCategories = 3;
     }
+}
+
+message KillRequest {
+    string target = 1;
+}
+
+message KillResponse {
+    bool success = 1;
+    string resultCode = 2;
 }
 
 message LoginRequest {
