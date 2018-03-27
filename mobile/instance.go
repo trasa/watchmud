@@ -15,6 +15,7 @@ type Instance struct {
 	Definition        *Definition
 	LastWanderingTime time.Time // when was the last time this mob went wandering?
 	WanderingForward  bool      // do you wander forward on the path or backwards?
+	CurHealth         int
 }
 
 func NewInstance(defn *Definition) *Instance {
@@ -22,6 +23,7 @@ func NewInstance(defn *Definition) *Instance {
 		Definition:        defn,
 		LastWanderingTime: time.Now(),
 		WanderingForward:  true, // by default
+		CurHealth:         defn.MaxHealth,
 	}
 }
 

@@ -18,4 +18,6 @@ type Player interface {
 	GetAllInventory() []*object.Instance
 	FindInventory(target string) (*object.Instance, bool)
 	Slots() *object.Slots
+	GetCurrentHealth() int
+	GetMaxHealth() int
 }

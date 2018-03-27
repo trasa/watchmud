@@ -13,6 +13,8 @@ type ClientPlayer struct {
 	Client    client.Client
 	inventory *player.PlayerInventory
 	slots     *object.Slots
+	curHealth int
+	maxHealth int
 }
 
 // Create a ClientPlayer connected to a new TestClient
@@ -31,6 +33,8 @@ func NewClientPlayer(name string, client client.Client) *ClientPlayer {
 		Client:    client, // address of interface
 		inventory: player.NewPlayerInventory(),
 		slots:     object.NewSlots(),
+		curHealth: 100,
+		maxHealth: 100,
 	}
 	return &p
 }
@@ -73,4 +77,12 @@ func (p *ClientPlayer) FindInventory(target string) (*object.Instance, bool) {
 
 func (p *ClientPlayer) Slots() *object.Slots {
 	return p.slots
+}
+
+func (p *ClientPlayer) GetCurrentHealth() int {
+	return p.curHealth
+}
+
+func (p *ClientPlayer) GetMaxHealth() int {
+	return p.maxHealth
 }
