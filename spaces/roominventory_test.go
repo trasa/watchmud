@@ -46,7 +46,7 @@ func (suite *RoomInventorySuite) TestRoomInventory_AddMany() {
 	suite.Assert().True(exists)
 	suite.Assert().Equal(rettwo, suite.instTwo)
 
-	nothing, exists := suite.roomInventory.GetByInstanceId(uuid.NewV4())
+	nothing, exists := suite.roomInventory.GetByInstanceId(uuid.Must(uuid.NewV4()))
 	suite.Assert().False(exists)
 	suite.Assert().Nil(nothing)
 }
