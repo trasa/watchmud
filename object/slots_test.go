@@ -32,28 +32,20 @@ func (suite *SlotsSuite) SetupTest() {
 	suite.slotInventory = &SlotInventory{m: make(thing.Map)}
 	suite.slots = NewSlots()
 	suite.weaponInst = &Instance{
-		InstanceId: uuid.NewV4(),
+		InstanceId: uuid.Must(uuid.NewV4()),
 		Definition: NewDefinition("weapon", "weapon", "zone", Weapon, []string{}, "weapon", "weapon", slot.Wield),
 	}
+	suite.slotInventory.m.Add(suite.weaponInst)
+
 	suite.armorInst = &Instance{
-		InstanceId: uuid.NewV4(),
+		InstanceId: uuid.Must(uuid.NewV4()),
 		Definition: NewDefinition("armor", "armor", "zone", Armor, []string{}, "armor", "armor", slot.Head),
 	}
 }
 
-func (suite *SlotsSuite) TestSetEquippedPrimaryWeapon() {
-	suite.slotInventory.m.Add(suite.weaponInst)
-	suite.slots.Set(slot.Wield, suite.weaponInst)
-}
-
-func (suite *SlotsSuite) TestSetEquippedSecondaryWeapon() {
-	suite.slotInventory.m.Add(suite.weaponInst)
-	suite.slots.Set(slot.Wield, suite.weaponInst)
-}
-
 func (suite *SlotsSuite) TestCantEquipYouDontHaveOne() {
 	youdonthaveoneInst := &Instance{
-		InstanceId: uuid.NewV4(),
+		InstanceId: uuid.Must(uuid.NewV4()),
 		Definition: NewDefinition("nothere", "nothere", "zone", Weapon, []string{}, "youdonthaveone", "youdonthaveone", slot.Wield),
 	}
 	suite.slots.Set(slot.Wield, youdonthaveoneInst)
@@ -61,7 +53,7 @@ func (suite *SlotsSuite) TestCantEquipYouDontHaveOne() {
 
 func (suite *SlotsSuite) TestNotEquippableWeapon() {
 	cantequipthat := &Instance{
-		InstanceId: uuid.NewV4(),
+		InstanceId: uuid.Must(uuid.NewV4()),
 		Definition: NewDefinition("treasure", "treasure", "zone", Treasure, []string{}, "treasure", "treasure", slot.None),
 	}
 	suite.slotInventory.m.Add(cantequipthat)
