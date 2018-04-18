@@ -2,7 +2,7 @@
 
 package behavior
 
-import "fmt"
+import "strconv"
 
 const _Behavior_name = "NoneNoTake"
 
@@ -10,7 +10,7 @@ var _Behavior_index = [...]uint8{0, 4, 10}
 
 func (i Behavior) String() string {
 	if i < 0 || i >= Behavior(len(_Behavior_index)-1) {
-		return fmt.Sprintf("Behavior(%d)", i)
+		return "Behavior(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
 	return _Behavior_name[_Behavior_index[i]:_Behavior_index[i+1]]
 }
