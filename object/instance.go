@@ -27,7 +27,7 @@ func (i *Instance) IsGettable() bool {
 }
 
 func NewInstance(defn *Definition) *Instance {
-	id, _ := uuid.NewV4()
+	id := uuid.NewV4()
 	return &Instance{
 		InstanceId: id,
 		Definition: defn,

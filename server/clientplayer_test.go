@@ -27,7 +27,7 @@ func (suite *ClientPlayerSuite) TestAddInventory_New() {
 	defnPtr := object.NewDefinition("defnid", "name", "zone",
 		object.Food, []string{}, "short desc", "in room", slot.None)
 	instPtr := &object.Instance{
-		InstanceId: uuid.Must(uuid.NewV4()),
+		InstanceId: uuid.NewV4(),
 		Definition: defnPtr,
 	}
 
