@@ -46,8 +46,8 @@
   version = "1.2.2"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/trasa/syncmap"
+  version = "1.0.0"
 
 [[constraint]]
   branch = "master"
