@@ -13,6 +13,7 @@ type TestPlayer struct {
 	slots     *object.Slots
 	curHealth int
 	maxHealth int
+	fighting  bool
 }
 
 // create a new test player that can track sent messages through 'sentmessages'
@@ -77,4 +78,8 @@ func (p *TestPlayer) GetCurrentHealth() int {
 
 func (p *TestPlayer) GetMaxHealth() int {
 	return p.maxHealth
+}
+
+func (p *TestPlayer) IsFighting() bool {
+	return p.fighting
 }

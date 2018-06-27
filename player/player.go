@@ -20,4 +20,6 @@ type Player interface {
 	Slots() *object.Slots
 	GetCurrentHealth() int
 	GetMaxHealth() int
+
+	IsFighting() bool
 }

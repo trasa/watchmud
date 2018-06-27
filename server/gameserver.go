@@ -16,6 +16,9 @@ const PULSE_INTERVAL time.Duration = 1 * time.Second // 1 second
 // Mobs consider doing something once every PULSE_MOBILE time
 const PULSE_MOBILE = 10 * time.Second
 
+// battle happens on this interval
+const PULSE_VIOLENCE = 1 * time.Second
+
 // zones reset based on their lifetime, check every pulse_zone (lifetime > pulse_zone)
 const PULSE_ZONE = 1 * time.Minute
 
@@ -75,6 +78,9 @@ func (gs *GameServer) heartbeat(pulse PulseCount, delta float64) {
 
 	// perform violence
 	// do the attacking (players and mobs and everybody)
+	if pulse.checkInterval(PULSE_VIOLENCE) {
+		gs.World.DoViolence()
+	}
 
 	// mud-hour ("player tick")
 	// affect weather, regen ..
