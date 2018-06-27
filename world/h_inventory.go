@@ -8,11 +8,13 @@ import (
 func (w *World) handleInventory(msg *gameserver.HandlerParameter) {
 	var items []*message.InventoryResponse_InventoryItem
 	for _, instPtr := range msg.Player.GetAllInventory() {
-		items = append(items, &message.InventoryResponse_InventoryItem{
-			Id:               instPtr.Id(),
-			ShortDescription: instPtr.Definition.ShortDescription,
-			ObjectCategories: instPtr.Definition.Categories.ToInt32List(),
-		})
+		if !msg.Player.Slots().IsItemInUse(instPtr) {
+			items = append(items, &message.InventoryResponse_InventoryItem{
+				Id:               instPtr.Id(),
+				ShortDescription: instPtr.Definition.ShortDescription,
+				ObjectCategories: instPtr.Definition.Categories.ToInt32List(),
+			})
+		}
 	}
 	msg.Player.Send(message.InventoryResponse{
 		Success:        true,

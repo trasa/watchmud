@@ -26,7 +26,7 @@ func TestInventory_success(t *testing.T) {
 	defnPtr := object.NewDefinition("defnid", "name", "zone",
 		object.Treasure, []string{}, "short desc", "in room", slot.None)
 	instPtr := &object.Instance{
-		InstanceId: uuid.Must(uuid.NewV4()),
+		InstanceId: uuid.NewV4(),
 		Definition: defnPtr,
 	}
 	p.AddInventory(instPtr)

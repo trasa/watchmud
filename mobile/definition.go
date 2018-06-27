@@ -30,6 +30,7 @@ type Definition struct {
 	DescriptionInRoom string // description when in a room "A giant lizard is here."
 	ZoneId            string
 	Wandering         WanderingDefinition
+	MaxHealth         int
 }
 
 // Things to do with how mobs wander around
