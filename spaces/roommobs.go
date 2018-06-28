@@ -24,6 +24,18 @@ func (rm *RoomMobs) GetAll() (result []*mobile.Instance) {
 	return result
 }
 
+func (rm *RoomMobs) Find(target string) (inst *mobile.Instance, exists bool) {
+	for _, inst := range rm.GetAll() {
+		if inst.Definition.Name == target {
+			return inst, true
+		}
+		if inst.Definition.HasAlias(target) {
+			return inst, true
+		}
+	}
+	return nil, false
+}
+
 func (rm *RoomMobs) Remove(inst *mobile.Instance) error {
 	if _, exists := rm.byId[inst.InstanceId]; !exists {
 		return errors.New(fmt.Sprintf("instance id %s does not exist in room", inst.InstanceId))

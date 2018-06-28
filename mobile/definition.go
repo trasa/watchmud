@@ -33,6 +33,15 @@ type Definition struct {
 	MaxHealth         int
 }
 
+func (d *Definition) HasAlias(target string) bool {
+	for _, a := range d.Aliases {
+		if target == a {
+			return true
+		}
+	}
+	return false
+}
+
 // Things to do with how mobs wander around
 type WanderingDefinition struct {
 	CanWander       bool

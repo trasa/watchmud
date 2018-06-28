@@ -25,7 +25,12 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter) {
 
 	room := w.getRoomContainingPlayer(msg.Player)
 	mobileInstance, exists := room.FindMobile(killRequest.Target)
-	log.Printf("found mobile %v, exists %v", mobileInstance, exists)
+	if !exists {
+		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "TARGET_NOT_FOUND"})
+		return
+	}
+	// unused
+	log.Printf("%v", mobileInstance)
 
 	// begin a fight with that target (or join an existing fight if there's
 	// already one going on with that target)

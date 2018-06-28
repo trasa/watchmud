@@ -80,6 +80,11 @@ func (p *TestPlayer) GetMaxHealth() int {
 	return p.maxHealth
 }
 
+// TODO replace this with ... something better.
+func (p *TestPlayer) SetFighting(b bool) {
+	p.fighting = b
+}
+
 func (p *TestPlayer) IsFighting() bool {
 	return p.fighting
 }

@@ -176,6 +176,5 @@ func (r *Room) FindInventory(findMode message.FindMode, index string, target str
 }
 
 func (r *Room) FindMobile(target string) (mob *mobile.Instance, exists bool) {
-	// TODO
-	return nil, false
+	return r.mobs.Find(target)
 }
