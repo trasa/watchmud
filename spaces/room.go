@@ -17,7 +17,7 @@ type Room struct {
 	Zone        *Zone
 	playerList  *player.List // map of players by name
 	inventory   *RoomInventory
-	mobs        map[*mobile.Instance]bool
+	mobs        *RoomMobs
 	directions  map[direction.Direction]*Room
 }
 
@@ -30,7 +30,7 @@ func NewRoom(zone *Zone, id string, name string, description string) *Room {
 		Zone:        zone,
 		playerList:  player.NewList(),
 		inventory:   NewRoomInventory(),
-		mobs:        make(map[*mobile.Instance]bool),
+		mobs:        NewRoomMobs(),
 		directions:  make(map[direction.Direction]*Room),
 	}
 }
@@ -56,8 +56,7 @@ func (r *Room) PlayerLeaves(p player.Player, dir direction.Direction) {
 }
 
 func (r *Room) MobileLeaves(mob *mobile.Instance, dir direction.Direction) {
-	//r.Mobs.Remove(mob)
-	r.mobs[mob] = false
+	r.mobs.Remove(mob)
 	r.Send(message.LeaveRoomNotification{
 		Success:    true,
 		ResultCode: "OK",
@@ -99,13 +98,11 @@ func (r *Room) MobileEnters(mob *mobile.Instance) {
 }
 
 func (r *Room) AddMobile(inst *mobile.Instance) error {
-	//return r.Mobs.Add(inst)
-	r.mobs[inst] = true
-	return nil
+	return r.mobs.Add(inst)
 }
 
-func (r *Room) RemoveMobile(inst *mobile.Instance) {
-	r.mobs[inst] = false
+func (r *Room) RemoveMobile(inst *mobile.Instance) error {
+	return r.mobs.Remove(inst)
 }
 
 // Send to every player in the room.
@@ -142,10 +139,8 @@ func (r *Room) CreateRoomDescription(exclude player.Player) *message.RoomDescrip
 	for _, o := range r.inventory.GetAll() {
 		desc.Objects = append(desc.Objects, o.Definition.DescriptionOnGround)
 	}
-	for mob, inroom := range r.mobs {
-		if inroom {
-			desc.Mobs = append(desc.Mobs, mob.Definition.DescriptionInRoom)
-		}
+	for _, mob := range r.mobs.GetAll() {
+		desc.Mobs = append(desc.Mobs, mob.Definition.DescriptionInRoom)
 	}
 	return &desc
 }
