@@ -4,6 +4,7 @@ import (
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/mobile"
+	"github.com/trasa/watchmud/spaces"
 )
 
 func (w *World) handleKill(msg *gameserver.HandlerParameter) {
@@ -30,6 +31,10 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter) {
 	}
 
 	//  does this room allow fighting..
+	if room.HasFlag(spaces.RoomFlagNoFight) {
+		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "NO_FIGHT_ROOM"})
+		return
+	}
 
 	//	are they something you are allowed to fight (no_fight, other flags... objects...)
 	if mobileInstance.Definition.HasFlag(mobile.FlagNoFight) {

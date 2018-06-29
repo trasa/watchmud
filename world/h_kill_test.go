@@ -8,6 +8,7 @@ import (
 	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/spaces"
 	"testing"
 )
 
@@ -71,4 +72,19 @@ func (suite *HandleKillSuite) TestNoFight() {
 
 	suite.Assert().False(resp.Success)
 	suite.Assert().Equal("NO_FIGHT", resp.ResultCode)
+}
+
+func (suite *HandleKillSuite) TestNoFightInRoom() {
+
+	suite.world.startRoom.SetFlag(spaces.RoomFlagNoFight)
+
+	killHP := newKillRequestHandleParameter(suite.T(), suite.testClient, "target")
+
+	suite.world.handleKill(killHP)
+
+	suite.Assert().Equal(1, suite.player.SentMessageCount())
+	resp := suite.player.GetSentResponse(0).(message.KillResponse)
+
+	suite.Assert().False(resp.Success)
+	suite.Assert().Equal("NO_FIGHT_ROOM", resp.ResultCode)
 }
