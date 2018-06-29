@@ -1,19 +1,19 @@
 package world
 
 import (
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/client"
-	"testing"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
-	"github.com/stretchr/testify/assert"
+	"github.com/trasa/watchmud/player"
+	"testing"
 )
 
 type HandleKillSuite struct {
 	suite.Suite
-	world *World
-	player *player.TestPlayer
+	world      *World
+	player     *player.TestPlayer
 	testClient *client.TestClient
 }
 

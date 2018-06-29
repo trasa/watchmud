@@ -209,20 +209,22 @@ func (wb *WorldBuilder) loadMobileDefinitions() error {
 			return err
 		}
 		for _, mob := range mobEntries {
-			wb.Zones[zonename].AddMobileDefinition(
-				mobile.NewDefinition(mob.Id,
-					mob.Name,
-					zonename,
-					mob.Aliases,
-					mob.ShortDescription,
-					mob.DescriptionInRoom,
-					mobile.WanderingDefinition{
-						CanWander:       mob.WanderingDefinition.CanWander,
-						CheckFrequency:  time.Second * time.Duration(mob.WanderingDefinition.CheckFrequencySeconds),
-						CheckPercentage: float32(mob.WanderingDefinition.CheckPercentage) / 100.0,
-						Style:           mobile.WanderingStyle(mob.WanderingDefinition.WanderStyle),
-						Path:            mob.WanderingDefinition.Path,
-					}))
+			defn := mobile.NewDefinition(mob.Id,
+				mob.Name,
+				zonename,
+				mob.Aliases,
+				mob.ShortDescription,
+				mob.DescriptionInRoom,
+				mobile.WanderingDefinition{
+					CanWander:       mob.WanderingDefinition.CanWander,
+					CheckFrequency:  time.Second * time.Duration(mob.WanderingDefinition.CheckFrequencySeconds),
+					CheckPercentage: float32(mob.WanderingDefinition.CheckPercentage) / 100.0,
+					Style:           mobile.WanderingStyle(mob.WanderingDefinition.WanderStyle),
+					Path:            mob.WanderingDefinition.Path,
+				})
+			defn.SetFlags(mob.Flags)
+			wb.Zones[zonename].AddMobileDefinition(defn)
+
 		}
 	}
 	return nil

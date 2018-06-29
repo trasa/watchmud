@@ -13,6 +13,7 @@ type mobFileEntry struct {
 	ShortDescription    string         `json:"short_description"`
 	DescriptionInRoom   string         `json:"description_in_room"`
 	WanderingDefinition WanderingEntry `json:"wandering_definition"`
+	Flags               []string       `json:"flags"`
 }
 
 type WanderingEntry struct {
