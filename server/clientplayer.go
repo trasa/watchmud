@@ -15,7 +15,6 @@ type ClientPlayer struct {
 	slots     *object.Slots
 	curHealth int
 	maxHealth int
-	fighting  bool
 }
 
 // Create a ClientPlayer connected to a new TestClient
@@ -86,8 +85,4 @@ func (p *ClientPlayer) GetCurrentHealth() int {
 
 func (p *ClientPlayer) GetMaxHealth() int {
 	return p.maxHealth
-}
-
-func (p *ClientPlayer) IsFighting() bool {
-	return p.fighting
 }

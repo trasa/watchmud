@@ -1,6 +1,7 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
@@ -18,6 +19,7 @@ func newTestWorld() *World {
 		zones:       make(map[string]*spaces.Zone),
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
+		fightLedger: combat.NewFightLedger(),
 	}
 	w.initializeHandlerMap()
 	w.zones[testZone.Id] = testZone

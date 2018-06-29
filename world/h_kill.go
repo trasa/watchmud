@@ -10,19 +10,16 @@ import (
 func (w *World) handleKill(msg *gameserver.HandlerParameter) {
 	// TODO make different kill command for killing a player vs
 	// killing a mob. for now this will just be killing mobs.
-
 	killRequest := msg.Message.GetKillRequest()
 
 	// if you're already in a fight, you can't start a new fight
-	if msg.Player.IsFighting() {
+	if w.fightLedger.IsFighting(msg.Player) {
 		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "ALREADY_FIGHTING"})
 		return
 	}
+
 	// figure out if the target of your fight is valid
 	//	are they in the room (still)
-
-	//  and so on
-
 	room := w.getRoomContainingPlayer(msg.Player)
 	mobileInstance, exists := room.FindMobile(killRequest.Target)
 	if !exists {

@@ -1,6 +1,7 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mobile"
@@ -22,6 +23,8 @@ type World struct {
 
 	mobileRooms *spaces.MobileRoomMap // mobile -> room; room -> mobiles
 	handlerMap  map[string]func(message *gameserver.HandlerParameter)
+
+	fightLedger *combat.FightLedger
 }
 
 // Constructor for World
@@ -32,6 +35,7 @@ func New(worldFilesDirectory string) (w *World, err error) {
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
 		mobileRooms: spaces.NewMobileRoomMap(),
+		fightLedger: combat.NewFightLedger(),
 	}
 	w.initializeHandlerMap()
 	err = w.initialLoad(worldFilesDirectory)

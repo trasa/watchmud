@@ -37,7 +37,9 @@ func newKillRequestHandleParameter(t *testing.T, c *client.TestClient, target st
 }
 
 func (suite *HandleKillSuite) TestAlreadyFighting() {
-	suite.player.SetFighting(true)
+	mob, _ := suite.world.startRoom.FindMobile("target")
+	suite.world.fightLedger.Fight(suite.player, mob)
+
 	killHP := newKillRequestHandleParameter(suite.T(), suite.testClient, "targetMob")
 
 	suite.world.handleKill(killHP)
