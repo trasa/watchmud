@@ -6,6 +6,7 @@ import (
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/player"
 	"testing"
 )
@@ -53,6 +54,21 @@ func (suite *HandleKillSuite) TestNoTarget() {
 
 	suite.Assert().Equal(1, suite.player.SentMessageCount())
 	resp := suite.player.GetSentResponse(0).(message.KillResponse)
+
 	suite.Assert().False(resp.Success)
 	suite.Assert().Equal("TARGET_NOT_FOUND", resp.ResultCode)
+}
+
+func (suite *HandleKillSuite) TestNoFight() {
+	mob, _ := suite.world.startRoom.FindMobile("target")
+	mob.Definition.SetFlag(mobile.FlagNoFight)
+	killHP := newKillRequestHandleParameter(suite.T(), suite.testClient, "target")
+
+	suite.world.handleKill(killHP)
+
+	suite.Assert().Equal(1, suite.player.SentMessageCount())
+	resp := suite.player.GetSentResponse(0).(message.KillResponse)
+
+	suite.Assert().False(resp.Success)
+	suite.Assert().Equal("NO_FIGHT", resp.ResultCode)
 }

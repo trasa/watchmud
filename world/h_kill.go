@@ -3,7 +3,7 @@ package world
 import (
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
-	"log"
+	"github.com/trasa/watchmud/mobile"
 )
 
 func (w *World) handleKill(msg *gameserver.HandlerParameter) {
@@ -29,8 +29,10 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter) {
 		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "TARGET_NOT_FOUND"})
 		return
 	}
-	// unused
-	log.Printf("%v", mobileInstance)
+	if mobileInstance.Definition.HasFlag(mobile.FlagNoFight) {
+		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "NO_FIGHT"})
+		return
+	}
 
 	// begin a fight with that target (or join an existing fight if there's
 	// already one going on with that target)

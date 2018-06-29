@@ -224,7 +224,6 @@ func (wb *WorldBuilder) loadMobileDefinitions() error {
 				})
 			defn.SetFlags(mob.Flags)
 			wb.Zones[zonename].AddMobileDefinition(defn)
-
 		}
 	}
 	return nil

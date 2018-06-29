@@ -1,29 +1,28 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/slot"
 	"github.com/trasa/watchmud/spaces"
+	"github.com/trasa/watchmud/zonereset"
 )
 
 // create a new test world
 func newTestWorld() *World {
 
-	testZone := spaces.Zone{
-		Id:    "sample",
-		Name:  "Sample Zone",
-		Rooms: make(map[string]*spaces.Room),
-	}
+	testZone := spaces.NewZone("sample", "Sample Zone", zonereset.NEVER, 0)
+
 	w := &World{
 		zones:       make(map[string]*spaces.Zone),
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
 	}
 	w.initializeHandlerMap()
-	w.zones[testZone.Id] = &testZone
+	w.zones[testZone.Id] = testZone
 
-	testRoom := spaces.NewRoom(&testZone, "start", "Test Room", "this is a test room.")
+	testRoom := spaces.NewRoom(testZone, "start", "Test Room", "this is a test room.")
 	testZone.Rooms[testRoom.Id] = testRoom
 	w.startRoom = testRoom
 
@@ -49,5 +48,17 @@ func newTestWorld() *World {
 		slot.Head)
 	ironHelmetObj := object.NewInstance(ironHelmetDefn)
 	testRoom.AddInventory(ironHelmetObj)
+
+	mobDefn := mobile.NewDefinition("targetDrone", "Target Drone",
+		testZone.Id,
+		[]string{"target", "drone"},
+		"Target Drone",
+		"Target Drone buzzes around",
+		mobile.WanderingDefinition{
+			CanWander: false,
+		})
+	testZone.AddMobileDefinition(mobDefn)
+	testRoom.AddMobile(mobile.NewInstance(mobDefn))
+
 	return w
 }

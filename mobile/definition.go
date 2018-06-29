@@ -49,9 +49,13 @@ func (d *Definition) HasAlias(target string) bool {
 func (d *Definition) SetFlags(flags []string) {
 	if flags != nil {
 		for _, s := range flags {
-			d.flags[s] = true
+			d.SetFlag(s)
 		}
 	}
+}
+
+func (d *Definition) SetFlag(flag string) {
+	d.flags[flag] = true
 }
 
 func (d *Definition) HasFlag(flag string) bool {
