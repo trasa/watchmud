@@ -3,6 +3,7 @@
     "id": "start",
     "name": "Central Portal",
     "description": "It's a boring room, with boring stuff in it.",
+    "flags": [ "nofight" ],
     "exits": [
       {
         "direction": 1,

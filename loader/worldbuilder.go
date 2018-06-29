@@ -97,6 +97,7 @@ func (wb *WorldBuilder) loadRooms() error {
 		roomMap[zonename] = fileEntries
 		for _, roomEntry := range fileEntries {
 			r := spaces.NewRoom(wb.Zones[zonename], roomEntry.Id, roomEntry.Name, roomEntry.Description)
+			r.SetFlags(roomEntry.Flags)
 			wb.Zones[zonename].AddRoom(r)
 			// If the direction zone/room doesn't indicate the zone,
 			// assume that the direction is to a zoome in the current zone

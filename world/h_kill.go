@@ -19,8 +19,7 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter) {
 	}
 	// figure out if the target of your fight is valid
 	//	are they in the room (still)
-	//	are they something you are allowed to fight (no_fight, other flags... objects...)
-	//  does this room allow fighting..
+
 	//  and so on
 
 	room := w.getRoomContainingPlayer(msg.Player)
@@ -29,6 +28,10 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter) {
 		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "TARGET_NOT_FOUND"})
 		return
 	}
+
+	//  does this room allow fighting..
+
+	//	are they something you are allowed to fight (no_fight, other flags... objects...)
 	if mobileInstance.Definition.HasFlag(mobile.FlagNoFight) {
 		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "NO_FIGHT"})
 		return
