@@ -9,7 +9,7 @@ type Fight struct {
 }
 
 func NewFight(fighter Combatant, fightee Combatant) *Fight {
-	return &Fight {
+	return &Fight{
 		fighter,
 		fightee,
 	}

@@ -1,9 +1,15 @@
 package combat
 
 type TestCombatant struct {
-	x int // don't be empty or instance comparison doesn't work
+	Name string
 }
 
-func NewTestCombatant() *TestCombatant {
-	return &TestCombatant{}
+func (t *TestCombatant) GetName() string {
+	return t.Name
+}
+
+func NewTestCombatant(name string) *TestCombatant {
+	return &TestCombatant{
+		Name: name,
+	}
 }

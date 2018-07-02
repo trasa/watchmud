@@ -20,8 +20,8 @@ func (suite *FightLedgerSuite) SetupTest() {
 }
 
 func (suite *FightLedgerSuite) TestIsFighting() {
-	fighter := NewTestCombatant()
-	fightee := NewTestCombatant()
+	fighter := NewTestCombatant("fighter")
+	fightee := NewTestCombatant("fightee")
 
 	log.Printf("%p", fighter)
 	log.Printf("%p", fightee)
@@ -37,8 +37,8 @@ func (suite *FightLedgerSuite) TestIsFighting() {
 }
 
 func (suite *FightLedgerSuite) TestAlreadyFighting() {
-	fighter := NewTestCombatant()
-	fightee := NewTestCombatant()
+	fighter := NewTestCombatant("fighter")
+	fightee := NewTestCombatant("fightee")
 
 	suite.Assert().NoError(suite.fightLedger.Fight(fighter, fightee))
 	// can't fight when you're already fighting
