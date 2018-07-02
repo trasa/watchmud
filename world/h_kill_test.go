@@ -36,6 +36,23 @@ func newKillRequestHandleParameter(t *testing.T, c *client.TestClient, target st
 	return gameserver.NewHandlerParameter(c, msg)
 }
 
+
+func (suite *HandleKillSuite) TestSuccess() {
+	mob, _ := suite.world.startRoom.FindMobile("target")
+	killHP := newKillRequestHandleParameter(suite.T(), suite.testClient, "target")
+
+	suite.world.handleKill(killHP)
+
+	suite.Assert().Equal(1, suite.player.SentMessageCount())
+	resp := suite.player.GetSentResponse(0).(message.KillResponse)
+	suite.Assert().True(resp.Success)
+	suite.Assert().Equal("OK", resp.ResultCode)
+
+	suite.Assert().True(suite.world.fightLedger.IsFighting(suite.player))
+	suite.Assert().Equal(mob, suite.world.fightLedger.GetFightee(suite.player))
+}
+
+
 func (suite *HandleKillSuite) TestAlreadyFighting() {
 	mob, _ := suite.world.startRoom.FindMobile("target")
 	suite.world.fightLedger.Fight(suite.player, mob)

@@ -34,6 +34,10 @@ func (mob *Instance) Id() string {
 	return mob.InstanceId.String()
 }
 
+func (mob *Instance) GetName() string {
+	return mob.Definition.Name
+}
+
 func (mob *Instance) CanWander() bool {
 	return mob.canWander(time.Now())
 }
