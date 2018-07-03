@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/satori/go.uuid"
+	"github.com/trasa/watchmud/mudtime"
 	"math/rand"
 	"time"
 )
@@ -73,4 +74,8 @@ func (mob *Instance) GetIndexOnPath(currentRoom string) (int, error) {
 		}
 	}
 	return -1, errors.New(fmt.Sprintf("currentRoom '%s' not found in path '%s'", currentRoom, mob.Definition.Wandering.Path))
+}
+
+func (mob *Instance) CanDoViolence(last mudtime.PulseCount, now mudtime.PulseCount) bool {
+	return false // TODO
 }

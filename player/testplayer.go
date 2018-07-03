@@ -2,6 +2,7 @@ package player
 
 import (
 	"github.com/satori/go.uuid"
+	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/object"
 	"log"
 )
@@ -77,4 +78,8 @@ func (p *TestPlayer) GetCurrentHealth() int {
 
 func (p *TestPlayer) GetMaxHealth() int {
 	return p.maxHealth
+}
+
+func (p *TestPlayer) CanDoViolence(last mudtime.PulseCount, now mudtime.PulseCount) bool {
+	return false // TODO
 }

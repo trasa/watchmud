@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/client"
+	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
+	"log"
+	"time"
 )
 
 type ClientPlayer struct {
@@ -85,4 +88,11 @@ func (p *ClientPlayer) GetCurrentHealth() int {
 
 func (p *ClientPlayer) GetMaxHealth() int {
 	return p.maxHealth
+}
+
+func (p *ClientPlayer) CanDoViolence(last mudtime.PulseCount, now mudtime.PulseCount) bool {
+	// for now. lets say that clientplayer fight speed is "normal"
+	// and that means they fight every 3 seconds.
+	log.Printf("start %d, end %d", last, now)
+	return mudtime.DurationBetween(last, now) >= time.Duration(time.Second*3)
 }

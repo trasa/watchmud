@@ -21,6 +21,8 @@ const PULSE_ZONE = 1 * time.Minute
 // that, the pulse-rollover code should be reinstated.
 type PulseCount int64
 
+const PulseCountNever = PulseCount(0)
+
 func (pc PulseCount) ToDuration() time.Duration {
 	return time.Duration(int64(pc) * PULSE_INTERVAL.Nanoseconds())
 }
@@ -32,4 +34,8 @@ func (pc PulseCount) CheckInterval(i time.Duration) bool {
 // Determines how many Pulses would happen in time.Duration i
 func TimeDurationToPulseCount(i time.Duration) PulseCount {
 	return PulseCount(i / PULSE_INTERVAL)
+}
+
+func DurationBetween(start PulseCount, end PulseCount) time.Duration {
+	return (end - start).ToDuration()
 }
