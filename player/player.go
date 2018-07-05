@@ -2,7 +2,6 @@ package player
 
 import (
 	"github.com/satori/go.uuid"
-	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/object"
 )
 
@@ -21,5 +20,5 @@ type Player interface {
 	Slots() *object.Slots
 	GetCurrentHealth() int
 	GetMaxHealth() int
-	CanDoViolence(last mudtime.PulseCount, now mudtime.PulseCount) bool
+	TakeMeleeDamage(damage int) (isDead bool)
 }

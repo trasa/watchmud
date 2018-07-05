@@ -2,7 +2,6 @@ package player
 
 import (
 	"github.com/satori/go.uuid"
-	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/object"
 	"log"
 )
@@ -22,6 +21,8 @@ func NewTestPlayer(name string) *TestPlayer {
 		name:      name,
 		inventory: NewPlayerInventory(),
 		slots:     object.NewSlots(),
+		curHealth: 100,
+		maxHealth: 100,
 	}
 	return p
 }
@@ -80,6 +81,7 @@ func (p *TestPlayer) GetMaxHealth() int {
 	return p.maxHealth
 }
 
-func (p *TestPlayer) CanDoViolence(last mudtime.PulseCount, now mudtime.PulseCount) bool {
-	return false // TODO
+func (p *TestPlayer) TakeMeleeDamage(damage int) (isDead bool) {
+	p.curHealth = p.curHealth - damage
+	return p.curHealth <= 0
 }
