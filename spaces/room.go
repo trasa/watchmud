@@ -139,6 +139,14 @@ func (r *Room) SendExcept(exception player.Player, msg interface{}) {
 	})
 }
 
+// tell all players and all mobs in a room about something
+func (r *Room) Notify(msg interface{}) {
+	for _, m := range r.mobs.GetAll() {
+		m.Send(msg)
+	}
+	r.Send(msg)
+}
+
 // Describe this room.
 func (r *Room) CreateRoomDescription(exclude player.Player) *message.RoomDescription {
 	desc := message.RoomDescription{

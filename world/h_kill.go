@@ -41,7 +41,7 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter) {
 
 	// begin a fight with that target (or join an existing fight if there's
 	// already one going on with that target)
-	if err := w.fightLedger.Fight(msg.Player, mobileInstance); err != nil {
+	if err := w.fightLedger.Fight(msg.Player, mobileInstance, room.Zone.Id, room.Id); err != nil {
 		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "ERROR_" + err.Error()})
 		return
 	}

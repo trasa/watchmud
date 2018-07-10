@@ -79,3 +79,7 @@ func (mob *Instance) TakeMeleeDamage(damage int) (isDead bool) {
 	mob.CurHealth = mob.CurHealth - damage
 	return mob.CurHealth <= 0
 }
+
+func (mob *Instance) Send(msg interface{}) {
+	// TODO do something with this notification
+}

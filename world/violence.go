@@ -2,6 +2,7 @@ package world
 
 import (
 	"github.com/trasa/watchmud/combat"
+	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/mudtime"
 	"log"
 )
@@ -31,17 +32,26 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 			fightResult := combat.CalculateMeleeAttack(fight.Fighter, fight.Fightee)
 			log.Printf("fight result: %s", fightResult)
 
-			// TODO tell everybody in the room what is going on
-			//fight.NotifyCombatants(fightResult)
+			var isDead = false
 			if fightResult.WasHit {
-				isDead := fight.Fightee.TakeMeleeDamage(fightResult.Damage)
-				if isDead {
-					// become corpse
-					//w.makeDead(fight.Fightee)
+				isDead = fight.Fightee.TakeMeleeDamage(fightResult.Damage)
+			}
+			// tell everyone what is going on
+			if room, found := w.findRoomById(fight.ZoneId, fight.RoomId); found {
+				room.Notify(message.ViolenceNotification{
+					Fighter:       fight.Fighter.GetName(),
+					Fightee:       fight.Fightee.GetName(),
+					SuccessfulHit: fightResult.WasHit,
+					Damage:        int32(fightResult.Damage),
+				})
+			}
 
-					// fight is over
-					fightsToCleanup = append(fightsToCleanup, fight)
-				}
+			if isDead {
+				// become corpse
+				//w.makeDead(fight.Fightee)
+				// TODO tell everyone what is going on..
+				// fight is over
+				fightsToCleanup = append(fightsToCleanup, fight)
 			}
 		}
 	}

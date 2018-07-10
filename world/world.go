@@ -89,6 +89,17 @@ func (w *World) getRoomContainingMobile(mob *mobile.Instance) *spaces.Room {
 	return w.mobileRooms.GetRoomForMobile(mob)
 }
 
+// find room by zone id and room id.
+// return nil if not found
+func (w *World) findRoomById(zoneId string, roomId string) (*spaces.Room, bool) {
+	if z, zoneExists := w.zones[zoneId]; zoneExists {
+		if r, roomExists := z.Rooms[roomId]; roomExists {
+			return r, true
+		}
+	}
+	return nil, false
+}
+
 func (w *World) findPlayerByName(name string) player.Player {
 	return w.playerList.FindByName(name)
 }

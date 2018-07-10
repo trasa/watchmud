@@ -12,11 +12,11 @@ func NewFightLedger() *FightLedger {
 	}
 }
 
-func (f *FightLedger) Fight(fighter Combatant, fightee Combatant) error {
+func (f *FightLedger) Fight(fighter Combatant, fightee Combatant, zoneId string, roomId string) error {
 	if f.IsFighting(fighter) {
 		return errors.New("Fighter is already fighting someone")
 	}
-	f.fightMap[fighter] = NewFight(fighter, fightee)
+	f.fightMap[fighter] = NewFight(fighter, fightee, zoneId, roomId)
 	return nil
 }
 

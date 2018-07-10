@@ -29,7 +29,7 @@ func (suite *FightLedgerSuite) TestIsFighting() {
 	suite.Assert().False(suite.fightLedger.IsFighting(fighter))
 	suite.Assert().False(suite.fightLedger.IsFighting(fightee))
 
-	suite.fightLedger.Fight(fighter, fightee)
+	suite.fightLedger.Fight(fighter, fightee, "zoneId", "roomId")
 
 	// fighting is one directional
 	suite.Assert().True(suite.fightLedger.IsFighting(fighter))
@@ -40,8 +40,8 @@ func (suite *FightLedgerSuite) TestAlreadyFighting() {
 	fighter := NewTestCombatant("fighter")
 	fightee := NewTestCombatant("fightee")
 
-	suite.Assert().NoError(suite.fightLedger.Fight(fighter, fightee))
+	suite.Assert().NoError(suite.fightLedger.Fight(fighter, fightee, "zoneId", "roomId"))
 	// can't fight when you're already fighting
-	suite.Assert().Error(suite.fightLedger.Fight(fighter, fightee))
+	suite.Assert().Error(suite.fightLedger.Fight(fighter, fightee, "zoneId", "roomId"))
 
 }

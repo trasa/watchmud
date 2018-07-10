@@ -12,7 +12,7 @@ import (
 
 type Zone struct {
 	Id                string
-	Rooms             map[string]*Room
+	Rooms             map[string]*Room              // id -> *room
 	ObjectDefinitions map[string]*object.Definition // id (no zone) -> object.Definition
 	MobileDefinitions map[string]*mobile.Definition // id -> mobile.Definition
 	Name              string

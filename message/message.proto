@@ -68,6 +68,8 @@ message GameMessage {
         TellAllResponse tellAllResponse = 211;
         TellAllNotification tellAllNotification = 212;
 
+        ViolenceNotification violenceNotification = 214;
+
         WearRequest wearRequest = 216;
         WearResponse wearResponse = 217;
 
@@ -316,6 +318,13 @@ message TellAllNotification {
     string resultCode = 2;
     string sender = 3;
     string value = 4;
+}
+
+message ViolenceNotification {
+    string fighter = 1;
+    string fightee = 2;
+    bool successfulHit = 3;
+    int32 damage = 4;
 }
 
 message WhoRequest {

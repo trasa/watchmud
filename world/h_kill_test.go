@@ -54,7 +54,7 @@ func (suite *HandleKillSuite) TestSuccess() {
 
 func (suite *HandleKillSuite) TestAlreadyFighting() {
 	mob, _ := suite.world.startRoom.FindMobile("target")
-	suite.world.fightLedger.Fight(suite.player, mob)
+	suite.world.fightLedger.Fight(suite.player, mob, suite.world.startRoom.Zone.Id, suite.world.startRoom.Id)
 
 	killHP := newKillRequestHandleParameter(suite.T(), suite.testClient, "targetMob")
 

@@ -11,13 +11,17 @@ type Fight struct {
 	// TODO fighter speed - slow, fast, medium, whatever...
 	Fightee   Combatant
 	LastPulse mudtime.PulseCount
+	ZoneId    string
+	RoomId    string
 }
 
-func NewFight(fighter Combatant, fightee Combatant) *Fight {
+func NewFight(fighter Combatant, fightee Combatant, zoneId string, roomId string) *Fight {
 	return &Fight{
 		fighter,
 		fightee,
 		mudtime.PulseCountNever,
+		zoneId,
+		roomId,
 	}
 }
 
