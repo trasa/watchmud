@@ -9,6 +9,7 @@ type roomFileEntry struct {
 	Id          string                `json:"id"`
 	Name        string                `json:"name"`
 	Description string                `json:"description"`
+	Flags       []string              `json:"flags"`
 	Exits       []*roomFileEntryExits `json:"exits"`
 }
 

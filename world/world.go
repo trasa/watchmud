@@ -1,6 +1,7 @@
 package world
 
 import (
+	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mobile"
@@ -22,6 +23,8 @@ type World struct {
 
 	mobileRooms *spaces.MobileRoomMap // mobile -> room; room -> mobiles
 	handlerMap  map[string]func(message *gameserver.HandlerParameter)
+
+	fightLedger *combat.FightLedger
 }
 
 // Constructor for World
@@ -32,6 +35,7 @@ func New(worldFilesDirectory string) (w *World, err error) {
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
 		mobileRooms: spaces.NewMobileRoomMap(),
+		fightLedger: combat.NewFightLedger(),
 	}
 	w.initializeHandlerMap()
 	err = w.initialLoad(worldFilesDirectory)
@@ -83,6 +87,17 @@ func (w *World) getRoomContainingPlayer(p player.Player) *spaces.Room {
 
 func (w *World) getRoomContainingMobile(mob *mobile.Instance) *spaces.Room {
 	return w.mobileRooms.GetRoomForMobile(mob)
+}
+
+// find room by zone id and room id.
+// return nil if not found
+func (w *World) findRoomById(zoneId string, roomId string) (*spaces.Room, bool) {
+	if z, zoneExists := w.zones[zoneId]; zoneExists {
+		if r, roomExists := z.Rooms[roomId]; roomExists {
+			return r, true
+		}
+	}
+	return nil, false
 }
 
 func (w *World) findPlayerByName(name string) player.Player {

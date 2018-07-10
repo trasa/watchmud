@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/satori/go.uuid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/slot"
@@ -34,8 +33,35 @@ func (suite *ClientPlayerSuite) TestAddInventory_New() {
 	suite.player.AddInventory(instPtr)
 
 	invs := suite.player.GetAllInventory()
-	assert.Equal(suite.T(), 1, len(invs))
+	suite.Assert().Equal(1, len(invs))
 	obj := invs[0]
-	assert.Equal(suite.T(), instPtr.Id(), obj.Id())
-	assert.Equal(suite.T(), "defnid", obj.Definition.Identifier())
+	suite.Assert().Equal(instPtr.Id(), obj.Id())
+	suite.Assert().Equal("defnid", obj.Definition.Identifier())
+}
+
+func (suite *ClientPlayerSuite) TestMeleeDamage() {
+	startingHealth := suite.player.GetCurrentHealth()
+
+	isDead := suite.player.TakeMeleeDamage(5)
+
+	suite.Assert().False(isDead)
+	suite.Assert().Equal(startingHealth-5, suite.player.GetCurrentHealth())
+}
+
+func (suite *ClientPlayerSuite) TestFatalMeleeDamage() {
+	startingHealth := suite.player.GetCurrentHealth()
+
+	isDead := suite.player.TakeMeleeDamage(startingHealth)
+
+	suite.Assert().True(isDead)
+	suite.Assert().Equal(0, suite.player.GetCurrentHealth())
+}
+
+func (suite *ClientPlayerSuite) TestOverwhelminglyFatalMeleeDamage() {
+	startingHealth := suite.player.GetCurrentHealth()
+
+	isDead := suite.player.TakeMeleeDamage(startingHealth * 2)
+
+	suite.Assert().True(isDead)
+	suite.Assert().True(suite.player.curHealth < 0)
 }

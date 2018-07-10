@@ -33,7 +33,7 @@ func NewClientPlayer(name string, client client.Client) *ClientPlayer {
 		Client:    client, // address of interface
 		inventory: player.NewPlayerInventory(),
 		slots:     object.NewSlots(),
-		curHealth: 100,
+		curHealth: 100, // TODO need a default health here
 		maxHealth: 100,
 	}
 	return &p
@@ -85,4 +85,9 @@ func (p *ClientPlayer) GetCurrentHealth() int {
 
 func (p *ClientPlayer) GetMaxHealth() int {
 	return p.maxHealth
+}
+
+func (p *ClientPlayer) TakeMeleeDamage(damage int) (isDead bool) {
+	p.curHealth = p.curHealth - damage
+	return p.curHealth <= 0
 }

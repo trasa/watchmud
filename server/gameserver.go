@@ -4,20 +4,11 @@ import (
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/world"
 	"log"
 	"time"
 )
-
-// Game Server ticks every PULSE_INTERVAL time
-//const PULSE_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
-const PULSE_INTERVAL time.Duration = 1 * time.Second // 1 second
-
-// Mobs consider doing something once every PULSE_MOBILE time
-const PULSE_MOBILE = 10 * time.Second
-
-// zones reset based on their lifetime, check every pulse_zone (lifetime > pulse_zone)
-const PULSE_ZONE = 1 * time.Minute
 
 type GameServer struct {
 	incomingBuffer chan *gameserver.HandlerParameter
@@ -39,8 +30,8 @@ func (gs *GameServer) Run() {
 	// this is the loop that handles incoming requests
 	// needs to be organized around PULSEs
 	tstart := time.Now().UnixNano()
-	ticker := time.NewTicker(PULSE_INTERVAL)
-	pulse := PulseCount(0)
+	ticker := time.NewTicker(mudtime.PULSE_INTERVAL)
+	pulse := mudtime.PulseCount(0)
 
 	for {
 		select {
@@ -57,24 +48,27 @@ func (gs *GameServer) Run() {
 // runs the heartbeat of the game. Use pulse to determine intervals
 // between things (ex. reset zones every 15 minutes...)
 // delta is the amount of time since the last heartbeat was run.
-func (gs *GameServer) heartbeat(pulse PulseCount, delta float64) {
+func (gs *GameServer) heartbeat(pulse mudtime.PulseCount, delta float64) {
 	//log.Printf("pulse %d hb %d", pulse, delta)
 	// mobs, scripts, ...
 
 	// pulse zone
 	// (zone reset ...)
-	if pulse.checkInterval(PULSE_ZONE) {
+	if pulse.CheckInterval(mudtime.PULSE_ZONE) {
 		gs.World.DoZoneActivity()
 	}
 
 	// pulse mobs
 	// (mobs walk around, initiate attack?)
-	if pulse.checkInterval(PULSE_MOBILE) {
+	if pulse.CheckInterval(mudtime.PULSE_MOBILE) {
 		gs.World.DoMobileActivity()
 	}
 
 	// perform violence
 	// do the attacking (players and mobs and everybody)
+	if pulse.CheckInterval(mudtime.PULSE_VIOLENCE) {
+		gs.World.DoViolence(pulse)
+	}
 
 	// mud-hour ("player tick")
 	// affect weather, regen ..

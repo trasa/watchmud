@@ -20,4 +20,5 @@ type Player interface {
 	Slots() *object.Slots
 	GetCurrentHealth() int
 	GetMaxHealth() int
+	TakeMeleeDamage(damage int) (isDead bool)
 }

@@ -1,6 +1,21 @@
 package mobile
 
-import "time"
+import (
+	"time"
+)
+
+// Defines what it means to be a mob.
+type Definition struct {
+	Id                string
+	Aliases           []string
+	Name              string
+	ShortDescription  string
+	DescriptionInRoom string // description when in a room "A giant lizard is here."
+	ZoneId            string
+	Wandering         WanderingDefinition
+	MaxHealth         int
+	flags             map[string]bool
+}
 
 func NewDefinition(definitionId string,
 	name string,
@@ -17,20 +32,34 @@ func NewDefinition(definitionId string,
 		DescriptionInRoom: descriptionInRoom,
 		Wandering:         wandering,
 		ZoneId:            zoneId,
+		flags:             make(map[string]bool),
 	}
 	return d
 }
 
-// Defines what it means to be a mob.
-type Definition struct {
-	Id                string
-	Aliases           []string
-	Name              string
-	ShortDescription  string
-	DescriptionInRoom string // description when in a room "A giant lizard is here."
-	ZoneId            string
-	Wandering         WanderingDefinition
-	MaxHealth         int
+func (d *Definition) HasAlias(target string) bool {
+	for _, a := range d.Aliases {
+		if target == a {
+			return true
+		}
+	}
+	return false
+}
+
+func (d *Definition) SetFlags(flags []string) {
+	if flags != nil {
+		for _, s := range flags {
+			d.SetFlag(s)
+		}
+	}
+}
+
+func (d *Definition) SetFlag(flag string) {
+	d.flags[flag] = true
+}
+
+func (d *Definition) HasFlag(flag string) bool {
+	return d.flags[flag]
 }
 
 // Things to do with how mobs wander around

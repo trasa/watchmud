@@ -17,8 +17,9 @@ type Room struct {
 	Zone        *Zone
 	playerList  *player.List // map of players by name
 	inventory   *RoomInventory
-	mobs        map[*mobile.Instance]bool
+	mobs        *RoomMobs
 	directions  map[direction.Direction]*Room
+	flags       map[string]bool
 }
 
 // Create a new Room reference
@@ -30,8 +31,9 @@ func NewRoom(zone *Zone, id string, name string, description string) *Room {
 		Zone:        zone,
 		playerList:  player.NewList(),
 		inventory:   NewRoomInventory(),
-		mobs:        make(map[*mobile.Instance]bool),
+		mobs:        NewRoomMobs(),
 		directions:  make(map[direction.Direction]*Room),
+		flags:       make(map[string]bool),
 	}
 }
 
@@ -42,6 +44,22 @@ func NewTestRoom(name string) *Room {
 
 func (r Room) String() string {
 	return fmt.Sprintf("(Room %s: '%s')", r.Id, r.Name)
+}
+
+func (r *Room) SetFlags(flags []string) {
+	if flags != nil {
+		for _, s := range flags {
+			r.SetFlag(s)
+		}
+	}
+}
+
+func (r *Room) SetFlag(flag string) {
+	r.flags[flag] = true
+}
+
+func (r *Room) HasFlag(flag string) bool {
+	return r.flags[flag]
 }
 
 // Player leaves a room. Tells other room residents about it.
@@ -56,8 +74,7 @@ func (r *Room) PlayerLeaves(p player.Player, dir direction.Direction) {
 }
 
 func (r *Room) MobileLeaves(mob *mobile.Instance, dir direction.Direction) {
-	//r.Mobs.Remove(mob)
-	r.mobs[mob] = false
+	r.mobs.Remove(mob)
 	r.Send(message.LeaveRoomNotification{
 		Success:    true,
 		ResultCode: "OK",
@@ -99,13 +116,11 @@ func (r *Room) MobileEnters(mob *mobile.Instance) {
 }
 
 func (r *Room) AddMobile(inst *mobile.Instance) error {
-	//return r.Mobs.Add(inst)
-	r.mobs[inst] = true
-	return nil
+	return r.mobs.Add(inst)
 }
 
-func (r *Room) RemoveMobile(inst *mobile.Instance) {
-	r.mobs[inst] = false
+func (r *Room) RemoveMobile(inst *mobile.Instance) error {
+	return r.mobs.Remove(inst)
 }
 
 // Send to every player in the room.
@@ -122,6 +137,14 @@ func (r *Room) SendExcept(exception player.Player, msg interface{}) {
 			p.Send(msg)
 		}
 	})
+}
+
+// tell all players and all mobs in a room about something
+func (r *Room) Notify(msg interface{}) {
+	for _, m := range r.mobs.GetAll() {
+		m.Send(msg)
+	}
+	r.Send(msg)
 }
 
 // Describe this room.
@@ -142,10 +165,8 @@ func (r *Room) CreateRoomDescription(exclude player.Player) *message.RoomDescrip
 	for _, o := range r.inventory.GetAll() {
 		desc.Objects = append(desc.Objects, o.Definition.DescriptionOnGround)
 	}
-	for mob, inroom := range r.mobs {
-		if inroom {
-			desc.Mobs = append(desc.Mobs, mob.Definition.DescriptionInRoom)
-		}
+	for _, mob := range r.mobs.GetAll() {
+		desc.Mobs = append(desc.Mobs, mob.Definition.DescriptionInRoom)
 	}
 	return &desc
 }
@@ -178,4 +199,8 @@ func (r *Room) GetAllInventory() []*object.Instance {
 func (r *Room) FindInventory(findMode message.FindMode, index string, target string) (inst *object.Instance, exists bool) {
 	inst, exists = r.inventory.Find(findMode, index, target)
 	return
+}
+
+func (r *Room) FindMobile(target string) (mob *mobile.Instance, exists bool) {
+	return r.mobs.Find(target)
 }

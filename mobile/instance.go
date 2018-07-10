@@ -3,6 +3,7 @@ package mobile
 import (
 	"errors"
 	"fmt"
+	"github.com/satori/go.uuid"
 	"math/rand"
 	"time"
 )
@@ -12,6 +13,7 @@ import (
 // immune to poison, but this instance of 'lizard' is wearing
 // a magic hat and has a sword in it's hand. (scary lizard)
 type Instance struct {
+	InstanceId        uuid.UUID
 	Definition        *Definition
 	LastWanderingTime time.Time // when was the last time this mob went wandering?
 	WanderingForward  bool      // do you wander forward on the path or backwards?
@@ -20,11 +22,20 @@ type Instance struct {
 
 func NewInstance(defn *Definition) *Instance {
 	return &Instance{
+		InstanceId:        uuid.NewV4(),
 		Definition:        defn,
 		LastWanderingTime: time.Now(),
 		WanderingForward:  true, // by default
 		CurHealth:         defn.MaxHealth,
 	}
+}
+
+func (mob *Instance) Id() string {
+	return mob.InstanceId.String()
+}
+
+func (mob *Instance) GetName() string {
+	return mob.Definition.Name
 }
 
 func (mob *Instance) CanWander() bool {
@@ -35,6 +46,7 @@ func (mob *Instance) canWander(now time.Time) bool {
 	if !mob.Definition.Wandering.CanWander {
 		return false
 	}
+	// TODO don't wander off if you're in a fight
 	timeSince := now.Sub(mob.LastWanderingTime)
 	return timeSince > mob.Definition.Wandering.CheckFrequency
 }
@@ -61,4 +73,13 @@ func (mob *Instance) GetIndexOnPath(currentRoom string) (int, error) {
 		}
 	}
 	return -1, errors.New(fmt.Sprintf("currentRoom '%s' not found in path '%s'", currentRoom, mob.Definition.Wandering.Path))
+}
+
+func (mob *Instance) TakeMeleeDamage(damage int) (isDead bool) {
+	mob.CurHealth = mob.CurHealth - damage
+	return mob.CurHealth <= 0
+}
+
+func (mob *Instance) Send(msg interface{}) {
+	// TODO do something with this notification
 }

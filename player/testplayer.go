@@ -21,6 +21,8 @@ func NewTestPlayer(name string) *TestPlayer {
 		name:      name,
 		inventory: NewPlayerInventory(),
 		slots:     object.NewSlots(),
+		curHealth: 100,
+		maxHealth: 100,
 	}
 	return p
 }
@@ -77,4 +79,9 @@ func (p *TestPlayer) GetCurrentHealth() int {
 
 func (p *TestPlayer) GetMaxHealth() int {
 	return p.maxHealth
+}
+
+func (p *TestPlayer) TakeMeleeDamage(damage int) (isDead bool) {
+	p.curHealth = p.curHealth - damage
+	return p.curHealth <= 0
 }

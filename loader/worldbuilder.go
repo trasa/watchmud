@@ -97,6 +97,7 @@ func (wb *WorldBuilder) loadRooms() error {
 		roomMap[zonename] = fileEntries
 		for _, roomEntry := range fileEntries {
 			r := spaces.NewRoom(wb.Zones[zonename], roomEntry.Id, roomEntry.Name, roomEntry.Description)
+			r.SetFlags(roomEntry.Flags)
 			wb.Zones[zonename].AddRoom(r)
 			// If the direction zone/room doesn't indicate the zone,
 			// assume that the direction is to a zoome in the current zone
@@ -209,20 +210,21 @@ func (wb *WorldBuilder) loadMobileDefinitions() error {
 			return err
 		}
 		for _, mob := range mobEntries {
-			wb.Zones[zonename].AddMobileDefinition(
-				mobile.NewDefinition(mob.Id,
-					mob.Name,
-					zonename,
-					mob.Aliases,
-					mob.ShortDescription,
-					mob.DescriptionInRoom,
-					mobile.WanderingDefinition{
-						CanWander:       mob.WanderingDefinition.CanWander,
-						CheckFrequency:  time.Second * time.Duration(mob.WanderingDefinition.CheckFrequencySeconds),
-						CheckPercentage: float32(mob.WanderingDefinition.CheckPercentage) / 100.0,
-						Style:           mobile.WanderingStyle(mob.WanderingDefinition.WanderStyle),
-						Path:            mob.WanderingDefinition.Path,
-					}))
+			defn := mobile.NewDefinition(mob.Id,
+				mob.Name,
+				zonename,
+				mob.Aliases,
+				mob.ShortDescription,
+				mob.DescriptionInRoom,
+				mobile.WanderingDefinition{
+					CanWander:       mob.WanderingDefinition.CanWander,
+					CheckFrequency:  time.Second * time.Duration(mob.WanderingDefinition.CheckFrequencySeconds),
+					CheckPercentage: float32(mob.WanderingDefinition.CheckPercentage) / 100.0,
+					Style:           mobile.WanderingStyle(mob.WanderingDefinition.WanderStyle),
+					Path:            mob.WanderingDefinition.Path,
+				})
+			defn.SetFlags(mob.Flags)
+			wb.Zones[zonename].AddMobileDefinition(defn)
 		}
 	}
 	return nil

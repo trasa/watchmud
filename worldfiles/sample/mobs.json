@@ -22,7 +22,8 @@
       "check_percentage": 100,
       "wander_style": 2,
       "path": [ "start", "northRoom", "northeastRoom", "eastRoom" ]
-    }
+    },
+    "flags": ["nofight"]
   },
   {
     "id": "ratman",
