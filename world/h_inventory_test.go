@@ -3,12 +3,12 @@ package world
 import (
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/slot"
 	"testing"
 )
 

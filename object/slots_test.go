@@ -3,7 +3,7 @@ package object
 import (
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/thing"
 	"testing"
 )

@@ -1,8 +1,8 @@
 package world
 
 import (
+	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/combat"
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/player"

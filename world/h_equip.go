@@ -1,9 +1,9 @@
 package world
 
 import (
+	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/message"
-	"github.com/trasa/watchmud/slot"
 )
 
 func (w *World) handleEquip(msg *gameserver.HandlerParameter) {

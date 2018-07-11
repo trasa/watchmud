@@ -2,8 +2,8 @@ package rpc
 
 import (
 	"fmt"
+	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/player"
 	"io"
 	"log"

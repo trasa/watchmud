@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/satori/go.uuid"
-	"github.com/trasa/watchmud/message"
+	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/object"
 )
 

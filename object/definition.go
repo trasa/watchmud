@@ -1,8 +1,8 @@
 package object
 
 import (
+	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/behavior"
-	"github.com/trasa/watchmud/slot"
 )
 
 // Definition of what it means to be an "object"

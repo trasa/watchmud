@@ -1,11 +1,11 @@
 package world
 
 import (
+	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/slot"
 	"github.com/trasa/watchmud/spaces"
 	"github.com/trasa/watchmud/zonereset"
 )

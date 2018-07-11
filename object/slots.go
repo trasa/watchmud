@@ -1,7 +1,7 @@
 package object
 
 import (
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud-message/slot"
 )
 
 type Slots struct {

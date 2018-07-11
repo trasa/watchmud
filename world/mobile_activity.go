@@ -3,7 +3,7 @@ package world
 import (
 	"errors"
 	"fmt"
-	"github.com/trasa/watchmud/direction"
+	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/spaces"
 	"log"

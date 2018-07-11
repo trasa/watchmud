@@ -2,7 +2,7 @@ package object
 
 import (
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud-message/slot"
 	"testing"
 )
 

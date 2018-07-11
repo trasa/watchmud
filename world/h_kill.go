@@ -1,8 +1,8 @@
 package world
 
 import (
+	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/spaces"
 )

@@ -3,8 +3,8 @@ package spaces
 import (
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/suite"
+	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/slot"
 	"testing"
 )
 

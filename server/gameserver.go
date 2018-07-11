@@ -1,9 +1,9 @@
 package server
 
 import (
+	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/world"
 	"log"

@@ -2,7 +2,7 @@ package spaces
 
 import (
 	"github.com/stretchr/testify/assert"
-	"github.com/trasa/watchmud/direction"
+	"github.com/trasa/watchmud-message/direction"
 	"testing"
 )
 

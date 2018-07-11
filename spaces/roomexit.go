@@ -1,7 +1,7 @@
 package spaces
 
 import (
-	"github.com/trasa/watchmud/direction"
+	"github.com/trasa/watchmud-message/direction"
 	"sort"
 )
 

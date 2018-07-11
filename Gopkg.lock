@@ -66,6 +66,16 @@
   revision = "e7d16959d11eac06e61f03c09dc34d011d82804c"
 
 [[projects]]
+  name = "github.com/trasa/watchmud-message"
+  packages = [
+    ".",
+    "direction",
+    "slot"
+  ]
+  revision = "6bedb079eb87ebfcf47c6beb9e28594bed38c802"
+  version = "v0.0.3"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = [
@@ -141,6 +151,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9b2191c142a147bd215a80e1d8421bf67d3ee72f07cdba1a6831c8e33c439438"
+  inputs-digest = "51ce4661a7867658dc7a5f47b3907bfbea1360eef15d3e37efd7027b77f395fe"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -1,8 +1,8 @@
 package world
 
 import (
+	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/combat"
-	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/mudtime"
 	"log"
 )

@@ -2,9 +2,9 @@ package world
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/message"
 	"github.com/trasa/watchmud/player"
 	"testing"
 )
