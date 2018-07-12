@@ -15,7 +15,7 @@ type Fight struct {
 	RoomId    string
 }
 
-func NewFight(fighter Combatant, fightee Combatant, zoneId string, roomId string) *Fight {
+func newFight(fighter Combatant, fightee Combatant, zoneId string, roomId string) *Fight {
 	return &Fight{
 		fighter,
 		fightee,

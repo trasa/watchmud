@@ -38,7 +38,6 @@ func (cs CategorySet) Contains(c Category) bool {
 	return cs[c]
 }
 
-
 func CategoriesToString(cats []Category) string {
 	if len(cats) == 0 {
 		return ""

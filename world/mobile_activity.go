@@ -21,7 +21,7 @@ func (w *World) DoMobileActivity() {
 	// (if programmed to)
 	// (or if they really really want to)
 	for _, mob := range w.mobileRooms.GetAllMobiles() {
-		if mob.CanWander() {
+		if !(w.fightLedger.IsBeingFought(mob) || w.fightLedger.IsFighting(mob)) && mob.CanWander() {
 			switch mob.Definition.Wandering.Style {
 			case mobile.WANDER_RANDOM:
 				// do random wander within the zone
@@ -36,6 +36,7 @@ func (w *World) DoMobileActivity() {
 				// unknown or unhandled wandering style, do nothing.
 			}
 		}
+
 	}
 }
 

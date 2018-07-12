@@ -16,13 +16,26 @@ func (f *FightLedger) Fight(fighter Combatant, fightee Combatant, zoneId string,
 	if f.IsFighting(fighter) {
 		return errors.New("Fighter is already fighting someone")
 	}
-	f.fightMap[fighter] = NewFight(fighter, fightee, zoneId, roomId)
+	f.fightMap[fighter] = newFight(fighter, fightee, zoneId, roomId)
+
+	if !f.IsFighting(fightee) {
+		f.fightMap[fightee] = newFight(fightee, fighter, zoneId, roomId)
+	}
 	return nil
 }
 
 func (f *FightLedger) IsFighting(c Combatant) bool {
 	_, exists := f.fightMap[c]
 	return exists
+}
+
+func (f *FightLedger) IsBeingFought(c Combatant) bool {
+	for _, fight := range f.fightMap {
+		if fight.Fightee == c {
+			return true
+		}
+	}
+	return false
 }
 
 func (f *FightLedger) GetFight(fighter Combatant) *Fight {

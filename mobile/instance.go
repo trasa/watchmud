@@ -46,7 +46,6 @@ func (mob *Instance) canWander(now time.Time) bool {
 	if !mob.Definition.Wandering.CanWander {
 		return false
 	}
-	// TODO don't wander off if you're in a fight
 	timeSince := now.Sub(mob.LastWanderingTime)
 	return timeSince > mob.Definition.Wandering.CheckFrequency
 }

@@ -8,6 +8,16 @@ import (
 )
 
 func (w *World) handleMove(msg *gameserver.HandlerParameter) {
+
+	// is player in a fight?
+	if w.fightLedger.IsFighting(msg.Player) || w.fightLedger.IsBeingFought(msg.Player) {
+		msg.Player.Send(message.MoveResponse{
+			Success:    false,
+			ResultCode: "IN_A_FIGHT",
+		})
+		return
+	}
+
 	// go somewhere
 	playerRoom := w.getRoomContainingPlayer(msg.Player)
 	// get the direction we want to go to
