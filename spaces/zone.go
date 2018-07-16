@@ -90,6 +90,8 @@ func (z *Zone) createMobile(mobileRoomMap *MobileRoomMap, cmd CreateMobile) erro
 		return errors.New(fmt.Sprintf("createMobile: definition id not found: %s", cmd))
 	}
 	// how many of this mobile definition id are in the zone?
+	log.Printf("createMobile: considering %s, there are %d, max %d",
+		defn.Id, mobileRoomMap.GetMobileDefinitionCount(defn.Id), cmd.InstanceMax)
 	if mobileRoomMap.GetMobileDefinitionCount(defn.Id) < cmd.InstanceMax {
 		r := z.Rooms[cmd.RoomId]
 		if r == nil {

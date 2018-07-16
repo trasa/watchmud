@@ -38,7 +38,8 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 				isDead = fight.Fightee.TakeMeleeDamage(fightResult.Damage)
 			}
 			// tell everyone what is going on
-			if room, found := w.findRoomById(fight.ZoneId, fight.RoomId); found {
+			room, found := w.findRoomById(fight.ZoneId, fight.RoomId)
+			if found {
 				room.Notify(message.ViolenceNotification{
 					Fighter:       fight.Fighter.GetName(),
 					Fightee:       fight.Fightee.GetName(),
@@ -49,9 +50,15 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 
 			if isDead {
 				w.becomeCorpse(fight.Fightee)
-
-				// fight is over
+				// TODO award points or other reward
 				w.fightLedger.EndFight(fight.Fighter)
+				// tell everybody what happened
+				if found {
+					room.Notify(message.DeathNotification{
+						Target:   fight.Fightee.GetName(),
+						IsPlayer: fight.Fightee.CombatantType() == combat.PlayerCombatant,
+					})
+				}
 			}
 		}
 	}
