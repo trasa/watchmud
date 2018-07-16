@@ -81,6 +81,11 @@ func (w *World) moveMobile(mob *mobile.Instance, dir direction.Direction, src *s
 	w.mobileRooms.Add(mob, dest)
 }
 
+// remove the mobile instance from the world entirely
+func (w *World) removeMobile(mob *mobile.Instance) {
+	w.mobileRooms.Remove(mob)
+}
+
 func (w *World) getRoomContainingPlayer(p player.Player) *spaces.Room {
 	return w.playerRooms.Get(p)
 }

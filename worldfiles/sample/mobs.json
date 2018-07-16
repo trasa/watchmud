@@ -4,6 +4,7 @@
     "name": "walker",
     "short_description": "The Walker walks.",
     "description_in_room": "The walker stands here...for now.",
+    "max_health": 25,
     "wandering_definition": {
       "can_wander": true,
       "check_frequency_seconds": 30,
@@ -16,6 +17,7 @@
     "name": "scripty",
     "short_description": "Scripty thinks about things.",
     "description_in_room": "Scripty is pondering something.",
+    "max_health": 25,
     "wandering_definition": {
       "can_wander": true,
       "check_frequency_seconds": 10,
@@ -30,6 +32,7 @@
     "name": "ratman",
     "short_description": "Ratman glares at you.",
     "description_in_room": "Ratman glares at you.",
+    "max_health": 25,
     "wandering_definition": {
       "can_wander": false
     }

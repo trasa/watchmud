@@ -7,7 +7,7 @@ import (
 )
 
 func TestMobileRoomMap_GetAllMobiles(t *testing.T) {
-	defn := mobile.NewDefinition("id", "name", "zone", []string{}, "shortdesc", "roomdesc", mobile.WanderingDefinition{})
+	defn := mobile.NewDefinition("id", "name", "zone", []string{}, "shortdesc", "roomdesc", 25, mobile.WanderingDefinition{})
 	instOne := mobile.NewInstance(defn)
 	instTwo := mobile.NewInstance(defn)
 	r := NewTestRoom("test")

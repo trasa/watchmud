@@ -56,6 +56,7 @@ func newTestWorld() *World {
 		[]string{"target", "drone"},
 		"Target Drone",
 		"Target Drone buzzes around",
+		25,
 		mobile.WanderingDefinition{
 			CanWander: false,
 		})

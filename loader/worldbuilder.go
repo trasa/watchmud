@@ -216,6 +216,7 @@ func (wb *WorldBuilder) loadMobileDefinitions() error {
 				mob.Aliases,
 				mob.ShortDescription,
 				mob.DescriptionInRoom,
+				mob.MaxHealth,
 				mobile.WanderingDefinition{
 					CanWander:       mob.WanderingDefinition.CanWander,
 					CheckFrequency:  time.Second * time.Duration(mob.WanderingDefinition.CheckFrequencySeconds),

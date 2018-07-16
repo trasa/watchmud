@@ -94,7 +94,7 @@ func (p *ClientPlayer) TakeMeleeDamage(damage int) (isDead bool) {
 }
 
 func (p *ClientPlayer) IsDead() bool {
-	return p.curHealth > 0 // TODO
+	return p.curHealth <= 0
 }
 
 func (p *ClientPlayer) CombatantType() combat.CombatantType {

@@ -16,6 +16,7 @@ func TestInstanceMeleeDamageSuite(t *testing.T) {
 
 func (s *InstanceMeleeDamageSuite) SetupTest() {
 	defn := NewDefinition("id", "damaged", "testZone", []string{}, "", "",
+		25,
 		WanderingDefinition{
 			CanWander: false,
 		})
@@ -47,4 +48,10 @@ func (s *InstanceMeleeDamageSuite) TestOverwhelmingFatalMeleeDamage() {
 
 	s.Assert().True(isDead)
 	s.Assert().True(s.instance.CurHealth < 0)
+}
+
+func (s *InstanceMeleeDamageSuite) TestIsDead() {
+	s.Assert().False(s.instance.IsDead())
+	s.instance.CurHealth = 0
+	s.Assert().True(s.instance.IsDead())
 }

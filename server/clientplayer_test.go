@@ -65,3 +65,9 @@ func (suite *ClientPlayerSuite) TestOverwhelminglyFatalMeleeDamage() {
 	suite.Assert().True(isDead)
 	suite.Assert().True(suite.player.curHealth < 0)
 }
+
+func (suite *ClientPlayerSuite) TestIsDead() {
+	suite.Assert().False(suite.player.IsDead())
+	suite.player.curHealth = 0
+	suite.Assert().True(suite.player.IsDead())
+}

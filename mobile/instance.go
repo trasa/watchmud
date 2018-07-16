@@ -81,8 +81,7 @@ func (mob *Instance) TakeMeleeDamage(damage int) (isDead bool) {
 }
 
 func (mob *Instance) IsDead() bool {
-	// TODO
-	return mob.CurHealth > 0
+	return mob.CurHealth <= 0
 }
 
 func (mob *Instance) CombatantType() combat.CombatantType {

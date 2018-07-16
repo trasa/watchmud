@@ -23,6 +23,7 @@ func NewDefinition(definitionId string,
 	aliases []string,
 	shortDescription,
 	descriptionInRoom string,
+	maxHealth int,
 	wandering WanderingDefinition) *Definition {
 	d := &Definition{
 		Id:                definitionId,
@@ -33,6 +34,7 @@ func NewDefinition(definitionId string,
 		Wandering:         wandering,
 		ZoneId:            zoneId,
 		flags:             make(map[string]bool),
+		MaxHealth:         maxHealth,
 	}
 	return d
 }

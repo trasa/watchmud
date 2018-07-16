@@ -21,6 +21,7 @@ func (suite *DefinitionSuite) SetupTest() {
 		[]string{"alias"},
 		"short desc",
 		"descr",
+		25,
 		WanderingDefinition{CanWander: false})
 }
 
