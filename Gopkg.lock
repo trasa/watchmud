@@ -72,8 +72,8 @@
     "direction",
     "slot"
   ]
-  revision = "6bedb079eb87ebfcf47c6beb9e28594bed38c802"
-  version = "v0.0.3"
+  revision = "b1933efcfc57764d2500f4986c22b722ed1acb3c"
+  version = "v0.0.4"
 
 [[projects]]
   branch = "master"
@@ -151,6 +151,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "51ce4661a7867658dc7a5f47b3907bfbea1360eef15d3e37efd7027b77f395fe"
+  inputs-digest = "1095b84bad58d792ae17d808950121e37bb0dce3cdd965ad77741ebbd5754df7"
   solver-name = "gps-cdcl"
   solver-version = 1

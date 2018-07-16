@@ -19,10 +19,6 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 
 	for _, fight := range w.fightLedger.GetFights() {
 		if fight.Fighter.IsDead() || fight.Fightee.IsDead() {
-			log.Printf("found dead fighters, ending fight: %s (%t) fighting %s (%t)",
-				fight.Fighter.GetName(), fight.Fighter.IsDead(),
-				fight.Fightee.GetName(), fight.Fightee.IsDead())
-			w.fightLedger.EndFight(fight.Fighter)
 			continue
 		}
 
@@ -53,8 +49,6 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 
 			if isDead {
 				w.becomeCorpse(fight.Fightee)
-				// TODO tell everyone what is going on..
-				//room.notify();
 
 				// fight is over
 				w.fightLedger.EndFight(fight.Fighter)

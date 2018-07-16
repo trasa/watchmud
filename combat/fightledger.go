@@ -1,6 +1,8 @@
 package combat
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 type FightLedger struct {
 	fightMap map[Combatant]*Fight
