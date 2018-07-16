@@ -17,9 +17,15 @@ import (
 // continue onwards.
 func (w *World) DoViolence(pulse mudtime.PulseCount) {
 
-	var fightsToCleanup []*combat.Fight
-
 	for _, fight := range w.fightLedger.GetFights() {
+		if fight.Fighter.IsDead() || fight.Fightee.IsDead() {
+			log.Printf("found dead fighters, ending fight: %s (%t) fighting %s (%t)",
+				fight.Fighter.GetName(), fight.Fighter.IsDead(),
+				fight.Fightee.GetName(), fight.Fightee.IsDead())
+			w.fightLedger.EndFight(fight.Fighter)
+			continue
+		}
+
 		// each fighter should have a speed, like fast medium slow,
 		// and then we can take that into account vs the last time
 		// that Violence happened - comparing it to PulseCount.
@@ -27,7 +33,6 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 		// clocks being part of mob definitions as that will make it a
 		// headache to tune these settings.
 		if fight.CanDoViolence(pulse) {
-			log.Printf("fight now! %s", fight)
 			fight.LastPulse = pulse
 			fightResult := combat.CalculateMeleeAttack(fight.Fighter, fight.Fightee)
 			log.Printf("fight result: %s", fightResult)
@@ -47,16 +52,13 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 			}
 
 			if isDead {
-				// become corpse
-				//w.makeDead(fight.Fightee)
+				w.becomeCorpse(fight.Fightee)
 				// TODO tell everyone what is going on..
+				//room.notify();
+
 				// fight is over
-				fightsToCleanup = append(fightsToCleanup, fight)
+				w.fightLedger.EndFight(fight.Fighter)
 			}
 		}
 	}
-
-	//for _, fight := range fightsToCleanup {
-	//	TODO cleanup / remove fights that are over from fightLedger
-	//}
 }

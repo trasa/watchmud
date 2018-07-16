@@ -4,4 +4,14 @@ package combat
 type Combatant interface {
 	GetName() string
 	TakeMeleeDamage(damage int) (isDead bool)
+	IsDead() bool
+	CombatantType() CombatantType
 }
+
+type CombatantType int
+
+const (
+	NoCombatantType CombatantType = iota // for testing
+	PlayerCombatant
+	MobileCombatant
+)

@@ -12,6 +12,8 @@ type MeleeAttackResult struct {
 	// TODO other status affects: staggering, and so on
 }
 
+const DefaultDamage = 25
+
 func (result MeleeAttackResult) String() string {
 	if result.WasHit {
 		return fmt.Sprintf("Hit! %d damage!", result.Damage)
@@ -33,8 +35,8 @@ func meleeAttack(fighter Combatant, victim Combatant, r *rand.Rand, percentToHit
 	if chance < percentToHit {
 		// yes - determine damage
 		result.WasHit = true
-		// for now, just assume 5 points.
-		result.Damage = 5
+		// for now, just assume N points.
+		result.Damage = DefaultDamage
 	} else {
 		// no
 		result.WasHit = false

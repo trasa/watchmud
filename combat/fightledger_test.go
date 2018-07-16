@@ -55,3 +55,14 @@ func (suite *FightLedgerSuite) TestFightingSomeoneWhoIsFighting() {
 	suite.Assert().NoError(suite.fightLedger.Fight(fighter, fightee, "zoneId", "roomId"))
 	suite.Assert().Equal(otherFighter, suite.fightLedger.fightMap[fightee].Fightee)
 }
+
+func (suite *FightLedgerSuite) TestEndFight() {
+	fighter := NewTestCombatant("fighter")
+	fightee := NewTestCombatant("fightee")
+
+	suite.Assert().NoError(suite.fightLedger.Fight(fighter, fightee, "zoneId", "roomId"))
+
+	suite.fightLedger.EndFight(fighter)
+	suite.Assert().False(suite.fightLedger.IsFighting(fighter))
+	suite.Assert().True(suite.fightLedger.IsFighting(fightee))
+}

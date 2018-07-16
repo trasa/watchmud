@@ -2,6 +2,7 @@ package player
 
 import (
 	"github.com/satori/go.uuid"
+	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/object"
 	"log"
 )
@@ -84,4 +85,12 @@ func (p *TestPlayer) GetMaxHealth() int {
 func (p *TestPlayer) TakeMeleeDamage(damage int) (isDead bool) {
 	p.curHealth = p.curHealth - damage
 	return p.curHealth <= 0
+}
+
+func (p *TestPlayer) IsDead() bool {
+	return p.curHealth > 0 // TODO
+}
+
+func (p *TestPlayer) CombatantType() combat.CombatantType {
+	return combat.PlayerCombatant
 }

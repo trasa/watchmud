@@ -2,6 +2,7 @@ package player
 
 import (
 	"github.com/satori/go.uuid"
+	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/object"
 )
 
@@ -21,4 +22,6 @@ type Player interface {
 	GetCurrentHealth() int
 	GetMaxHealth() int
 	TakeMeleeDamage(damage int) (isDead bool)
+	IsDead() bool
+	CombatantType() combat.CombatantType
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/satori/go.uuid"
+	"github.com/trasa/watchmud/combat"
 	"math/rand"
 	"time"
 )
@@ -77,6 +78,15 @@ func (mob *Instance) GetIndexOnPath(currentRoom string) (int, error) {
 func (mob *Instance) TakeMeleeDamage(damage int) (isDead bool) {
 	mob.CurHealth = mob.CurHealth - damage
 	return mob.CurHealth <= 0
+}
+
+func (mob *Instance) IsDead() bool {
+	// TODO
+	return mob.CurHealth > 0
+}
+
+func (mob *Instance) CombatantType() combat.CombatantType {
+	return combat.MobileCombatant
 }
 
 func (mob *Instance) Send(msg interface{}) {

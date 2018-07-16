@@ -48,3 +48,7 @@ func (f *FightLedger) GetFights() (result []*Fight) {
 	}
 	return result
 }
+
+func (f *FightLedger) EndFight(fighter Combatant) {
+	delete(f.fightMap, fighter)
+}
