@@ -4,9 +4,9 @@ package object
 
 import "strconv"
 
-const _Category_name = "NoneWeaponWandStaffTreasureArmorFoodOther"
+const _Category_name = "NoneWeaponWandStaffTreasureArmorFoodOtherCorpse"
 
-var _Category_index = [...]uint8{0, 4, 10, 14, 19, 27, 32, 36, 41}
+var _Category_index = [...]uint8{0, 4, 10, 14, 19, 27, 32, 36, 41, 47}
 
 func (i Category) String() string {
 	if i < 0 || i >= Category(len(_Category_index)-1) {

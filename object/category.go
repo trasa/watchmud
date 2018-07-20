@@ -17,6 +17,7 @@ const (
 	Armor
 	Food
 	Other
+	Corpse
 )
 
 type CategorySet map[Category]bool
