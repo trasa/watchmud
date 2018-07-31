@@ -27,6 +27,15 @@ func (bs BehaviorSet) Contains(b Behavior) bool {
 	return bs[b]
 }
 
+func (bs BehaviorSet) ToStringList() (result []string) {
+	for k, v := range bs {
+		if v {
+			result = append(result, k.String())
+		}
+	}
+	return
+}
+
 func StringToBehavior(name string) (Behavior, error) {
 	if name == "" {
 		return None, nil

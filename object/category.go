@@ -39,6 +39,15 @@ func (cs CategorySet) Contains(c Category) bool {
 	return cs[c]
 }
 
+func (cs CategorySet) ToStringList() (result []string) {
+	for k, v := range cs {
+		if v {
+			result = append(result, k.String())
+		}
+	}
+	return
+}
+
 func CategoriesToString(cats []Category) string {
 	if len(cats) == 0 {
 		return ""

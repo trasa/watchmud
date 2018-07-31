@@ -54,7 +54,7 @@ func (suite *ClientPlayerSuite) TestFatalMeleeDamage() {
 	isDead := suite.player.TakeMeleeDamage(startingHealth)
 
 	suite.Assert().True(isDead)
-	suite.Assert().Equal(0, suite.player.GetCurrentHealth())
+	suite.Assert().Equal(int64(0), suite.player.GetCurrentHealth())
 }
 
 func (suite *ClientPlayerSuite) TestOverwhelminglyFatalMeleeDamage() {

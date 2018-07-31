@@ -12,8 +12,8 @@ type TestPlayer struct {
 	sent      []interface{}
 	inventory *PlayerInventory
 	slots     *object.Slots
-	curHealth int
-	maxHealth int
+	curHealth int64
+	maxHealth int64
 }
 
 // create a new test player that can track sent messages through 'sentmessages'
@@ -74,15 +74,15 @@ func (p TestPlayer) Slots() *object.Slots {
 	return p.slots
 }
 
-func (p *TestPlayer) GetCurrentHealth() int {
+func (p *TestPlayer) GetCurrentHealth() int64 {
 	return p.curHealth
 }
 
-func (p *TestPlayer) GetMaxHealth() int {
+func (p *TestPlayer) GetMaxHealth() int64 {
 	return p.maxHealth
 }
 
-func (p *TestPlayer) TakeMeleeDamage(damage int) (isDead bool) {
+func (p *TestPlayer) TakeMeleeDamage(damage int64) (isDead bool) {
 	p.curHealth = p.curHealth - damage
 	return p.curHealth <= 0
 }

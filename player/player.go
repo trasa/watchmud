@@ -19,9 +19,9 @@ type Player interface {
 	GetAllInventory() []*object.Instance
 	FindInventory(target string) (*object.Instance, bool)
 	Slots() *object.Slots
-	GetCurrentHealth() int
-	GetMaxHealth() int
-	TakeMeleeDamage(damage int) (isDead bool)
+	GetCurrentHealth() int64
+	GetMaxHealth() int64
+	TakeMeleeDamage(damage int64) (isDead bool)
 	IsDead() bool
 	CombatantType() combat.CombatantType
 }

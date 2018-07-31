@@ -62,6 +62,15 @@ func (r *Room) HasFlag(flag string) bool {
 	return r.flags[flag]
 }
 
+func (r *Room) GetFlags() (result []string) {
+	for k, v := range r.flags {
+		if v {
+			result = append(result, k)
+		}
+	}
+	return
+}
+
 // Player leaves a room. Tells other room residents about it.
 func (r *Room) PlayerLeaves(p player.Player, dir direction.Direction) {
 	r.playerList.Remove(p)
@@ -121,6 +130,10 @@ func (r *Room) AddMobile(inst *mobile.Instance) error {
 
 func (r *Room) RemoveMobile(inst *mobile.Instance) error {
 	return r.mobs.Remove(inst)
+}
+
+func (r *Room) GetMobs() []*mobile.Instance {
+	return r.mobs.GetAll()
 }
 
 // Send to every player in the room.

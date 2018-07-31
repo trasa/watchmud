@@ -25,7 +25,7 @@ func (suite *MeleeSuite) TestHitFailed() {
 	r := rand.New(rand.NewSource(1))
 	noChance := meleeAttack(suite.fighter, suite.victim, r, 0.00)
 	suite.Assert().False(noChance.WasHit)
-	suite.Assert().Equal(0, noChance.Damage)
+	suite.Assert().Equal(int64(0), noChance.Damage)
 }
 
 func (suite *MeleeSuite) TestHitSuccess() {

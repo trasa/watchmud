@@ -13,7 +13,7 @@ type Definition struct {
 	DescriptionInRoom string // description when in a room "A giant lizard is here."
 	ZoneId            string
 	Wandering         WanderingDefinition
-	MaxHealth         int
+	MaxHealth         int64
 	flags             map[string]bool
 }
 
@@ -23,7 +23,7 @@ func NewDefinition(definitionId string,
 	aliases []string,
 	shortDescription,
 	descriptionInRoom string,
-	maxHealth int,
+	maxHealth int64,
 	wandering WanderingDefinition) *Definition {
 	d := &Definition{
 		Id:                definitionId,
@@ -62,6 +62,15 @@ func (d *Definition) SetFlag(flag string) {
 
 func (d *Definition) HasFlag(flag string) bool {
 	return d.flags[flag]
+}
+
+func (d *Definition) GetFlags() (result []string) {
+	for k, v := range d.flags {
+		if v {
+			result = append(result, k)
+		}
+	}
+	return
 }
 
 // Things to do with how mobs wander around

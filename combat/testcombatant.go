@@ -2,7 +2,7 @@ package combat
 
 type TestCombatant struct {
 	Name      string
-	curHealth int
+	curHealth int64
 	dead      bool
 }
 
@@ -17,7 +17,7 @@ func (t *TestCombatant) GetName() string {
 	return t.Name
 }
 
-func (t *TestCombatant) TakeMeleeDamage(damage int) (isDead bool) {
+func (t *TestCombatant) TakeMeleeDamage(damage int64) (isDead bool) {
 	t.curHealth = t.curHealth - damage
 	return t.curHealth <= 0
 }

@@ -18,7 +18,7 @@ type Instance struct {
 	Definition        *Definition
 	LastWanderingTime time.Time // when was the last time this mob went wandering?
 	WanderingForward  bool      // do you wander forward on the path or backwards?
-	CurHealth         int
+	CurHealth         int64
 }
 
 func NewInstance(defn *Definition) *Instance {
@@ -75,7 +75,7 @@ func (mob *Instance) GetIndexOnPath(currentRoom string) (int, error) {
 	return -1, errors.New(fmt.Sprintf("currentRoom '%s' not found in path '%s'", currentRoom, mob.Definition.Wandering.Path))
 }
 
-func (mob *Instance) TakeMeleeDamage(damage int) (isDead bool) {
+func (mob *Instance) TakeMeleeDamage(damage int64) (isDead bool) {
 	mob.CurHealth = mob.CurHealth - damage
 	return mob.CurHealth <= 0
 }

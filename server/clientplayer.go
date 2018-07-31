@@ -14,8 +14,8 @@ type ClientPlayer struct {
 	Client    client.Client
 	inventory *player.PlayerInventory
 	slots     *object.Slots
-	curHealth int
-	maxHealth int
+	curHealth int64
+	maxHealth int64
 }
 
 // Create a ClientPlayer connected to a new TestClient
@@ -80,15 +80,15 @@ func (p *ClientPlayer) Slots() *object.Slots {
 	return p.slots
 }
 
-func (p *ClientPlayer) GetCurrentHealth() int {
+func (p *ClientPlayer) GetCurrentHealth() int64 {
 	return p.curHealth
 }
 
-func (p *ClientPlayer) GetMaxHealth() int {
+func (p *ClientPlayer) GetMaxHealth() int64 {
 	return p.maxHealth
 }
 
-func (p *ClientPlayer) TakeMeleeDamage(damage int) (isDead bool) {
+func (p *ClientPlayer) TakeMeleeDamage(damage int64) (isDead bool) {
 	p.curHealth = p.curHealth - damage
 	return p.curHealth <= 0
 }

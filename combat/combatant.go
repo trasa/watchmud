@@ -3,7 +3,7 @@ package combat
 // something capable of being in combat
 type Combatant interface {
 	GetName() string
-	TakeMeleeDamage(damage int) (isDead bool)
+	TakeMeleeDamage(damage int64) (isDead bool)
 	IsDead() bool
 	CombatantType() CombatantType
 }

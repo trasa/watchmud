@@ -8,11 +8,11 @@ import (
 
 type MeleeAttackResult struct {
 	WasHit bool
-	Damage int
+	Damage int64
 	// TODO other status affects: staggering, and so on
 }
 
-const DefaultDamage = 25
+const DefaultDamage int64 = 25
 
 func (result MeleeAttackResult) String() string {
 	if result.WasHit {
