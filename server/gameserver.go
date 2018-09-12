@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/client"
+	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/world"
@@ -150,13 +151,28 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO er
 		}
 	*/
 
-	// todo authentication and stuff
+	// todo authentication and stuff - does GRPC have a built in authentication method?
+
+	playerName := msg.Message.GetLoginRequest().PlayerName
+	playerData, err := db.GetPlayerData(playerName)
+	if err != nil {
+		log.Printf("Error trying to retrieve playerData for %s: %v", playerName, err)
+		msg.Client.Send(message.LoginResponse{
+			Success:    false,
+			ResultCode: "PLAYER_DATA_ERROR",
+		})
+		return
+	}
 	player := NewClientPlayer(msg.Message.GetLoginRequest().PlayerName, msg.Client)
+	player.LoadPlayerData(playerData)
+
 	msg.Client.SetPlayer(player)
 	msg.Player = player
 
 	// add player to world
+	// TODO add player to correct location in world, based on persistence
 	gs.World.AddPlayer(player)
+
 	player.Send(message.LoginResponse{
 		Success:    true,
 		ResultCode: "OK",

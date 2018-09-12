@@ -5,6 +5,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/combat"
+	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 )
@@ -38,6 +39,13 @@ func NewClientPlayer(name string, client client.Client) *ClientPlayer {
 		maxHealth: 100,
 	}
 	return &p
+}
+
+func (p *ClientPlayer) LoadPlayerData(pd *db.PlayerData) {
+	p.Name = pd.Name
+	p.curHealth = pd.CurHealth
+	p.maxHealth = pd.MaxHealth
+	// TODO: inventory, other stuff
 }
 
 func (p *ClientPlayer) GetName() string {

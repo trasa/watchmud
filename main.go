@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/rpc"
 	"github.com/trasa/watchmud/server"
 	"github.com/trasa/watchmud/web"
@@ -30,6 +31,10 @@ func main() {
 		usage()
 		os.Exit(2)
 		return
+	}
+
+	if err := db.Init(); err != nil {
+		log.Fatalf("Failed to initialize database persistence: %v", err)
 	}
 
 	gameserver, err := server.NewGameServer(*worldFilesDir)
