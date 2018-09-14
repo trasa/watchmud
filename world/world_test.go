@@ -18,7 +18,7 @@ func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
 
 	w.HandleIncomingMessage(h)
 
-	resp := p.GetSentResponse(0).(message.ErrorResponse)
+	resp := c.GetSentResponse(0).(message.ErrorResponse)
 	assert.False(t, resp.Success)
 	assert.Equal(t, "UNKNOWN_MESSAGE_TYPE", resp.ResultCode)
 }

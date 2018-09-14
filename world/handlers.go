@@ -33,7 +33,7 @@ func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) {
 	handler := w.handlerMap[message.DecodeTypeName(msg.Message.Inner)]
 	if handler == nil {
 		log.Printf("world.HandleIncomingMessage: UNHANDLED messageType: %v, body %s", msg.Message.Inner, msg.Message)
-		msg.Player.Send(message.ErrorResponse{
+		msg.Client.Send(message.ErrorResponse{
 			Success:    false,
 			ResultCode: "UNKNOWN_MESSAGE_TYPE",
 		})

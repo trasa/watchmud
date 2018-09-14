@@ -98,6 +98,10 @@ func (gs *GameServer) processIncomingMessage() bool {
 		switch msg.Message.Inner.(type) {
 		case *message.GameMessage_LoginRequest:
 			gs.handleLogin(msg) // TODO error handling
+
+		case *message.GameMessage_CreatePlayerRequest:
+			gs.handleCreatePlayer(msg)
+
 		default:
 			gs.World.HandleIncomingMessage(msg)
 		}
@@ -174,6 +178,40 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO er
 	gs.World.AddPlayer(player)
 
 	player.Send(message.LoginResponse{
+		Success:    true,
+		ResultCode: "OK",
+		PlayerName: player.GetName(),
+	})
+}
+
+func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) { // TODO error handling
+	if msg.Client.GetPlayer() != nil {
+		// you've already got one
+		msg.Client.Send(message.CreatePlayerResponse{
+			Success:    false,
+			ResultCode: "PLAYER_ALREADY_ATTACHED",
+		})
+		return
+	}
+	playerName := msg.Message.GetCreatePlayerRequest().PlayerName
+
+	// create player data for playerName
+	playerData, err := db.CreatePlayerData(playerName) // other default properties? where do they come from?
+	if err != nil {
+		log.Printf("Error trying to create player for %s: %v", playerName, err)
+		msg.Client.Send(message.CreatePlayerResponse{
+			Success:    false,
+			ResultCode: "PLAYER_ALREADY_EXISTS",
+		})
+		return
+	}
+	player := NewClientPlayer(playerName, msg.Client)
+	player.LoadPlayerData(playerData)
+	msg.Client.SetPlayer(player)
+	msg.Player = player
+
+	gs.World.AddPlayer(player) // TODO destination
+	player.Send(message.CreatePlayerResponse{
 		Success:    true,
 		ResultCode: "OK",
 		PlayerName: player.GetName(),

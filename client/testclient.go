@@ -34,3 +34,6 @@ func (c *TestClient) SetPlayer(p player.Player) {
 func (c *TestClient) Close() {
 	c.open = false
 }
+func (c *TestClient) GetSentResponse(i int) interface{} {
+	return c.tosend[i]
+}
