@@ -193,10 +193,11 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) { // 
 		})
 		return
 	}
-	playerName := msg.Message.GetCreatePlayerRequest().PlayerName
+	req := msg.Message.GetCreatePlayerRequest()
+	playerName := req.PlayerName
 
 	// create player data for playerName
-	playerData, err := db.CreatePlayerData(playerName) // other default properties? where do they come from?
+	playerData, err := db.CreatePlayerData(playerName, req.Race, req.Class)
 	if err != nil {
 		log.Printf("Error trying to create player for %s: %v", playerName, err)
 		msg.Client.Send(message.CreatePlayerResponse{
