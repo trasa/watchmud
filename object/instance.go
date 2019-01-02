@@ -28,6 +28,10 @@ func (i *Instance) IsGettable() bool {
 
 func NewInstance(defn *Definition) *Instance {
 	id := uuid.NewV4()
+	return NewExistingInstance(id, defn)
+}
+
+func NewExistingInstance(id uuid.UUID, defn *Definition) *Instance {
 	return &Instance{
 		InstanceId: id,
 		Definition: defn,

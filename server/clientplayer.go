@@ -17,6 +17,8 @@ type ClientPlayer struct {
 	slots     *object.Slots
 	curHealth int64
 	maxHealth int64
+	race      int32
+	class     int32
 }
 
 // Create a ClientPlayer connected to a new TestClient
@@ -29,7 +31,7 @@ func NewTestClientPlayer(name string) (p *ClientPlayer, cli *client.TestClient) 
 }
 
 // Create a new player and set it up to work with this client
-func NewClientPlayer(name string, client client.Client) *ClientPlayer {
+func NewClientPlayer(name string, client client.Client) *ClientPlayer { // TODO need race and class
 	p := ClientPlayer{
 		Name:      name,
 		Client:    client, // address of interface
@@ -45,7 +47,14 @@ func (p *ClientPlayer) LoadPlayerData(pd *db.PlayerData) {
 	p.Name = pd.Name
 	p.curHealth = pd.CurHealth
 	p.maxHealth = pd.MaxHealth
-	// TODO: inventory, other stuff
+	p.race = pd.Race
+	p.class = pd.Class
+
+	// inventory
+	//for _, inv := range pd.Inventory {
+	//	p.AddInventory(inv)
+	//}
+	// TODO: other stuff
 }
 
 func (p *ClientPlayer) GetName() string {

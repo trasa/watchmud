@@ -124,3 +124,7 @@ func (w *World) SendToAllPlayersExcept(exception player.Player, message interfac
 		}
 	})
 }
+
+func (w *World) GetZone(zoneId string) *spaces.Zone {
+	return w.zones[zoneId]
+}
