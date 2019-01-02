@@ -1,10 +1,12 @@
 package world
 
 import (
+	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mobile"
+	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/spaces"
 	"log"
@@ -127,4 +129,11 @@ func (w *World) SendToAllPlayersExcept(exception player.Player, message interfac
 
 func (w *World) GetZone(zoneId string) *spaces.Zone {
 	return w.zones[zoneId]
+}
+
+// Create an object.Instance for this zone, definition, and instance ID
+func (w *World) CreateObjectInstance(zoneId string, definitionId string, instanceId uuid.UUID) *object.Instance {
+	z := w.GetZone(zoneId)
+	defn := z.ObjectDefinitions[definitionId]
+	return object.NewExistingInstance(instanceId, defn)
 }

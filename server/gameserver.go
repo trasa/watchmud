@@ -6,7 +6,6 @@ import (
 	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mudtime"
-	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/world"
 	"log"
 	"time"
@@ -170,13 +169,11 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO er
 	}
 	player := NewClientPlayer(msg.Message.GetLoginRequest().PlayerName, msg.Client)
 	player.LoadPlayerData(playerData)
-	// load inventory: have to convert playerinventorydata into instances and definitions here,
-	// because we need 'the world' to do it.
+
+	// load inventory: have to convert playerinventorydata into
+	// instances and definitions here, because we need 'the world' to do it.
 	for _, inv := range playerData.Inventory {
-		z := gs.World.GetZone(inv.ZoneId)
-		defn := z.ObjectDefinitions[inv.DefinitionId]
-		inst := object.NewExistingInstance(inv.InstanceId, defn)
-		player.AddInventory(inst)
+		player.AddInventory(gs.World.CreateObjectInstance(inv.ZoneId, inv.DefinitionId, inv.InstanceId))
 	}
 
 	msg.Client.SetPlayer(player)
