@@ -19,6 +19,7 @@ type ClientPlayer struct {
 	maxHealth int64
 	race      int32
 	class     int32
+	dirty     bool
 }
 
 // Create a ClientPlayer connected to a new TestClient
@@ -43,6 +44,7 @@ func NewClientPlayer(name string, client client.Client) *ClientPlayer { // TODO 
 	return &p
 }
 
+// Load player information into this struct without flagging anything as dirty
 func (p *ClientPlayer) LoadPlayerData(pd *db.PlayerData) {
 	p.Name = pd.Name
 	p.curHealth = pd.CurHealth
@@ -50,11 +52,12 @@ func (p *ClientPlayer) LoadPlayerData(pd *db.PlayerData) {
 	p.race = pd.Race
 	p.class = pd.Class
 
-	// inventory
-	//for _, inv := range pd.Inventory {
-	//	p.AddInventory(inv)
-	//}
 	// TODO: other stuff
+}
+
+// Load player inventory into this struct without flagging anything as dirty
+func (p *ClientPlayer) LoadInventory(instance *object.Instance) {
+	p.inventory.Load(instance)
 }
 
 func (p *ClientPlayer) GetName() string {
@@ -82,10 +85,12 @@ func (p *ClientPlayer) GetAllInventory() []*object.Instance {
 }
 
 func (p *ClientPlayer) AddInventory(instance *object.Instance) error {
+	p.dirty = true
 	return p.inventory.Add(instance)
 }
 
 func (p *ClientPlayer) RemoveInventory(instance *object.Instance) error {
+	p.dirty = true
 	return p.inventory.Remove(instance)
 }
 
@@ -106,6 +111,7 @@ func (p *ClientPlayer) GetMaxHealth() int64 {
 }
 
 func (p *ClientPlayer) TakeMeleeDamage(damage int64) (isDead bool) {
+	p.dirty = true
 	p.curHealth = p.curHealth - damage
 	return p.curHealth <= 0
 }
@@ -116,4 +122,13 @@ func (p *ClientPlayer) IsDead() bool {
 
 func (p *ClientPlayer) CombatantType() combat.CombatantType {
 	return combat.PlayerCombatant
+}
+
+func (p *ClientPlayer) ResetDirtyFlag() {
+	p.dirty = false
+	p.slots.ResetDirtyFlag()
+}
+
+func (p *ClientPlayer) IsDirty() bool {
+	return p.dirty || p.slots.IsDirty()
 }

@@ -11,12 +11,17 @@ import (
 type PlayerInventory struct {
 	byId         map[uuid.UUID]*object.Instance // instance_id -> instance obj
 	byDefinition map[string][]*object.Instance  // zone.definition_id -> list of instances
+
+	added   map[uuid.UUID]*object.Instance
+	removed map[uuid.UUID]*object.Instance
 }
 
 func NewPlayerInventory() *PlayerInventory {
 	return &PlayerInventory{
 		byId:         make(map[uuid.UUID]*object.Instance),
 		byDefinition: make(map[string][]*object.Instance),
+		added:        make(map[uuid.UUID]*object.Instance),
+		removed:      make(map[uuid.UUID]*object.Instance),
 	}
 }
 
@@ -66,7 +71,18 @@ func (pi *PlayerInventory) findPosition(inst *object.Instance) int {
 	return -1
 }
 
+// Add an object into the inventory. This marks the inventory as dirty and records the change.
 func (pi *PlayerInventory) Add(inst *object.Instance) error {
+	err := pi.Load(inst)
+	if err != nil {
+		return err
+	}
+	pi.added[inst.InstanceId] = inst
+	return nil
+}
+
+// Load an object into the inventory without marking the inventory as dirty or changed.
+func (pi *PlayerInventory) Load(inst *object.Instance) error {
 	if _, exists := pi.byId[inst.InstanceId]; exists {
 		return errors.New(fmt.Sprintf("instance id %s already exists in player inventory", inst.InstanceId))
 	}
@@ -75,6 +91,7 @@ func (pi *PlayerInventory) Add(inst *object.Instance) error {
 	return nil
 }
 
+// Remove an object from the inventory. This marks the inventory as dirty and records the change.
 func (pi *PlayerInventory) Remove(inst *object.Instance) error {
 	if _, exists := pi.byId[inst.InstanceId]; !exists {
 		return errors.New(fmt.Sprintf("instance id %s does not exist in player inventory", inst.InstanceId))
@@ -82,5 +99,6 @@ func (pi *PlayerInventory) Remove(inst *object.Instance) error {
 	delete(pi.byId, inst.InstanceId)
 	pos := pi.findPosition(inst)
 	pi.byDefinition[inst.Definition.Id()] = append(pi.byDefinition[inst.Definition.Id()][:pos], pi.byDefinition[inst.Definition.Id()][pos+1:]...)
+	pi.removed[inst.InstanceId] = inst
 	return nil
 }

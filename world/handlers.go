@@ -38,6 +38,11 @@ func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) {
 			ResultCode: "UNKNOWN_MESSAGE_TYPE",
 		})
 	} else {
+		msg.Player.ResetDirtyFlag()
 		handler(msg)
+		// if the player object has changed, persist the changes to the database
+		if msg.Player.IsDirty() {
+			// todo save
+		}
 	}
 }

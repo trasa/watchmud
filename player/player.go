@@ -24,4 +24,7 @@ type Player interface {
 	TakeMeleeDamage(damage int64) (isDead bool)
 	IsDead() bool
 	CombatantType() combat.CombatantType
+
+	IsDirty() bool
+	ResetDirtyFlag()
 }

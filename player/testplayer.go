@@ -14,6 +14,7 @@ type TestPlayer struct {
 	slots     *object.Slots
 	curHealth int64
 	maxHealth int64
+	dirty     bool
 }
 
 // create a new test player that can track sent messages through 'sentmessages'
@@ -63,10 +64,12 @@ func (p *TestPlayer) GetAllInventory() []*object.Instance {
 }
 
 func (p *TestPlayer) AddInventory(instance *object.Instance) error {
+	p.dirty = true
 	return p.inventory.Add(instance)
 }
 
 func (p *TestPlayer) RemoveInventory(instance *object.Instance) error {
+	p.dirty = true
 	return p.inventory.Remove(instance)
 }
 
@@ -83,6 +86,7 @@ func (p *TestPlayer) GetMaxHealth() int64 {
 }
 
 func (p *TestPlayer) TakeMeleeDamage(damage int64) (isDead bool) {
+	p.dirty = true
 	p.curHealth = p.curHealth - damage
 	return p.curHealth <= 0
 }
@@ -93,4 +97,13 @@ func (p *TestPlayer) IsDead() bool {
 
 func (p *TestPlayer) CombatantType() combat.CombatantType {
 	return combat.PlayerCombatant
+}
+
+func (p *TestPlayer) ResetDirtyFlag() {
+	p.dirty = false
+	p.slots.ResetDirtyFlag()
+}
+
+func (p *TestPlayer) IsDirty() bool {
+	return p.dirty
 }

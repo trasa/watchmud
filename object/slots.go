@@ -6,6 +6,7 @@ import (
 
 type Slots struct {
 	slotMap map[slot.Location]*Instance
+	dirty   bool
 }
 
 func NewSlots() *Slots {
@@ -30,6 +31,7 @@ func (slots *Slots) Get(s slot.Location) *Instance {
 }
 
 func (slots *Slots) Set(s slot.Location, obj *Instance) {
+	slots.dirty = true
 	slots.slotMap[s] = obj
 }
 
@@ -45,4 +47,12 @@ func (slots *Slots) IsItemInUse(obj *Instance) bool {
 		}
 	}
 	return false
+}
+
+func (slots *Slots) ResetDirtyFlag() {
+	slots.dirty = false
+}
+
+func (slots *Slots) IsDirty() bool {
+	return slots.dirty
 }
