@@ -30,9 +30,9 @@ func (suite *ClientPlayerSuite) TestAddInventory_New() {
 		Definition: defnPtr,
 	}
 
-	suite.player.AddInventory(instPtr)
+	suite.player.GetInventory().Add(instPtr)
 
-	invs := suite.player.GetAllInventory()
+	invs := suite.player.GetInventory().GetAll()
 	suite.Assert().Equal(1, len(invs))
 	obj := invs[0]
 	suite.Assert().Equal(instPtr.Id(), obj.Id())

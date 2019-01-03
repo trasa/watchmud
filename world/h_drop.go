@@ -15,7 +15,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 		return
 	}
 	room := w.getRoomContainingPlayer(msg.Player)
-	if instPtr, ok := msg.Player.FindInventory(dropReq.Target); ok {
+	if instPtr, ok := msg.Player.GetInventory().Find(dropReq.Target); ok {
 		// player has target
 
 		// add to room
@@ -32,7 +32,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 		}
 
 		// remove from player
-		if err := msg.Player.RemoveInventory(instPtr); err != nil {
+		if err := msg.Player.GetInventory().Remove(instPtr); err != nil {
 			// failed to remove from player
 			log.Printf("Drop: error while removing from player: %s id %s; %s",
 				msg.Player.GetName(),

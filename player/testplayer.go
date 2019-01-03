@@ -1,7 +1,6 @@
 package player
 
 import (
-	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/object"
 	"log"
@@ -47,31 +46,34 @@ func (p *TestPlayer) GetName() string {
 	return p.name
 }
 
-func (p *TestPlayer) GetInventoryById(id uuid.UUID) (*object.Instance, bool) {
-	return p.inventory.GetByInstanceId(id)
+func (p *TestPlayer) GetInventory() *PlayerInventory {
+	return p.inventory
+
+	//func (p *TestPlayer) GetInventoryById(id uuid.UUID) (*object.Instance, bool) {
+	//	return p.inventory.GetByInstanceId(id)
+	//}
+
+	//func (p *TestPlayer) GetInventoryByName(name string) (*object.Instance, bool) {
+	//	return p.inventory.GetByName(name)
+	//}
+
+	//func (p *TestPlayer) FindInventory(target string) (*object.Instance, bool) {
+	//	return p.inventory.Find(target)
+	//}
+
+	//func (p *TestPlayer) GetAllInventory() []*object.Instance {
+	//	return p.inventory.GetAll()
+	//}
+
+	//func (p *TestPlayer) AddInventory(instance *object.Instance) error {
+	//	p.dirty = true
+	//	return p.inventory.Add(instance)
 }
 
-func (p *TestPlayer) GetInventoryByName(name string) (*object.Instance, bool) {
-	return p.inventory.GetByName(name)
-}
-
-func (p *TestPlayer) FindInventory(target string) (*object.Instance, bool) {
-	return p.inventory.Find(target)
-}
-
-func (p *TestPlayer) GetAllInventory() []*object.Instance {
-	return p.inventory.GetAll()
-}
-
-func (p *TestPlayer) AddInventory(instance *object.Instance) error {
-	p.dirty = true
-	return p.inventory.Add(instance)
-}
-
-func (p *TestPlayer) RemoveInventory(instance *object.Instance) error {
-	p.dirty = true
-	return p.inventory.Remove(instance)
-}
+//func (p *TestPlayer) RemoveInventory(instance *object.Instance) error {
+//	p.dirty = true
+//	return p.inventory.Remove(instance)
+//}
 
 func (p TestPlayer) Slots() *object.Slots {
 	return p.slots

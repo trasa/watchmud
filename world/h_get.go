@@ -29,7 +29,7 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 		}
 
 		// add to player
-		if err := msg.Player.AddInventory(instPtr); err != nil {
+		if err := msg.Player.GetInventory().Add(instPtr); err != nil {
 			// uh oh failed to add
 			log.Printf("Get: Error while getting, Player %s adding Inventory %v: %s",
 				msg.Player.GetName(), instPtr, err)
@@ -41,7 +41,7 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 		if err := room.RemoveInventory(instPtr); err != nil {
 			// uh oh failed to remove from room
 			log.Printf("Get: Error while removing from room: Player %s Inventory %s: %s", msg.Player.GetName(), instPtr.Id(), err)
-			msg.Player.RemoveInventory(instPtr)
+			msg.Player.GetInventory().Remove(instPtr)
 			msg.Player.Send(message.GetResponse{Success: false, ResultCode: "REMOVE_FROM_ROOM_ERROR"})
 			return
 		}

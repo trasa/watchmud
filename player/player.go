@@ -1,7 +1,6 @@
 package player
 
 import (
-	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/object"
 )
@@ -12,12 +11,15 @@ import (
 type Player interface {
 	Send(innerMessage interface{}) error
 	GetName() string
-	AddInventory(instance *object.Instance) error
-	RemoveInventory(instance *object.Instance) error
-	GetInventoryByName(definitionId string) (*object.Instance, bool)
-	GetInventoryById(id uuid.UUID) (*object.Instance, bool)
-	GetAllInventory() []*object.Instance
-	FindInventory(target string) (*object.Instance, bool)
+
+	//	AddInventory(instance *object.Instance) error
+	//	RemoveInventory(instance *object.Instance) error
+	//	GetInventoryByName(definitionId string) (*object.Instance, bool)
+	//	GetInventoryById(id uuid.UUID) (*object.Instance, bool)
+	//	GetAllInventory() []*object.Instance
+	//	FindInventory(target string) (*object.Instance, bool)
+	GetInventory() *PlayerInventory
+
 	Slots() *object.Slots
 	GetCurrentHealth() int64
 	GetMaxHealth() int64
