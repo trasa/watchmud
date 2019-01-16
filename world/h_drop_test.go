@@ -21,7 +21,7 @@ func TestHandleDropSuite(t *testing.T) {
 }
 
 func (suite *HandleDropSuite) SetupTest() {
-	suite.world = newTestWorld()
+	suite.world, _ = newTestWorld()
 	suite.player = player.NewTestPlayer("foo")
 	suite.world.AddPlayer(suite.player)
 	suite.testClient = client.NewTestClient(suite.player)

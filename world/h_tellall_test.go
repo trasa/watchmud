@@ -18,7 +18,7 @@ func newTellAllRequestHandlerParameter(t *testing.T, c *client.TestClient, value
 }
 
 func TestHandleTellAll_success(t *testing.T) {
-	w := newTestWorld()
+	w, _ := newTestWorld()
 	senderPlayer := player.NewTestPlayer("sender")
 	otherPlayer := player.NewTestPlayer("other")
 	bobPlayer := player.NewTestPlayer("bob")
@@ -37,7 +37,7 @@ func TestHandleTellAll_success(t *testing.T) {
 }
 
 func TestHandleTellAll_noValue(t *testing.T) {
-	w := newTestWorld()
+	w, _ := newTestWorld()
 	senderPlayer := player.NewTestPlayer("sender")
 	otherPlayer := player.NewTestPlayer("other")
 	w.AddPlayer(senderPlayer, otherPlayer)

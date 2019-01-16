@@ -132,7 +132,7 @@ func (w *World) GetZone(zoneId string) *spaces.Zone {
 }
 
 // Create an object.Instance for this zone, definition, and instance ID
-func (w *World) CreateObjectInstance(zoneId string, definitionId string, instanceId uuid.UUID) *object.Instance {
+func (w *World) CreateObjectInstance(zoneId string, definitionId string, instanceId uuid.UUID) (*object.Instance, error) {
 	z := w.GetZone(zoneId)
 	defn := z.ObjectDefinitions[definitionId]
 	return object.NewExistingInstance(instanceId, defn)

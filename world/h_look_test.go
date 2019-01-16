@@ -16,7 +16,7 @@ func newLookRequestHandlerParameter(t *testing.T, c *client.TestClient) *gameser
 }
 
 func TestLook_successful(t *testing.T) {
-	w := newTestWorld()
+	w, _ := newTestWorld()
 	p := player.NewTestPlayer("testdood")
 	other := player.NewTestPlayer("other")
 	w.AddPlayer(p)

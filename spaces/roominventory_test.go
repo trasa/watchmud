@@ -23,8 +23,8 @@ func TestRoomInventorySuite(t *testing.T) {
 func (suite *RoomInventorySuite) SetupTest() {
 	suite.roomInventory = NewRoomInventory()
 	suite.defn = object.NewDefinition("id", "name", "zoneid", object.Other, []string{}, "short desc", "on ground", slot.None)
-	suite.inst = object.NewInstance(suite.defn)
-	suite.instTwo = object.NewInstance(suite.defn)
+	suite.inst, _ = object.NewInstance(suite.defn)
+	suite.instTwo, _ = object.NewInstance(suite.defn)
 	suite.roomInventory.Add(suite.inst)
 	suite.roomInventory.Add(suite.instTwo)
 }

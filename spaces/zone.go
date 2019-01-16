@@ -131,5 +131,9 @@ func (z *Zone) createObject(cmd CreateObject) error {
 			cmd.InstanceMax)
 		return nil
 	}
-	return r.AddInventory(object.NewInstance(defn))
+	if inst, err := object.NewInstance(defn); err != nil {
+		return err
+	} else {
+		return r.AddInventory(inst)
+	}
 }

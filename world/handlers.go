@@ -2,6 +2,7 @@ package world
 
 import (
 	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/gameserver"
 	"log"
 )
@@ -41,8 +42,8 @@ func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) {
 		msg.Player.ResetDirtyFlag()
 		handler(msg)
 		// if the player object has changed, persist the changes to the database
-		if msg.Player.IsDirty() {
-			// todo save
+		if err := db.SavePlayer(msg.Player); err != nil {
+			log.Printf("Error saving player %s! Error: %v", msg.Player.GetName(), err)
 		}
 	}
 }

@@ -1,8 +1,10 @@
 package object
 
 import (
+	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/behavior"
+	"log"
 )
 
 // The Instances of the Definitions in the world around you.
@@ -26,14 +28,18 @@ func (i *Instance) IsGettable() bool {
 	return !i.Definition.Behaviors.Contains(behavior.NoTake)
 }
 
-func NewInstance(defn *Definition) *Instance {
+func NewInstance(defn *Definition) (*Instance, error) {
 	id := uuid.NewV4()
 	return NewExistingInstance(id, defn)
 }
 
-func NewExistingInstance(id uuid.UUID, defn *Definition) *Instance {
+func NewExistingInstance(id uuid.UUID, defn *Definition) (inst *Instance, err error) {
+	if defn == nil {
+		log.Printf("Error: asked to create instance for id %s with null definition!", id)
+		return nil, errors.New("Tried to create instance with null definition")
+	}
 	return &Instance{
 		InstanceId: id,
 		Definition: defn,
-	}
+	}, nil
 }

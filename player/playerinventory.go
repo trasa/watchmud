@@ -102,3 +102,28 @@ func (pi *PlayerInventory) Remove(inst *object.Instance) error {
 	pi.removed[inst.InstanceId] = inst
 	return nil
 }
+
+// Get the objects that were added since the last time
+func (pi *PlayerInventory) GetAdded() (result []*object.Instance) {
+	for _, inst := range pi.added {
+		result = append(result, inst)
+	}
+	return
+}
+
+// get the objects that were removed since hte last time
+func (pi *PlayerInventory) GetRemoved() (result []*object.Instance) {
+	for _, inst := range pi.removed {
+		result = append(result, inst)
+	}
+	return
+}
+
+func (pi *PlayerInventory) IsDirty() bool {
+	return len(pi.added) > 0 || len(pi.removed) > 0
+}
+
+func (pi *PlayerInventory) ResetDirtyFlag() {
+	pi.added = make(map[uuid.UUID]*object.Instance)
+	pi.removed = make(map[uuid.UUID]*object.Instance)
+}

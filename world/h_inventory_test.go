@@ -19,7 +19,7 @@ func newInventoryRequestHandlerParameter(t *testing.T, c *client.TestClient) *ga
 }
 
 func TestInventory_success(t *testing.T) {
-	w := newTestWorld()
+	w, _ := newTestWorld()
 	p := player.NewTestPlayer("guy")
 	c := client.NewTestClient(p)
 

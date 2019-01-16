@@ -173,7 +173,16 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO er
 	// load inventory: have to convert playerinventorydata into
 	// instances and definitions here, because we need 'the world' to do it.
 	for _, inv := range playerData.Inventory {
-		player.LoadInventory(gs.World.CreateObjectInstance(inv.ZoneId, inv.DefinitionId, inv.InstanceId))
+		inst, err := gs.World.CreateObjectInstance(inv.ZoneId, inv.DefinitionId, inv.InstanceId)
+		if err != nil {
+			log.Printf("Error trying to load inventory instance (%s-%s-%s) -- %s", inv.ZoneId, inv.DefinitionId, inv.InstanceId, err)
+			msg.Client.Send(message.LoginResponse{
+				Success:    false,
+				ResultCode: "PLAYER_INVENTORY_DATA_ERROR",
+			})
+			return
+		}
+		player.LoadInventory(inst)
 	}
 
 	msg.Client.SetPlayer(player)

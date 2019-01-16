@@ -22,7 +22,7 @@ func TestHandleMoveSuite(t *testing.T) {
 }
 
 func (suite *HandleMoveSuite) SetupTest() {
-	suite.world = newTestWorld()
+	suite.world, _ = newTestWorld()
 	suite.player = player.NewTestPlayer("p")
 	suite.world.AddPlayer(suite.player)
 	suite.testClient = client.NewTestClient(suite.player)

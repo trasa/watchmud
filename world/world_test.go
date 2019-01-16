@@ -10,7 +10,7 @@ import (
 )
 
 func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
-	w := newTestWorld()
+	w, _ := newTestWorld()
 	p := player.NewTestPlayer("sender")
 	c := client.NewTestClient(p)
 	m := &message.GameMessage{} // not a valid message, has no inner type
@@ -24,7 +24,7 @@ func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
 }
 
 func TestWorld_RemovePlayer(t *testing.T) {
-	w := newTestWorld()
+	w, _ := newTestWorld()
 	p := player.NewTestPlayer("dood")
 	w.AddPlayer(p)
 	w.RemovePlayer(p)

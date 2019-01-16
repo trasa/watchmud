@@ -24,7 +24,7 @@ func TestHandleEquipSuite(t *testing.T) {
 }
 
 func (suite *HandleEquipSuite) SetupTest() {
-	suite.world = newTestWorld()
+	suite.world, _ = newTestWorld()
 	suite.player = player.NewTestPlayer("foo")
 	suite.world.AddPlayer(suite.player)
 	suite.testClient = client.NewTestClient(suite.player)

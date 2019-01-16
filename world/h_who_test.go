@@ -16,7 +16,7 @@ func newWhoRequestHandlerParameter(t *testing.T, c *client.TestClient) *gameserv
 }
 
 func TestWho_success(t *testing.T) {
-	w := newTestWorld()
+	w, _ := newTestWorld()
 	p := player.NewTestPlayer("guy")
 	w.AddPlayer(p)
 	c := client.NewTestClient(p)
@@ -33,7 +33,7 @@ func TestWho_success(t *testing.T) {
 }
 
 func TestWho_notInRoom(t *testing.T) {
-	w := newTestWorld()
+	w, _ := newTestWorld()
 	p := player.NewTestPlayer("guy")
 	w.AddPlayer(p)
 	w.playerRooms.Remove(p)
@@ -49,7 +49,7 @@ func TestWho_notInRoom(t *testing.T) {
 }
 
 func TestWho_sort(t *testing.T) {
-	w := newTestWorld()
+	w, _ := newTestWorld()
 	z := player.NewTestPlayer("z")
 	y := player.NewTestPlayer("y")
 	w.AddPlayer(z, y)
@@ -62,7 +62,7 @@ func TestWho_sort(t *testing.T) {
 }
 
 func TestWho_logoutRemovesPlayer(t *testing.T) {
-	w := newTestWorld()
+	w, _ := newTestWorld()
 	z := player.NewTestPlayer("z")
 	y := player.NewTestPlayer("y")
 	w.AddPlayer(z, y)

@@ -50,8 +50,6 @@ func (p *ClientPlayer) LoadPlayerData(pd *db.PlayerData) {
 	p.maxHealth = pd.MaxHealth
 	p.race = pd.Race
 	p.class = pd.Class
-
-	// TODO: other stuff
 }
 
 // Load player inventory into this struct without flagging anything as dirty
@@ -74,32 +72,6 @@ func (p *ClientPlayer) String() string {
 func (p *ClientPlayer) GetInventory() *player.PlayerInventory {
 	return p.inventory
 }
-
-//func (p *ClientPlayer) GetInventoryById(id uuid.UUID) (*object.Instance, bool) {
-//	return p.inventory.GetByInstanceId(id)
-//}
-
-//func (p *ClientPlayer) GetInventoryByName(name string) (*object.Instance, bool) {
-//	return p.inventory.GetByName(name)
-//}
-
-//func (p *ClientPlayer) GetAllInventory() []*object.Instance {
-//	return p.inventory.GetAll()
-//}
-
-//func (p *ClientPlayer) AddInventory(instance *object.Instance) error {
-//	p.dirty = true
-//	return p.inventory.Add(instance)
-//}
-
-//func (p *ClientPlayer) RemoveInventory(instance *object.Instance) error {
-//	p.dirty = true
-//	return p.inventory.Remove(instance)
-//}
-
-//func (p *ClientPlayer) FindInventory(target string) (*object.Instance, bool) {
-//	return p.inventory.Find(target)
-//}
 
 func (p *ClientPlayer) Slots() *object.Slots {
 	return p.slots
@@ -129,9 +101,10 @@ func (p *ClientPlayer) CombatantType() combat.CombatantType {
 
 func (p *ClientPlayer) ResetDirtyFlag() {
 	p.dirty = false
+	p.inventory.ResetDirtyFlag()
 	p.slots.ResetDirtyFlag()
 }
 
 func (p *ClientPlayer) IsDirty() bool {
-	return p.dirty || p.slots.IsDirty()
+	return p.dirty || p.inventory.IsDirty() || p.slots.IsDirty()
 }

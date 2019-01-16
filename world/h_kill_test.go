@@ -24,7 +24,7 @@ func TestHandleKillSuite(t *testing.T) {
 }
 
 func (suite *HandleKillSuite) SetupTest() {
-	suite.world = newTestWorld()
+	suite.world, _ = newTestWorld()
 	suite.player = player.NewTestPlayer("testdood")
 	suite.world.AddPlayer(suite.player)
 	suite.testClient = client.NewTestClient(suite.player)

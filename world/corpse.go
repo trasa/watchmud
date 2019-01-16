@@ -34,7 +34,7 @@ func (w *World) becomeCorpse_Player(p player.Player) {
 	// that is still TBD
 }
 
-func (w *World) becomeCorpse_Mobile(m *mobile.Instance) {
+func (w *World) becomeCorpse_Mobile(m *mobile.Instance) error {
 	// create a corpse for the mobile instance
 	// load the corpse with loot
 	corpseName := fmt.Sprintf("the corpse of %s", m.Definition.Name)
@@ -46,13 +46,17 @@ func (w *World) becomeCorpse_Mobile(m *mobile.Instance) {
 		corpseName,
 		fmt.Sprintf("The corpse of %s is lying here.", m.Definition.Name),
 		slot.None)
-	corpse := object.NewInstance(corpseDefn)
 
-	// transfer m's possessions over to the corpse
-	// TODO mobiles can't have possessions at the moment, not implemented yet..
+	if corpse, err := object.NewInstance(corpseDefn); err != nil {
+		return err
+	} else {
+		// transfer m's possessions over to the corpse
+		// TODO mobiles can't have possessions at the moment, not implemented yet..
 
-	w.getRoomContainingMobile(m).AddInventory(corpse)
+		w.getRoomContainingMobile(m).AddInventory(corpse)
 
-	// remove the mobile instance
-	w.removeMobile(m)
+		// remove the mobile instance
+		w.removeMobile(m)
+		return nil
+	}
 }

@@ -21,7 +21,7 @@ func newTellRequestHandlerParameter(t *testing.T, c *client.TestClient, receiver
 // tell receiver about it
 func TestHandleTell_success(t *testing.T) {
 	// arrange
-	w := newTestWorld()
+	w, _ := newTestWorld()
 	senderPlayer := player.NewTestPlayer("sender")
 	receiverPlayer := player.NewTestPlayer("receiver")
 	w.AddPlayer(receiverPlayer)
@@ -47,7 +47,7 @@ func TestHandleTell_success(t *testing.T) {
 
 func TestHandleTell_receiverNotFound(t *testing.T) {
 	// arrange
-	w := newTestWorld()
+	w, _ := newTestWorld()
 	senderPlayer := player.NewTestPlayer("sender")
 	c := client.NewTestClient(senderPlayer)
 	// note: receiver doesn't exist

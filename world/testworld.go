@@ -8,10 +8,11 @@ import (
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/spaces"
 	"github.com/trasa/watchmud/zonereset"
+	"log"
 )
 
 // create a new test world
-func newTestWorld() *World {
+func newTestWorld() (*World, error) {
 
 	testZone := spaces.NewZone("sample", "Sample Zone", zonereset.NEVER, 0)
 
@@ -37,7 +38,11 @@ func newTestWorld() *World {
 		"knife",
 		"A knife is on the ground.",
 		slot.None)
-	knifeObj := object.NewInstance(knifeDefn)
+	knifeObj, err := object.NewInstance(knifeDefn)
+	if err != nil {
+		log.Printf("Error in TestWorld, failed to create knife!")
+		return nil, err
+	}
 	testRoom.AddInventory(knifeObj)
 
 	ironHelmetDefn := object.NewDefinition("helmet",
@@ -48,7 +53,11 @@ func newTestWorld() *World {
 		"iron helmet",
 		"An iron helmet is on the ground.",
 		slot.Head)
-	ironHelmetObj := object.NewInstance(ironHelmetDefn)
+	ironHelmetObj, err := object.NewInstance(ironHelmetDefn)
+	if err != nil {
+		log.Printf("Error in TestWorld, failed to create iron helmet")
+		return nil, err
+	}
 	testRoom.AddInventory(ironHelmetObj)
 
 	mobDefn := mobile.NewDefinition("targetDrone", "Target Drone",
@@ -63,5 +72,5 @@ func newTestWorld() *World {
 	testZone.AddMobileDefinition(mobDefn)
 	testRoom.AddMobile(mobile.NewInstance(mobDefn))
 
-	return w
+	return w, nil
 }
