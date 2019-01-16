@@ -6,6 +6,7 @@ import (
 )
 
 type PlayerData struct {
+	Id        int64  `db:"player_id"`
 	Name      string `db:"player_name"`
 	Inventory []PlayerInventoryData
 	//slots     *object.Slots // maps instance ids to location
@@ -21,11 +22,11 @@ const NewPlayerMaxHealth = 100
 func GetPlayerData(playerName string) (result *PlayerData, err error) {
 	log.Printf("DB - getting player data for %s", playerName)
 	result = &PlayerData{}
-	err = watchdb.Get(result, "SELECT player_name, current_health, max_health, race, class FROM players where player_name = $1", playerName)
+	err = watchdb.Get(result, "SELECT player_id, player_name, current_health, max_health, race, class FROM players where player_name = $1", playerName)
 	if err != nil {
 		return
 	}
-	result.Inventory, err = getPlayerInventoryData(playerName)
+	result.Inventory, err = getPlayerInventoryData(result.Id)
 	if err != nil {
 		log.Printf("err %v", err)
 	}
@@ -54,9 +55,9 @@ func SavePlayer(player player.Player) (err error) {
 	}
 
 	// players table
-	_, err = tx.NamedExec("UPDATE players SET current_health = :curHealth, max_health = :maxHealth where player_name = :name",
+	_, err = tx.NamedExec("UPDATE players SET current_health = :curHealth, max_health = :maxHealth where player_id = :id",
 		map[string]interface{}{
-			"name":      player.GetName(),
+			"id":        player.GetId(),
 			"curHealth": player.GetCurrentHealth(),
 			"maxHealth": player.GetMaxHealth(),
 		})
@@ -83,7 +84,7 @@ func SavePlayer(player player.Player) (err error) {
 
 func CreatePlayerData(playerName string, race int32, class int32) (result *PlayerData, err error) {
 	log.Printf("DB - Create Player for %s", playerName)
-	_, err = watchdb.NamedExec("INSERT INTO players (player_name, current_health, max_health, race, class) VALUES (:name, :curHealth, :maxHealth, :race, :class)",
+	res, err := watchdb.NamedExec("INSERT INTO players (player_name, current_health, max_health, race, class) VALUES (:name, :curHealth, :maxHealth, :race, :class)",
 		map[string]interface{}{
 			"name":      playerName,
 			"curHealth": NewPlayerMaxHealth,
@@ -91,6 +92,7 @@ func CreatePlayerData(playerName string, race int32, class int32) (result *Playe
 			"race":      race,
 			"class":     class,
 		})
+	result.Id, err = res.LastInsertId()
 
 	if err == nil {
 		result = &PlayerData{

@@ -1,7 +1,8 @@
 -- psql -U watchmud
 
 CREATE TABLE players (
-  player_name varchar(100) primary key not null,
+  player_id serial primary key not null,
+  player_name varchar(100) not null unique,
   current_health integer not null,
   max_health integer not null,
   race integer not null,
@@ -9,11 +10,11 @@ CREATE TABLE players (
 );
 
 CREATE TABLE player_inventory (
-  player_name varchar(1000) not null REFERENCES players(player_name),
+  player_id integer not null REFERENCES players(player_id),
   instance_id UUID not null,
   zone_id varchar(1000) not null,
   definition_id varchar(1000) not null,
-  primary key (player_name, instance_id)
+  primary key (player_id, instance_id)
 );
 
 

@@ -10,6 +10,7 @@ import (
 )
 
 type ClientPlayer struct {
+	Id        int64
 	Name      string
 	Client    client.Client
 	inventory *player.PlayerInventory
@@ -45,6 +46,7 @@ func NewClientPlayer(name string, client client.Client) *ClientPlayer { // TODO 
 
 // Load player information into this struct without flagging anything as dirty
 func (p *ClientPlayer) LoadPlayerData(pd *db.PlayerData) {
+	p.Id = pd.Id
 	p.Name = pd.Name
 	p.curHealth = pd.CurHealth
 	p.maxHealth = pd.MaxHealth
@@ -55,6 +57,10 @@ func (p *ClientPlayer) LoadPlayerData(pd *db.PlayerData) {
 // Load player inventory into this struct without flagging anything as dirty
 func (p *ClientPlayer) LoadInventory(instance *object.Instance) {
 	p.inventory.Load(instance)
+}
+
+func (p *ClientPlayer) GetId() int64 {
+	return p.Id
 }
 
 func (p *ClientPlayer) GetName() string {
