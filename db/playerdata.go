@@ -38,6 +38,7 @@ func GetPlayerData(playerName string) (result *PlayerData, err error) {
 
 // Write the player back to the database
 func SavePlayer(player player.Player) (err error) {
+	log.Printf("DB - Save, examine dirty flag: %v", player.IsDirty())
 	if !player.IsDirty() {
 		return
 	}

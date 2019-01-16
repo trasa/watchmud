@@ -30,7 +30,7 @@ func savePlayerInventory(tx *sqlx.Tx, player player.Player) (err error) {
 				"player_name":   player.GetName(),
 				"instance_id":   a.InstanceId,
 				"zone_id":       a.Definition.ZoneId,
-				"definition_id": a.Definition.Id(),
+				"definition_id": a.Definition.Identifier(),
 			})
 		if err != nil {
 			return
