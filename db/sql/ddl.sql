@@ -6,7 +6,8 @@ CREATE TABLE players (
   current_health integer not null,
   max_health integer not null,
   race integer not null,
-  class integer not null
+  class integer not null,
+  slots JSONB null
 );
 
 CREATE TABLE player_inventory (

@@ -45,6 +45,7 @@ func NewClientPlayer(name string, client client.Client) *ClientPlayer { // TODO 
 }
 
 // Load player information into this struct without flagging anything as dirty
+// Does not load slot information as that has to happen after inventory is loaded
 func (p *ClientPlayer) LoadPlayerData(pd *db.PlayerData) {
 	p.Id = pd.Id
 	p.Name = pd.Name

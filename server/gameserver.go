@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/gameserver"
@@ -168,14 +169,14 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO er
 		return
 	}
 	player := NewClientPlayer(msg.Message.GetLoginRequest().PlayerName, msg.Client)
-	player.LoadPlayerData(playerData)
+	player.LoadPlayerData(&playerData)
 
 	// load inventory: have to convert playerinventorydata into
 	// instances and definitions here, because we need 'the world' to do it.
 	for _, inv := range playerData.Inventory {
 		inst, err := gs.World.CreateObjectInstance(inv.ZoneId, inv.DefinitionId, inv.InstanceId)
 		if err != nil {
-			log.Printf("Error trying to load inventory instance (%s-%s-%s) -- %s", inv.ZoneId, inv.DefinitionId, inv.InstanceId, err)
+			log.Printf("Error trying to load player %d (%s) inventory instance (%s-%s-%s) -- %s", playerData.Id, playerName, inv.ZoneId, inv.DefinitionId, inv.InstanceId, err)
 			msg.Client.Send(message.LoginResponse{
 				Success:    false,
 				ResultCode: "PLAYER_INVENTORY_DATA_ERROR",
@@ -183,6 +184,17 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO er
 			return
 		}
 		player.LoadInventory(inst)
+
+	}
+	// slots - need inventory before we can set slots
+	for _, sd := range playerData.Slots.Slots {
+		inst, exists := player.GetInventory().GetByInstanceId(sd.InstanceId)
+		if !exists {
+			log.Printf("Error trying to load player %d (%s) slot: %d object instance doesn't exist in inventory: %s",
+				playerData.Id, playerName, sd.Location, sd.InstanceId)
+		} else {
+			player.Slots().Set(slot.Location(sd.Location), inst)
+		}
 	}
 
 	msg.Client.SetPlayer(player)
