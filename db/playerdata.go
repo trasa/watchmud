@@ -38,13 +38,15 @@ func GetPlayerData(playerName string) (result PlayerData, err error) {
 	return
 }
 
-// Write the player back to the database
 func SavePlayer(player player.Player) (err error) {
-	//log.Printf("DB - Save, examine dirty flag: %v", player.IsDirty())
 	if !player.IsDirty() {
 		return
 	}
+	return ForceSavePlayer(player)
+}
 
+// Write the player back to the database
+func ForceSavePlayer(player player.Player) (err error) {
 	log.Printf("DB - Saving Player Data for %s", player.GetName())
 	tx, err := watchdb.Beginx()
 	if err != nil {
