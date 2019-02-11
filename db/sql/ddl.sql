@@ -7,6 +7,8 @@ CREATE TABLE players (
   max_health integer not null,
   race integer not null,
   class integer not null,
+  last_zone_id varchar(100),
+  last_room_id varchar(100),
   slots JSONB null
 );
 
@@ -17,7 +19,6 @@ CREATE TABLE player_inventory (
   definition_id varchar(1000) not null,
   primary key (player_id, instance_id)
 );
-
 
 
 GRANT SELECT, INSERT, UPDATE ON TABLE players TO watchmud;

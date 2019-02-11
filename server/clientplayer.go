@@ -20,6 +20,7 @@ type ClientPlayer struct {
 	race      int32
 	class     int32
 	dirty     bool
+	location  *player.Location
 }
 
 // Create a ClientPlayer connected to a new TestClient
@@ -53,6 +54,7 @@ func (p *ClientPlayer) LoadPlayerData(pd *db.PlayerData) {
 	p.maxHealth = pd.MaxHealth
 	p.race = pd.Race
 	p.class = pd.Class
+	p.location = player.NewLocation(pd.LastZoneId, pd.LastRoomId)
 }
 
 // Load player inventory into this struct without flagging anything as dirty
@@ -114,4 +116,8 @@ func (p *ClientPlayer) ResetDirtyFlag() {
 
 func (p *ClientPlayer) IsDirty() bool {
 	return p.dirty || p.inventory.IsDirty() || p.slots.IsDirty()
+}
+
+func (p *ClientPlayer) Location() *player.Location {
+	return p.location
 }

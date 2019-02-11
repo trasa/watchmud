@@ -8,7 +8,7 @@ import (
 func (w *World) handleExits(msg *gameserver.HandlerParameter) {
 	r := w.getRoomContainingPlayer(msg.Player)
 	if r == nil {
-		r = w.voidRoom
+		r = w.VoidRoom
 	}
 	// convert directions to strings because json
 	messageExitInfo := []*message.ExitInfo{}

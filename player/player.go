@@ -33,4 +33,6 @@ type Player interface {
 	IsDirty() bool
 	// set dirty flag to false (so we won't write back to database)
 	ResetDirtyFlag()
+	// where are you?
+	Location() *Location
 }

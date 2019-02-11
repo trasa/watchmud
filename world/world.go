@@ -16,8 +16,8 @@ import (
 type World struct {
 	settings  map[string]string
 	zones     map[string]*spaces.Zone
-	startRoom *spaces.Room
-	voidRoom  *spaces.Room
+	StartRoom *spaces.Room
+	VoidRoom  *spaces.Room
 
 	// TODO merge playerList and playerRooms similar to MobileRoomMap merges mobList and mobRooms
 	playerList  *player.List   // list of players
@@ -48,14 +48,21 @@ func New(worldFilesDirectory string) (w *World, err error) {
 	return
 }
 
-// Add Player(s) to the world putting them in the start room,
+// Add Player(s) to the world putting them in the correct room they were
+// in last time, or the start room if we can't figure that out.
 // Don't send room notifications.
 func (w *World) AddPlayer(players ...player.Player) {
 	for _, p := range players {
 		log.Printf("Adding Player: %s", p.GetName())
+		r, exists := w.findRoomByLocation(p.Location())
+		if !exists {
+			log.Printf("Adding player %s to location %s but it doesn't exist - using start room instead.",
+				p.GetName(), p.Location())
+			r = w.StartRoom
+		}
 		w.playerList.Add(p)
-		w.playerRooms.Add(p, w.startRoom)
-		w.startRoom.AddPlayer(p)
+		w.playerRooms.Add(p, r)
+		r.AddPlayer(p)
 	}
 }
 
@@ -73,6 +80,8 @@ func (w *World) movePlayer(p player.Player, dir direction.Direction, src *spaces
 	dest.PlayerEnters(p)
 	w.playerRooms.Remove(p)
 	w.playerRooms.Add(p, dest)
+	p.Location().RoomId = dest.Id
+	p.Location().ZoneId = dest.Zone.Id
 }
 
 // Mobile is moving from src room to dest room.
@@ -105,6 +114,13 @@ func (w *World) findRoomById(zoneId string, roomId string) (*spaces.Room, bool) 
 		}
 	}
 	return nil, false
+}
+
+func (w *World) findRoomByLocation(loc *player.Location) (*spaces.Room, bool) {
+	if loc == nil {
+		return nil, false
+	}
+	return w.findRoomById(loc.ZoneId, loc.RoomId)
 }
 
 func (w *World) findPlayerByName(name string) player.Player {

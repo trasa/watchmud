@@ -47,7 +47,7 @@ func (suite *HandleMoveSuite) TestMove_butYouCant() {
 func (suite *HandleMoveSuite) TestMoveWhileFighting() {
 	otherPlayer := player.NewTestPlayer("other")
 	suite.world.AddPlayer(otherPlayer)
-	suite.world.fightLedger.Fight(suite.player, otherPlayer, suite.world.startRoom.Zone.Id, suite.world.startRoom.Id)
+	suite.world.fightLedger.Fight(suite.player, otherPlayer, suite.world.StartRoom.Zone.Id, suite.world.StartRoom.Id)
 
 	suite.world.handleMove(suite.newMoveRequestHandlerParameter(direction.NORTH))
 

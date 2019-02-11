@@ -58,7 +58,7 @@ func (suite *HandleDropSuite) TestDrop_success() {
 
 	// player now has zero items, room has its starting two
 	suite.Assert().Equal(0, len(suite.player.GetInventory().GetAll()))
-	suite.Assert().Equal(2, len(suite.world.startRoom.GetAllInventory()))
+	suite.Assert().Equal(2, len(suite.world.StartRoom.GetAllInventory()))
 }
 
 func (suite *HandleDropSuite) TestDrop_Alias() {
@@ -92,7 +92,7 @@ func (suite *HandleDropSuite) TestDrop_Alias() {
 
 	// player now has zero items, room has its starting two
 	suite.Assert().Equal(0, len(suite.player.GetInventory().GetAll()))
-	suite.Assert().Equal(2, len(suite.world.startRoom.GetAllInventory()))
+	suite.Assert().Equal(2, len(suite.world.StartRoom.GetAllInventory()))
 }
 
 func (suite *HandleDropSuite) TestDrop_NoTarget() {

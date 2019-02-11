@@ -27,7 +27,8 @@ func newTestWorld() (*World, error) {
 
 	testRoom := spaces.NewRoom(testZone, "start", "Test Room", "this is a test room.")
 	testZone.Rooms[testRoom.Id] = testRoom
-	w.startRoom = testRoom
+	w.StartRoom = testRoom
+	w.VoidRoom = testRoom
 
 	// put something in the start room
 	knifeDefn := object.NewDefinition("knife",

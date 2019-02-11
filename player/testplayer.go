@@ -15,6 +15,7 @@ type TestPlayer struct {
 	curHealth int64
 	maxHealth int64
 	dirty     bool
+	location  *Location
 }
 
 // create a new test player that can track sent messages through 'sentmessages'
@@ -89,4 +90,8 @@ func (p *TestPlayer) ResetDirtyFlag() {
 
 func (p *TestPlayer) IsDirty() bool {
 	return p.dirty
+}
+
+func (p *TestPlayer) Location() *Location {
+	return p.location
 }

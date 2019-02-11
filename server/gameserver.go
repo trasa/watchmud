@@ -201,7 +201,6 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO er
 	msg.Player = player
 
 	// add player to world
-	// TODO add player to correct location in world, based on persistence
 	gs.World.AddPlayer(player)
 
 	player.Send(message.LoginResponse{
@@ -224,7 +223,7 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) { // 
 	playerName := req.PlayerName
 
 	// create player data for playerName
-	playerData, err := db.CreatePlayerData(playerName, req.Race, req.Class)
+	playerData, err := db.CreatePlayerData(playerName, req.Race, req.Class, gs.World.StartRoom.Zone.Id, gs.World.StartRoom.Id)
 	if err != nil {
 		log.Printf("Error trying to create player for %s: %v", playerName, err)
 		msg.Client.Send(message.CreatePlayerResponse{

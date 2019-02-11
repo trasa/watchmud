@@ -37,7 +37,7 @@ func newKillRequestHandleParameter(t *testing.T, c *client.TestClient, target st
 }
 
 func (suite *HandleKillSuite) TestSuccess() {
-	mob, _ := suite.world.startRoom.FindMobile("target")
+	mob, _ := suite.world.StartRoom.FindMobile("target")
 	killHP := newKillRequestHandleParameter(suite.T(), suite.testClient, "target")
 
 	suite.world.handleKill(killHP)
@@ -53,8 +53,8 @@ func (suite *HandleKillSuite) TestSuccess() {
 }
 
 func (suite *HandleKillSuite) TestAlreadyFighting() {
-	mob, _ := suite.world.startRoom.FindMobile("target")
-	suite.world.fightLedger.Fight(suite.player, mob, suite.world.startRoom.Zone.Id, suite.world.startRoom.Id)
+	mob, _ := suite.world.StartRoom.FindMobile("target")
+	suite.world.fightLedger.Fight(suite.player, mob, suite.world.StartRoom.Zone.Id, suite.world.StartRoom.Id)
 
 	killHP := newKillRequestHandleParameter(suite.T(), suite.testClient, "targetMob")
 
@@ -79,7 +79,7 @@ func (suite *HandleKillSuite) TestNoTarget() {
 }
 
 func (suite *HandleKillSuite) TestNoFight() {
-	mob, _ := suite.world.startRoom.FindMobile("target")
+	mob, _ := suite.world.StartRoom.FindMobile("target")
 	mob.Definition.SetFlag(mobile.FlagNoFight)
 	killHP := newKillRequestHandleParameter(suite.T(), suite.testClient, "target")
 
@@ -94,7 +94,7 @@ func (suite *HandleKillSuite) TestNoFight() {
 
 func (suite *HandleKillSuite) TestNoFightInRoom() {
 
-	suite.world.startRoom.SetFlag(spaces.RoomFlagNoFight)
+	suite.world.StartRoom.SetFlag(spaces.RoomFlagNoFight)
 
 	killHP := newKillRequestHandleParameter(suite.T(), suite.testClient, "target")
 
