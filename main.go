@@ -7,6 +7,7 @@ import (
 	"github.com/trasa/watchmud/rpc"
 	"github.com/trasa/watchmud/server"
 	"github.com/trasa/watchmud/web"
+	"io"
 	"log"
 	"os"
 )
@@ -17,6 +18,7 @@ var (
 	webPort       = flag.Int("webPort", 8888, "Port to operate the web server on")
 	doHelp        = flag.Bool("help", false, "Show Help")
 	doHelpAlias   = flag.Bool("h", false, "Show Help")
+	logFile       = flag.String("logFile", "/var/log/watchmud/watchmud-server.log", "File to write server logs to")
 )
 
 func usage() {
@@ -32,6 +34,16 @@ func main() {
 		os.Exit(2)
 		return
 	}
+
+	// init logging
+	f, err := os.OpenFile(*logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening log file: %v", err)
+	}
+	defer f.Close()
+	wrt := io.MultiWriter(os.Stdout, f)
+	log.SetOutput(wrt)
+	log.Println("Logging initialized.")
 
 	if err := db.Init(); err != nil {
 		log.Fatalf("Failed to initialize database persistence: %v", err)
