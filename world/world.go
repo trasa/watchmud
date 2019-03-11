@@ -84,6 +84,12 @@ func (w *World) movePlayer(p player.Player, dir direction.Direction, src *spaces
 	p.Location().ZoneId = dest.Zone.Id
 }
 
+// Player is jumping from the room they are currently in to the destination.
+func (w *World) movePlayerMagically(p player.Player, dest *spaces.Room) {
+	src := w.getRoomContainingPlayer(p)
+	w.movePlayer(p, direction.NONE, src, dest)
+}
+
 // Mobile is moving from src room to dest room.
 func (w *World) moveMobile(mob *mobile.Instance, dir direction.Direction, src *spaces.Room, dest *spaces.Room) {
 	src.MobileLeaves(mob, dir)
