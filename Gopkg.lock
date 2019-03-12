@@ -106,7 +106,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:d66f20adac4873049bf442e94f56f2ed7be3b15d1a84ae54d3cbd79dfb7c38ae"
+  digest = "1:c73a3102592025cc3150e11da4f699bf56288410f43317f5c76e2a35b351bd6d"
   name = "github.com/trasa/watchmud-message"
   packages = [
     ".",
@@ -114,8 +114,8 @@
     "slot",
   ]
   pruneopts = "UT"
-  revision = "484189fc8d4b8927166a4fd0f6764e2112dde80a"
-  version = "v0.0.9"
+  revision = "4b9c95ff0295e35e46ea502d931c53686c07ae95"
+  version = "v0.0.10"
 
 [[projects]]
   branch = "master"
