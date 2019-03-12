@@ -1,15 +1,28 @@
 package player
 
+type AbilityScore int32
+
 type Abilities struct {
-	Strength     int
-	Dexterity    int
-	Constitution int
-	Intelligence int
-	Wisdom       int
-	Charisma     int
+	Strength     AbilityScore
+	Dexterity    AbilityScore
+	Constitution AbilityScore
+	Intelligence AbilityScore
+	Wisdom       AbilityScore
+	Charisma     AbilityScore
 }
 
-func AbilityScoreModifier(a int) int {
+func NewAbilities(str int32, dex int32, con int32, int int32, wis int32, cha int32) *Abilities {
+	return &Abilities{
+		Strength:     AbilityScore(str),
+		Dexterity:    AbilityScore(dex),
+		Constitution: AbilityScore(con),
+		Intelligence: AbilityScore(int),
+		Wisdom:       AbilityScore(wis),
+		Charisma:     AbilityScore(cha),
+	}
+}
+
+func AbilityScoreModifier(a AbilityScore) int {
 	switch {
 	case a <= 1:
 		return -5

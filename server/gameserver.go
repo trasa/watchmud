@@ -7,6 +7,7 @@ import (
 	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mudtime"
+	player2 "github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/world"
 	"log"
 	"time"
@@ -168,8 +169,7 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO er
 		})
 		return
 	}
-	player := NewClientPlayer(msg.Message.GetLoginRequest().PlayerName, msg.Client)
-	player.LoadPlayerData(&playerData)
+	player := NewClientPlayerFromPlayerData(msg.Message.GetLoginRequest().PlayerName, &playerData, msg.Client)
 
 	// load inventory: have to convert playerinventorydata into
 	// instances and definitions here, because we need 'the world' to do it.
@@ -223,7 +223,16 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) { // 
 	playerName := req.PlayerName
 
 	// create player data for playerName
-	playerData, err := db.CreatePlayerData(playerName, req.Race, req.Class, gs.World.StartRoom.Zone.Id, gs.World.StartRoom.Id)
+	// TODO for now, just set abilities to some defaults
+	abilities := player2.Abilities{
+		Strength:     15,
+		Dexterity:    15,
+		Constitution: 15,
+		Intelligence: 15,
+		Wisdom:       15,
+		Charisma:     15,
+	}
+	playerData, err := db.CreatePlayerData(playerName, req.Race, req.Class, gs.World.StartRoom.Zone.Id, gs.World.StartRoom.Id, abilities)
 	if err != nil {
 		log.Printf("Error trying to create player for %s: %v", playerName, err)
 		msg.Client.Send(message.CreatePlayerResponse{
@@ -232,8 +241,7 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) { // 
 		})
 		return
 	}
-	player := NewClientPlayer(playerName, msg.Client)
-	player.LoadPlayerData(playerData)
+	player := NewClientPlayerFromPlayerData(playerName, playerData, msg.Client)
 	msg.Client.SetPlayer(player)
 	msg.Player = player
 

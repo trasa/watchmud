@@ -21,19 +21,20 @@ type ClientPlayer struct {
 	class     int32
 	dirty     bool
 	location  *player.Location
+	abilities *player.Abilities
 }
 
 // Create a ClientPlayer connected to a new TestClient
 // (for testing)
 func NewTestClientPlayer(name string) (p *ClientPlayer, cli *client.TestClient) {
-	p = NewClientPlayer(name, nil)
+	p = NewClientPlayer(name, 0, 0, player.NewAbilities(15, 14, 13, 12, 10, 9), nil)
 	cli = client.NewTestClient(p)
 	p.Client = cli
 	return
 }
 
 // Create a new player and set it up to work with this client
-func NewClientPlayer(name string, client client.Client) *ClientPlayer { // TODO need race and class
+func NewClientPlayer(name string, race int32, class int32, abilities *player.Abilities, client client.Client) *ClientPlayer {
 	p := ClientPlayer{
 		Name:      name,
 		Client:    client, // address of interface
@@ -41,20 +42,22 @@ func NewClientPlayer(name string, client client.Client) *ClientPlayer { // TODO 
 		slots:     object.NewSlots(),
 		curHealth: 100, // TODO need a default health here
 		maxHealth: 100,
+		race:      race,
+		class:     class,
+		abilities: abilities,
 	}
 	return &p
 }
 
 // Load player information into this struct without flagging anything as dirty
 // Does not load slot information as that has to happen after inventory is loaded
-func (p *ClientPlayer) LoadPlayerData(pd *db.PlayerData) {
+func NewClientPlayerFromPlayerData(name string, pd *db.PlayerData, client client.Client) *ClientPlayer {
+	p := NewClientPlayer(name, pd.Race, pd.Class, player.NewAbilities(pd.Strength, pd.Dexterity, pd.Constitution, pd.Intelligence, pd.Wisdom, pd.Charisma), client)
 	p.Id = pd.Id
-	p.Name = pd.Name
 	p.curHealth = pd.CurHealth
 	p.maxHealth = pd.MaxHealth
-	p.race = pd.Race
-	p.class = pd.Class
 	p.location = player.NewLocation(pd.LastZoneId, pd.LastRoomId)
+	return p
 }
 
 // Load player inventory into this struct without flagging anything as dirty
@@ -120,4 +123,8 @@ func (p *ClientPlayer) IsDirty() bool {
 
 func (p *ClientPlayer) Location() *player.Location {
 	return p.location
+}
+
+func (p *ClientPlayer) Abilities() *player.Abilities {
+	return p.abilities
 }

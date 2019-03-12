@@ -35,4 +35,6 @@ type Player interface {
 	ResetDirtyFlag()
 	// where are you?
 	Location() *Location
+	// your ability scores
+	Abilities() *Abilities
 }
