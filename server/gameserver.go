@@ -99,10 +99,22 @@ func (gs *GameServer) processIncomingMessage() bool {
 		received = true
 		switch msg.Message.Inner.(type) {
 		case *message.GameMessage_LoginRequest:
-			gs.handleLogin(msg) // TODO error handling
+			err := gs.handleLogin(msg) // TODO error handling
+			if err != nil {
+				log.Printf("Error from handleLogin: %v", err)
+			}
 
 		case *message.GameMessage_CreatePlayerRequest:
-			gs.handleCreatePlayer(msg)
+			err := gs.handleCreatePlayer(msg)
+			if err != nil {
+				log.Printf("Error from handleCreatePlayer: %v", err)
+			}
+
+		case *message.GameMessage_DataRequest:
+			err := gs.handleDataRequest(msg)
+			if err != nil {
+				log.Printf("Error from handleDataRequest: %v", err)
+			}
 
 		default:
 			gs.World.HandleIncomingMessage(msg)
@@ -126,12 +138,12 @@ func (gs *GameServer) Logout(c client.Client, cause string) {
 	}
 }
 
-func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO error handling
+func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) {
 	// is this connection already authenticated?
 	// see if we can find an existing player ..
 	if msg.Client.GetPlayer() != nil {
 		// you've already got one
-		msg.Client.Send(message.LoginResponse{
+		err = msg.Client.Send(message.LoginResponse{
 			Success:    false,
 			ResultCode: "PLAYER_ALREADY_ATTACHED",
 		})
@@ -163,11 +175,14 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO er
 	playerData, err := db.GetPlayerData(playerName)
 	if err != nil {
 		log.Printf("Error trying to retrieve playerData for %s: %v", playerName, err)
-		msg.Client.Send(message.LoginResponse{
+		clientErr := msg.Client.Send(message.LoginResponse{
 			Success:    false,
 			ResultCode: "PLAYER_DATA_ERROR",
 		})
-		return
+		if clientErr != nil {
+			log.Printf("client error trying to send PLAYER_DATA_ERROR on login: %v", clientErr)
+		}
+		return // err
 	}
 	player := NewClientPlayerFromPlayerData(msg.Message.GetLoginRequest().PlayerName, &playerData, msg.Client)
 
@@ -177,11 +192,14 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO er
 		inst, err := gs.World.CreateObjectInstance(inv.ZoneId, inv.DefinitionId, inv.InstanceId)
 		if err != nil {
 			log.Printf("Error trying to load player %d (%s) inventory instance (%s-%s-%s) -- %s", playerData.Id, playerName, inv.ZoneId, inv.DefinitionId, inv.InstanceId, err)
-			msg.Client.Send(message.LoginResponse{
+			clientErr := msg.Client.Send(message.LoginResponse{
 				Success:    false,
 				ResultCode: "PLAYER_INVENTORY_DATA_ERROR",
 			})
-			return
+			if clientErr != nil {
+				log.Printf("client error trying to send PLAYER_INVENTORY_DATA_ERROR on login: %v", clientErr)
+			}
+			return err
 		}
 		player.LoadInventory(inst)
 
@@ -203,17 +221,18 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) { // TODO er
 	// add player to world
 	gs.World.AddPlayer(player)
 
-	player.Send(message.LoginResponse{
+	err = player.Send(message.LoginResponse{
 		Success:    true,
 		ResultCode: "OK",
 		PlayerName: player.GetName(),
 	})
+	return
 }
 
-func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) { // TODO error handling
+func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) (err error) {
 	if msg.Client.GetPlayer() != nil {
 		// you've already got one
-		msg.Client.Send(message.CreatePlayerResponse{
+		err = msg.Client.Send(message.CreatePlayerResponse{
 			Success:    false,
 			ResultCode: "PLAYER_ALREADY_ATTACHED",
 		})
@@ -235,20 +254,31 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) { // 
 	playerData, err := db.CreatePlayerData(playerName, req.Race, req.Class, gs.World.StartRoom.Zone.Id, gs.World.StartRoom.Id, abilities)
 	if err != nil {
 		log.Printf("Error trying to create player for %s: %v", playerName, err)
-		msg.Client.Send(message.CreatePlayerResponse{
+		clientErr := msg.Client.Send(message.CreatePlayerResponse{
 			Success:    false,
 			ResultCode: "PLAYER_ALREADY_EXISTS",
 		})
-		return
+		if clientErr != nil {
+			log.Printf("Client error trying to send PLAYER_ALREADY_EXISTS message: %v", clientErr)
+		}
+		return // err
 	}
 	player := NewClientPlayerFromPlayerData(playerName, playerData, msg.Client)
 	msg.Client.SetPlayer(player)
 	msg.Player = player
 
 	gs.World.AddPlayer(player) // TODO destination
-	player.Send(message.CreatePlayerResponse{
+	err = player.Send(message.CreatePlayerResponse{
 		Success:    true,
 		ResultCode: "OK",
 		PlayerName: player.GetName(),
 	})
+	return
+}
+
+// The client is requesting game data: races, class definitions, something like that.
+func (gs *GameServer) handleDataRequest(msg *gameserver.HandlerParameter) (err error) {
+	//_ := msg.Message.GetDataRequest()
+
+	return // todo
 }
