@@ -305,14 +305,21 @@ func sendRaceData(msg *gameserver.HandlerParameter) (err error) {
 		return
 	}
 	// serialize races
-	if racejson, err := json.Marshal(races); err != nil {
+	racejson, err := json.Marshal(races)
+	if err != nil {
+		log.Printf("Serialize failed: %v", err)
 		if clientErr := msg.Client.Send(message.DataResponse{
-			Success:    true,
-			ResultCode: "OK",
-			Data:       racejson,
+			Success:    false,
+			ResultCode: "SERIALIZE_FAILED",
 		}); clientErr != nil {
-			log.Printf("handleDataRequest failed to send race data: %v", clientErr)
+			log.Printf("handleDataRequest Error failed to send race data: %v, %v", err, clientErr)
 		}
+	} else if clientErr := msg.Client.Send(message.DataResponse{
+		Success:    true,
+		ResultCode: "OK",
+		Data:       racejson,
+	}); clientErr != nil {
+		log.Printf("handleDataRequest failed to send race data: %v", clientErr)
 	}
 	return
 }
