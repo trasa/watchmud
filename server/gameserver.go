@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/client"
@@ -280,19 +279,11 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) (err 
 
 // The client is requesting game data: races, class definitions, something like that.
 func (gs *GameServer) handleDataRequest(msg *gameserver.HandlerParameter) (err error) {
-	req := msg.Message.GetDataRequest()
-	switch req.DataType {
-	case "races":
-		err = sendRaceData(msg)
-
-	default:
-		err = errors.New("Unhandled DataRequest Type: " + req.DataType)
+	resp := message.DataResponse{
+		Success: true,
+		ResultCode: "OK",
 	}
-	return
-}
-
-// Send Race data to the client
-func sendRaceData(msg *gameserver.HandlerParameter) (err error) {
+	resp.DataType = append(resp.DataType, "races")
 	// get from db
 	races, err := db.GetRaceData()
 	if err != nil {
@@ -314,13 +305,12 @@ func sendRaceData(msg *gameserver.HandlerParameter) (err error) {
 		}); clientErr != nil {
 			log.Printf("handleDataRequest Error failed to send race data: %v, %v", err, clientErr)
 		}
-	} else if clientErr := msg.Client.Send(message.DataResponse{
-		Success:    true,
-		ResultCode: "OK",
-		Data:       racejson,
-		DataType:   "races",
-	}); clientErr != nil {
-		log.Printf("handleDataRequest failed to send race data: %v", clientErr)
+	}
+	resp.Data = append(resp.Data, racejson)
+
+	if err = msg.Client.Send(resp); err != nil {
+		log.Printf("handleDataRequest failed to send race data: %v", err)
 	}
 	return
 }
+
