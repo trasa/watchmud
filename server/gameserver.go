@@ -318,6 +318,7 @@ func sendRaceData(msg *gameserver.HandlerParameter) (err error) {
 		Success:    true,
 		ResultCode: "OK",
 		Data:       racejson,
+		DataType:   "races",
 	}); clientErr != nil {
 		log.Printf("handleDataRequest failed to send race data: %v", clientErr)
 	}
