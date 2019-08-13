@@ -8,7 +8,7 @@ import (
 	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mudtime"
-	player2 "github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/world"
 	"log"
 	"time"
@@ -244,7 +244,7 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) (err 
 
 	// create player data for playerName
 	// TODO for now, just set abilities to some defaults
-	abilities := player2.Abilities{
+	abilities := player.Abilities{
 		Strength:     15,
 		Dexterity:    15,
 		Constitution: 15,
@@ -264,15 +264,15 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) (err 
 		}
 		return // err
 	}
-	player := NewClientPlayerFromPlayerData(playerName, playerData, msg.Client)
-	msg.Client.SetPlayer(player)
-	msg.Player = player
+	p := NewClientPlayerFromPlayerData(playerName, playerData, msg.Client)
+	msg.Client.SetPlayer(p)
+	msg.Player = p
 
-	gs.World.AddPlayer(player) // TODO destination
-	err = player.Send(message.CreatePlayerResponse{
+	gs.World.AddPlayer(p) // TODO destination
+	err = p.Send(message.CreatePlayerResponse{
 		Success:    true,
 		ResultCode: "OK",
-		PlayerName: player.GetName(),
+		PlayerName: p.GetName(),
 	})
 	return
 }
@@ -307,6 +307,32 @@ func (gs *GameServer) handleDataRequest(msg *gameserver.HandlerParameter) (err e
 		}
 	}
 	resp.Data = append(resp.Data, racejson)
+
+
+	// TODO refactor this to remove duplication
+	resp.DataType = append(resp.DataType, "classes")
+	classes, err := db.GetClassData()
+	if err != nil {
+		if clientErr := msg.Client.Send(message.DataResponse{
+			Success:    false,
+			ResultCode: "DB_ERROR",
+		}); clientErr != nil {
+			log.Printf("handleDataRequest failed to send DB_ERROR for 'classes' request: %v", clientErr)
+		}
+		return
+	}
+	// serialize classes
+	classjson, err := json.Marshal(classes)
+	if err != nil {
+		log.Printf("Serialize failed: %v", err)
+		if clientErr := msg.Client.Send(message.DataResponse{
+			Success:    false,
+			ResultCode: "SERIALIZE_FAILED",
+		}); clientErr != nil {
+			log.Printf("handleDataRequest Error failed to send class data: %v, %v", err, clientErr)
+		}
+	}
+	resp.Data = append(resp.Data, classjson)
 
 	if err = msg.Client.Send(resp); err != nil {
 		log.Printf("handleDataRequest failed to send race data: %v", err)

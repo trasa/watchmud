@@ -3,12 +3,12 @@ package player
 type AbilityScore int32
 
 type Abilities struct {
-	Strength     AbilityScore
-	Dexterity    AbilityScore
-	Constitution AbilityScore
-	Intelligence AbilityScore
-	Wisdom       AbilityScore
-	Charisma     AbilityScore
+	Strength     AbilityScore `json:"str"`
+	Dexterity    AbilityScore `json:"dex"`
+	Constitution AbilityScore `json:"con"`
+	Intelligence AbilityScore `json:"int"`
+	Wisdom       AbilityScore `json:"wis"`
+	Charisma     AbilityScore `json:"cha"`
 }
 
 func NewAbilities(str int32, dex int32, con int32, int int32, wis int32, cha int32) *Abilities {
