@@ -42,3 +42,12 @@ func GetClassData() (result []ClassData, err error) {
 	err = watchdb.Select(&result, "select c.class_id, c.class_name, c.ability_preference from classes c order by c.class_id")
 	return
 }
+
+func GetClassDataJson() (classjson []byte, err error) {
+	classes, err := GetClassData()
+	if err != nil {
+		return
+	}
+	classjson, err = json.Marshal(classes)
+	return
+}

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/client"
@@ -285,51 +284,30 @@ func (gs *GameServer) handleDataRequest(msg *gameserver.HandlerParameter) (err e
 	}
 	resp.DataType = append(resp.DataType, "races")
 	// get from db
-	races, err := db.GetRaceData()
+	racejson, err := db.GetRaceDataJson()
 	if err != nil {
+		log.Printf("GetRaceDataJson failed: %v", err)
 		if clientErr := msg.Client.Send(message.DataResponse{
 			Success:    false,
-			ResultCode: "DB_ERROR",
+			ResultCode: "DATA_ERROR",
 		}); clientErr != nil {
 			log.Printf("handleDataRequest failed to send DB_ERROR for 'races' request: %v", clientErr)
 		}
 		return
 	}
-	// serialize races
-	racejson, err := json.Marshal(races)
-	if err != nil {
-		log.Printf("Serialize failed: %v", err)
-		if clientErr := msg.Client.Send(message.DataResponse{
-			Success:    false,
-			ResultCode: "SERIALIZE_FAILED",
-		}); clientErr != nil {
-			log.Printf("handleDataRequest Error failed to send race data: %v, %v", err, clientErr)
-		}
-	}
 	resp.Data = append(resp.Data, racejson)
 
-	// TODO refactor this to remove duplication
 	resp.DataType = append(resp.DataType, "classes")
-	classes, err := db.GetClassData()
+	classjson, err := db.GetClassDataJson()
 	if err != nil {
+		log.Printf("GetClassDataJson failed: %v", err)
 		if clientErr := msg.Client.Send(message.DataResponse{
 			Success:    false,
-			ResultCode: "DB_ERROR",
+			ResultCode: "DATA_ERROR",
 		}); clientErr != nil {
 			log.Printf("handleDataRequest failed to send DB_ERROR for 'classes' request: %v", clientErr)
 		}
 		return
-	}
-	// serialize classes
-	classjson, err := json.Marshal(classes)
-	if err != nil {
-		log.Printf("Serialize failed: %v", err)
-		if clientErr := msg.Client.Send(message.DataResponse{
-			Success:    false,
-			ResultCode: "SERIALIZE_FAILED",
-		}); clientErr != nil {
-			log.Printf("handleDataRequest Error failed to send class data: %v, %v", err, clientErr)
-		}
 	}
 	resp.Data = append(resp.Data, classjson)
 
