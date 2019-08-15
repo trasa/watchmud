@@ -280,7 +280,7 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) (err 
 // The client is requesting game data: races, class definitions, something like that.
 func (gs *GameServer) handleDataRequest(msg *gameserver.HandlerParameter) (err error) {
 	resp := message.DataResponse{
-		Success: true,
+		Success:    true,
 		ResultCode: "OK",
 	}
 	resp.DataType = append(resp.DataType, "races")
@@ -307,7 +307,6 @@ func (gs *GameServer) handleDataRequest(msg *gameserver.HandlerParameter) (err e
 		}
 	}
 	resp.Data = append(resp.Data, racejson)
-
 
 	// TODO refactor this to remove duplication
 	resp.DataType = append(resp.DataType, "classes")
@@ -339,4 +338,3 @@ func (gs *GameServer) handleDataRequest(msg *gameserver.HandlerParameter) (err e
 	}
 	return
 }
-

@@ -1,5 +1,7 @@
 package player
 
+import "strings"
+
 type AbilityScore int32
 
 type Abilities struct {
@@ -9,6 +11,41 @@ type Abilities struct {
 	Intelligence AbilityScore `json:"int"`
 	Wisdom       AbilityScore `json:"wis"`
 	Charisma     AbilityScore `json:"cha"`
+}
+
+func (a *Abilities) SetScore(attributeName string, score AbilityScore) {
+	switch strings.ToLower(attributeName) {
+	case "str":
+		a.Strength = score
+	case "dex":
+		a.Dexterity = score
+	case "con":
+		a.Constitution = score
+	case "int":
+		a.Intelligence = score
+	case "wis":
+		a.Wisdom = score
+	case "cha":
+		a.Charisma = score
+	}
+}
+
+// find the 'most useful' score that doesn't have a value and put this there.
+// if all the scores are filled then do nothing
+func (a *Abilities) FillScore(score AbilityScore) {
+	if a.Constitution == AbilityScore(0) {
+		a.Constitution = score
+	} else if a.Dexterity == AbilityScore(0) {
+		a.Dexterity = score
+	} else if a.Strength == AbilityScore(0) {
+		a.Strength = score
+	} else if a.Intelligence == AbilityScore(0) {
+		a.Intelligence = score
+	} else if a.Wisdom == AbilityScore(0) {
+		a.Wisdom = score
+	} else if a.Charisma == AbilityScore(0) {
+		a.Charisma = score
+	}
 }
 
 func NewAbilities(str int32, dex int32, con int32, int int32, wis int32, cha int32) *Abilities {

@@ -8,8 +8,8 @@ import (
 )
 
 type ClassData struct {
-	ClassId int32  `db:"class_id"`
-	ClassName string `db:"class_name"`
+	ClassId           int32                  `db:"class_id"`
+	ClassName         string                 `db:"class_name"`
 	AbilityPreference *AbilityPreferenceList `db:"ability_preference" json:"a"`
 }
 

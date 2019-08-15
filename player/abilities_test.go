@@ -28,3 +28,13 @@ func (s *AbilitiesTestSuite) Test_Modifiers() {
 	s.Assert().Equal(4, AbilityScoreModifier(18))
 	s.Assert().Equal(0, AbilityScoreModifier(11))
 }
+
+func (s *AbilitiesTestSuite) Test_SetScore() {
+	s.abilities.SetScore("str", 18)
+	s.Assert().Equal(AbilityScore(18), s.abilities.Strength)
+	s.Assert().Equal(AbilityScore(0), s.abilities.Intelligence)
+	s.Assert().Equal(AbilityScore(0), s.abilities.Dexterity)
+	s.Assert().Equal(AbilityScore(0), s.abilities.Wisdom)
+	s.Assert().Equal(AbilityScore(0), s.abilities.Constitution)
+	s.Assert().Equal(AbilityScore(0), s.abilities.Charisma)
+}
