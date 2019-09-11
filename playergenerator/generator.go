@@ -11,8 +11,7 @@ type PlayerPrototype struct {
 	InitialAbilities *player.Abilities
 }
 
-func generatePlayerPrototype(race db.RaceData, class db.ClassData) *PlayerPrototype {
-
+func GeneratePlayerPrototype(race db.RaceData, class db.ClassData) *PlayerPrototype {
 	a := generateAbilities(race, class)
 
 	return &PlayerPrototype{

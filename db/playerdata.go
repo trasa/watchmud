@@ -102,7 +102,7 @@ func ForceSavePlayer(player player.Player) (err error) {
 	return
 }
 
-func CreatePlayerData(playerName string, race int32, class int32, zoneId string, roomId string, abilities player.Abilities) (result *PlayerData, err error) {
+func CreatePlayerData(playerName string, race int32, class int32, zoneId string, roomId string, abilities *player.Abilities) (result *PlayerData, err error) {
 	log.Printf("DB - Create Player for %s", playerName)
 	res, err := watchdb.NamedQuery("INSERT INTO players (player_name, current_health, max_health, race_id, class, last_zone_id, last_room_id, "+
 		"strength, dexterity, constitution, intelligence, wisdom, charisma) "+

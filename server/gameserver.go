@@ -7,7 +7,7 @@ import (
 	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mudtime"
-	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/playergenerator"
 	"github.com/trasa/watchmud/world"
 	"log"
 	"time"
@@ -241,17 +241,32 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) (err 
 	req := msg.Message.GetCreatePlayerRequest()
 	playerName := req.PlayerName
 
-	// create player data for playerName
-	// TODO for now, just set abilities to some defaults
-	abilities := player.Abilities{
-		Strength:     15,
-		Dexterity:    15,
-		Constitution: 15,
-		Intelligence: 15,
-		Wisdom:       15,
-		Charisma:     15,
+	race, err := db.GetSingleRaceData(req.Race)
+	if err != nil {
+		log.Printf("Error trying to get race info (%d) for create player: %s: %v", req.Race, playerName, err)
+		clientErr := msg.Client.Send(message.CreatePlayerResponse{
+			Success:    false,
+			ResultCode: "RACE_DB_ERROR",
+		})
+		if clientErr != nil {
+			log.Printf("Client error trying to send RACE DB message: %v", clientErr)
+		}
 	}
-	playerData, err := db.CreatePlayerData(playerName, req.Race, req.Class, gs.World.StartRoom.Zone.Id, gs.World.StartRoom.Id, abilities)
+
+	class, err := db.GetSingleClassData(req.Class)
+	if err != nil {
+		log.Printf("Error trying to get class info (%d) for create player: %s: %v", req.Class, playerName, err)
+		clientErr := msg.Client.Send(message.CreatePlayerResponse{
+			Success:    false,
+			ResultCode: "CLASS_DB_ERROR",
+		})
+		if clientErr != nil {
+			log.Printf("Client error trying to send CLASS DB message: %v", clientErr)
+		}
+	}
+
+	playerPrototype := playergenerator.GeneratePlayerPrototype(race, class)
+	playerData, err := db.CreatePlayerData(playerName, req.Race, req.Class, gs.World.StartRoom.Zone.Id, gs.World.StartRoom.Id, playerPrototype.InitialAbilities)
 	if err != nil {
 		log.Printf("Error trying to create player for %s: %v", playerName, err)
 		clientErr := msg.Client.Send(message.CreatePlayerResponse{

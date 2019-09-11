@@ -24,6 +24,14 @@ func GetRaceData() (result []RaceData, err error) {
 	return
 }
 
+func GetSingleRaceData(raceId int32) (result RaceData, err error) {
+	err = watchdb.Get(&result, "select r.race_id, rg.race_group_name, r.race_name, r.str_bonus, r.dex_bonus, r.con_bonus, r.int_bonus, r.wis_bonus, r.cha_bonus "+
+		"from races r "+
+		"inner join race_group rg on r.race_group_id = rg.race_group_id "+
+		"where r.race_id = $1", raceId)
+	return
+}
+
 func GetRaceDataJson() (racejson []byte, err error) {
 	races, err := GetRaceData()
 	if err != nil {

@@ -3,8 +3,8 @@ package db
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"fmt"
-	"reflect"
+	"errors"
+	"log"
 )
 
 type ClassData struct {
@@ -14,32 +14,28 @@ type ClassData struct {
 }
 
 type AbilityPreferenceList struct {
-	Preferences []string
+	Preferences []string `json:"a"`
 }
 
-func (a *AbilityPreferenceList) Value() (driver.Value, error) {
+func (a AbilityPreferenceList) Value() (driver.Value, error) {
 	return json.Marshal(a)
 }
 func (a *AbilityPreferenceList) Scan(src interface{}) error {
-	v := reflect.ValueOf(src)
-	if !v.IsValid() || v.CanAddr() && v.IsNil() {
-		return nil
+	bs, ok := src.([]byte)
+	if !ok {
+		return errors.New("not a []byte")
 	}
-	switch ts := src.(type) {
-	case []byte:
-
-		return json.Unmarshal(ts, &a)
-
-	case string:
-		return json.Unmarshal([]byte(ts), &a)
-
-	default:
-		return fmt.Errorf("could not decode type %T -> %T", src, a)
-	}
+	return json.Unmarshal(bs, a)
 }
 
 func GetClassData() (result []ClassData, err error) {
 	err = watchdb.Select(&result, "select c.class_id, c.class_name, c.ability_preference from classes c order by c.class_id")
+	return
+}
+
+func GetSingleClassData(classId int32) (result ClassData, err error) {
+	err = watchdb.Get(&result, "select c.class_id, c.class_name, c.ability_preference from classes c where c.class_id = $1", classId)
+	log.Printf("class %d is %v", classId, result.AbilityPreference)
 	return
 }
 
