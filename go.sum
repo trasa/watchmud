@@ -36,6 +36,8 @@ github.com/trasa/watchmud-message v0.0.13 h1:8ka2NgyXsmO1FFDZ9InLFNFG8ZMXydErKDB
 github.com/trasa/watchmud-message v0.0.13/go.mod h1:x7rxg6Um7znCwoWp4dkl5tfomFNEUem0d4VXTe1H2ew=
 github.com/trasa/watchmud-message v0.0.14 h1:hTJOLycWuwp7asNpbRhU9pXgXPZrwkRCEvwZGJ/N9OE=
 github.com/trasa/watchmud-message v0.0.14/go.mod h1:lU1OaLd7OMYtHHg4D2kjk6HpPzEJj2+BYP2r8fa8YUU=
+github.com/trasa/watchmud-message v0.0.15 h1:oN/2R7FJvVakKU5ahQu7ENtcTULBh6oPQDAzpY3yras=
+github.com/trasa/watchmud-message v0.0.15/go.mod h1:lU1OaLd7OMYtHHg4D2kjk6HpPzEJj2+BYP2r8fa8YUU=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/net v0.0.0-20180710231904-039a4258aec0/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=

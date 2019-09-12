@@ -81,6 +81,14 @@ func (p *ClientPlayer) String() string {
 	return fmt.Sprintf("(Player Name='%s')", p.Name)
 }
 
+func (p *ClientPlayer) GetRaceId() int32 {
+	return p.race
+}
+
+func (p *ClientPlayer) GetClassId() int32 {
+	return p.class
+}
+
 func (p *ClientPlayer) GetInventory() *player.PlayerInventory {
 	return p.inventory
 }

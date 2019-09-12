@@ -15,6 +15,10 @@ type Player interface {
 	GetId() int64
 	// get the unique player_name of the player
 	GetName() string
+	// get the player's race id
+	GetRaceId() int32
+	// get the player's class id
+	GetClassId() int32
 	// get the player's inventory
 	GetInventory() *PlayerInventory
 	// get the player's slots (what they are wearing, where)

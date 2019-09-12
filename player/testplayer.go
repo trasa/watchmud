@@ -14,6 +14,8 @@ type TestPlayer struct {
 	slots     *object.Slots
 	curHealth int64
 	maxHealth int64
+	race      int32
+	class     int32
 	dirty     bool
 	location  *Location
 	abilities *Abilities
@@ -51,6 +53,14 @@ func (p *TestPlayer) GetId() int64 {
 
 func (p *TestPlayer) GetName() string {
 	return p.name
+}
+
+func (p *TestPlayer) GetRaceId() int32 {
+	return p.race
+}
+
+func (p *TestPlayer) GetClassId() int32 {
+	return p.class
 }
 
 func (p *TestPlayer) GetInventory() *PlayerInventory {
