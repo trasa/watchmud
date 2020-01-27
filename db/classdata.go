@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-	"log"
 )
 
 type ClassData struct {
@@ -35,7 +34,6 @@ func GetClassData() (result []ClassData, err error) {
 
 func GetSingleClassData(classId int32) (result ClassData, err error) {
 	err = watchdb.Get(&result, "select c.class_id, c.class_name, c.ability_preference from classes c where c.class_id = $1", classId)
-	log.Printf("class %d is %v", classId, result.AbilityPreference)
 	return
 }
 
