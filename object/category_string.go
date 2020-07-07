@@ -4,6 +4,21 @@ package object
 
 import "strconv"
 
+func _() {
+	// An "invalid array index" compiler error signifies that the constant values have changed.
+	// Re-run the stringer command to generate them again.
+	var x [1]struct{}
+	_ = x[None-0]
+	_ = x[Weapon-1]
+	_ = x[Wand-2]
+	_ = x[Staff-3]
+	_ = x[Treasure-4]
+	_ = x[Armor-5]
+	_ = x[Food-6]
+	_ = x[Other-7]
+	_ = x[Corpse-8]
+}
+
 const _Category_name = "NoneWeaponWandStaffTreasureArmorFoodOtherCorpse"
 
 var _Category_index = [...]uint8{0, 4, 10, 14, 19, 27, 32, 36, 41, 47}

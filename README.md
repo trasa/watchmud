@@ -28,7 +28,9 @@ What will I rewrite next??
 
 ## Building the Server
 
-To compile, test the server::
+Install Dependencies: you'll need Go 1.14+ to build this.
+
+To compile, test the server:
 
     $ make
     

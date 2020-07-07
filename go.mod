@@ -15,6 +15,7 @@ require (
 	github.com/stretchr/testify v1.2.2
 	github.com/trasa/syncmap v1.0.0
 	github.com/trasa/watchmud-message v0.0.15
+	golang.org/x/tools v0.0.0-20200707222132-065b96d36cf8 // indirect
 	google.golang.org/appengine v1.6.1 // indirect
 	google.golang.org/genproto v0.0.0-20180731170733-daca94659cb5 // indirect
 	google.golang.org/grpc v1.14.0
