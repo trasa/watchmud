@@ -54,10 +54,6 @@ Installing postgres:
 
 Creating the user 'watchmud' and the schema:
 
-(TODO)
-
-Schema and DDL:
-
 See watchmud/db/sql/ddl.sql for table definitions and static data creation.
 
     
