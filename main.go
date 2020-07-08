@@ -1,4 +1,4 @@
-package watchmud
+package main
 
 import (
 	"flag"

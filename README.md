@@ -29,12 +29,50 @@ What will I rewrite next??
 ## Building the Server
 
 Install Dependencies: you'll need Go 1.14+ to build this.
+You'll need to install go stringer:
 
-To compile, test the server:
+    $ go get golang.org/x/tools/cmd/stringer
+    
+and then make sure that the directory this is installed to (probably something
+like ~/go/bin) is part of your path.
+    
+To compile and test the server:
 
     $ make
     
-This will create a `watchmud` executable in the project directory.
+This will create a `watchmud` executable in the project/bin directory.
+
+### Building the Database
+
+WatchMud uses Postgres to hold some information about the users, game state
+and other interesting stuff like that. You'll need to have an instance of
+Postgres running for watchmud.
+
+Installing postgres:
+
+    $ brew install postgresql
+
+Creating the user 'watchmud' and the schema:
+
+(TODO)
+
+Schema and DDL:
+
+See watchmud/db/sql/ddl.sql for table definitions and static data creation.
+
+    
+### Creating the Log Directory
+
+By default, watchmud won't have permissions to create the directory where
+it wants to write its log files. Unless you're overriding this directory with
+the --logFile argument, you'll need to create the directory and give the 
+watchmud user permission to write there:
+
+    $ sudo mkdir -p /var/log/watchmud
+    $ sudo chown myusername /var/log/watchmud
+    $ sudo chmod 775 /var/log/watchmud
+
+(Or, something similar to that.)
 
 ### Running the Server
 
