@@ -75,17 +75,59 @@ func (mob *Instance) GetIndexOnPath(currentRoom string) (int, error) {
 	return -1, errors.New(fmt.Sprintf("currentRoom '%s' not found in path '%s'", currentRoom, mob.Definition.Wandering.Path))
 }
 
+// Combatant
 func (mob *Instance) TakeMeleeDamage(damage int64) (isDead bool) {
 	mob.CurHealth = mob.CurHealth - damage
 	return mob.CurHealth <= 0
 }
 
+// Combatant
 func (mob *Instance) IsDead() bool {
 	return mob.CurHealth <= 0
 }
 
+// Combatant
 func (mob *Instance) CombatantType() combat.CombatantType {
 	return combat.MobileCombatant
+}
+
+// Combatant
+func (mob *Instance) CalculateMeleeRollModifiers() int {
+	// TODO mob melee modifiers come from definition and ...?
+	return 0
+}
+
+// Combatant
+func (mob *Instance) ArmorClass() int {
+	// base +/- equipment
+	// TODO
+	return mob.Definition.ArmorClass()
+}
+
+// Combatant
+func (mob *Instance) HasResistanceTo(damageType combat.DamageType) bool {
+	// resistance gained by spells or equipment?
+	// TODO
+	return mob.Definition.HasResistanceTo(damageType)
+}
+
+// Combatant
+func (mob *Instance) IsVulnerableTo(damageType combat.DamageType) bool {
+	// vulnerability gained by spells or equipment?
+	// TODO
+	return mob.Definition.IsVulnerableTo(damageType)
+}
+
+// Combatant
+func (mob *Instance) WeaponDamageRoll() string {
+	// TODO mobs cant carry anything yet?
+	return "1d6"
+}
+
+// Combatant
+func (mob *Instance) WeaponDamageType() combat.DamageType {
+	// TODO mobs can't carry anything yet
+	return combat.Piercing
 }
 
 func (mob *Instance) Send(msg interface{}) {

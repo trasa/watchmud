@@ -1,8 +1,8 @@
 package combat
 
 import (
+	"github.com/justinian/dice"
 	"github.com/stretchr/testify/suite"
-	"math/rand"
 	"testing"
 )
 
@@ -17,20 +17,27 @@ func TestMeleeSuite(t *testing.T) {
 }
 
 func (suite *MeleeSuite) SetupTest() {
-	suite.fighter = NewTestCombatant("fighter")
-	suite.victim = NewTestCombatant("victim")
+	suite.fighter = NewTestCombatant("fighter", 10, []DamageType{}, []DamageType{})
+	suite.victim = NewTestCombatant("victim", 10, []DamageType{}, []DamageType{})
 }
 
 func (suite *MeleeSuite) TestHitFailed() {
-	r := rand.New(rand.NewSource(1))
-	noChance := meleeAttack(suite.fighter, suite.victim, r, 0.00)
+	rollResult := dice.StdResult{Total: 2}
+
+	noChance := meleeAttack(suite.fighter, suite.victim, rollResult)
 	suite.Assert().False(noChance.WasHit)
 	suite.Assert().Equal(int64(0), noChance.Damage)
 }
 
 func (suite *MeleeSuite) TestHitSuccess() {
-	r := rand.New(rand.NewSource(1))
-	noChance := meleeAttack(suite.fighter, suite.victim, r, 1.00)
+	rollResult := dice.StdResult{Total: 16}
+
+	noChance := meleeAttack(suite.fighter, suite.victim, rollResult)
 	suite.Assert().True(noChance.WasHit)
-	suite.Assert().Equal(DefaultDamage, noChance.Damage)
+	// TODO calculate damage
 }
+
+// TODO critical success
+// TODO critical fail
+// TODO resistance
+// TODO vulnerability

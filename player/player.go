@@ -41,4 +41,16 @@ type Player interface {
 	Location() *Location
 	// your ability scores
 	Abilities() *Abilities
+	// Figure out + and - to an attack roll
+	CalculateMeleeRollModifiers() int
+	// calculate the player's AC based on intrinsics and equipment
+	ArmorClass() int
+	// resistance to damage?
+	HasResistanceTo(damageType combat.DamageType) bool
+	// vulnerable to damage?
+	IsVulnerableTo(damageType combat.DamageType) bool
+	// string of the dice roll for wielded weapon
+	WeaponDamageRoll() string
+	// damage type for wielded weapon
+	WeaponDamageType() combat.DamageType
 }

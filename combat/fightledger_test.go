@@ -20,8 +20,8 @@ func (suite *FightLedgerSuite) SetupTest() {
 }
 
 func (suite *FightLedgerSuite) TestIsFighting() {
-	fighter := NewTestCombatant("fighter")
-	fightee := NewTestCombatant("fightee")
+	fighter := NewTestCombatant("fighter", 10, []DamageType{}, []DamageType{})
+	fightee := NewTestCombatant("fightee", 10, []DamageType{}, []DamageType{})
 
 	log.Printf("%p", fighter)
 	log.Printf("%p", fightee)
@@ -37,8 +37,8 @@ func (suite *FightLedgerSuite) TestIsFighting() {
 }
 
 func (suite *FightLedgerSuite) TestAlreadyFighting() {
-	fighter := NewTestCombatant("fighter")
-	fightee := NewTestCombatant("fightee")
+	fighter := NewTestCombatant("fighter", 10, []DamageType{}, []DamageType{})
+	fightee := NewTestCombatant("fightee", 10, []DamageType{}, []DamageType{})
 
 	suite.Assert().NoError(suite.fightLedger.Fight(fighter, fightee, "zoneId", "roomId"))
 	// can't fight when you're already fighting
@@ -46,9 +46,9 @@ func (suite *FightLedgerSuite) TestAlreadyFighting() {
 }
 
 func (suite *FightLedgerSuite) TestFightingSomeoneWhoIsFighting() {
-	fighter := NewTestCombatant("fighter")
-	otherFighter := NewTestCombatant("otherFighter")
-	fightee := NewTestCombatant("fightee")
+	fighter := NewTestCombatant("fighter", 10, []DamageType{}, []DamageType{})
+	otherFighter := NewTestCombatant("otherFighter", 10, []DamageType{}, []DamageType{})
+	fightee := NewTestCombatant("fightee", 10, []DamageType{}, []DamageType{})
 
 	suite.Assert().NoError(suite.fightLedger.Fight(otherFighter, fightee, "zoneId", "roomId"))
 	// can be fought by more than 1
@@ -57,8 +57,8 @@ func (suite *FightLedgerSuite) TestFightingSomeoneWhoIsFighting() {
 }
 
 func (suite *FightLedgerSuite) TestEndFight() {
-	fighter := NewTestCombatant("fighter")
-	fightee := NewTestCombatant("fightee")
+	fighter := NewTestCombatant("fighter", 10, []DamageType{}, []DamageType{})
+	fightee := NewTestCombatant("fightee", 10, []DamageType{}, []DamageType{})
 
 	suite.Assert().NoError(suite.fightLedger.Fight(fighter, fightee, "zoneId", "roomId"))
 

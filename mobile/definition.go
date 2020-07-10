@@ -1,6 +1,7 @@
 package mobile
 
 import (
+	"github.com/trasa/watchmud/combat"
 	"time"
 )
 
@@ -15,6 +16,7 @@ type Definition struct {
 	Wandering         WanderingDefinition
 	MaxHealth         int64
 	flags             map[string]bool
+	ac                int
 }
 
 func NewDefinition(definitionId string,
@@ -71,6 +73,21 @@ func (d *Definition) GetFlags() (result []string) {
 		}
 	}
 	return
+}
+
+func (d *Definition) ArmorClass() int {
+	// base armor class before modifiers
+	return d.ac
+}
+
+func (d *Definition) HasResistanceTo(damageType combat.DamageType) bool {
+	// TODO resistances
+	return false
+}
+
+func (d *Definition) IsVulnerableTo(damageType combat.DamageType) bool {
+	// TODO vulnerability
+	return false
 }
 
 // Things to do with how mobs wander around

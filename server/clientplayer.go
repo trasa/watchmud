@@ -119,6 +119,34 @@ func (p *ClientPlayer) CombatantType() combat.CombatantType {
 	return combat.PlayerCombatant
 }
 
+func (p *ClientPlayer) CalculateMeleeRollModifiers() int {
+	// TODO figure out modifiers based on stats and weapons and things
+	return 0
+}
+
+func (p *ClientPlayer) ArmorClass() int {
+	// TODO figure out modifiers based on stats and weapons and things
+	return 10
+}
+
+func (p *ClientPlayer) HasResistanceTo(damageType combat.DamageType) bool {
+	return false // TODO
+}
+
+func (p *ClientPlayer) IsVulnerableTo(damageType combat.DamageType) bool {
+	return false // TODO
+}
+
+func (p *ClientPlayer) WeaponDamageRoll() string {
+	// TODO get this from wielded weapon
+	return "1d6"
+}
+
+func (p *ClientPlayer) WeaponDamageType() combat.DamageType {
+	// TODO get this from wielded weapon
+	return combat.Piercing
+}
+
 func (p *ClientPlayer) ResetDirtyFlag() {
 	p.dirty = false
 	p.inventory.ResetDirtyFlag()
