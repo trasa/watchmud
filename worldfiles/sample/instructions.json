@@ -28,5 +28,11 @@
     "mobile_id": "scripty",
     "room_id": "northRoom",
     "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "ratman",
+    "room_id": "northRoom",
+    "instance_max": 4
   }
 ]

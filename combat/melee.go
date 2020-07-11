@@ -26,7 +26,7 @@ func CalculateMeleeAttack(fighter Combatant, victim Combatant) MeleeAttackResult
 	// if value > victim's AC, that's a hit.
 	// TODO: advantage, disadvantage
 	roll, _, _ := dice.Roll("1d20")
-	log.Printf("%s melee attacks %s, rolls a %d", fighter.GetName(), victim.GetName(), roll.String())
+	log.Printf("%s melee attacks %s, rolls a %d", fighter.GetName(), victim.GetName(), roll.Int())
 	return meleeAttack(fighter, victim, roll)
 }
 

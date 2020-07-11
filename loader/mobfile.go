@@ -15,6 +15,7 @@ type mobFileEntry struct {
 	WanderingDefinition WanderingEntry `json:"wandering_definition"`
 	Flags               []string       `json:"flags"`
 	MaxHealth           int64          `json:"max_health"`
+	AC int `json:"ac"`
 }
 
 type WanderingEntry struct {

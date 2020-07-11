@@ -10,7 +10,8 @@
       "check_frequency_seconds": 30,
       "check_percentage": 50,
       "wander_style": 1
-    }
+    },
+    "ac": 10
   },
   {
     "id": "scripty",
@@ -25,7 +26,8 @@
       "wander_style": 2,
       "path": [ "start", "northRoom", "northeastRoom", "eastRoom" ]
     },
-    "flags": ["nofight"]
+    "flags": ["nofight"],
+    "ac": 10
   },
   {
     "id": "ratman",
@@ -35,6 +37,7 @@
     "max_health": 25,
     "wandering_definition": {
       "can_wander": false
-    }
+    },
+    "ac": 10
   }
 ]

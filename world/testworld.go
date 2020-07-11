@@ -69,7 +69,8 @@ func newTestWorld() (*World, error) {
 		25,
 		mobile.WanderingDefinition{
 			CanWander: false,
-		})
+		},
+		10)
 	testZone.AddMobileDefinition(mobDefn)
 	testRoom.AddMobile(mobile.NewInstance(mobDefn))
 

@@ -16,7 +16,7 @@ type Definition struct {
 	Wandering         WanderingDefinition
 	MaxHealth         int64
 	flags             map[string]bool
-	ac                int
+	AC                int
 }
 
 func NewDefinition(definitionId string,
@@ -26,7 +26,8 @@ func NewDefinition(definitionId string,
 	shortDescription,
 	descriptionInRoom string,
 	maxHealth int64,
-	wandering WanderingDefinition) *Definition {
+	wandering WanderingDefinition,
+	AC int) *Definition {
 	d := &Definition{
 		Id:                definitionId,
 		Name:              name,
@@ -37,6 +38,7 @@ func NewDefinition(definitionId string,
 		ZoneId:            zoneId,
 		flags:             make(map[string]bool),
 		MaxHealth:         maxHealth,
+		AC: AC,
 	}
 	return d
 }
@@ -77,7 +79,7 @@ func (d *Definition) GetFlags() (result []string) {
 
 func (d *Definition) ArmorClass() int {
 	// base armor class before modifiers
-	return d.ac
+	return d.AC
 }
 
 func (d *Definition) HasResistanceTo(damageType combat.DamageType) bool {

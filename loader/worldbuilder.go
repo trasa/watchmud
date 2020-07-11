@@ -223,7 +223,8 @@ func (wb *WorldBuilder) loadMobileDefinitions() error {
 					CheckPercentage: float32(mob.WanderingDefinition.CheckPercentage) / 100.0,
 					Style:           mobile.WanderingStyle(mob.WanderingDefinition.WanderStyle),
 					Path:            mob.WanderingDefinition.Path,
-				})
+				},
+				mob.AC)
 			defn.SetFlags(mob.Flags)
 			wb.Zones[zonename].AddMobileDefinition(defn)
 		}
