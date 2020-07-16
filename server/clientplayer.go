@@ -139,7 +139,7 @@ func (p *ClientPlayer) IsVulnerableTo(damageType combat.DamageType) bool {
 
 func (p *ClientPlayer) WeaponDamageRoll() string {
 	// TODO get this from wielded weapon
-	return "1d6"
+	return "3d6"
 }
 
 func (p *ClientPlayer) WeaponDamageType() combat.DamageType {

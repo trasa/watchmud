@@ -34,7 +34,7 @@
     "name": "ratman",
     "short_description": "Ratman glares at you.",
     "description_in_room": "Ratman glares at you.",
-    "max_health": 25,
+    "max_health": 15,
     "wandering_definition": {
       "can_wander": false
     },
