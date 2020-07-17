@@ -2,7 +2,7 @@ package db
 
 import (
 	"github.com/trasa/watchmud/player"
-	"log"
+	"github.com/rs/zerolog/log"
 )
 
 type PlayerData struct {
@@ -28,7 +28,7 @@ type PlayerData struct {
 const NewPlayerMaxHealth = 100
 
 func GetPlayerData(playerName string) (result PlayerData, err error) {
-	log.Printf("DB - getting player data for %s", playerName)
+	log.Debug().Msgf("DB - getting player data for %s", playerName)
 	result = PlayerData{}
 	err = watchdb.Get(&result, "SELECT player_id, player_name, current_health, max_health, race_id, class, last_zone_id, last_room_id, slots, "+
 		"strength, dexterity, constitution, intelligence, wisdom, charisma FROM players where player_name = $1", playerName)
@@ -124,7 +124,7 @@ func CreatePlayerData(playerName string, race int32, class int32, zoneId string,
 			"cha":        abilities.Charisma,
 		})
 	if err != nil {
-		log.Fatalf("Error while creating player: %v", err)
+		log.Fatal().Err(err).Msg("Error while creating player")
 	}
 	var newId int64
 	res.Next()

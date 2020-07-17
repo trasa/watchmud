@@ -6,7 +6,7 @@ import (
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
 	"io"
-	"log"
+	"github.com/rs/zerolog/log"
 )
 
 // An implementation of client.Client
@@ -52,12 +52,12 @@ func (c *client) readPump() {
 	for {
 		gameMessage, err := c.stream.Recv()
 		if err == io.EOF {
-			log.Printf("EOF received")
+			log.Info().Msg("EOF received")
 			c.gameServerInstance.Logout(c, "EOF received")
 			return
 		}
 		if err != nil {
-			log.Printf("RPC Read Error: %v", err)
+			log.Warn().Err(err).Msg("RPC Read Error")
 			c.gameServerInstance.Logout(c, fmt.Sprintf("Read Error: %v", err))
 			return
 		}
@@ -70,7 +70,7 @@ func (c *client) writePump() {
 		select {
 		case msg := <-c.sendQueue:
 			if err := c.stream.Send(msg); err != nil {
-				log.Printf("RPC Write Error: %v", err)
+				log.Warn().Err(err).Msg("RPC Write Error")
 				c.gameServerInstance.Logout(c, fmt.Sprintf("Write Error: %v", err))
 				return
 			}

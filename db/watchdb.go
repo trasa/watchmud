@@ -3,7 +3,7 @@ package db
 import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"log"
+	"github.com/rs/zerolog/log"
 )
 
 var watchdb *sqlx.DB

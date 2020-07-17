@@ -4,7 +4,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/player"
-	"log"
+	"github.com/rs/zerolog/log"
 )
 
 type PlayerInventoryData struct {

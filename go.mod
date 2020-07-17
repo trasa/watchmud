@@ -10,7 +10,8 @@ require (
 	github.com/justinian/dice v1.0.0
 	github.com/lib/pq v1.0.0
 	github.com/mattn/go-sqlite3 v1.11.0 // indirect
-	github.com/pkg/errors v0.8.0
+	github.com/pkg/errors v0.8.1
+	github.com/rs/zerolog v1.19.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.2.2
 	github.com/trasa/syncmap v1.0.0

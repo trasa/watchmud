@@ -5,7 +5,7 @@ import (
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
 	"google.golang.org/grpc"
-	"log"
+	"github.com/rs/zerolog/log"
 	"net"
 )
 
@@ -19,7 +19,7 @@ func (s *server) Run(port int) {
 	log.Printf("gRPC listening on port %d", port)
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatal().Err(err).Msg("failed to listen")
 	}
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)

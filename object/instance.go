@@ -4,7 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/behavior"
-	"log"
+	"github.com/rs/zerolog/log"
 )
 
 // The Instances of the Definitions in the world around you.
@@ -35,7 +35,7 @@ func NewInstance(defn *Definition) (*Instance, error) {
 
 func NewExistingInstance(id uuid.UUID, defn *Definition) (inst *Instance, err error) {
 	if defn == nil {
-		log.Printf("Error: asked to create instance for id %s with null definition!", id)
+		log.Error().Msgf("Error: asked to create instance for id %s with null definition!", id)
 		return nil, errors.New("Tried to create instance with null definition")
 	}
 	return &Instance{

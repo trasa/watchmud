@@ -2,7 +2,7 @@ package client
 
 import (
 	"github.com/trasa/watchmud/player"
-	"log"
+	"github.com/rs/zerolog/log"
 )
 
 type TestClient struct {
@@ -18,7 +18,7 @@ func NewTestClient(p player.Player) *TestClient {
 }
 
 func (c *TestClient) Send(msg interface{}) error {
-	log.Printf("sending fake! %s p is %s", msg, c.Player.GetName())
+	log.Info().Msgf("sending fake! %s p is %s", msg, c.Player.GetName())
 	c.tosend = append(c.tosend, msg)
 	return nil
 }

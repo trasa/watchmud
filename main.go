@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/rs/zerolog"
 	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/rpc"
 	"github.com/trasa/watchmud/server"
 	"github.com/trasa/watchmud/web"
 	"io"
-	"log"
+	"github.com/rs/zerolog/log"
 	"os"
 )
 
@@ -19,6 +20,7 @@ var (
 	doHelp        = flag.Bool("help", false, "Show Help")
 	doHelpAlias   = flag.Bool("h", false, "Show Help")
 	logFile       = flag.String("logFile", "/var/log/watchmud/watchmud-server.log", "File to write server logs to")
+	debug = flag.Bool("debug", false, "Set log level to debug")
 )
 
 func usage() {
@@ -38,20 +40,24 @@ func main() {
 	// init logging
 	f, err := os.OpenFile(*logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		log.Fatalf("error opening log file: %v", err)
+		panic("error opening log file")
 	}
 	defer f.Close()
 	wrt := io.MultiWriter(os.Stdout, f)
-	log.SetOutput(wrt)
-	log.Println("Logging initialized.")
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if *debug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: wrt})
+	log.Info().Msg("Logging initialized.")
 
 	if err := db.Init(); err != nil {
-		log.Fatalf("Failed to initialize database persistence: %v", err)
+		log.Fatal().Err(err).Msg("Failed to initialize database persistence")
 	}
 
 	gameserver, err := server.NewGameServer(*worldFilesDir)
 	if err != nil {
-		log.Fatalf("Failed to start NewGameServer: %v", err)
+		log.Fatal().Err(err).Msg("Failed to start NewGameServer")
 	}
 	go gameserver.Run()
 

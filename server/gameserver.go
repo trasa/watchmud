@@ -9,7 +9,7 @@ import (
 	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/playergenerator"
 	"github.com/trasa/watchmud/world"
-	"log"
+	"github.com/rs/zerolog/log"
 	"time"
 )
 
@@ -101,19 +101,19 @@ func (gs *GameServer) processIncomingMessage() bool {
 		case *message.GameMessage_LoginRequest:
 			err := gs.handleLogin(msg) // TODO error handling
 			if err != nil {
-				log.Printf("Error from handleLogin: %v", err)
+				log.Error().Err(err).Msg("Error from handleLogin")
 			}
 
 		case *message.GameMessage_CreatePlayerRequest:
 			err := gs.handleCreatePlayer(msg)
 			if err != nil {
-				log.Printf("Error from handleCreatePlayer: %v", err)
+				log.Error().Err(err).Msg("Error from handleCreatePlayer")
 			}
 
 		case *message.GameMessage_DataRequest:
 			err := gs.handleDataRequest(msg)
 			if err != nil {
-				log.Printf("Error from handleDataRequest: %v", err)
+				log.Error().Err(err).Msg("Error from handleDataRequest")
 			}
 
 		default:
@@ -132,7 +132,7 @@ func (gs *GameServer) Receive(msg *gameserver.HandlerParameter) {
 func (gs *GameServer) Logout(c client.Client, cause string) {
 	gm, err := message.NewGameMessage(message.LogoutRequest{Cause: cause})
 	if err != nil {
-		log.Printf("Error creating GameMessage for LogoutRequest: %v", err)
+		log.Error().Err(err).Msg("Error creating GameMessage for LogoutRequest")
 	} else {
 		gs.Receive(gameserver.NewHandlerParameter(c, gm))
 	}
@@ -174,13 +174,13 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) 
 	playerName := msg.Message.GetLoginRequest().PlayerName
 	playerData, err := db.GetPlayerData(playerName)
 	if err != nil {
-		log.Printf("Error trying to retrieve playerData for %s: %v", playerName, err)
+		log.Error().Err(err).Str("playerName", playerName).Msg("Error trying to retrieve playerData")
 		clientErr := msg.Client.Send(message.LoginResponse{
 			Success:    false,
 			ResultCode: "PLAYER_DATA_ERROR",
 		})
 		if clientErr != nil {
-			log.Printf("client error trying to send PLAYER_DATA_ERROR on login: %v", clientErr)
+			log.Error().Err(err).Msg("client error trying to send PLAYER_DATA_ERROR on login")
 		}
 		return // err
 	}
@@ -191,13 +191,13 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) 
 	for _, inv := range playerData.Inventory {
 		inst, err := gs.World.CreateObjectInstance(inv.ZoneId, inv.DefinitionId, inv.InstanceId)
 		if err != nil {
-			log.Printf("Error trying to load player %d (%s) inventory instance (%s-%s-%s) -- %s", playerData.Id, playerName, inv.ZoneId, inv.DefinitionId, inv.InstanceId, err)
+			log.Error().Err(err).Msgf("Error trying to load player %d (%s) inventory instance (%s-%s-%s) -- %s", playerData.Id, playerName, inv.ZoneId, inv.DefinitionId, inv.InstanceId, err)
 			clientErr := msg.Client.Send(message.LoginResponse{
 				Success:    false,
 				ResultCode: "PLAYER_INVENTORY_DATA_ERROR",
 			})
 			if clientErr != nil {
-				log.Printf("client error trying to send PLAYER_INVENTORY_DATA_ERROR on login: %v", clientErr)
+				log.Error().Err(clientErr).Msg("client error trying to send PLAYER_INVENTORY_DATA_ERROR on login")
 			}
 			return err
 		}
@@ -208,7 +208,7 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) 
 	for _, sd := range playerData.Slots.Slots {
 		inst, exists := player.GetInventory().GetByInstanceId(sd.InstanceId)
 		if !exists {
-			log.Printf("Error trying to load player %d (%s) slot: %d object instance doesn't exist in inventory: %s",
+			log.Error().Msgf("Error trying to load player %d (%s) slot: %d object instance doesn't exist in inventory: %s",
 				playerData.Id, playerName, sd.Location, sd.InstanceId)
 		} else {
 			player.Slots().Set(slot.Location(sd.Location), inst)
@@ -243,38 +243,38 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) (err 
 
 	race, err := db.GetSingleRaceData(req.Race)
 	if err != nil {
-		log.Printf("Error trying to get race info (%d) for create player: %s: %v", req.Race, playerName, err)
+		log.Error().Err(err).Msgf("Error trying to get race info (%d) for create player: %s", req.Race, playerName)
 		clientErr := msg.Client.Send(message.CreatePlayerResponse{
 			Success:    false,
 			ResultCode: "RACE_DB_ERROR",
 		})
 		if clientErr != nil {
-			log.Printf("Client error trying to send RACE DB message: %v", clientErr)
+			log.Error().Err(clientErr).Msg("Client error trying to send RACE DB message")
 		}
 	}
 
 	class, err := db.GetSingleClassData(req.Class)
 	if err != nil {
-		log.Printf("Error trying to get class info (%d) for create player: %s: %v", req.Class, playerName, err)
+		log.Error().Err(err).Msgf("Error trying to get class info (%d) for create player: %s", req.Class, playerName)
 		clientErr := msg.Client.Send(message.CreatePlayerResponse{
 			Success:    false,
 			ResultCode: "CLASS_DB_ERROR",
 		})
 		if clientErr != nil {
-			log.Printf("Client error trying to send CLASS DB message: %v", clientErr)
+			log.Error().Err(clientErr).Msg("Client error trying to send CLASS DB message")
 		}
 	}
 
 	playerPrototype := playergenerator.GeneratePlayerPrototype(race, class)
 	playerData, err := db.CreatePlayerData(playerName, req.Race, req.Class, gs.World.StartRoom.Zone.Id, gs.World.StartRoom.Id, playerPrototype.InitialAbilities)
 	if err != nil {
-		log.Printf("Error trying to create player for %s: %v", playerName, err)
+		log.Error().Err(err).Msgf("Error trying to create player for %s", playerName)
 		clientErr := msg.Client.Send(message.CreatePlayerResponse{
 			Success:    false,
 			ResultCode: "PLAYER_ALREADY_EXISTS",
 		})
 		if clientErr != nil {
-			log.Printf("Client error trying to send PLAYER_ALREADY_EXISTS message: %v", clientErr)
+			log.Error().Err(clientErr).Msg("Client error trying to send PLAYER_ALREADY_EXISTS message")
 		}
 		return // err
 	}
@@ -301,12 +301,12 @@ func (gs *GameServer) handleDataRequest(msg *gameserver.HandlerParameter) (err e
 	// get from db
 	racejson, err := db.GetRaceDataJson()
 	if err != nil {
-		log.Printf("GetRaceDataJson failed: %v", err)
+		log.Error().Err(err).Msg("GetRaceDataJson failed")
 		if clientErr := msg.Client.Send(message.DataResponse{
 			Success:    false,
 			ResultCode: "DATA_ERROR",
 		}); clientErr != nil {
-			log.Printf("handleDataRequest failed to send DB_ERROR for 'races' request: %v", clientErr)
+			log.Error().Err(clientErr).Msg("handleDataRequest failed to send DB_ERROR for 'races' request")
 		}
 		return
 	}
@@ -315,19 +315,19 @@ func (gs *GameServer) handleDataRequest(msg *gameserver.HandlerParameter) (err e
 	resp.DataType = append(resp.DataType, "classes")
 	classjson, err := db.GetClassDataJson()
 	if err != nil {
-		log.Printf("GetClassDataJson failed: %v", err)
+		log.Error().Err(err).Msg("GetClassDataJson failed")
 		if clientErr := msg.Client.Send(message.DataResponse{
 			Success:    false,
 			ResultCode: "DATA_ERROR",
 		}); clientErr != nil {
-			log.Printf("handleDataRequest failed to send DB_ERROR for 'classes' request: %v", clientErr)
+			log.Error().Err(clientErr).Msg("handleDataRequest failed to send DB_ERROR for 'classes' request")
 		}
 		return
 	}
 	resp.Data = append(resp.Data, classjson)
 
 	if err = msg.Client.Send(resp); err != nil {
-		log.Printf("handleDataRequest failed to send race data: %v", err)
+		log.Error().Err(err).Msg("handleDataRequest failed to send race data")
 	}
 	return
 }
