@@ -57,6 +57,8 @@ func (w *World) handleLoadCreateMob(msg *gameserver.HandlerParameter, request *m
 	inst := mobile.NewInstance(mobDefn)
 
 	// add instance to room via the world
+	// have to do it this way so that the World has appropriate bookkeeping,
+	// if you add directly to the target room then you'll cause problems.
 	w.AddMobile(inst, targetRoom)
 
 	// success
