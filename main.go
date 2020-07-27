@@ -4,12 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/rpc"
 	"github.com/trasa/watchmud/server"
 	"github.com/trasa/watchmud/web"
 	"io"
-	"github.com/rs/zerolog/log"
 	"os"
 )
 
@@ -20,7 +20,7 @@ var (
 	doHelp        = flag.Bool("help", false, "Show Help")
 	doHelpAlias   = flag.Bool("h", false, "Show Help")
 	logFile       = flag.String("logFile", "/var/log/watchmud/watchmud-server.log", "File to write server logs to")
-	debug = flag.Bool("debug", false, "Set log level to debug")
+	debug         = flag.Bool("debug", false, "Set log level to debug")
 )
 
 func usage() {

@@ -26,7 +26,7 @@ func (s *MobileActivityTestSuite) SetupTest() {
 		CheckPercentage: 1.0,
 		Style:           mobile.WANDER_FOLLOW_PATH,
 		Path:            []string{"a", "b"},
-	})
+	}, 10)
 	s.mobileInstance = mobile.NewInstance(s.definition)
 }
 

@@ -22,7 +22,8 @@ func (suite *DefinitionSuite) SetupTest() {
 		"short desc",
 		"descr",
 		25,
-		WanderingDefinition{CanWander: false})
+		WanderingDefinition{CanWander: false},
+		10)
 }
 
 func (suite *DefinitionSuite) TestFlags() {

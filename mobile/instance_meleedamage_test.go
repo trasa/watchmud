@@ -19,7 +19,7 @@ func (s *InstanceMeleeDamageSuite) SetupTest() {
 		25,
 		WanderingDefinition{
 			CanWander: false,
-		})
+		}, 10)
 	defn.MaxHealth = 100
 	s.instance = NewInstance(defn)
 	s.instance.CurHealth = 100

@@ -2,9 +2,9 @@ package object
 
 import (
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/behavior"
-	"github.com/rs/zerolog/log"
 )
 
 // The Instances of the Definitions in the world around you.

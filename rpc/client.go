@@ -2,11 +2,11 @@ package rpc
 
 import (
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
 	"io"
-	"github.com/rs/zerolog/log"
 )
 
 // An implementation of client.Client

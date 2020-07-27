@@ -13,7 +13,7 @@ func TestInstance_CanWander(t *testing.T) {
 		25,
 		WanderingDefinition{
 			CanWander: false,
-		}))
+		}, 10))
 	assert.False(t, noWalk.CanWander())
 
 	walker := NewInstance(NewDefinition("", "", "", []string{}, "", "",
@@ -23,7 +23,7 @@ func TestInstance_CanWander(t *testing.T) {
 			Style:           WANDER_RANDOM,
 			CheckFrequency:  time.Minute * 1,
 			CheckPercentage: 1.0,
-		}))
+		}, 10))
 	log.Printf("wandering %s", walker.LastWanderingTime)
 	assert.False(t, walker.CanWander()) // because it hasn't been 1 minute yet
 
@@ -45,7 +45,7 @@ func TestInstance_CheckWanderChance_AlwaysFails(t *testing.T) {
 			Style:           WANDER_RANDOM,
 			CheckFrequency:  time.Minute * 1,
 			CheckPercentage: 0.0, // <-- 0% chance
-		}))
+		}, 10))
 	for i := 0; i < 10; i++ {
 		assert.False(t, noChance.checkWanderChance(r)) // always fails
 	}
@@ -60,7 +60,7 @@ func TestInstance_CheckWanderChance_AlwaysSucceeds(t *testing.T) {
 			Style:           WANDER_RANDOM,
 			CheckFrequency:  time.Minute * 1,
 			CheckPercentage: 1.0, // <-- 100% chance
-		}))
+		}, 10))
 	for i := 0; i < 10; i++ {
 		assert.True(t, fiftyFifty.checkWanderChance(r))
 	}
@@ -75,7 +75,7 @@ func TestInstance_CheckWanderChance_FiftyFifty(t *testing.T) {
 			Style:           WANDER_RANDOM,
 			CheckFrequency:  time.Minute * 1,
 			CheckPercentage: 0.50, // <-- 50% chance
-		}))
+		}, 10))
 	success := false
 	for i := 0; i < 100; i++ {
 		if fiftyFifty.checkWanderChance(r) {
@@ -97,7 +97,7 @@ func TestInstance_GetIndexOnPath(t *testing.T) {
 				CheckPercentage: 1.0,
 				Style:           WANDER_FOLLOW_PATH,
 				Path:            []string{"a", "b"},
-			}))
+			}, 10))
 	idx, err := m.GetIndexOnPath("a")
 	assert.NoError(t, err)
 	assert.Equal(t, 0, idx)
@@ -115,7 +115,7 @@ func TestInstance_GetIndexOnPath_NoPath(t *testing.T) {
 	m := NewInstance(
 		NewDefinition("id", "name", "", []string{}, "desc", "room desc",
 			25,
-			WanderingDefinition{}))
+			WanderingDefinition{}, 10))
 	idx, err := m.GetIndexOnPath("foo")
 	assert.Error(t, err)
 	assert.Equal(t, -1, idx)

@@ -2,10 +2,10 @@ package rpc
 
 import (
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
 	"google.golang.org/grpc"
-	"github.com/rs/zerolog/log"
 	"net"
 )
 

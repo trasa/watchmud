@@ -1,8 +1,8 @@
 package db
 
 import (
-	"github.com/trasa/watchmud/player"
 	"github.com/rs/zerolog/log"
+	"github.com/trasa/watchmud/player"
 )
 
 type PlayerData struct {

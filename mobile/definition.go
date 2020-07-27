@@ -38,7 +38,7 @@ func NewDefinition(definitionId string,
 		ZoneId:            zoneId,
 		flags:             make(map[string]bool),
 		MaxHealth:         maxHealth,
-		AC: AC,
+		AC:                AC,
 	}
 	return d
 }

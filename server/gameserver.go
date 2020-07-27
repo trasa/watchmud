@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/client"
@@ -9,7 +10,6 @@ import (
 	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/playergenerator"
 	"github.com/trasa/watchmud/world"
-	"github.com/rs/zerolog/log"
 	"time"
 )
 

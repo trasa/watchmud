@@ -98,6 +98,11 @@ func (w *World) moveMobile(mob *mobile.Instance, dir direction.Direction, src *s
 	w.mobileRooms.Add(mob, dest)
 }
 
+// add a mobile instance to the world
+func (w *World) AddMobile(mob *mobile.Instance, targetRoom *spaces.Room) {
+	w.mobileRooms.Add(mob, targetRoom)
+}
+
 // remove the mobile instance from the world entirely
 func (w *World) removeMobile(mob *mobile.Instance) {
 	w.mobileRooms.Remove(mob)

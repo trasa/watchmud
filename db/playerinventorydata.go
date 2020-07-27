@@ -2,9 +2,9 @@ package db
 
 import (
 	"github.com/jmoiron/sqlx"
+	"github.com/rs/zerolog/log"
 	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/player"
-	"github.com/rs/zerolog/log"
 )
 
 type PlayerInventoryData struct {

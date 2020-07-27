@@ -15,6 +15,7 @@ func (w *World) initializeHandlerMap() {
 		"GameMessage_GetRequest":           w.handleGet,
 		"GameMessage_InventoryRequest":     w.handleInventory,
 		"GameMessage_KillRequest":          w.handleKill,
+		"GameMessage_LoadRequest":          w.handleLoad,
 		"GameMessage_LogoutRequest":        w.handleLogout,
 		"GameMessage_LookRequest":          w.handleLook,
 		"GameMessage_MoveRequest":          w.handleMove,
