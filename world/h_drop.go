@@ -16,9 +16,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 	}
 	room := w.getRoomContainingPlayer(msg.Player)
 
-	// TODO how to fix this so that if there are multiple items that match "target"
-	// we return all of them, or return the correct one for dropping?
-	objectToDrop, ok := msg.Player.Inventory().Find(dropReq.Target)
+	objectToDrop, ok := msg.Player.Inventory().GetByNameOrAlias(dropReq.Target)
 	if !ok {
 		// not found
 		_ = msg.Player.Send(message.DropResponse{

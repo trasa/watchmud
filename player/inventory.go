@@ -58,10 +58,6 @@ func (pi *Inventory) GetByNameOrAlias(target string) (inst *object.Instance, exi
 	return nil, false
 }
 
-func (pi *Inventory) Find(target string) (*object.Instance, bool) {
-	return pi.GetByNameOrAlias(target)
-}
-
 func (pi *Inventory) findPosition(inst *object.Instance) int {
 	for pos, i := range pi.byDefinition[inst.Definition.Id()] {
 		if i.InstanceId == inst.InstanceId {
