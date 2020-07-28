@@ -38,7 +38,7 @@ func newTestWorld() (*World, error) {
 		[]string{},
 		"knife",
 		"A knife is on the ground.",
-		slot.None)
+		slot.Wield)
 	knifeObj, err := object.NewInstance(knifeDefn)
 	if err != nil {
 		log.Printf("Error in TestWorld, failed to create knife!")
