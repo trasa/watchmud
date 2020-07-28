@@ -10,7 +10,7 @@ type TestPlayer struct {
 	id        int64
 	name      string
 	sent      []interface{}
-	inventory *PlayerInventory
+	inventory *Inventory
 	slots     *object.Slots
 	curHealth int64
 	maxHealth int64
@@ -25,7 +25,7 @@ type TestPlayer struct {
 func NewTestPlayer(name string) *TestPlayer {
 	p := &TestPlayer{
 		name:      name,
-		inventory: NewPlayerInventory(),
+		inventory: NewInventory(),
 		slots:     object.NewSlots(),
 		curHealth: 100,
 		maxHealth: 100,
@@ -63,7 +63,7 @@ func (p *TestPlayer) GetClassId() int32 {
 	return p.class
 }
 
-func (p *TestPlayer) GetInventory() *PlayerInventory {
+func (p *TestPlayer) GetInventory() *Inventory {
 	return p.inventory
 
 }

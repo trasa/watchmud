@@ -13,7 +13,7 @@ type ClientPlayer struct {
 	Id        int64
 	Name      string
 	Client    client.Client
-	inventory *player.PlayerInventory
+	inventory *player.Inventory
 	slots     *object.Slots
 	curHealth int64
 	maxHealth int64
@@ -38,7 +38,7 @@ func NewClientPlayer(name string, race int32, class int32, abilities *player.Abi
 	p := ClientPlayer{
 		Name:      name,
 		Client:    client, // address of interface
-		inventory: player.NewPlayerInventory(),
+		inventory: player.NewInventory(),
 		slots:     object.NewSlots(),
 		curHealth: 100, // TODO need a default health here
 		maxHealth: 100,
@@ -89,7 +89,7 @@ func (p *ClientPlayer) GetClassId() int32 {
 	return p.class
 }
 
-func (p *ClientPlayer) GetInventory() *player.PlayerInventory {
+func (p *ClientPlayer) GetInventory() *player.Inventory {
 	return p.inventory
 }
 

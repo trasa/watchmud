@@ -9,7 +9,7 @@ import (
 
 type PlayerInventoryTestSuite struct {
 	suite.Suite
-	inv        *PlayerInventory
+	inv        *Inventory
 	definition *object.Definition
 	instance   *object.Instance
 }
@@ -19,7 +19,7 @@ func TestPlayerInventoryTestSuite(t *testing.T) {
 }
 
 func (s *PlayerInventoryTestSuite) SetupTest() {
-	s.inv = NewPlayerInventory()
+	s.inv = NewInventory()
 	s.definition = object.NewDefinition("defn", "defnName", "zone", object.Armor, []string{"foo"}, "desc", "descground", slot.Arms)
 	var err error
 	s.instance, err = object.NewInstance(s.definition)

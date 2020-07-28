@@ -8,7 +8,7 @@ import (
 )
 
 //noinspection GoNameStartsWithPackageName
-type PlayerInventory struct {
+type Inventory struct {
 	byId         map[uuid.UUID]*object.Instance // instance_id -> instance obj
 	byDefinition map[string][]*object.Instance  // zone.definition_id -> list of instances
 
@@ -16,8 +16,8 @@ type PlayerInventory struct {
 	removed map[uuid.UUID]*object.Instance
 }
 
-func NewPlayerInventory() *PlayerInventory {
-	return &PlayerInventory{
+func NewInventory() *Inventory {
+	return &Inventory{
 		byId:         make(map[uuid.UUID]*object.Instance),
 		byDefinition: make(map[string][]*object.Instance),
 		added:        make(map[uuid.UUID]*object.Instance),
@@ -25,19 +25,19 @@ func NewPlayerInventory() *PlayerInventory {
 	}
 }
 
-func (pi *PlayerInventory) GetAll() (result []*object.Instance) {
+func (pi *Inventory) GetAll() (result []*object.Instance) {
 	for _, inst := range pi.byId {
 		result = append(result, inst)
 	}
 	return
 }
 
-func (pi *PlayerInventory) GetByInstanceId(id uuid.UUID) (inst *object.Instance, exists bool) {
+func (pi *Inventory) GetByInstanceId(id uuid.UUID) (inst *object.Instance, exists bool) {
 	inst, exists = pi.byId[id]
 	return
 }
 
-func (pi *PlayerInventory) GetByName(name string) (inst *object.Instance, exists bool) {
+func (pi *Inventory) GetByName(name string) (inst *object.Instance, exists bool) {
 	for _, inst := range pi.GetAll() {
 		if inst.Definition.Name == name {
 			return inst, true
@@ -46,7 +46,7 @@ func (pi *PlayerInventory) GetByName(name string) (inst *object.Instance, exists
 	return nil, false
 }
 
-func (pi *PlayerInventory) GetByNameOrAlias(target string) (inst *object.Instance, exists bool) {
+func (pi *Inventory) GetByNameOrAlias(target string) (inst *object.Instance, exists bool) {
 	for _, inst := range pi.GetAll() {
 		if inst.Definition.Name == target {
 			return inst, true
@@ -58,11 +58,11 @@ func (pi *PlayerInventory) GetByNameOrAlias(target string) (inst *object.Instanc
 	return nil, false
 }
 
-func (pi *PlayerInventory) Find(target string) (*object.Instance, bool) {
+func (pi *Inventory) Find(target string) (*object.Instance, bool) {
 	return pi.GetByNameOrAlias(target)
 }
 
-func (pi *PlayerInventory) findPosition(inst *object.Instance) int {
+func (pi *Inventory) findPosition(inst *object.Instance) int {
 	for pos, i := range pi.byDefinition[inst.Definition.Id()] {
 		if i.InstanceId == inst.InstanceId {
 			return pos
@@ -72,7 +72,7 @@ func (pi *PlayerInventory) findPosition(inst *object.Instance) int {
 }
 
 // Add an object into the inventory. This marks the inventory as dirty and records the change.
-func (pi *PlayerInventory) Add(inst *object.Instance) error {
+func (pi *Inventory) Add(inst *object.Instance) error {
 	err := pi.Load(inst)
 	if err != nil {
 		return err
@@ -82,7 +82,7 @@ func (pi *PlayerInventory) Add(inst *object.Instance) error {
 }
 
 // Load an object into the inventory without marking the inventory as dirty or changed.
-func (pi *PlayerInventory) Load(inst *object.Instance) error {
+func (pi *Inventory) Load(inst *object.Instance) error {
 	if _, exists := pi.byId[inst.InstanceId]; exists {
 		return errors.New(fmt.Sprintf("instance id %s already exists in player inventory", inst.InstanceId))
 	}
@@ -92,7 +92,7 @@ func (pi *PlayerInventory) Load(inst *object.Instance) error {
 }
 
 // Remove an object from the inventory. This marks the inventory as dirty and records the change.
-func (pi *PlayerInventory) Remove(inst *object.Instance) error {
+func (pi *Inventory) Remove(inst *object.Instance) error {
 	if _, exists := pi.byId[inst.InstanceId]; !exists {
 		return errors.New(fmt.Sprintf("instance id %s does not exist in player inventory", inst.InstanceId))
 	}
@@ -104,7 +104,7 @@ func (pi *PlayerInventory) Remove(inst *object.Instance) error {
 }
 
 // Get the objects that were added since the last time
-func (pi *PlayerInventory) GetAdded() (result []*object.Instance) {
+func (pi *Inventory) GetAdded() (result []*object.Instance) {
 	for _, inst := range pi.added {
 		result = append(result, inst)
 	}
@@ -112,18 +112,18 @@ func (pi *PlayerInventory) GetAdded() (result []*object.Instance) {
 }
 
 // get the objects that were removed since hte last time
-func (pi *PlayerInventory) GetRemoved() (result []*object.Instance) {
+func (pi *Inventory) GetRemoved() (result []*object.Instance) {
 	for _, inst := range pi.removed {
 		result = append(result, inst)
 	}
 	return
 }
 
-func (pi *PlayerInventory) IsDirty() bool {
+func (pi *Inventory) IsDirty() bool {
 	return len(pi.added) > 0 || len(pi.removed) > 0
 }
 
-func (pi *PlayerInventory) ResetDirtyFlag() {
+func (pi *Inventory) ResetDirtyFlag() {
 	pi.added = make(map[uuid.UUID]*object.Instance)
 	pi.removed = make(map[uuid.UUID]*object.Instance)
 }

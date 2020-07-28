@@ -20,7 +20,7 @@ type Player interface {
 	// get the player's class id
 	GetClassId() int32
 	// get the player's inventory
-	GetInventory() *PlayerInventory
+	GetInventory() *Inventory
 	// get the player's slots (what they are wearing, where)
 	Slots() *object.Slots
 	// get current health
