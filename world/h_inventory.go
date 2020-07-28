@@ -7,7 +7,7 @@ import (
 
 func (w *World) handleInventory(msg *gameserver.HandlerParameter) {
 	var items []*message.InventoryResponse_InventoryItem
-	for _, instPtr := range msg.Player.GetInventory().GetAll() {
+	for _, instPtr := range msg.Player.Inventory().GetAll() {
 		if !msg.Player.Slots().IsItemInUse(instPtr) {
 			items = append(items, &message.InventoryResponse_InventoryItem{
 				Id:               instPtr.Id(),

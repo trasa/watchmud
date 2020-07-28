@@ -206,7 +206,7 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) 
 	}
 	// slots - need inventory before we can set slots
 	for _, sd := range playerData.Slots.Slots {
-		inst, exists := player.GetInventory().GetByInstanceId(sd.InstanceId)
+		inst, exists := player.Inventory().GetByInstanceId(sd.InstanceId)
 		if !exists {
 			log.Error().Msgf("Error trying to load player %d (%s) slot: %d object instance doesn't exist in inventory: %s",
 				playerData.Id, playerName, sd.Location, sd.InstanceId)

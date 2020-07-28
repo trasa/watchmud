@@ -29,7 +29,7 @@ func TestInventory_success(t *testing.T) {
 		InstanceId: uuid.NewV4(),
 		Definition: defnPtr,
 	}
-	p.GetInventory().Add(instPtr)
+	p.Inventory().Add(instPtr)
 
 	invHP := newInventoryRequestHandlerParameter(t, c)
 	w.handleInventory(invHP)

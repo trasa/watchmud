@@ -23,7 +23,7 @@ func getPlayerInventoryData(playerId int64) (result []PlayerInventoryData, err e
 func savePlayerInventory(tx *sqlx.Tx, player player.Player) (err error) {
 	log.Printf("DB - Saving Player Inventory for player %s %d", player.GetName(), player.GetId())
 
-	for _, a := range player.GetInventory().GetAdded() {
+	for _, a := range player.Inventory().GetAdded() {
 		_, err = tx.NamedExec("INSERT INTO player_inventory (player_id, instance_id, zone_id, definition_id) VALUES (:player_id, :instance_id, :zone_id, :definition_id)",
 			map[string]interface{}{
 				"player_id":     player.GetId(),
@@ -36,7 +36,7 @@ func savePlayerInventory(tx *sqlx.Tx, player player.Player) (err error) {
 		}
 	}
 
-	for _, d := range player.GetInventory().GetRemoved() {
+	for _, d := range player.Inventory().GetRemoved() {
 		_, err = tx.NamedExec("DELETE FROM player_inventory WHERE player_id = :player_id AND instance_id = :instance_id",
 			map[string]interface{}{
 				"player_id":   player.GetId(),

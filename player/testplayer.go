@@ -63,7 +63,7 @@ func (p *TestPlayer) GetClassId() int32 {
 	return p.class
 }
 
-func (p *TestPlayer) GetInventory() *Inventory {
+func (p *TestPlayer) Inventory() *Inventory {
 	return p.inventory
 
 }

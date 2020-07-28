@@ -89,7 +89,7 @@ func (p *ClientPlayer) GetClassId() int32 {
 	return p.class
 }
 
-func (p *ClientPlayer) GetInventory() *player.Inventory {
+func (p *ClientPlayer) Inventory() *player.Inventory {
 	return p.inventory
 }
 

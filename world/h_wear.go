@@ -8,7 +8,7 @@ import (
 func (w *World) handleWear(msg *gameserver.HandlerParameter) {
 	wearreq := msg.Message.GetWearRequest()
 
-	if instPtr, ok := msg.Player.GetInventory().GetByNameOrAlias(wearreq.Target); ok {
+	if instPtr, ok := msg.Player.Inventory().GetByNameOrAlias(wearreq.Target); ok {
 		if !instPtr.Definition.CanWear() {
 			msg.Player.Send(message.WearResponse{Success: false, ResultCode: "CANT_WEAR_THAT"})
 			return

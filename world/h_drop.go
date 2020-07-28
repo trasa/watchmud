@@ -18,7 +18,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 
 	// TODO how to fix this so that if there are multiple items that match "target"
 	// we return all of them, or return the correct one for dropping?
-	objectToDrop, ok := msg.Player.GetInventory().Find(dropReq.Target)
+	objectToDrop, ok := msg.Player.Inventory().Find(dropReq.Target)
 	if !ok {
 		// not found
 		_ = msg.Player.Send(message.DropResponse{
@@ -54,7 +54,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 	}
 
 	// remove from player
-	if err := msg.Player.GetInventory().Remove(objectToDrop); err != nil {
+	if err := msg.Player.Inventory().Remove(objectToDrop); err != nil {
 		// failed to remove from player
 		log.Error().
 			Str("command", "drop").

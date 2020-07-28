@@ -37,7 +37,7 @@ func newGetRequestHandlerParameter(t *testing.T, c *client.TestClient, target st
 func (suite *HandleGetSuite) TestGet_success() {
 	// start off with two items in the room and zero in the player
 	suite.Assert().Equal(2, len(suite.world.StartRoom.GetAllInventory()))
-	suite.Assert().Equal(0, len(suite.player.GetInventory().GetAll()))
+	suite.Assert().Equal(0, len(suite.player.Inventory().GetAll()))
 
 	getHP := newGetRequestHandlerParameter(suite.T(), suite.testClient, "knife")
 	suite.world.handleGet(getHP)
@@ -46,8 +46,8 @@ func (suite *HandleGetSuite) TestGet_success() {
 	resp := suite.player.GetSentResponse(0).(message.GetResponse)
 	assert.True(suite.T(), resp.Success)
 	// player has one item
-	assert.Equal(suite.T(), 1, len(suite.player.GetInventory().GetAll()))
-	foundinv, exists := suite.player.GetInventory().GetByName("knife")
+	assert.Equal(suite.T(), 1, len(suite.player.Inventory().GetAll()))
+	foundinv, exists := suite.player.Inventory().GetByName("knife")
 	assert.True(suite.T(), exists)
 	assert.Equal(suite.T(), "knife", foundinv.Definition.Name)
 
@@ -62,8 +62,8 @@ func (suite *HandleGetSuite) TestGet_aliasTarget() {
 	assert.Equal(suite.T(), 1, suite.player.SentMessageCount())
 	resp := suite.player.GetSentResponse(0).(message.GetResponse)
 	assert.True(suite.T(), resp.Success)
-	assert.Equal(suite.T(), 1, len(suite.player.GetInventory().GetAll()))
-	foundinv, exists := suite.player.GetInventory().GetByName("iron_helmet")
+	assert.Equal(suite.T(), 1, len(suite.player.Inventory().GetAll()))
+	foundinv, exists := suite.player.Inventory().GetByName("iron_helmet")
 	assert.True(suite.T(), exists)
 	assert.Equal(suite.T(), "iron_helmet", foundinv.Definition.Name)
 	assert.Equal(suite.T(), 1, len(suite.world.StartRoom.GetAllInventory()))
@@ -78,7 +78,7 @@ func (suite *HandleGetSuite) TestGet_targetNotInRoom() {
 	assert.False(suite.T(), resp.Success)
 	assert.Equal(suite.T(), "TARGET_NOT_FOUND", resp.GetResultCode())
 	// player has zero items still
-	assert.Equal(suite.T(), 0, len(suite.player.GetInventory().GetAll()))
+	assert.Equal(suite.T(), 0, len(suite.player.Inventory().GetAll()))
 	// still two items in start room
 	assert.Equal(suite.T(), 2, len(suite.world.StartRoom.GetAllInventory()))
 }
@@ -92,7 +92,7 @@ func (suite *HandleGetSuite) TestGet_noTarget() {
 	assert.False(suite.T(), resp.Success)
 	assert.Equal(suite.T(), "NO_TARGET", resp.GetResultCode())
 	// player has zero items, start room still has 2
-	assert.Equal(suite.T(), 0, len(suite.player.GetInventory().GetAll()))
+	assert.Equal(suite.T(), 0, len(suite.player.Inventory().GetAll()))
 	assert.Equal(suite.T(), 2, len(suite.world.StartRoom.GetAllInventory()))
 }
 
@@ -103,7 +103,7 @@ func (suite *HandleGetSuite) TestGet_playerAddFail() {
 	// -- this is an arbitrary case to make the test work...
 	inv, exists := suite.world.StartRoom.GetInventoryByName("knife")
 	assert.True(suite.T(), exists)
-	suite.player.GetInventory().Add(inv)
+	suite.player.Inventory().Add(inv)
 
 	getHP := newGetRequestHandlerParameter(suite.T(), suite.testClient, "knife")
 	suite.world.handleGet(getHP)
@@ -113,7 +113,7 @@ func (suite *HandleGetSuite) TestGet_playerAddFail() {
 	assert.False(suite.T(), resp.Success)
 	assert.Equal(suite.T(), "ADD_INVENTORY_ERROR", resp.GetResultCode())
 	// player just has one item we added at beginning of this method
-	assert.Equal(suite.T(), 1, len(suite.player.GetInventory().GetAll()))
+	assert.Equal(suite.T(), 1, len(suite.player.Inventory().GetAll()))
 	// room still has its two items
 	assert.Equal(suite.T(), 2, len(suite.world.StartRoom.GetAllInventory()))
 }

@@ -25,7 +25,7 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter) {
 		return
 	}
 
-	instPtr, ok := msg.Player.GetInventory().GetByName(equipReq.Target)
+	instPtr, ok := msg.Player.Inventory().GetByName(equipReq.Target)
 	if !ok {
 		// you don't have one
 		msg.Player.Send(message.EquipResponse{

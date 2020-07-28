@@ -60,7 +60,7 @@ func (suite *HandleDropSuite) TestDrop_success() {
 	suite.Assert().True(dropresp.Success)
 
 	// player now has zero items, room has its starting two
-	suite.Assert().Equal(0, len(suite.player.GetInventory().GetAll()))
+	suite.Assert().Equal(0, len(suite.player.Inventory().GetAll()))
 	suite.Assert().Equal(2, len(suite.world.StartRoom.GetAllInventory()))
 }
 
@@ -96,7 +96,7 @@ func (suite *HandleDropSuite) TestDrop_Alias() {
 	suite.Assert().True(dropresp.Success)
 
 	// player now has zero items, room has its starting two
-	suite.Assert().Equal(0, len(suite.player.GetInventory().GetAll()))
+	suite.Assert().Equal(0, len(suite.player.Inventory().GetAll()))
 	suite.Assert().Equal(2, len(suite.world.StartRoom.GetAllInventory()))
 }
 
@@ -129,7 +129,7 @@ func (suite *HandleDropSuite) TestDrop_NotFound() {
 	dropresp := suite.player.GetSentResponse(0).(message.DropResponse)
 	suite.Assert().False(dropresp.Success)
 	suite.Assert().Equal("TARGET_NOT_FOUND", dropresp.GetResultCode())
-	suite.Assert().Equal(0, len(suite.player.GetInventory().GetAll()))
+	suite.Assert().Equal(0, len(suite.player.Inventory().GetAll()))
 }
 
 func (suite *HandleDropSuite) TestDrop_InUse() {
@@ -166,7 +166,7 @@ func (suite *HandleDropSuite) TestDrop_InUse() {
 	dropresp := suite.player.GetSentResponse(2).(message.DropResponse)
 	suite.Assert().False(dropresp.Success)
 	suite.Assert().Equal("TARGET_IN_USE", dropresp.GetResultCode())
-	suite.Assert().Equal(1, len(suite.player.GetInventory().GetAll()))
+	suite.Assert().Equal(1, len(suite.player.Inventory().GetAll()))
 }
 
 func (suite *HandleDropSuite) TestDrop_InUse_But_Multiple_Items() {
