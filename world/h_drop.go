@@ -21,11 +21,15 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 		return
 	}
 
+	// TODO handle "all"
+	// TODO handle "coins"
+
 	room := w.getRoomContainingPlayer(msg.Player)
 
 	// TODO need to sort this by priority of how we count "2.x"
 	// and make sense of other info in the target data structure
 	objectsToDrop := msg.Player.Inventory().GetByNameOrAlias(target.Name)
+	// SORT by in use
 
 	if len(objectsToDrop) == 0 {
 		// not found

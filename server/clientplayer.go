@@ -60,11 +60,6 @@ func NewClientPlayerFromPlayerData(name string, pd *db.PlayerData, client client
 	return p
 }
 
-// Load player inventory into this struct without flagging anything as dirty
-func (p *ClientPlayer) LoadInventory(instance *object.Instance) {
-	p.inventory.Load(instance)
-}
-
 func (p *ClientPlayer) GetId() int64 {
 	return p.Id
 }

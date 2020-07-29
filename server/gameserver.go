@@ -186,7 +186,7 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) 
 	}
 	player := NewClientPlayerFromPlayerData(msg.Message.GetLoginRequest().PlayerName, &playerData, msg.Client)
 
-	// load inventory: have to convert playerinventorydata into
+	// load inventory: have to convert PlayerInventoryData into
 	// instances and definitions here, because we need 'the world' to do it.
 	for _, inv := range playerData.Inventory {
 		inst, err := gs.World.CreateObjectInstance(inv.ZoneId, inv.DefinitionId, inv.InstanceId)
@@ -201,8 +201,7 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) 
 			}
 			return err
 		}
-		player.LoadInventory(inst)
-
+		player.Inventory().Load(inst)
 	}
 	// slots - need inventory before we can set slots
 	for _, sd := range playerData.Slots.Slots {

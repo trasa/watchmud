@@ -8,6 +8,7 @@ import (
 )
 
 type PlayerInventoryData struct {
+	InventoryId  int32     `db:"inventory_id"`
 	PlayerId     int64     `db:"player_id"`
 	InstanceId   uuid.UUID `db:"instance_id"`
 	ZoneId       string    `db:"zone_id"`
@@ -16,7 +17,7 @@ type PlayerInventoryData struct {
 
 func getPlayerInventoryData(playerId int64) (result []PlayerInventoryData, err error) {
 	result = []PlayerInventoryData{}
-	err = watchdb.Select(&result, "SELECT player_id, instance_id, zone_id, definition_id FROM player_inventory WHERE player_id = $1", playerId)
+	err = watchdb.Select(&result, "SELECT inventory_id, player_id, instance_id, zone_id, definition_id FROM player_inventory WHERE player_id = $1 ORDER BY inventory_id", playerId)
 	return
 }
 

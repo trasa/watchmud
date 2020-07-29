@@ -3,6 +3,7 @@ package player
 import (
 	"errors"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/object"
 )
@@ -52,6 +53,7 @@ func (pi *Inventory) GetByNameOrAlias(target string) (objects []*object.Instance
 	// TODO handle all the other target cases
 	objects = []*object.Instance{}
 	for _, obj := range pi.GetAll() {
+		log.Debug().Msgf("consider %+v", obj)
 		if obj.Definition.Name == target || obj.Definition.HasAlias(target) {
 			objects = append(objects, obj)
 		}
