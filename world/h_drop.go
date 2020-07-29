@@ -14,9 +14,19 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 		})
 		return
 	}
+
+	target, err := parseTarget(dropReq.Target)
+	if err != nil {
+		_ = msg.Player.Send(message.DropResponse{Success: false, ResultCode: "PARSE_ERROR_" + err.Error()})
+		return
+	}
+
 	room := w.getRoomContainingPlayer(msg.Player)
 
-	objectsToDrop := msg.Player.Inventory().GetByNameOrAlias(dropReq.Target)
+	// TODO need to sort this by priority of how we count "2.x"
+	// and make sense of other info in the target data structure
+	objectsToDrop := msg.Player.Inventory().GetByNameOrAlias(target.Name)
+
 	if len(objectsToDrop) == 0 {
 		// not found
 		_ = msg.Player.Send(message.DropResponse{
