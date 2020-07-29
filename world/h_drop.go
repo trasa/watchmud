@@ -16,15 +16,18 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 	}
 	room := w.getRoomContainingPlayer(msg.Player)
 
-	objectToDrop, ok := msg.Player.Inventory().GetByNameOrAlias(dropReq.Target)
-	if !ok {
+	objectsToDrop := msg.Player.Inventory().GetByNameOrAlias(dropReq.Target)
+	if len(objectsToDrop) == 0 {
 		// not found
 		_ = msg.Player.Send(message.DropResponse{
 			Success: false, ResultCode: "TARGET_NOT_FOUND",
 		})
 		return
 	}
+
+	// TODO for now, using the first item returned
 	// player has target
+	objectToDrop := objectsToDrop[0]
 
 	// is the object cursed?
 	// TODO cursed

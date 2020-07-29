@@ -46,16 +46,17 @@ func (pi *Inventory) GetByName(name string) (inst *object.Instance, exists bool)
 	return nil, false
 }
 
-func (pi *Inventory) GetByNameOrAlias(target string) (inst *object.Instance, exists bool) {
-	for _, inst := range pi.GetAll() {
-		if inst.Definition.Name == target {
-			return inst, true
-		}
-		if inst.Definition.HasAlias(target) {
-			return inst, true
+// Find the objects in the inventory that match this name or alias
+func (pi *Inventory) GetByNameOrAlias(target string) (objects []*object.Instance) {
+	// TODO handle case where target is "2.knife" (return the 2nd knife)
+	// TODO handle all the other target cases
+	objects = []*object.Instance{}
+	for _, obj := range pi.GetAll() {
+		if obj.Definition.Name == target || obj.Definition.HasAlias(target) {
+			objects = append(objects, obj)
 		}
 	}
-	return nil, false
+	return objects
 }
 
 func (pi *Inventory) findPosition(inst *object.Instance) int {

@@ -7,20 +7,20 @@ import (
 	"testing"
 )
 
-type PlayerInventoryTestSuite struct {
+type InventoryTestSuite struct {
 	suite.Suite
 	inv        *Inventory
 	definition *object.Definition
 	instance   *object.Instance
 }
 
-func TestPlayerInventoryTestSuite(t *testing.T) {
-	suite.Run(t, new(PlayerInventoryTestSuite))
+func TestInventoryTestSuite(t *testing.T) {
+	suite.Run(t, new(InventoryTestSuite))
 }
 
-func (s *PlayerInventoryTestSuite) SetupTest() {
+func (s *InventoryTestSuite) SetupTest() {
 	s.inv = NewInventory()
-	s.definition = object.NewDefinition("defn", "defnName", "zone", object.Armor, []string{"foo"}, "desc", "descground", slot.Arms)
+	s.definition = object.NewDefinition("defn", "defnName", "zone", object.Armor, []string{"alias"}, "desc", "descground", slot.Arms)
 	var err error
 	s.instance, err = object.NewInstance(s.definition)
 	if err != nil {
@@ -28,7 +28,7 @@ func (s *PlayerInventoryTestSuite) SetupTest() {
 	}
 }
 
-func (s *PlayerInventoryTestSuite) Test_IsDirty() {
+func (s *InventoryTestSuite) Test_IsDirty() {
 	s.Assert().False(s.inv.IsDirty())
 
 	s.inv.Add(s.instance)
@@ -39,4 +39,22 @@ func (s *PlayerInventoryTestSuite) Test_IsDirty() {
 
 	s.inv.Remove(s.instance)
 	s.Assert().True(s.inv.IsDirty())
+}
+
+func (s *InventoryTestSuite) Test_GetByName() {
+	_ = s.inv.Add(s.instance)
+
+	s.Assert().Equal(s.instance, s.inv.GetByNameOrAlias(s.instance.Definition.Name)[0])
+}
+
+func (s *InventoryTestSuite) Test_GetByAlias() {
+	_ = s.inv.Add(s.instance)
+
+	s.Assert().Equal(s.instance, s.inv.GetByNameOrAlias(s.instance.Definition.Aliases[0])[0])
+}
+
+func (s *InventoryTestSuite) Test_Get_NotFound() {
+	_ = s.inv.Add(s.instance)
+
+	s.Assert().Empty(s.inv.GetByNameOrAlias("doesnt_exist"))
 }
