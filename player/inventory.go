@@ -6,12 +6,13 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/object"
+	"sort"
 )
 
 //noinspection GoNameStartsWithPackageName
 type Inventory struct {
-	byId         map[uuid.UUID]*object.Instance // instance_id -> instance obj
-	byDefinition map[string][]*object.Instance  // zone.definition_id -> list of instances
+	byId   map[uuid.UUID]*object.Instance // instance_id -> instance obj
+	sorted []*object.Instance
 
 	added   map[uuid.UUID]*object.Instance
 	removed map[uuid.UUID]*object.Instance
@@ -19,32 +20,20 @@ type Inventory struct {
 
 func NewInventory() *Inventory {
 	return &Inventory{
-		byId:         make(map[uuid.UUID]*object.Instance),
-		byDefinition: make(map[string][]*object.Instance),
-		added:        make(map[uuid.UUID]*object.Instance),
-		removed:      make(map[uuid.UUID]*object.Instance),
+		byId:    make(map[uuid.UUID]*object.Instance),
+		sorted:  []*object.Instance{},
+		added:   make(map[uuid.UUID]*object.Instance),
+		removed: make(map[uuid.UUID]*object.Instance),
 	}
 }
 
-func (pi *Inventory) GetAll() (result []*object.Instance) {
-	for _, inst := range pi.byId {
-		result = append(result, inst)
-	}
-	return
+func (pi *Inventory) GetAll() []*object.Instance {
+	return pi.sorted
 }
 
 func (pi *Inventory) GetByInstanceId(id uuid.UUID) (inst *object.Instance, exists bool) {
 	inst, exists = pi.byId[id]
 	return
-}
-
-func (pi *Inventory) GetByName(name string) (inst *object.Instance, exists bool) {
-	for _, inst := range pi.GetAll() {
-		if inst.Definition.Name == name {
-			return inst, true
-		}
-	}
-	return nil, false
 }
 
 // Find the objects in the inventory that match this name or alias
@@ -62,7 +51,7 @@ func (pi *Inventory) GetByNameOrAlias(target string) (objects []*object.Instance
 }
 
 func (pi *Inventory) findPosition(inst *object.Instance) int {
-	for pos, i := range pi.byDefinition[inst.Definition.Id()] {
+	for pos, i := range pi.GetAll() {
 		if i.InstanceId == inst.InstanceId {
 			return pos
 		}
@@ -86,8 +75,15 @@ func (pi *Inventory) Load(inst *object.Instance) error {
 		return errors.New(fmt.Sprintf("instance id %s already exists in player inventory", inst.InstanceId))
 	}
 	pi.byId[inst.InstanceId] = inst
-	pi.byDefinition[inst.Definition.Id()] = append(pi.byDefinition[inst.Definition.Id()], inst)
+	pi.sorted = append(pi.sorted, inst)
+	pi.sort()
 	return nil
+}
+
+func (pi *Inventory) sort() {
+	sort.SliceStable(pi.sorted, func(i, j int) bool {
+		return pi.sorted[i].InstanceId.String() < pi.sorted[j].InstanceId.String()
+	})
 }
 
 // Remove an object from the inventory. This marks the inventory as dirty and records the change.
@@ -97,7 +93,8 @@ func (pi *Inventory) Remove(inst *object.Instance) error {
 	}
 	delete(pi.byId, inst.InstanceId)
 	pos := pi.findPosition(inst)
-	pi.byDefinition[inst.Definition.Id()] = append(pi.byDefinition[inst.Definition.Id()][:pos], pi.byDefinition[inst.Definition.Id()][pos+1:]...)
+	pi.sorted = append(pi.sorted[:pos], pi.sorted[pos+1:]...)
+	pi.sort()
 	pi.removed[inst.InstanceId] = inst
 	return nil
 }

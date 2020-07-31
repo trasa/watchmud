@@ -47,9 +47,9 @@ func (suite *HandleGetSuite) TestGet_success() {
 	assert.True(suite.T(), resp.Success)
 	// player has one item
 	assert.Equal(suite.T(), 1, len(suite.player.Inventory().GetAll()))
-	foundinv, exists := suite.player.Inventory().GetByName("knife")
-	assert.True(suite.T(), exists)
-	assert.Equal(suite.T(), "knife", foundinv.Definition.Name)
+	foundinv := suite.player.Inventory().GetByNameOrAlias("knife")
+	assert.True(suite.T(), len(foundinv) > 0)
+	assert.Equal(suite.T(), "knife", foundinv[0].Definition.Name)
 
 	// there's one other item in the room now
 	assert.Equal(suite.T(), 1, len(suite.world.StartRoom.GetAllInventory()))
@@ -63,9 +63,9 @@ func (suite *HandleGetSuite) TestGet_aliasTarget() {
 	resp := suite.player.GetSentResponse(0).(message.GetResponse)
 	assert.True(suite.T(), resp.Success)
 	assert.Equal(suite.T(), 1, len(suite.player.Inventory().GetAll()))
-	foundinv, exists := suite.player.Inventory().GetByName("iron_helmet")
-	assert.True(suite.T(), exists)
-	assert.Equal(suite.T(), "iron_helmet", foundinv.Definition.Name)
+	foundinv := suite.player.Inventory().GetByNameOrAlias("iron_helmet")
+	assert.True(suite.T(), len(foundinv) > 0)
+	assert.Equal(suite.T(), "iron_helmet", foundinv[0].Definition.Name)
 	assert.Equal(suite.T(), 1, len(suite.world.StartRoom.GetAllInventory()))
 }
 
@@ -74,6 +74,7 @@ func (suite *HandleGetSuite) TestGet_targetNotInRoom() {
 	suite.world.handleGet(getHP)
 
 	assert.Equal(suite.T(), 1, suite.player.SentMessageCount())
+	//noinspection GoVetCopyLock
 	resp := suite.player.GetSentResponse(0).(message.GetResponse)
 	assert.False(suite.T(), resp.Success)
 	assert.Equal(suite.T(), "TARGET_NOT_FOUND", resp.GetResultCode())
@@ -109,6 +110,7 @@ func (suite *HandleGetSuite) TestGet_playerAddFail() {
 	suite.world.handleGet(getHP)
 
 	assert.Equal(suite.T(), 1, suite.player.SentMessageCount())
+	//noinspection GoVetCopyLock
 	resp := suite.player.GetSentResponse(0).(message.GetResponse)
 	assert.False(suite.T(), resp.Success)
 	assert.Equal(suite.T(), "ADD_INVENTORY_ERROR", resp.GetResultCode())
