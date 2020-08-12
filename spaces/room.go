@@ -217,3 +217,11 @@ func (r *Room) FindInventory(findMode message.FindMode, index string, target str
 func (r *Room) FindMobile(target string) (mob *mobile.Instance, exists bool) {
 	return r.mobs.Find(target)
 }
+
+func (r *Room) FindPlayer(target string) (p player.Player, exists bool) {
+	p = r.playerList.FindByName(target)
+	if p != nil {
+		exists = true
+	}
+	return
+}

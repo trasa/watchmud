@@ -133,3 +133,8 @@ func (mob *Instance) WeaponDamageType() combat.DamageType {
 func (mob *Instance) Send(msg interface{}) {
 	// TODO do something with this notification
 }
+
+// Restore mob's health, mana, movement
+func (mob *Instance) Restore() {
+	mob.CurHealth = mob.Definition.MaxHealth
+}

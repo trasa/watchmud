@@ -159,3 +159,7 @@ func (p *ClientPlayer) Location() *player.Location {
 func (p *ClientPlayer) Abilities() *player.Abilities {
 	return p.abilities
 }
+
+func (p *ClientPlayer) Restore() {
+	p.curHealth = p.maxHealth
+}

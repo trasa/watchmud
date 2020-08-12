@@ -53,4 +53,6 @@ type Player interface {
 	WeaponDamageRoll() string
 	// damage type for wielded weapon
 	WeaponDamageType() combat.DamageType
+	// restore health, mana, movement, ...
+	Restore()
 }

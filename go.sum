@@ -70,6 +70,10 @@ github.com/trasa/watchmud-message v0.0.15 h1:oN/2R7FJvVakKU5ahQu7ENtcTULBh6oPQDA
 github.com/trasa/watchmud-message v0.0.15/go.mod h1:lU1OaLd7OMYtHHg4D2kjk6HpPzEJj2+BYP2r8fa8YUU=
 github.com/trasa/watchmud-message v0.0.17 h1:5vIpTvgiA3YJ6ETFAq1RxGsMtgPZUOJPrnRJBPPx14A=
 github.com/trasa/watchmud-message v0.0.17/go.mod h1:yhYPfjxXa7Uiz5R0Qb9ZksVtxjt2guV0FNFapbKM/H4=
+github.com/trasa/watchmud-message v0.0.18 h1:Od0xmbctgV1zr8sZdaA3vYHgxvHZSDN99BRAX+UOcUk=
+github.com/trasa/watchmud-message v0.0.18/go.mod h1:yhYPfjxXa7Uiz5R0Qb9ZksVtxjt2guV0FNFapbKM/H4=
+github.com/trasa/watchmud-message v0.0.19 h1:2oOZRXNHPU6tifWWH5wbL6WwHYRvvphku7DQ5TMgqAg=
+github.com/trasa/watchmud-message v0.0.19/go.mod h1:yhYPfjxXa7Uiz5R0Qb9ZksVtxjt2guV0FNFapbKM/H4=
 github.com/yuin/goldmark v1.1.32 h1:5tjfNdR2ki3yYQ842+eX2sQHeiwpKJ0RnHO4IYOc4V8=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=

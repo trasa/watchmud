@@ -1,7 +1,6 @@
 package world
 
 import (
-	"github.com/rs/zerolog/log"
 	message "github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mobile"
@@ -22,12 +21,8 @@ func (w *World) handleLoad(msg *gameserver.HandlerParameter) {
 	if loadRequest.Zone == "" {
 		loadRequest.Zone = targetRoom.Zone.Id
 	}
-	log.Warn().
-		Int64("playerId", msg.Player.GetId()).
-		Str("playerName", msg.Player.GetName()).
-		Str("commandType", "wiz").
-		Str("command", "load").
-		Msgf("Player %s is creating %s of %s.%s", msg.Player.GetName(), loadRequest.Type, loadRequest.Zone, loadRequest.Id)
+	logWizCommand(msg.Player, "load",
+		"Player %s is creating %s of %s.%s", msg.Player.GetName(), loadRequest.Type, loadRequest.Zone, loadRequest.Id)
 
 	if loadRequest.Type == "mob" {
 		w.handleLoadCreateMob(msg, loadRequest, targetRoom)

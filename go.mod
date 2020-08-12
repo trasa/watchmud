@@ -15,7 +15,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.2.2
 	github.com/trasa/syncmap v1.0.0
-	github.com/trasa/watchmud-message v0.0.17
+	github.com/trasa/watchmud-message v0.0.19
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
 	golang.org/x/tools v0.0.0-20200708003708-134513de8882
 	google.golang.org/appengine v1.6.1 // indirect
