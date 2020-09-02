@@ -79,8 +79,8 @@ CREATE TABLE player_inventory
 
 
 
-INSERT INTO players (player_name, current_health, max_health, race_id, class, strength, dexterity, constitution, intelligence, wisdom, charisma)
-values ('somedood', 100, 100, 0, 0, 15, 10, 14, 8, 13, 12);
+-- INSERT INTO players (player_name, current_health, max_health, race_id, class, strength, dexterity, constitution, intelligence, wisdom, charisma)
+-- values ('somedood', 100, 100, 0, 0, 15, 10, 14, 8, 13, 12);
 
 
 GRANT SELECT, INSERT, UPDATE ON TABLE players TO watchmud;
@@ -88,3 +88,4 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE player_inventory to watchmud;
 GRANT SELECT ON TABLE race_group to watchmud;
 GRANT SELECT ON TABLE races to watchmud;
 GRANT SELECT ON TABLE classes to watchmud;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public to watchmud;
