@@ -9,19 +9,42 @@ import (
 	"github.com/trasa/watchmud/rpc"
 	"github.com/trasa/watchmud/server"
 	"github.com/trasa/watchmud/web"
+	"gopkg.in/yaml.v2"
 	"io"
+	"io/ioutil"
 	"os"
 )
 
 var (
-	worldFilesDir = flag.String("worldFilesDir", "./worldfiles", "directory where the world files can be found")
-	serverPort    = flag.Int("serverPort", 10000, "Port to operate the gRPC server on")
-	webPort       = flag.Int("webPort", 8888, "Port to operate the web server on")
-	doHelp        = flag.Bool("help", false, "Show Help")
-	doHelpAlias   = flag.Bool("h", false, "Show Help")
-	logFile       = flag.String("logFile", "/var/log/watchmud/watchmud-server.log", "File to write server logs to")
-	debug         = flag.Bool("debug", false, "Set log level to debug")
+	serverConfigFile = flag.String("serverConfig", "./worldfiles/server.yaml", "location of the server config file")
+	doHelp           = flag.Bool("help", false, "Show Help")
+	doHelpAlias      = flag.Bool("h", false, "Show Help")
 )
+
+// See worldfiles/server.yaml for example of this configuration
+type ServerConfig struct {
+	WorldFilesDir string `yaml:"worldFilesDir"`
+	Log           struct {
+		File  string
+		Level string
+	}
+	ServerPort int `yaml:"serverPort"`
+	WebPort    int `yaml:"webPort"`
+	DB         struct {
+		UseSSH bool `yaml:"useSSH"`
+		SSH    struct {
+			User    string
+			Host    string
+			Port    int
+			KeyFile string `yaml:"keyfile"`
+		}
+		User     string
+		Password string
+		Host     string
+		Port     int
+		Name     string
+	}
+}
 
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage of %s\n", os.Args[0])
@@ -29,6 +52,7 @@ func usage() {
 	fmt.Fprint(os.Stderr, "Flags:\n")
 	flag.PrintDefaults()
 }
+
 func main() {
 	flag.Parse()
 	if *doHelp || *doHelpAlias {
@@ -37,37 +61,82 @@ func main() {
 		return
 	}
 
+	config, serverConfigErr := readServerConfig(*serverConfigFile)
+	if serverConfigErr != nil {
+		fmt.Fprintln(os.Stderr, "Error reading server configuration file")
+		fmt.Fprintln(os.Stderr, serverConfigErr)
+		usage()
+		os.Exit(3)
+		return
+	}
+
 	// init logging
-	f, err := os.OpenFile(*logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	logFile, err := initLogging(config)
+	if logFile != nil {
+		defer logFile.Close()
+	}
 	if err != nil {
-		panic("error opening log file")
+		fmt.Fprintln(os.Stderr, "Error initializing logging")
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(4)
+		return
 	}
-	defer f.Close()
-	wrt := io.MultiWriter(os.Stdout, f)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	if *debug {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	}
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: wrt})
-	log.Info().Msg("Logging initialized.")
 
 	if err := db.Init(); err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize database persistence")
+		log.Fatal().
+			Err(err).
+			Msg("Failed to initialize database persistence")
 	}
 
-	gameserver, err := server.NewGameServer(*worldFilesDir)
+	gameserver, err := server.NewGameServer(config.WorldFilesDir)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to start NewGameServer")
+		log.Fatal().
+			Err(err).
+			Msg("Failed to start NewGameServer")
 	}
 	go gameserver.Run()
 
 	// grpc server
 	rpcServer := rpc.NewServer(gameserver)
-	go rpcServer.Run(*serverPort)
+	go rpcServer.Run(config.ServerPort)
 
-	web.Start(*webPort)
+	web.Start(config.WebPort)
 
 	// tell everybody to quit
 	//close(server.GlobalQuit)
 	// TODO some sort of server.GameServerInstance.Shutdown() ?
+}
+
+func readServerConfig(configFileName string) (*ServerConfig, error) {
+	// read the configuration file
+	configFileData, err := ioutil.ReadFile(configFileName)
+	if err != nil {
+		return nil, err
+	}
+	// parse the configuration file
+	serverConfig := ServerConfig{}
+	if err := yaml.UnmarshalStrict(configFileData, &serverConfig); err != nil {
+		return nil, err
+	}
+
+	return &serverConfig, nil
+}
+
+// initialize the zerolog setup, logging to both console and file specified
+// returns the *os.File so that the caller can defer the close of the log
+// file appropriately.
+func initLogging(config *ServerConfig) (*os.File, error) {
+	f, err := os.OpenFile(config.Log.File, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return f, err
+	}
+	wrt := io.MultiWriter(os.Stdout, f)
+	if logLevel, err := zerolog.ParseLevel(config.Log.Level); err != nil {
+		return f, err
+	} else {
+		zerolog.SetGlobalLevel(logLevel)
+	}
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: wrt})
+	log.Info().Msg("Logging initialized.")
+	return f, nil
 }

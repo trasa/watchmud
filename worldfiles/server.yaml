@@ -1,0 +1,31 @@
+# An example Configuration file for starting the WatchMUD server
+---
+# directory where the worldfiles can be found.
+# doesn't necessarily have to be directory where server.yaml is located.
+
+worldFilesDir: "./worldfiles"
+
+# where the log is written to
+log:
+  file: /var/log/watchmud/watchmud-server.log
+  level: debug
+
+
+# GRPC listener
+serverPort: 10000
+# HTTP listener
+webPort: 8888
+
+# Database Configuration
+db:
+  useSSH: true
+  ssh:
+    user: ssh-user
+    host: bastion.example.com
+    port: 22
+    keyfile: /Users/watchmud/.ssh/veryverysekrit.pem
+  user: watchmud
+  password: password1  # please don't
+  host: localhost
+  port: 5432
+  name: watchmud

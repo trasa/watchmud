@@ -21,4 +21,5 @@ require (
 	google.golang.org/appengine v1.6.1 // indirect
 	google.golang.org/genproto v0.0.0-20200715011427-11fb19a81f2c // indirect
 	google.golang.org/grpc v1.30.0
+	gopkg.in/yaml.v2 v2.3.0
 )
