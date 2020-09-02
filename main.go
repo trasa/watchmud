@@ -84,6 +84,7 @@ func main() {
 }
 
 func readServerConfig(configFileName string) (*serverconfig.Config, error) {
+	fmt.Println("Reading Server Config file from", configFileName)
 	// read the configuration file
 	configFileData, err := ioutil.ReadFile(configFileName)
 	if err != nil {

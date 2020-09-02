@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
@@ -16,8 +17,12 @@ func Init(config *serverconfig.Config) error {
 		return errors.New("SSH not implemented yet")
 	}
 
-	// TODO: args for db settings
-	connStr := "postgres://watchmud:watchmud@localhost/watchmud?sslmode=disable"
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
+		config.DB.User,
+		config.DB.Password,
+		config.DB.Host,
+		config.DB.Port,
+		config.DB.Name)
 	var err error
 	watchdb, err = sqlx.Open("postgres", connStr)
 	if err != nil {
@@ -35,6 +40,6 @@ func testConnection() error {
 	if err := rows.Scan(&now); err != nil {
 		return err
 	}
-	log.Printf("Database is live: %s", now)
+	log.Info().Msgf("Database is live: %s", now)
 	return nil
 }
