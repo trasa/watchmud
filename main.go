@@ -8,6 +8,7 @@ import (
 	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/rpc"
 	"github.com/trasa/watchmud/server"
+	"github.com/trasa/watchmud/serverconfig"
 	"github.com/trasa/watchmud/web"
 	"gopkg.in/yaml.v2"
 	"io"
@@ -20,31 +21,6 @@ var (
 	doHelp           = flag.Bool("help", false, "Show Help")
 	doHelpAlias      = flag.Bool("h", false, "Show Help")
 )
-
-// See worldfiles/server.yaml for example of this configuration
-type ServerConfig struct {
-	WorldFilesDir string `yaml:"worldFilesDir"`
-	Log           struct {
-		File  string
-		Level string
-	}
-	ServerPort int `yaml:"serverPort"`
-	WebPort    int `yaml:"webPort"`
-	DB         struct {
-		UseSSH bool `yaml:"useSSH"`
-		SSH    struct {
-			User    string
-			Host    string
-			Port    int
-			KeyFile string `yaml:"keyfile"`
-		}
-		User     string
-		Password string
-		Host     string
-		Port     int
-		Name     string
-	}
-}
 
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage of %s\n", os.Args[0])
@@ -82,7 +58,7 @@ func main() {
 		return
 	}
 
-	if err := db.Init(); err != nil {
+	if err := db.Init(config); err != nil {
 		log.Fatal().
 			Err(err).
 			Msg("Failed to initialize database persistence")
@@ -107,14 +83,14 @@ func main() {
 	// TODO some sort of server.GameServerInstance.Shutdown() ?
 }
 
-func readServerConfig(configFileName string) (*ServerConfig, error) {
+func readServerConfig(configFileName string) (*serverconfig.Config, error) {
 	// read the configuration file
 	configFileData, err := ioutil.ReadFile(configFileName)
 	if err != nil {
 		return nil, err
 	}
 	// parse the configuration file
-	serverConfig := ServerConfig{}
+	serverConfig := serverconfig.Config{}
 	if err := yaml.UnmarshalStrict(configFileData, &serverConfig); err != nil {
 		return nil, err
 	}
@@ -125,7 +101,7 @@ func readServerConfig(configFileName string) (*ServerConfig, error) {
 // initialize the zerolog setup, logging to both console and file specified
 // returns the *os.File so that the caller can defer the close of the log
 // file appropriately.
-func initLogging(config *ServerConfig) (*os.File, error) {
+func initLogging(config *serverconfig.Config) (*os.File, error) {
 	f, err := os.OpenFile(config.Log.File, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return f, err

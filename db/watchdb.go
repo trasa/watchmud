@@ -1,14 +1,20 @@
 package db
 
 import (
+	"errors"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
+	"github.com/trasa/watchmud/serverconfig"
 )
 
 var watchdb *sqlx.DB
 
-func Init() error {
+func Init(config *serverconfig.Config) error {
+
+	if config.DB.UseSSH {
+		return errors.New("SSH not implemented yet")
+	}
 
 	// TODO: args for db settings
 	connStr := "postgres://watchmud:watchmud@localhost/watchmud?sslmode=disable"
