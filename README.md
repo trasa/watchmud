@@ -25,6 +25,7 @@ client and server and websocket. So I replaced that with gRPC.
 
 What will I rewrite next??
 
+This has more [history](codereview.md) about this project.
 
 ## Building the Server
 
@@ -72,9 +73,9 @@ watchmud user permission to write there:
 
 ### Running the Server
 
-Settings and clever command line switches are still TODO, so for now
+Example Settings are shown in [worldfiles/server.yaml](worldfiles/server.yaml)
 
-    $ ./watchmud
+    $ ./watchmud -i myserverconfig.yaml
     
 Ctrl-C to terminate the server. 
 
