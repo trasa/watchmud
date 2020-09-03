@@ -48,6 +48,9 @@ func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) {
 		}
 		handler(msg)
 		// if the player object has changed, persist the changes to the database
+		// TODO what if the player has changed some other player somehow?
+		// (stabbed them, stole from them, etc.)
+		// See #32
 		if msg.Player != nil {
 			if err := db.SavePlayer(msg.Player); err != nil {
 				log.Printf("Error saving player %s! Error: %v", msg.Player.GetName(), err)
