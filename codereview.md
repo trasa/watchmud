@@ -27,14 +27,14 @@ years.
 
 Some places to start looking at code:
 
-main.go
+[main.go](main.go)
 The ever popular `func main`. Sets things up and starts them off.
 
-server/gameserver.go
+[server/gameserver.go](server/gameserver.go)
 This code runs the main game server loop which keeps track of time,
 triggers events, and receives messages from clients.
 
-world/handlers.go and world/world.go
+[world/handlers.go](world/handlers.go) and [world/world.go](world/world.go)
 Handlers for incoming GRPC messages and how to find them.
 The "state of the world" and where stuff is inside the world.
 

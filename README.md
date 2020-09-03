@@ -75,7 +75,7 @@ watchmud user permission to write there:
 
 Example Settings are shown in [worldfiles/server.yaml](worldfiles/server.yaml)
 
-    $ ./watchmud -i myserverconfig.yaml
+    $ ./watchmud -serverconfig ./worldfiles/myserverconfig.yaml
     
 Ctrl-C to terminate the server. 
 
