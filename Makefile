@@ -8,7 +8,7 @@ BINARY  := watchmud
 .PHONY: build
 build:
 	@mkdir -p $(BIN_DIR)
-	$(GO) build -o $(BIN_DIR)/$(BINARY) .
+	$(GO) build -o $(BIN_DIR)/$(BINARY) ./cmd/watchmud
 
 ## test: run all tests
 .PHONY: test
