@@ -3,17 +3,17 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/db"
-	"github.com/trasa/watchmud/rpc"
 	"github.com/trasa/watchmud/server"
 	"github.com/trasa/watchmud/serverconfig"
 	"github.com/trasa/watchmud/web"
 	"gopkg.in/yaml.v2"
-	"io"
-	"io/ioutil"
-	"os"
 )
 
 var (
@@ -72,9 +72,9 @@ func main() {
 	}
 	go gameserver.Run()
 
-	// grpc server
-	rpcServer := rpc.NewServer(gameserver)
-	go rpcServer.Run(config.ServerPort)
+	// grpc server (going away...)
+	//rpcServer := rpc.NewServer(gameserver)
+	//go rpcServer.Run(config.ServerPort)
 
 	web.Start(config.WebPort)
 
