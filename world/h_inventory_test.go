@@ -1,7 +1,9 @@
 package world
 
 import (
-	"github.com/satori/go.uuid"
+	"testing"
+
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/slot"
@@ -9,7 +11,6 @@ import (
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
-	"testing"
 )
 
 func newInventoryRequestHandlerParameter(t *testing.T, c *client.TestClient) *gameserver.HandlerParameter {
@@ -26,7 +27,7 @@ func TestInventory_success(t *testing.T) {
 	defnPtr := object.NewDefinition("defnid", "name", "zone",
 		object.Treasure, []string{}, "short desc", "in room", slot.None)
 	instPtr := &object.Instance{
-		InstanceId: uuid.NewV4(),
+		InstanceId: uuid.New(),
 		Definition: defnPtr,
 	}
 	p.Inventory().Add(instPtr)

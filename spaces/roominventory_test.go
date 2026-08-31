@@ -1,11 +1,12 @@
 package spaces
 
 import (
-	"github.com/satori/go.uuid"
+	"testing"
+
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/object"
-	"testing"
 )
 
 type RoomInventorySuite struct {
@@ -46,7 +47,7 @@ func (suite *RoomInventorySuite) TestRoomInventory_AddMany() {
 	suite.Assert().True(exists)
 	suite.Assert().Equal(rettwo, suite.instTwo)
 
-	nothing, exists := suite.roomInventory.GetByInstanceId(uuid.NewV4())
+	nothing, exists := suite.roomInventory.GetByInstanceId(uuid.New())
 	suite.Assert().False(exists)
 	suite.Assert().Nil(nothing)
 }

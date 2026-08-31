@@ -1,9 +1,9 @@
 package db
 
 import (
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
-	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/player"
 )
 

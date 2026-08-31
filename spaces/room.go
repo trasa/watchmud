@@ -2,7 +2,8 @@ package spaces
 
 import (
 	"fmt"
-	"github.com/satori/go.uuid"
+
+	"github.com/google/uuid"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/mobile"

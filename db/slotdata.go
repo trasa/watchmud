@@ -4,9 +4,10 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"github.com/satori/go.uuid"
-	"github.com/trasa/watchmud/object"
 	"reflect"
+
+	"github.com/google/uuid"
+	"github.com/trasa/watchmud/object"
 )
 
 type SlotDataList struct {

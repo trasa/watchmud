@@ -7,7 +7,7 @@ worldFilesDir: "./worldfiles"
 
 # where the log is written to
 log:
-  file: /var/log/watchmud/watchmud-server.log
+  file: ./bin/watchmud-server.log
   level: debug
 
 

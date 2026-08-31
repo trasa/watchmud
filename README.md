@@ -60,16 +60,8 @@ See watchmud/db/sql/ddl.sql for table definitions and static data creation.
     
 ### Creating the Log Directory
 
-By default, watchmud won't have permissions to create the directory where
-it wants to write its log files. Unless you're overriding this directory with
-the --logFile argument, you'll need to create the directory and give the 
-watchmud user permission to write there:
-
-    $ sudo mkdir -p /var/log/watchmud
-    $ sudo chown myusername /var/log/watchmud
-    $ sudo chmod 775 /var/log/watchmud
-
-(Or, something similar to that.)
+The logfile will be written to where the server.yaml specifies -- no longer
+writing to /var/log/watchmud (with all the headaches that entails).
 
 ### Running the Server
 
@@ -92,4 +84,3 @@ constructs the `watchmud-client` executable, and
     
 Starts it up, with a login attempt to localhost for username "YourNameGoesHere".
 (Settings, passwords, and other sorts of essentials also being on the "TODO" list.)
-

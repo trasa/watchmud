@@ -1,9 +1,9 @@
 package object
 
 import (
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
-	"github.com/satori/go.uuid"
 	"github.com/trasa/watchmud/behavior"
 )
 
@@ -29,7 +29,7 @@ func (i *Instance) IsGettable() bool {
 }
 
 func NewInstance(defn *Definition) (*Instance, error) {
-	id := uuid.NewV4()
+	id := uuid.New()
 	return NewExistingInstance(id, defn)
 }
 

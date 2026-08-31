@@ -3,13 +3,14 @@ package player
 import (
 	"errors"
 	"fmt"
-	"github.com/rs/zerolog/log"
-	"github.com/satori/go.uuid"
-	"github.com/trasa/watchmud/object"
 	"sort"
+
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+	"github.com/trasa/watchmud/object"
 )
 
-//noinspection GoNameStartsWithPackageName
+// noinspection GoNameStartsWithPackageName
 type Inventory struct {
 	byId   map[uuid.UUID]*object.Instance // instance_id -> instance obj
 	sorted []*object.Instance

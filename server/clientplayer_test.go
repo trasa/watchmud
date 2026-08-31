@@ -1,11 +1,12 @@
 package server
 
 import (
-	"github.com/satori/go.uuid"
+	"testing"
+
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/object"
-	"testing"
 )
 
 type ClientPlayerSuite struct {
@@ -26,7 +27,7 @@ func (suite *ClientPlayerSuite) TestAddInventory_New() {
 	defnPtr := object.NewDefinition("defnid", "name", "zone",
 		object.Food, []string{}, "short desc", "in room", slot.None)
 	instPtr := &object.Instance{
-		InstanceId: uuid.NewV4(),
+		InstanceId: uuid.New(),
 		Definition: defnPtr,
 	}
 

@@ -3,10 +3,11 @@ package mobile
 import (
 	"errors"
 	"fmt"
-	"github.com/satori/go.uuid"
-	"github.com/trasa/watchmud/combat"
 	"math/rand"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/trasa/watchmud/combat"
 )
 
 // The Mobile standing in front of you is an Instance of
@@ -23,7 +24,7 @@ type Instance struct {
 
 func NewInstance(defn *Definition) *Instance {
 	return &Instance{
-		InstanceId:        uuid.NewV4(),
+		InstanceId:        uuid.New(),
 		Definition:        defn,
 		LastWanderingTime: time.Now(),
 		WanderingForward:  true, // by default

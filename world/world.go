@@ -1,7 +1,9 @@
 package world
 
 import (
-	"github.com/satori/go.uuid"
+	"log"
+
+	"github.com/google/uuid"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/gameserver"
@@ -9,10 +11,9 @@ import (
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/spaces"
-	"log"
 )
 
-//noinspection GoNameStartsWithPackageName
+// noinspection GoNameStartsWithPackageName
 type World struct {
 	settings  map[string]string
 	zones     map[string]*spaces.Zone
