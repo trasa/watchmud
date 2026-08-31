@@ -17,8 +17,9 @@ const _Behavior_name = "NoneNoTake"
 var _Behavior_index = [...]uint8{0, 4, 10}
 
 func (i Behavior) String() string {
-	if i < 0 || i >= Behavior(len(_Behavior_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_Behavior_index)-1 {
 		return "Behavior(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _Behavior_name[_Behavior_index[i]:_Behavior_index[i+1]]
+	return _Behavior_name[_Behavior_index[idx]:_Behavior_index[idx+1]]
 }

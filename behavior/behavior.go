@@ -7,7 +7,7 @@ import (
 
 type Behavior int32
 
-//go:generate stringer -type=Behavior
+//go:generate go tool stringer -type=Behavior
 const (
 	None Behavior = iota
 	NoTake

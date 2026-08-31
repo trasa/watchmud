@@ -7,7 +7,7 @@ import (
 
 type Category int32
 
-//go:generate stringer -type=Category
+//go:generate go tool stringer -type=Category
 const (
 	None Category = iota
 	Weapon
