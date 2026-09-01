@@ -1,7 +1,7 @@
 package loader
 
 // object file is optional
-type objectFileEntry struct {
+type objectEntry struct {
 	Id                  string   `json:"id"`
 	Name                string   `json:"name"`
 	Category            string   `json:"category"`

@@ -1,7 +1,7 @@
 package loader
 
 // mob file might not exist, they are optional
-type mobFileEntry struct {
+type mobEntry struct {
 	Id                  string         `json:"id"`
 	Name                string         `json:"name"`
 	Aliases             []string       `json:"aliases"`

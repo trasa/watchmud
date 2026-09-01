@@ -3,11 +3,12 @@ package spaces
 import (
 	"errors"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/zonereset"
-	"log"
-	"time"
 )
 
 type Zone struct {
@@ -82,7 +83,7 @@ func (z *Zone) Reset(mobileRoomMap *MobileRoomMap) (errors []error) {
 	return nil
 }
 
-// Create a mobile. If there was an error, return error.
+// Create a mobile.
 func (z *Zone) createMobile(mobileRoomMap *MobileRoomMap, cmd CreateMobile) error {
 	// TODO determine how many of the definition are in the zone
 	defn := z.MobileDefinitions[cmd.MobileDefinitionId]

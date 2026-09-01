@@ -1,9 +1,10 @@
 package world
 
 import (
-	"github.com/trasa/watchmud/zonereset"
 	"log"
 	"time"
+
+	"github.com/trasa/watchmud/zonereset"
 )
 
 func (w *World) DoZoneActivity() {
@@ -14,7 +15,7 @@ func (w *World) doZoneActivity(now time.Time) {
 	// for each zone,
 	// do whatever needs to happen on pulse
 	// for example, a zone reset
-	for _, z := range w.zones {
+	for _, z := range w.content.Zones {
 		if z.ResetMode == zonereset.NO_PLAYERS || z.ResetMode == zonereset.ALWAYS {
 			// is it time yet for this zone's lifetime?
 			if now.Sub(z.LastReset) > z.Lifetime {

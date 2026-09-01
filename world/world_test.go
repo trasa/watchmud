@@ -1,13 +1,39 @@
 package world
 
 import (
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
+	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/player"
-	"testing"
+	"github.com/trasa/watchmud/rules"
+	"github.com/trasa/watchmud/spaces"
+	"github.com/trasa/watchmud/zonereset"
 )
+
+func TestWorld_New(t *testing.T) {
+	settings := loader.Settings{
+		StartZone: "z",
+		StartRoom: "r",
+		VoidZone:  "z",
+		VoidRoom:  "r",
+	}
+	var species []*rules.Species
+	var classes []*rules.Class
+	catalog, err := rules.NewCatalog(species, classes)
+	assert.NoError(t, err)
+	content := loader.NewContent(&settings, catalog)
+	content.Zones["z"] = spaces.NewZone("z", "Z", zonereset.NEVER, time.Duration(0))
+	content.Zones["z"].AddRoom(spaces.NewRoom(content.Zones["z"], "r", "R", "Description"))
+
+	w, err := New(content)
+	assert.NoError(t, err)
+	assert.NotNil(t, w)
+}
 
 func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
 	w, _ := newTestWorld()

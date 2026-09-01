@@ -2,8 +2,9 @@ package playergenerator
 
 import (
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/rules"
+
 	"testing"
 )
 
@@ -19,13 +20,15 @@ func (s *GeneratorTestSuite) SetupTest() {
 }
 
 func (s *GeneratorTestSuite) TestAbilities() {
-	race := db.RaceData{
-		StrBonus: 1,
-	}
-	class := db.ClassData{
-		AbilityPreference: &db.AbilityPreferenceList{
-			Preferences: []string{"str", "dex", "con"},
+	// TODO replace / fix test
+
+	race := rules.Lineage{
+		OwnBonuses: rules.Abilities{
+			Str: 1,
 		},
+	}
+	class := rules.Class{
+		AbilityPreference: []string{"str", "dex", "con"},
 	}
 	a := generateAbilities(race, class)
 

@@ -55,7 +55,7 @@ all: check build
 ## run: build and start the server with example config
 .PHONY: run
 run: build
-	.$(BIN_DIR)/$(BINARY) -serverconfig ./worldfiles/server.yaml
+	$(BIN_DIR)/$(BINARY)
 
 ## clean: remove build output and cached test results
 .PHONY: clean

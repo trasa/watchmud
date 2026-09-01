@@ -1,15 +1,13 @@
-# An example Configuration file for starting the WatchMUD server
+# An example Configuration file for starting the WatchMUD server locally
 ---
-# directory where the worldfiles can be found.
-# doesn't necessarily have to be directory where server.yaml is located.
-
-worldFilesDir: "./worldfiles"
 
 # where the log is written to
 log:
   file: ./bin/watchmud-server.log
   level: debug
 
+# Content Configuration
+contentPath: ./content
 
 # GRPC listener
 serverPort: 10000

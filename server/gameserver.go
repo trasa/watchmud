@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -11,41 +12,41 @@ import (
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/playergenerator"
-	"github.com/trasa/watchmud/serverconfig"
+	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/world"
 )
 
 type GameServer struct {
 	incomingBuffer chan *gameserver.HandlerParameter
-	World          *world.World
+	world          *world.World
 	tickInterval   time.Duration
 }
 
-func NewGameServer(cfg serverconfig.Config) (gs *GameServer, err error) {
-	w, err := world.New(cfg)
-	gs = &GameServer{
+func New(w *world.World) *GameServer {
+	return &GameServer{
 		incomingBuffer: make(chan *gameserver.HandlerParameter),
-		World:          w,
+		world:          w,
 	}
-	return
 }
 
-// noinspection SpellCheckingInspection
-func (gs *GameServer) Run() {
-	// this is the loop that handles incoming requests
-	// needs to be organized around PULSEs
-	tstart := time.Now().UnixNano()
-	ticker := time.NewTicker(mudtime.PULSE_INTERVAL)
-	pulse := mudtime.PulseCount(0)
+func (gs *GameServer) Run(ctx context.Context) error {
+	ticker := time.NewTicker(mudtime.PulseInterval)
+	defer ticker.Stop()
+
+	last := time.Now()
+	var pulse mudtime.PulseCount
 
 	for {
 		select {
+		case <-ctx.Done():
+			return ctx.Err()
+
 		case <-ticker.C:
-			now := time.Now().UnixNano()
-			deltaSeconds := float64(now-tstart) / 1000000000
-			tstart = now
+			now := time.Now()
+			delta := now.Sub(last)
+			last = now
 			pulse++
-			gs.heartbeat(pulse, deltaSeconds)
+			gs.heartbeat(pulse, delta)
 		}
 	}
 }
@@ -53,26 +54,26 @@ func (gs *GameServer) Run() {
 // runs the heartbeat of the game. Use pulse to determine intervals
 // between things (ex. reset zones every 15 minutes...)
 // delta is the amount of time since the last heartbeat was run.
-func (gs *GameServer) heartbeat(pulse mudtime.PulseCount, delta float64) {
+func (gs *GameServer) heartbeat(pulse mudtime.PulseCount, delta time.Duration) {
 	//log.Printf("pulse %d hb %d", pulse, delta)
 	// mobs, scripts, ...
 
 	// pulse zone
 	// (zone reset ...)
-	if pulse.CheckInterval(mudtime.PULSE_ZONE) {
-		gs.World.DoZoneActivity()
+	if pulse.CheckInterval(mudtime.PulseZone) {
+		gs.world.DoZoneActivity()
 	}
 
 	// pulse mobs
 	// (mobs walk around, initiate attack?)
-	if pulse.CheckInterval(mudtime.PULSE_MOBILE) {
-		gs.World.DoMobileActivity()
+	if pulse.CheckInterval(mudtime.PulseMobile) {
+		gs.world.DoMobileActivity()
 	}
 
 	// perform violence
 	// do the attacking (players and mobs and everybody)
-	if pulse.CheckInterval(mudtime.PULSE_VIOLENCE) {
-		gs.World.DoViolence(pulse)
+	if pulse.CheckInterval(mudtime.PulseViolence) {
+		gs.world.DoViolence(pulse)
 	}
 
 	// mud-hour ("player tick")
@@ -119,7 +120,7 @@ func (gs *GameServer) processIncomingMessage() bool {
 			}
 
 		default:
-			gs.World.HandleIncomingMessage(msg)
+			gs.world.HandleIncomingMessage(msg)
 		}
 	default:
 		// do nothing
@@ -191,7 +192,7 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) 
 	// load inventory: have to convert PlayerInventoryData into
 	// instances and definitions here, because we need 'the world' to do it.
 	for _, inv := range playerData.Inventory {
-		inst, err := gs.World.CreateObjectInstance(inv.ZoneId, inv.DefinitionId, inv.InstanceId)
+		inst, err := gs.world.CreateObjectInstance(inv.ZoneId, inv.DefinitionId, inv.InstanceId)
 		if err != nil {
 			log.Error().Err(err).Msgf("Error trying to load player %d (%s) inventory instance (%s-%s-%s) -- %s", playerData.Id, playerName, inv.ZoneId, inv.DefinitionId, inv.InstanceId, err)
 			clientErr := msg.Client.Send(message.LoginResponse{
@@ -220,7 +221,7 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) 
 	msg.Player = player
 
 	// add player to world
-	gs.World.AddPlayer(player)
+	gs.world.AddPlayer(player)
 
 	err = player.Send(message.LoginResponse{
 		Success:    true,
@@ -242,32 +243,47 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) (err 
 	req := msg.Message.GetCreatePlayerRequest()
 	playerName := req.PlayerName
 
-	race, err := db.GetSingleRaceData(req.Race)
-	if err != nil {
-		log.Error().Err(err).Msgf("Error trying to get race info (%d) for create player: %s", req.Race, playerName)
-		clientErr := msg.Client.Send(message.CreatePlayerResponse{
-			Success:    false,
-			ResultCode: "RACE_DB_ERROR",
-		})
-		if clientErr != nil {
-			log.Error().Err(clientErr).Msg("Client error trying to send RACE DB message")
+	// TODO replace with catalog (and rework all this)
+	/*
+		race, err := db.GetSingleRaceData(req.Race)
+		if err != nil {
+			log.Error().Err(err).Msgf("Error trying to get race info (%d) for create player: %s", req.Race, playerName)
+			clientErr := msg.Client.Send(message.CreatePlayerResponse{
+				Success:    false,
+				ResultCode: "RACE_DB_ERROR",
+			})
+			if clientErr != nil {
+				log.Error().Err(clientErr).Msg("Client error trying to send RACE DB message")
+			}
 		}
-	}
 
-	class, err := db.GetSingleClassData(req.Class)
-	if err != nil {
-		log.Error().Err(err).Msgf("Error trying to get class info (%d) for create player: %s", req.Class, playerName)
-		clientErr := msg.Client.Send(message.CreatePlayerResponse{
-			Success:    false,
-			ResultCode: "CLASS_DB_ERROR",
-		})
-		if clientErr != nil {
-			log.Error().Err(clientErr).Msg("Client error trying to send CLASS DB message")
+		class, err := db.GetSingleClassData(req.Class)
+		if err != nil {
+			log.Error().Err(err).Msgf("Error trying to get class info (%d) for create player: %s", req.Class, playerName)
+			clientErr := msg.Client.Send(message.CreatePlayerResponse{
+				Success:    false,
+				ResultCode: "CLASS_DB_ERROR",
+			})
+			if clientErr != nil {
+				log.Error().Err(clientErr).Msg("Client error trying to send CLASS DB message")
+			}
 		}
+	*/
+	lineage := rules.Lineage{
+		Id:         "PLACEHOLDER",
+		Name:       "PLACEHOLDER",
+		OwnBonuses: rules.Abilities{},
+		Species: &rules.Species{
+			Id:         "PLACEHOLDER",
+			Name:       "PLACEHOLDER",
+			OwnBonuses: rules.Abilities{},
+		},
 	}
+	// TODO fixme
+	class := rules.Class{}
+	playerPrototype := playergenerator.GeneratePlayerPrototype(lineage, class)
 
-	playerPrototype := playergenerator.GeneratePlayerPrototype(race, class)
-	playerData, err := db.CreatePlayerData(playerName, req.Race, req.Class, gs.World.StartRoom.Zone.Id, gs.World.StartRoom.Id, playerPrototype.InitialAbilities)
+	playerData, err := db.CreatePlayerData(playerName, req.Race, req.Class, gs.world.StartRoom.Zone.Id, gs.world.StartRoom.Id, playerPrototype.InitialAbilities)
 	if err != nil {
 		log.Error().Err(err).Msgf("Error trying to create player for %s", playerName)
 		clientErr := msg.Client.Send(message.CreatePlayerResponse{
@@ -283,7 +299,7 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) (err 
 	msg.Client.SetPlayer(p)
 	msg.Player = p
 
-	gs.World.AddPlayer(p) // TODO destination
+	gs.world.AddPlayer(p) // TODO destination
 	err = p.Send(message.CreatePlayerResponse{
 		Success:    true,
 		ResultCode: "OK",
@@ -299,34 +315,39 @@ func (gs *GameServer) handleDataRequest(msg *gameserver.HandlerParameter) (err e
 		ResultCode: "OK",
 	}
 	resp.DataType = append(resp.DataType, "races")
-	// get from db
-	racejson, err := db.GetRaceDataJson()
-	if err != nil {
-		log.Error().Err(err).Msg("GetRaceDataJson failed")
-		if clientErr := msg.Client.Send(message.DataResponse{
-			Success:    false,
-			ResultCode: "DATA_ERROR",
-		}); clientErr != nil {
-			log.Error().Err(clientErr).Msg("handleDataRequest failed to send DB_ERROR for 'races' request")
+	// TODO replace all this (or remove it)
+	/*
+		// get from db
+		racejson, err := db.GetRaceDataJson()
+		if err != nil {
+			log.Error().Err(err).Msg("GetRaceDataJson failed")
+			if clientErr := msg.Client.Send(message.DataResponse{
+				Success:    false,
+				ResultCode: "DATA_ERROR",
+			}); clientErr != nil {
+				log.Error().Err(clientErr).Msg("handleDataRequest failed to send DB_ERROR for 'races' request")
+			}
+			return
 		}
-		return
-	}
-	resp.Data = append(resp.Data, racejson)
+		resp.Data = append(resp.Data, racejson)
+	*/
 
-	resp.DataType = append(resp.DataType, "classes")
-	classjson, err := db.GetClassDataJson()
-	if err != nil {
-		log.Error().Err(err).Msg("GetClassDataJson failed")
-		if clientErr := msg.Client.Send(message.DataResponse{
-			Success:    false,
-			ResultCode: "DATA_ERROR",
-		}); clientErr != nil {
-			log.Error().Err(clientErr).Msg("handleDataRequest failed to send DB_ERROR for 'classes' request")
+	// TODO replace all this
+	/*
+		resp.DataType = append(resp.DataType, "classes")
+		classjson, err := db.GetClassDataJson()
+		if err != nil {
+			log.Error().Err(err).Msg("GetClassDataJson failed")
+			if clientErr := msg.Client.Send(message.DataResponse{
+				Success:    false,
+				ResultCode: "DATA_ERROR",
+			}); clientErr != nil {
+				log.Error().Err(clientErr).Msg("handleDataRequest failed to send DB_ERROR for 'classes' request")
+			}
+			return
 		}
-		return
-	}
-	resp.Data = append(resp.Data, classjson)
-
+		resp.Data = append(resp.Data, classjson)
+	*/
 	if err = msg.Client.Send(resp); err != nil {
 		log.Error().Err(err).Msg("handleDataRequest failed to send race data")
 	}

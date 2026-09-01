@@ -1,0 +1,22 @@
+[
+  {
+    "id": "fighter",
+    "name": "Fighter",
+    "ability_preference": ["str", "dex", "con"]
+  },
+  {
+    "id": "cleric",
+    "name": "Cleric",
+    "ability_preference": ["wis", "con", "cha"]
+  },
+  {
+    "id": "rogue",
+    "name": "Rogue",
+    "ability_preference": ["dex", "str", "con"]
+  },
+  {
+    "id": "wizard",
+    "name": "Wizard",
+    "ability_preference": ["int", "wis", "con"]
+  }
+]

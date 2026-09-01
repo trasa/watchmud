@@ -1,9 +1,10 @@
 package mudtime
 
 import (
-	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type PulseCountSuite struct {
@@ -28,24 +29,24 @@ func (suite *PulseCountSuite) TestPulseCount_toDuration() {
 	// one pulse = PULSE_INTERVAL
 	pulse = 1
 	duration = pulse.ToDuration()
-	suite.Assert().Equal(PULSE_INTERVAL, duration)
+	suite.Assert().Equal(PulseInterval, duration)
 }
 
 func (suite *PulseCountSuite) TestPulseCount_checkInterval() {
 	var pulse PulseCount
 	pulse = 100
 
-	suite.Assert().False(pulse.CheckInterval(PULSE_INTERVAL * 99))
-	suite.Assert().True(pulse.CheckInterval(PULSE_INTERVAL * 100))
-	suite.Assert().False(pulse.CheckInterval(PULSE_INTERVAL * 101))
+	suite.Assert().False(pulse.CheckInterval(PulseInterval * 99))
+	suite.Assert().True(pulse.CheckInterval(PulseInterval * 100))
+	suite.Assert().False(pulse.CheckInterval(PulseInterval * 101))
 }
 
 func (suite *PulseCountSuite) TestDurationToPulseCount() {
-	p := PulseCount(int64(1/PULSE_INTERVAL.Hours()) * 10)
+	p := PulseCount(int64(1/PulseInterval.Hours()) * 10)
 
 	suite.Assert().Equal(p, TimeDurationToPulseCount(time.Hour*10))
 	suite.Assert().Equal(PulseCount(0), TimeDurationToPulseCount(0))
-	suite.Assert().Equal(PulseCount(1), TimeDurationToPulseCount(PULSE_INTERVAL))
+	suite.Assert().Equal(PulseCount(1), TimeDurationToPulseCount(PulseInterval))
 }
 
 func (suite *PulseCountSuite) TestPulseDurations() {

@@ -1,29 +1,34 @@
 package world
 
 import (
+	"log"
+
 	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/combat"
+	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/spaces"
 	"github.com/trasa/watchmud/zonereset"
-	"log"
 )
 
 // create a new test world
 func newTestWorld() (*World, error) {
 
+	content := loader.Content{
+		Zones: map[string]*spaces.Zone{},
+	}
 	testZone := spaces.NewZone("sample", "Sample Zone", zonereset.NEVER, 0)
+	content.Zones[testZone.Id] = testZone
 
 	w := &World{
-		zones:       make(map[string]*spaces.Zone),
+		content:     &content,
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
 		fightLedger: combat.NewFightLedger(),
 	}
 	w.initializeHandlerMap()
-	w.zones[testZone.Id] = testZone
 
 	testRoom := spaces.NewRoom(testZone, "start", "Test Room", "this is a test room.")
 	testZone.Rooms[testRoom.Id] = testRoom

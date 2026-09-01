@@ -35,7 +35,7 @@ func (w *World) handleLoad(msg *gameserver.HandlerParameter) {
 
 func (w *World) handleLoadCreateMob(msg *gameserver.HandlerParameter, request *message.LoadRequest, targetRoom *spaces.Room) {
 	// get the zone we're looking for a mob in
-	z := w.GetZone(request.Zone)
+	z := w.Zone(request.Zone)
 	if z == nil {
 		_ = msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ZONE"})
 		return
@@ -62,7 +62,7 @@ func (w *World) handleLoadCreateMob(msg *gameserver.HandlerParameter, request *m
 
 func (w *World) handleLoadCreateObject(msg *gameserver.HandlerParameter, request *message.LoadRequest, targetRoom *spaces.Room) {
 	// get the zone we're looking for an instance in
-	z := w.GetZone(request.Zone)
+	z := w.Zone(request.Zone)
 	if z == nil {
 		_ = msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ZONE"})
 		return

@@ -1,25 +1,29 @@
 package world
 
 import (
+	"errors"
+	"fmt"
+	"iter"
 	"log"
+	"maps"
+	"slices"
 
 	"github.com/google/uuid"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/gameserver"
+	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/serverconfig"
 	"github.com/trasa/watchmud/spaces"
 )
 
 // noinspection GoNameStartsWithPackageName
 type World struct {
-	settings  map[string]string
-	zones     map[string]*spaces.Zone
 	StartRoom *spaces.Room
 	VoidRoom  *spaces.Room
+	content   *loader.Content
 
 	// TODO merge playerList and playerRooms similar to MobileRoomMap merges mobList and mobRooms
 	playerList  *player.List   // list of players
@@ -31,26 +35,44 @@ type World struct {
 	fightLedger *combat.FightLedger
 }
 
-// Constructor for World
-func New(cfg serverconfig.Config) (w *World, err error) {
-	// Build a very boring world.
+// New creates a brand-new World based on this content
+func New(content *loader.Content) (w *World, err error) {
 	w = &World{
-		zones:       make(map[string]*spaces.Zone),
+		content:     content,
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
 		mobileRooms: spaces.NewMobileRoomMap(),
 		fightLedger: combat.NewFightLedger(),
 	}
 	w.initializeHandlerMap()
-	err = w.initialLoad(cfg)
-	log.Print("World built.")
-	if err != nil {
-		log.Printf("world.New: There were errors: %v", err)
+	if err := w.initialLoad(); err != nil {
+		return nil, fmt.Errorf("building world: %w", err)
 	}
-	return
+	log.Print("World built.")
+	return w, nil
 }
 
-// Add Player(s) to the world putting them in the correct room they were
+func (w *World) initialLoad() (err error) {
+	content := w.content
+	if w.StartRoom, err = content.Room(content.Settings.StartZone, content.Settings.StartRoom); err != nil {
+		return fmt.Errorf("start room: %w", err)
+	}
+	if w.VoidRoom, err = content.Room(content.Settings.VoidZone, content.Settings.VoidRoom); err != nil {
+		return fmt.Errorf("void room: %w", err)
+	}
+
+	// Process the zone commands that say which
+	// mob and object instances to create and where. Distinct from building the
+	// world, since this recurs throughout runtime.
+	for _, zoneId := range slices.Sorted(maps.Keys(content.Zones)) {
+		if errs := content.Zones[zoneId].Reset(w.mobileRooms); len(errs) > 0 {
+			return fmt.Errorf("initial reset of zone %s: %w", zoneId, errors.Join(errs...))
+		}
+	}
+	return nil
+}
+
+// AddPlayer or players to the world putting them in the correct room they were
 // in last time, or the start room if we can't figure that out.
 // Don't send room notifications.
 func (w *World) AddPlayer(players ...player.Player) {
@@ -118,10 +140,9 @@ func (w *World) getRoomContainingMobile(mob *mobile.Instance) *spaces.Room {
 	return w.mobileRooms.GetRoomForMobile(mob)
 }
 
-// find room by zone id and room id.
-// return nil if not found
+// Find room by zone id and room id.
 func (w *World) findRoomById(zoneId string, roomId string) (*spaces.Room, bool) {
-	if z, zoneExists := w.zones[zoneId]; zoneExists {
+	if z, zoneExists := w.content.Zones[zoneId]; zoneExists {
 		if r, roomExists := z.Rooms[roomId]; roomExists {
 			return r, true
 		}
@@ -147,7 +168,6 @@ func (w *World) SendToAllPlayers(message interface{}) {
 	})
 }
 
-// Send a message to all players in the world except for one.
 func (w *World) SendToAllPlayersExcept(exception player.Player, message interface{}) {
 	w.playerList.Iter(func(p player.Player) {
 		if exception != p {
@@ -156,13 +176,16 @@ func (w *World) SendToAllPlayersExcept(exception player.Player, message interfac
 	})
 }
 
-func (w *World) GetZone(zoneId string) *spaces.Zone {
-	return w.zones[zoneId]
+func (w *World) Zones() iter.Seq[*spaces.Zone] {
+	return maps.Values(w.content.Zones)
+}
+func (w *World) Zone(zoneId string) *spaces.Zone {
+	return w.content.Zones[zoneId]
 }
 
-// Create an object.Instance for this zone, definition, and instance ID
+// CreateObjectInstance builds a new object.Instance for the zoneId, definitionId, and instanceId.
 func (w *World) CreateObjectInstance(zoneId string, definitionId string, instanceId uuid.UUID) (*object.Instance, error) {
-	z := w.GetZone(zoneId)
-	defn := z.ObjectDefinitions[definitionId]
-	return object.NewExistingInstance(instanceId, defn)
+	z := w.Zone(zoneId)
+	d := z.ObjectDefinitions[definitionId]
+	return object.NewExistingInstance(instanceId, d)
 }

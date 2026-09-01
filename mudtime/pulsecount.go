@@ -3,17 +3,17 @@ package mudtime
 import "time"
 
 // Game Server ticks every PULSE_INTERVAL time
-//const PULSE_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
-const PULSE_INTERVAL time.Duration = 1 * time.Second // 1 second
+// const PULSE_INTERVAL time.Duration = 100 * time.Millisecond // 0.1 seconds
+const PulseInterval time.Duration = 1 * time.Second // 1 second
 
 // Mobs consider doing something once every PULSE_MOBILE time
-const PULSE_MOBILE = 10 * time.Second
+const PulseMobile = 10 * time.Second
 
 // battle happens on this interval
-const PULSE_VIOLENCE = 1 * time.Second
+const PulseViolence = 1 * time.Second
 
 // zones reset based on their lifetime, check every pulse_zone (lifetime > pulse_zone)
-const PULSE_ZONE = 1 * time.Minute
+const PulseZone = 1 * time.Minute
 
 // Max value for an int64 is math.MaxInt64 == 9223372036854775807
 // If PULSE_INTERVAL is 1 nanosecond, the PULSE rollover won't happen
@@ -24,7 +24,7 @@ type PulseCount int64
 const PulseCountNever = PulseCount(0)
 
 func (pc PulseCount) ToDuration() time.Duration {
-	return time.Duration(int64(pc) * PULSE_INTERVAL.Nanoseconds())
+	return time.Duration(int64(pc) * PulseInterval.Nanoseconds())
 }
 
 func (pc PulseCount) CheckInterval(i time.Duration) bool {
@@ -33,7 +33,7 @@ func (pc PulseCount) CheckInterval(i time.Duration) bool {
 
 // Determines how many Pulses would happen in time.Duration i
 func TimeDurationToPulseCount(i time.Duration) PulseCount {
-	return PulseCount(i / PULSE_INTERVAL)
+	return PulseCount(i / PulseInterval)
 }
 
 func DurationBetween(start PulseCount, end PulseCount) time.Duration {

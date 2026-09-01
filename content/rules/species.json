@@ -1,0 +1,90 @@
+[
+  {
+    "id": "human",
+    "name": "Human",
+    "bonuses": {
+      "str": 1,
+      "dex": 1,
+      "con": 1,
+      "int": 1,
+      "wis": 1,
+      "cha": 1
+    },
+    "lineages": [
+      {
+        "id": "human",
+        "name": "Human",
+        "bonuses": {}
+      }
+    ]
+  },
+  {
+    "id": "dwarf",
+    "name": "Dwarf",
+    "bonuses": {},
+    "lineages": [
+      {
+        "id": "hill_dwarf",
+        "name": "Hill Dwarf",
+        "bonuses": {
+          "con": 2,
+          "wis": 1
+        }
+      },
+      {
+        "id": "mountain_dwarf",
+        "name": "Mountain Dwarf",
+        "bonuses": {
+          "str": 2,
+          "con": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "elf",
+    "name": "Elf",
+    "bonuses": {
+      "dex": 2
+    },
+    "lineages": [
+      {
+        "id": "high_elf",
+        "name": "High Elf",
+        "bonuses": {
+          "int": 1
+        }
+      },
+      {
+        "id": "wood_elf",
+        "name": "Wood Elf",
+        "bonuses": {
+          "wis": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "halfling",
+    "name": "Halfling",
+    "bonuses": {
+      "dex": 2
+    },
+    "lineages": [
+      {
+        "id": "lightfoot_halfling",
+        "name": "Lightfoot Halfling",
+        "bonuses": {
+          "cha": 1
+        }
+      },
+      {
+        "id": "stout_halfling",
+        "name": "Stout Halfling",
+        "bonuses": {
+          "con": 1
+        }
+      }
+    ]
+  }
+]
