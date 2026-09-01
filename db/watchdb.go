@@ -4,6 +4,11 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+	"io/ioutil"
+	"net"
+	"os"
+	"time"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	_ "github.com/lib/pq"
@@ -11,10 +16,6 @@ import (
 	"github.com/trasa/watchmud/serverconfig"
 	"golang.org/x/crypto/ssh"
 	. "golang.org/x/crypto/ssh/agent"
-	"io/ioutil"
-	"net"
-	"os"
-	"time"
 )
 
 var watchdb *sqlx.DB
@@ -35,7 +36,7 @@ func (self *ViaSSHDialer) DialTimeout(network, address string, timeout time.Dura
 	return self.client.Dial(network, address)
 }
 
-func Init(config *serverconfig.Config) error {
+func Init(config serverconfig.Config) error {
 	if config.DB.UseSSH {
 		if err := initDBOverSSH(config); err != nil {
 			return err
@@ -51,7 +52,7 @@ func Init(config *serverconfig.Config) error {
 	return nil
 }
 
-func initDBDirectly(config *serverconfig.Config) error {
+func initDBDirectly(config serverconfig.Config) error {
 
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		config.DB.User,
@@ -67,7 +68,7 @@ func initDBDirectly(config *serverconfig.Config) error {
 	return nil
 }
 
-func initDBOverSSH(config *serverconfig.Config) error {
+func initDBOverSSH(config serverconfig.Config) error {
 	sshConfig, err := buildSSHConfig(config)
 	if err != nil {
 		log.Error().
@@ -111,7 +112,7 @@ func testConnection() error {
 	return nil
 }
 
-func buildSSHConfig(config *serverconfig.Config) (*ssh.ClientConfig, error) {
+func buildSSHConfig(config serverconfig.Config) (*ssh.ClientConfig, error) {
 	var agentClient Agent
 	// Establish a connection to the local ssh-agent
 	if conn, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {

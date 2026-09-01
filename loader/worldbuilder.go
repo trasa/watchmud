@@ -2,7 +2,12 @@ package loader
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
+	"io/fs"
+	"maps"
+	"path"
+	"slices"
+	"time"
+
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/behavior"
@@ -10,115 +15,120 @@ import (
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/spaces"
 	"github.com/trasa/watchmud/zonereset"
-	"path/filepath"
-	"time"
 )
 
 type WorldBuilder struct {
-	Zones         map[string]*spaces.Zone
-	Settings      *SettingsFile
-	worldFilesDir string
+	Zones    map[string]*spaces.Zone
+	Settings *SettingsFile
 }
 
-// Build the world, using the files found under the worldFilesDirectory
-func BuildWorld(worldFilesDirectory string) (*WorldBuilder, error) {
-	worldBuilder := &WorldBuilder{
-		Zones:         make(map[string]*spaces.Zone),
-		worldFilesDir: worldFilesDirectory,
+func NewWorldBuilder() *WorldBuilder {
+	return &WorldBuilder{
+		Zones: make(map[string]*spaces.Zone),
 	}
-
-	if err := worldBuilder.loadSettings(); err != nil {
-		return nil, err
-	}
-
-	if err := worldBuilder.loadZoneManifest(); err != nil {
-		return nil, err
-	}
-
-	if err := worldBuilder.loadRooms(); err != nil {
-		return nil, err
-	}
-
-	if err := worldBuilder.loadObjectDefinitions(); err != nil {
-		return nil, err
-	}
-
-	if err := worldBuilder.loadMobileDefinitions(); err != nil {
-		return nil, err
-	}
-
-	if err := worldBuilder.loadZoneInstructions(); err != nil {
-		return nil, err
-	}
-
-	return worldBuilder, nil
 }
 
-func (wb *WorldBuilder) loadSettings() error {
-	settings, err := readSettingsFile(filepath.Join(wb.worldFilesDir, "settings.json"))
-	if err != nil {
+// Load reads a complete world definition from fsys, whose root is the
+// world files directory (os.DirFS("worldfiles")).
+//
+// Steps are ordered and each depends on the previous: zones must exist
+// before rooms can be added to them, rooms must exist before exits can
+// be resolved.
+func (wb *WorldBuilder) Load(fsys fs.FS) error {
+
+	if err := loadInto(&wb.Settings, fsys, "settings.json"); err != nil {
 		return err
 	}
-	wb.Settings = settings
+	if err := wb.loadZoneManifest(fsys); err != nil {
+		return err
+	}
+	if err := wb.loadRooms(fsys); err != nil {
+		return err
+	}
+	if err := wb.loadObjectDefinitions(fsys); err != nil {
+		return err
+	}
+	if err := wb.loadMobileDefinitions(fsys); err != nil {
+		return err
+	}
+	if err := wb.loadZoneInstructions(fsys); err != nil {
+		return err
+	}
 	return nil
 }
 
-// Retrieve the zone manifest; prepare the zone objects to be
-// populated by rooms, objects, mobiles (but don't process the
-// zone commands yet)
-func (wb *WorldBuilder) loadZoneManifest() error {
-
-	zonemanifests, err := readZoneManifest(filepath.Join(wb.worldFilesDir, "zone_manifest.json"))
+func loadInto[T any](dst *T, fsys fs.FS, name string) error {
+	v, err := readJSONFile[T](fsys, name)
 	if err != nil {
 		return err
 	}
-	for _, manifest := range zonemanifests {
-		if manifest.Enabled {
-			z := spaces.NewZone(manifest.Id, manifest.Name, zonereset.Mode(manifest.ResetMode), time.Minute*time.Duration(manifest.LifetimeMinutes))
-			wb.addZone(z)
+	*dst = v
+	return nil
+}
+
+// Retrieve the zone manifest; prepare the zone objects to be populated by
+// rooms, objects, mobiles (but don't process the zone commands yet).
+func (wb *WorldBuilder) loadZoneManifest(fsys fs.FS) error {
+	manifests, err := readJSONFile[[]zoneManifestEntry](fsys, "zone_manifest.json")
+	if err != nil {
+		return err
+	}
+	for _, m := range manifests {
+		if !m.Enabled {
+			continue
 		}
+		wb.addZone(spaces.NewZone(
+			m.Id,
+			m.Name,
+			zonereset.Mode(m.ResetMode),
+			time.Duration(m.LifetimeMinutes)*time.Minute,
+		))
 	}
 	return nil
 }
 
 // Read all the room files from all the zones
-func (wb *WorldBuilder) loadRooms() error {
+func (wb *WorldBuilder) loadRooms(fsys fs.FS) error {
 
-	// have to create all the room objects before we can
-	// create all the connections - so must store the
-	// information for later
-	roomMap := make(map[string][]roomFileEntry)
-
+	// every room object has to exist before any exit can be connected, so
+	// the parsed entries are held until the second pass.
+	roomsByZone := make(map[string][]roomFileEntry, len(wb.Zones))
 	for _, zonename := range wb.zoneNames() {
-		fileEntries, err := readRoomFile(filepath.Join(wb.worldFilesDir, zonename, "rooms.json"))
+		entries, err := readJSONFile[[]roomFileEntry](fsys, path.Join(zonename, "rooms.json"))
 		if err != nil {
 			return err
 		}
-		roomMap[zonename] = fileEntries
-		for _, roomEntry := range fileEntries {
-			r := spaces.NewRoom(wb.Zones[zonename], roomEntry.Id, roomEntry.Name, roomEntry.Description)
-			r.SetFlags(roomEntry.Flags)
-			wb.Zones[zonename].AddRoom(r)
-			// If the direction zone/room doesn't indicate the zone,
-			// assume that the direction is to a zoome in the current zone
-			for _, exitInfo := range roomEntry.Exits {
-				if exitInfo.DestinationZoneId == "" {
-					exitInfo.DestinationZoneId = zonename
+		zone := wb.Zones[zonename]
+
+		for i := range entries {
+			entry := &entries[i]
+
+			r := spaces.NewRoom(zone, entry.Id, entry.Name, entry.Description)
+			r.SetFlags(entry.Flags)
+			zone.AddRoom(r)
+
+			// an exit that doesn't name a zone is assumed to stay in this one.
+			// Index rather than range-by-value so the write actually sticks.
+			for j := range entry.Exits {
+				if entry.Exits[j].DestinationZoneId == "" {
+					entry.Exits[j].DestinationZoneId = zonename
 				}
 			}
 		}
+		roomsByZone[zonename] = entries
 	}
 
-	// all the rooms are created, now can loop over and create
-	// all the connections
-	for zonename, roomEntries := range roomMap {
-		for _, roomEntry := range roomEntries {
-			for _, exitInfo := range roomEntry.Exits {
-				if err := wb.connectRooms(zonename,
-					roomEntry.Id,
-					direction.Direction(exitInfo.Direction),
-					exitInfo.DestinationZoneId,
-					exitInfo.DestinationRoomId); err != nil {
+	// All rooms exist now, so exits can be resolved
+	for _, zonename := range slices.Sorted(maps.Keys(roomsByZone)) {
+		for _, entry := range roomsByZone[zonename] {
+			for _, exit := range entry.Exits {
+				if err := wb.connectRooms(
+					zonename,
+					entry.Id,
+					direction.Direction(exit.Direction),
+					exit.DestinationZoneId,
+					exit.DestinationRoomId,
+				); err != nil {
 					return err
 				}
 			}
@@ -130,19 +140,21 @@ func (wb *WorldBuilder) loadRooms() error {
 func (wb *WorldBuilder) connectRooms(sourceZoneId string, sourceRoomId string, dir direction.Direction, destZoneId string, destRoomId string) error {
 	sourceZone := wb.Zones[sourceZoneId]
 	if sourceZone == nil {
-		return errors.New(fmt.Sprintf("connectRooms failed: sourceZoneId '%s' not found", sourceZoneId))
+		return fmt.Errorf("connect rooms: source zone %q not found", sourceZoneId)
 	}
 	destZone := wb.Zones[destZoneId]
 	if destZone == nil {
-		return errors.New(fmt.Sprintf("connectRooms failed: destZoneId '%s' not found", destZoneId))
+		return fmt.Errorf("connect rooms: destination zone %q not found (from %s/%s going %s)",
+			destZoneId, sourceZoneId, sourceRoomId, dir)
 	}
 	sourceRoom := sourceZone.Rooms[sourceRoomId]
 	if sourceRoom == nil {
-		return errors.New(fmt.Sprintf("connectRooms failed: zone %s sourceRoomId '%s' not found", sourceZoneId, sourceRoomId))
+		return fmt.Errorf("connect rooms: source room %q not found in zone %q", sourceRoomId, sourceZoneId)
 	}
 	destRoom := destZone.Rooms[destRoomId]
 	if destRoom == nil {
-		return errors.New(fmt.Sprintf("ConnectRooms failed: zone %s destRoomId '%s' not found", destZoneId, destRoomId))
+		return fmt.Errorf("connect rooms: destination room %q not found in zone %q (from %s/%s going %s)",
+			destRoomId, destZoneId, sourceZoneId, sourceRoomId, dir)
 	}
 	sourceRoom.Set(dir, destRoom)
 	return nil
@@ -152,48 +164,47 @@ func (wb *WorldBuilder) addZone(z *spaces.Zone) {
 	wb.Zones[z.Id] = z
 }
 
+// zoneNames returns the loaded zone names in a stable order, so that load
+// order and error messages are reproducible run to run.
 func (wb *WorldBuilder) zoneNames() (result []string) {
-	for k := range wb.Zones {
-		result = append(result, k)
-	}
-	return
+	return slices.Sorted(maps.Keys(wb.Zones))
 }
 
-func (wb *WorldBuilder) loadObjectDefinitions() error {
-
+func (wb *WorldBuilder) loadObjectDefinitions(fsys fs.FS) error {
 	// for each zone: create all object definitions
 	for _, zonename := range wb.zoneNames() {
-		objEntries, err := readObjectFile(filepath.Join(wb.worldFilesDir, zonename, "objects.json"))
+		objEntries, err := readJSONFile[[]objectFileEntry](fsys, path.Join(zonename, "objects.json"))
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to read objects.json for %s", zonename))
+			return err
 		}
 		for _, obj := range objEntries {
-			// translate category string to category int
 			cat, err := object.StringToCategory(obj.Category)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("can't convert category for %s: %s", zonename, obj.Id))
+				return fmt.Errorf("object %s/%s: bad category: %w", zonename, obj.Id, err)
 			}
 
 			wearLoc, err := slot.StringToLocation(obj.WearLocation)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("can't convert wear location for %s: %s", zonename, obj.Id))
+				return fmt.Errorf("object %s/%s: bad wear location: %w", zonename, obj.Id, err)
 			}
 
-			d := object.NewDefinition(obj.Id,
+			d := object.NewDefinition(
+				obj.Id,
 				obj.Name,
 				zonename,
 				cat,
 				obj.Aliases,
 				obj.ShortDescription,
 				obj.DescriptionOnGround,
-				wearLoc)
+				wearLoc,
+			)
 
 			for _, bstr := range obj.Behaviors {
-				if b, err := behavior.StringToBehavior(bstr); err != nil {
-					return errors.Wrap(err, fmt.Sprintf("can't convert behavior for %s: %s", zonename, obj.Id))
-				} else {
-					d.Behaviors.Add(b)
+				b, err := behavior.StringToBehavior(bstr)
+				if err != nil {
+					return fmt.Errorf("object %s/%s: bad behavior %q: %w", zonename, obj.Id, bstr, err)
 				}
+				d.Behaviors.Add(b)
 			}
 
 			wb.Zones[zonename].AddObjectDefinition(d)
@@ -202,15 +213,15 @@ func (wb *WorldBuilder) loadObjectDefinitions() error {
 	return nil
 }
 
-func (wb *WorldBuilder) loadMobileDefinitions() error {
-
+func (wb *WorldBuilder) loadMobileDefinitions(fsys fs.FS) error {
 	for _, zonename := range wb.zoneNames() {
-		mobEntries, err := readMobFile(filepath.Join(wb.worldFilesDir, zonename, "mobs.json"))
+		mobEntries, err := readJSONFile[[]mobFileEntry](fsys, path.Join(zonename, "mobs.json"))
 		if err != nil {
 			return err
 		}
 		for _, mob := range mobEntries {
-			defn := mobile.NewDefinition(mob.Id,
+			defn := mobile.NewDefinition(
+				mob.Id,
 				mob.Name,
 				zonename,
 				mob.Aliases,
@@ -224,7 +235,8 @@ func (wb *WorldBuilder) loadMobileDefinitions() error {
 					Style:           mobile.WanderingStyle(mob.WanderingDefinition.WanderStyle),
 					Path:            mob.WanderingDefinition.Path,
 				},
-				mob.AC)
+				mob.AC,
+			)
 			defn.SetFlags(mob.Flags)
 			wb.Zones[zonename].AddMobileDefinition(defn)
 		}
@@ -232,29 +244,30 @@ func (wb *WorldBuilder) loadMobileDefinitions() error {
 	return nil
 }
 
-func (wb *WorldBuilder) loadZoneInstructions() error {
-
+func (wb *WorldBuilder) loadZoneInstructions(fsys fs.FS) error {
 	for _, zonename := range wb.zoneNames() {
-		insts, err := readInstructionFile(filepath.Join(wb.worldFilesDir, zonename, "instructions.json"))
+		// instruction files are optional
+		insts, err := readOptionalJSONFile[[]instructionFileEntry](fsys, path.Join(zonename, "instructions.json"))
 		if err != nil {
 			return err
 		}
+		zone := wb.Zones[zonename]
 		for _, entry := range insts {
 			switch entry.Type {
 			case "CreateObject":
-				wb.Zones[zonename].AddCommand(spaces.CreateObject{
+				zone.AddCommand(spaces.CreateObject{
 					ObjectDefinitionId: entry.ObjectId,
 					RoomId:             entry.RoomId,
 					InstanceMax:        entry.InstanceMax,
 				})
 			case "CreateMobile":
-				wb.Zones[zonename].AddCommand(spaces.CreateMobile{
+				zone.AddCommand(spaces.CreateMobile{
 					MobileDefinitionId: entry.MobileId,
 					RoomId:             entry.RoomId,
 					InstanceMax:        entry.InstanceMax,
 				})
 			default:
-				return errors.New(fmt.Sprintf("Unhandled Instruction type: %s", entry.Type))
+				return fmt.Errorf("zone %s: Unhandled Instruction type: %q", zonename, entry.Type)
 			}
 		}
 	}

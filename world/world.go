@@ -10,6 +10,7 @@ import (
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/serverconfig"
 	"github.com/trasa/watchmud/spaces"
 )
 
@@ -31,7 +32,7 @@ type World struct {
 }
 
 // Constructor for World
-func New(worldFilesDirectory string) (w *World, err error) {
+func New(cfg serverconfig.Config) (w *World, err error) {
 	// Build a very boring world.
 	w = &World{
 		zones:       make(map[string]*spaces.Zone),
@@ -41,7 +42,7 @@ func New(worldFilesDirectory string) (w *World, err error) {
 		fightLedger: combat.NewFightLedger(),
 	}
 	w.initializeHandlerMap()
-	err = w.initialLoad(worldFilesDirectory)
+	err = w.initialLoad(cfg)
 	log.Print("World built.")
 	if err != nil {
 		log.Printf("world.New: There were errors: %v", err)

@@ -6,17 +6,17 @@
     "flags": [ "nofight" ],
     "exits": [
       {
-        "direction": 1,
+        "direction": "north",
         "dest_zone": "sample",
         "dest_room": "northRoom"
       },
       {
-        "direction": 2,
+        "direction": "east",
         "dest_zone": "sample",
         "dest_room": "eastRoom"
       },
       {
-        "direction": 3,
+        "direction": "south",
         "dest_zone": "wrathrock",
         "dest_room": "temple_square"
       }
@@ -28,12 +28,12 @@
     "description": "This room is north of the start.",
     "exits": [
       {
-        "direction": 3,
+        "direction": "south",
         "dest_zone": "sample",
         "dest_room": "start"
       },
       {
-        "direction": 2,
+        "direction": "east",
         "dest_zone": "sample",
         "dest_room": "northeastRoom"
       }
@@ -45,12 +45,12 @@
     "description": "This room is north, and also east.",
     "exits": [
       {
-        "direction": 4,
+        "direction": "west",
         "dest_zone": "sample",
         "dest_room": "northRoom"
       },
       {
-        "direction": 3,
+        "direction": "south",
         "dest_zone": "sample",
         "dest_room": "eastRoom"
       }
@@ -62,12 +62,12 @@
     "description": "This room is east of the start.",
     "exits": [
       {
-        "direction": 4,
+        "direction": "west",
         "dest_zone": "sample",
         "dest_room": "start"
       },
       {
-        "direction": 1,
+        "direction": "north",
         "dest_zone": "sample",
         "dest_room": "northeastRoom"
       }

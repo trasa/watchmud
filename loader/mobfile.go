@@ -1,11 +1,6 @@
 package loader
 
-import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
-)
-
+// mob file might not exist, they are optional
 type mobFileEntry struct {
 	Id                  string         `json:"id"`
 	Name                string         `json:"name"`
@@ -24,21 +19,4 @@ type WanderingEntry struct {
 	CheckPercentage       int      `json:"check_percentage"`
 	WanderStyle           int      `json:"wander_style"`
 	Path                  []string `json:"path"`
-}
-
-func readMobFile(filename string) ([]mobFileEntry, error) {
-	var result []mobFileEntry
-	// mob file might not exist, thats ok
-	bytes, err := ioutil.ReadFile(filename)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return result, nil
-		} else {
-			return nil, err
-		}
-	}
-	if err = json.Unmarshal(bytes, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
 }

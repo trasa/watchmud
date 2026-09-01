@@ -1,11 +1,6 @@
 package loader
 
-import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
-)
-
+// object file is optional
 type objectFileEntry struct {
 	Id                  string   `json:"id"`
 	Name                string   `json:"name"`
@@ -15,21 +10,4 @@ type objectFileEntry struct {
 	DescriptionOnGround string   `json:"description_on_ground"`
 	WearLocation        string   `json:"wear_location"`
 	Behaviors           []string `json:"behaviors"`
-}
-
-func readObjectFile(filename string) ([]objectFileEntry, error) {
-	var result []objectFileEntry
-	// object file might not exist, and thats OK
-	bytes, err := ioutil.ReadFile(filename)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return result, nil
-		} else {
-			return nil, err
-		}
-	}
-	if err = json.Unmarshal(bytes, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
 }

@@ -1,13 +1,16 @@
 package world
 
 import (
-	"github.com/trasa/watchmud/loader"
 	"log"
+	"os"
+
+	"github.com/trasa/watchmud/loader"
+	"github.com/trasa/watchmud/serverconfig"
 )
 
-func (w *World) initialLoad(worldFilesDirectory string) (err error) {
-	wb, err := loader.BuildWorld(worldFilesDirectory)
-	if err != nil {
+func (w *World) initialLoad(cfg serverconfig.Config) (err error) {
+	wb := loader.NewWorldBuilder()
+	if err := wb.Load(os.DirFS(cfg.WorldFilesDir)); err != nil {
 		return err
 	}
 	w.zones = wb.Zones

@@ -1,6 +1,8 @@
 package server
 
 import (
+	"time"
+
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/slot"
@@ -9,8 +11,8 @@ import (
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/playergenerator"
+	"github.com/trasa/watchmud/serverconfig"
 	"github.com/trasa/watchmud/world"
-	"time"
 )
 
 type GameServer struct {
@@ -19,8 +21,8 @@ type GameServer struct {
 	tickInterval   time.Duration
 }
 
-func NewGameServer(worldFilesDirectory string) (gs *GameServer, err error) {
-	w, err := world.New(worldFilesDirectory)
+func NewGameServer(cfg serverconfig.Config) (gs *GameServer, err error) {
+	w, err := world.New(cfg)
 	gs = &GameServer{
 		incomingBuffer: make(chan *gameserver.HandlerParameter),
 		World:          w,
@@ -28,7 +30,7 @@ func NewGameServer(worldFilesDirectory string) (gs *GameServer, err error) {
 	return
 }
 
-//noinspection SpellCheckingInspection
+// noinspection SpellCheckingInspection
 func (gs *GameServer) Run() {
 	// this is the loop that handles incoming requests
 	// needs to be organized around PULSEs

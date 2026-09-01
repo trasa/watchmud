@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"io/fs"
 	"os"
 
 	"github.com/rs/zerolog"
@@ -37,10 +37,10 @@ func main() {
 		return
 	}
 
-	config, serverConfigErr := readServerConfig(*serverConfigFile)
+	config, serverConfigErr := readServerConfig(os.DirFS("."), *serverConfigFile)
 	if serverConfigErr != nil {
-		fmt.Fprintln(os.Stderr, "Error reading server configuration file")
-		fmt.Fprintln(os.Stderr, serverConfigErr)
+		_, _ = fmt.Fprintln(os.Stderr, "Error reading server configuration file")
+		_, _ = fmt.Fprintln(os.Stderr, serverConfigErr)
 		usage()
 		os.Exit(3)
 		return
@@ -64,7 +64,7 @@ func main() {
 			Msg("Failed to initialize database persistence")
 	}
 
-	gameserver, err := server.NewGameServer(config.WorldFilesDir)
+	gameserver, err := server.NewGameServer(config)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -83,26 +83,25 @@ func main() {
 	// TODO some sort of server.GameServerInstance.Shutdown() ?
 }
 
-func readServerConfig(configFileName string) (*serverconfig.Config, error) {
-	fmt.Println("Reading Server Config file from", configFileName)
+func readServerConfig(fsys fs.FS, name string) (serverconfig.Config, error) {
+	fmt.Println("Reading Server Config file from", name)
+	var cfg serverconfig.Config
 	// read the configuration file
-	configFileData, err := ioutil.ReadFile(configFileName)
+	data, err := fs.ReadFile(fsys, name)
 	if err != nil {
-		return nil, err
+		return cfg, fmt.Errorf("read %s: %w", name, err)
 	}
 	// parse the configuration file
-	serverConfig := serverconfig.Config{}
-	if err := yaml.UnmarshalStrict(configFileData, &serverConfig); err != nil {
-		return nil, err
+	if err := yaml.UnmarshalStrict(data, &cfg); err != nil {
+		return cfg, fmt.Errorf("parse %s: %w", name, err)
 	}
-
-	return &serverConfig, nil
+	return cfg, nil
 }
 
 // initialize the zerolog setup, logging to both console and file specified
 // returns the *os.File so that the caller can defer the close of the log
 // file appropriately.
-func initLogging(config *serverconfig.Config) (*os.File, error) {
+func initLogging(config serverconfig.Config) (*os.File, error) {
 	f, err := os.OpenFile(config.Log.File, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return f, err

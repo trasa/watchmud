@@ -8,6 +8,7 @@ require (
 	github.com/jmoiron/sqlx v0.0.0-20180614180643-0dae4fefe7c0
 	github.com/justinian/dice v1.0.0
 	github.com/lib/pq v1.0.0
+	github.com/pkg/errors v0.8.1
 	github.com/rs/zerolog v1.19.0
 	github.com/stretchr/testify v1.2.2
 	github.com/trasa/syncmap v1.0.0

@@ -1,11 +1,12 @@
 package spaces
 
 import (
-	"github.com/trasa/watchmud-message/direction"
 	"log"
 	"math/rand"
 	"strings"
 	"time"
+
+	"github.com/trasa/watchmud-message/direction"
 )
 
 // Get all the valid exits from this room.

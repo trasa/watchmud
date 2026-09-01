@@ -1,8 +1,9 @@
 package spaces
 
 import (
-	"github.com/trasa/watchmud-message/direction"
 	"sort"
+
+	"github.com/trasa/watchmud-message/direction"
 )
 
 // A direction is an exit to another room.
