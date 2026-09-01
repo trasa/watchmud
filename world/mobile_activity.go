@@ -3,11 +3,12 @@ package world
 import (
 	"errors"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/spaces"
-	"log"
-	"time"
 )
 
 // Walk through all the mob instances that are in this world
@@ -50,7 +51,7 @@ func (w *World) doMobRandomWander(mob *mobile.Instance) error {
 	// test wandering percentage
 	if mob.CheckWanderChance() {
 		dir := mobRoom.PickRandomDirection(true)
-		if dir == direction.NONE {
+		if dir == direction.None {
 			return errors.New(fmt.Sprintf("Mobile ID '%s' is in a room without exit and can't wander out of it.", mob.Definition.Id))
 		}
 		w.moveMobile(mob, dir, mobRoom, mobRoom.Get(dir))
@@ -70,7 +71,7 @@ func (w *World) doMobFollowPathWander(mob *mobile.Instance) error {
 		if err != nil {
 			return err
 		}
-		if dir == direction.NONE {
+		if dir == direction.None {
 			return errors.New(fmt.Sprintf("doMobFollowPathWander: mobile ID '%s' can't figure out next place to go to (current '%s', path '%s')",
 				mob.Definition.Id, mobRoom.Id, mob.Definition.Wandering.Path))
 		}
@@ -90,14 +91,14 @@ func (w *World) doMobFollowPathWander(mob *mobile.Instance) error {
 func getNextDirectionOnPath(mob *mobile.Instance, mobRoom *spaces.Room) (dir direction.Direction, changeDirection bool, err error) {
 	currentIndex, err := mob.GetIndexOnPath(mobRoom.Id)
 	if err != nil {
-		return direction.NONE, false, err
+		return direction.None, false, err
 	}
 	nextIndex := -1
 
 	if currentIndex < 0 {
 		// note: this might be OK (if the mob was pulled off the path for some reason?)
 		// TODO should it change to a random walk? or just wait here, or?
-		return direction.NONE, false, errors.New(fmt.Sprintf("Couldn't find current room %s in wander path %s", mobRoom.Id, mob.Definition.Wandering.Path))
+		return direction.None, false, errors.New(fmt.Sprintf("Couldn't find current room %s in wander path %s", mobRoom.Id, mob.Definition.Wandering.Path))
 	}
 	if mob.WanderingForward {
 		nextIndex = currentIndex + 1
@@ -123,8 +124,8 @@ func getNextDirectionOnPath(mob *mobile.Instance, mobRoom *spaces.Room) (dir dir
 			break
 		}
 	}
-	if dir == direction.NONE {
-		return direction.NONE, false, errors.New(fmt.Sprintf("Couldn't find destination room %s from current room exits %v", roomToFind, mobRoom.GetRoomExits(false)))
+	if dir == direction.None {
+		return direction.None, false, errors.New(fmt.Sprintf("Couldn't find destination room %s from current room exits %v", roomToFind, mobRoom.GetRoomExits(false)))
 	}
 	return
 }

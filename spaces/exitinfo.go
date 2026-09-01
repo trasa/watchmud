@@ -17,10 +17,8 @@ import (
 func (r *Room) GetExitString() string {
 	exits := []string{}
 
-	for _, rexit := range r.GetRoomExits(false) {
-		if s, err := direction.DirectionToAbbreviation(rexit.Direction); err == nil {
-			exits = append(exits, s)
-		}
+	for _, exit := range r.GetRoomExits(false) {
+		exits = append(exits, exit.Direction.Abbrev())
 	}
 	return strings.Join(exits, "")
 }
@@ -48,7 +46,7 @@ func (r *Room) Set(dir direction.Direction, destRoom *Room) {
 func (r *Room) PickRandomDirection(limitToZone bool) direction.Direction {
 	exits := r.GetRoomExits(limitToZone)
 	if len(exits) == 0 {
-		return direction.NONE
+		return direction.None
 	} else {
 		desired := rand.New(rand.NewSource(time.Now().Unix())).Int31n(int32(len(exits)))
 		// iterate to the ith member of exits
@@ -61,6 +59,6 @@ func (r *Room) PickRandomDirection(limitToZone bool) direction.Direction {
 		}
 		// inconceivable!
 		log.Printf("Room.PickRandomDirection: Bizzare RandomDirection picked. len=%d, desired=%d", len(exits), desired)
-		return direction.NONE
+		return direction.None
 	}
 }

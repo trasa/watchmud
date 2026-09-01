@@ -2,7 +2,6 @@ package world
 
 import (
 	"github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/spaces"
 )
@@ -90,10 +89,9 @@ func createMobInfo(room *spaces.Room) (result []*message.RoomStatusResponse_MobI
 
 func createDirections(room *spaces.Room) (result []*message.RoomStatusResponse_DirectionInfo) {
 	for _, ex := range room.GetRoomExits(false) {
-		dir, _ := direction.DirectionToString(ex.Direction)
 		result = append(result,
 			&message.RoomStatusResponse_DirectionInfo{
-				Dir:    dir,
+				Dir:    ex.Direction.String(),
 				RoomId: ex.Room.Id,
 				ZoneId: ex.Room.Zone.Id,
 				Flags:  ex.Room.GetFlags(),

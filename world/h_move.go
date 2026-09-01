@@ -1,10 +1,11 @@
 package world
 
 import (
+	"log"
+
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/gameserver"
-	"log"
 )
 
 func (w *World) handleMove(msg *gameserver.HandlerParameter) {
@@ -23,12 +24,10 @@ func (w *World) handleMove(msg *gameserver.HandlerParameter) {
 	// get the direction we want to go to
 	dir := direction.Direction(msg.Message.GetMoveRequest().Direction)
 
-	// dirstr only used for log message so we'll ignore errors
-	dirstr, _ := direction.DirectionToString(dir)
 	log.Printf("player %s in room %s wants to move %s",
 		msg.Player.GetName(),
 		playerRoom.Name,
-		dirstr,
+		dir.String(),
 	)
 
 	// can player go in that direction?

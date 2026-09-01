@@ -89,7 +89,7 @@ func (w *World) movePlayer(p player.Player, dir direction.Direction, src *spaces
 // Player is jumping from the room they are currently in to the destination.
 func (w *World) movePlayerMagically(p player.Player, dest *spaces.Room) {
 	src := w.getRoomContainingPlayer(p)
-	w.movePlayer(p, direction.NONE, src, dest)
+	w.movePlayer(p, direction.None, src, dest)
 }
 
 // Mobile is moving from src room to dest room.

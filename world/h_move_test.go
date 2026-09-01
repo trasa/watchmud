@@ -1,13 +1,14 @@
 package world
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
-	"testing"
 )
 
 type HandleMoveSuite struct {
@@ -35,7 +36,7 @@ func (suite *HandleMoveSuite) newMoveRequestHandlerParameter(dir direction.Direc
 }
 
 func (suite *HandleMoveSuite) TestMove_butYouCant() {
-	suite.world.handleMove(suite.newMoveRequestHandlerParameter(direction.NORTH))
+	suite.world.handleMove(suite.newMoveRequestHandlerParameter(direction.North))
 
 	suite.Assert().Equal(1, suite.player.SentMessageCount())
 
@@ -49,7 +50,7 @@ func (suite *HandleMoveSuite) TestMoveWhileFighting() {
 	suite.world.AddPlayer(otherPlayer)
 	suite.world.fightLedger.Fight(suite.player, otherPlayer, suite.world.StartRoom.Zone.Id, suite.world.StartRoom.Id)
 
-	suite.world.handleMove(suite.newMoveRequestHandlerParameter(direction.NORTH))
+	suite.world.handleMove(suite.newMoveRequestHandlerParameter(direction.North))
 
 	suite.Assert().Equal(1, suite.player.SentMessageCount())
 
