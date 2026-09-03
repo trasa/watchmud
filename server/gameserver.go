@@ -11,8 +11,6 @@ import (
 	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mudtime"
-	"github.com/trasa/watchmud/playergenerator"
-	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/world"
 )
 
@@ -240,71 +238,7 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) (err 
 		})
 		return
 	}
-	req := msg.Message.GetCreatePlayerRequest()
-	playerName := req.PlayerName
-
-	// TODO replace with catalog (and rework all this)
-	/*
-		race, err := db.GetSingleRaceData(req.Race)
-		if err != nil {
-			log.Error().Err(err).Msgf("Error trying to get race info (%d) for create player: %s", req.Race, playerName)
-			clientErr := msg.Client.Send(message.CreatePlayerResponse{
-				Success:    false,
-				ResultCode: "RACE_DB_ERROR",
-			})
-			if clientErr != nil {
-				log.Error().Err(clientErr).Msg("Client error trying to send RACE DB message")
-			}
-		}
-
-		class, err := db.GetSingleClassData(req.Class)
-		if err != nil {
-			log.Error().Err(err).Msgf("Error trying to get class info (%d) for create player: %s", req.Class, playerName)
-			clientErr := msg.Client.Send(message.CreatePlayerResponse{
-				Success:    false,
-				ResultCode: "CLASS_DB_ERROR",
-			})
-			if clientErr != nil {
-				log.Error().Err(clientErr).Msg("Client error trying to send CLASS DB message")
-			}
-		}
-	*/
-	lineage := rules.Lineage{
-		Id:         "PLACEHOLDER",
-		Name:       "PLACEHOLDER",
-		OwnBonuses: rules.Abilities{},
-		Species: &rules.Species{
-			Id:         "PLACEHOLDER",
-			Name:       "PLACEHOLDER",
-			OwnBonuses: rules.Abilities{},
-		},
-	}
 	// TODO fixme
-	class := rules.Class{}
-	playerPrototype := playergenerator.GeneratePlayerPrototype(lineage, class)
-
-	playerData, err := db.CreatePlayerData(playerName, req.Race, req.Class, gs.world.StartRoom.Zone.Id, gs.world.StartRoom.Id, playerPrototype.InitialAbilities)
-	if err != nil {
-		log.Error().Err(err).Msgf("Error trying to create player for %s", playerName)
-		clientErr := msg.Client.Send(message.CreatePlayerResponse{
-			Success:    false,
-			ResultCode: "PLAYER_ALREADY_EXISTS",
-		})
-		if clientErr != nil {
-			log.Error().Err(clientErr).Msg("Client error trying to send PLAYER_ALREADY_EXISTS message")
-		}
-		return // err
-	}
-	p := NewClientPlayerFromPlayerData(playerName, playerData, msg.Client)
-	msg.Client.SetPlayer(p)
-	msg.Player = p
-
-	gs.world.AddPlayer(p) // TODO destination
-	err = p.Send(message.CreatePlayerResponse{
-		Success:    true,
-		ResultCode: "OK",
-		PlayerName: p.GetName(),
-	})
 	return
 }
 

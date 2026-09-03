@@ -3,11 +3,12 @@ package player
 import (
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/rules"
 )
 
 // see https://play.golang.org/p/zPLyr3ZOM0 (first attempt)
 // then see https://play.golang.org/p/z5athD5fV3 (client is an interface, but now pointer woes)
-//noinspection GoNameStartsWithPackageName
+// noinspection GoNameStartsWithPackageName
 type Player interface {
 	// send a message to the player
 	Send(innerMessage interface{}) error
@@ -40,7 +41,7 @@ type Player interface {
 	// where are you?
 	Location() *Location
 	// your ability scores
-	Abilities() *Abilities
+	Abilities() rules.Abilities
 	// Figure out + and - to an attack roll
 	CalculateMeleeRollModifiers() int
 	// calculate the player's AC based on intrinsics and equipment

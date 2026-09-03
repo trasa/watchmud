@@ -2,11 +2,13 @@ package server
 
 import (
 	"fmt"
+
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/rules"
 )
 
 type ClientPlayer struct {
@@ -21,20 +23,28 @@ type ClientPlayer struct {
 	class     int32
 	dirty     bool
 	location  *player.Location
-	abilities *player.Abilities
+	abilities rules.Abilities
 }
 
 // Create a ClientPlayer connected to a new TestClient
 // (for testing)
 func NewTestClientPlayer(name string) (p *ClientPlayer, cli *client.TestClient) {
-	p = NewClientPlayer(name, 0, 0, player.NewAbilities(15, 14, 13, 12, 10, 9), nil)
+	abilities := rules.Abilities{
+		Str: 15,
+		Dex: 14,
+		Con: 13,
+		Int: 12,
+		Wis: 10,
+		Cha: 9,
+	}
+	p = NewClientPlayer(name, 0, 0, abilities, nil)
 	cli = client.NewTestClient(p)
 	p.Client = cli
 	return
 }
 
 // Create a new player and set it up to work with this client
-func NewClientPlayer(name string, race int32, class int32, abilities *player.Abilities, client client.Client) *ClientPlayer {
+func NewClientPlayer(name string, race int32, class int32, abilities rules.Abilities, client client.Client) *ClientPlayer {
 	p := ClientPlayer{
 		Name:      name,
 		Client:    client, // address of interface
@@ -52,7 +62,15 @@ func NewClientPlayer(name string, race int32, class int32, abilities *player.Abi
 // Load player information into this struct without flagging anything as dirty
 // Does not load slot information as that has to happen after inventory is loaded
 func NewClientPlayerFromPlayerData(name string, pd *db.PlayerData, client client.Client) *ClientPlayer {
-	p := NewClientPlayer(name, pd.Race, pd.Class, player.NewAbilities(pd.Strength, pd.Dexterity, pd.Constitution, pd.Intelligence, pd.Wisdom, pd.Charisma), client)
+	abilities := rules.Abilities{
+		Str: pd.Strength,
+		Dex: pd.Dexterity,
+		Con: pd.Constitution,
+		Int: pd.Intelligence,
+		Wis: pd.Wisdom,
+		Cha: pd.Charisma,
+	}
+	p := NewClientPlayer(name, pd.Race, pd.Class, abilities, client)
 	p.Id = pd.Id
 	p.curHealth = pd.CurHealth
 	p.maxHealth = pd.MaxHealth
@@ -156,7 +174,7 @@ func (p *ClientPlayer) Location() *player.Location {
 	return p.location
 }
 
-func (p *ClientPlayer) Abilities() *player.Abilities {
+func (p *ClientPlayer) Abilities() rules.Abilities {
 	return p.abilities
 }
 

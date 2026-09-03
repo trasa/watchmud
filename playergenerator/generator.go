@@ -1,18 +1,17 @@
 package playergenerator
 
 import (
-	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/rules"
 )
 
 type PlayerPrototype struct {
 	Lineage          rules.Lineage
 	Class            rules.Class
-	InitialAbilities *player.Abilities // TODO revisit this
+	InitialAbilities rules.Abilities
 }
 
 func GeneratePlayerPrototype(lineage rules.Lineage, class rules.Class) *PlayerPrototype {
-	a := generateAbilities(lineage, class)
+	a := assignStandardArray(class.AbilityPreference)
 
 	return &PlayerPrototype{
 		Lineage:          lineage,
@@ -21,25 +20,24 @@ func GeneratePlayerPrototype(lineage rules.Lineage, class rules.Class) *PlayerPr
 	}
 }
 
-func generateAbilities(lineage rules.Lineage, class rules.Class) *player.Abilities {
-	a := player.Abilities{}
-	startScores := []player.AbilityScore{15, 14, 13, 12, 10, 8}
+// assignStandardArray distributes the standard array over the six abilities in
+// the given preference order; anything unnamed falls through to FillScore
+func assignStandardArray(order []string) rules.Abilities {
+	a := rules.Abilities{}
+	// an array of ints from highest start value to lowest (these aren't random)
+	// TODO this should be a rule, not a constant here...
+	startScores := []int{15, 14, 13, 12, 10, 8}
+	// staring with the highest value, map the value to the ability listed
+	// first (second, third...) in the class.AbilityPreference. once we're
+	// past that number of scores, the rest just get set in order.
 	for i, score := range startScores {
-		if i < len(class.AbilityPreference) {
-			a.SetScore(class.AbilityPreference[i], score)
+		if i < len(order) {
+			a = a.Set(order[i], score)
 		} else {
 			// no further class preferences
-			a.FillScore(score)
+			a = a.FillEmptyScoreByPriority(score)
 		}
 	}
-	// apply race bonuses
-	// TODO revisit this, we probably don't want to overwrite the base values with the modifiers?
-	/*a.Strength = a.Strength + player.AbilityScore(race.StrBonus)
-	a.Dexterity = a.Dexterity + player.AbilityScore(race.DexBonus)
-	a.Constitution = a.Constitution + player.AbilityScore(race.ConBonus)
-	a.Intelligence = a.Intelligence + player.AbilityScore(race.IntBonus)
-	a.Wisdom = a.Wisdom + player.AbilityScore(race.WisBonus)
-	a.Charisma = a.Charisma + player.AbilityScore(race.ChaBonus)
-	*/
-	return &a
+
+	return a
 }

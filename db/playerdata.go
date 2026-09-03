@@ -17,12 +17,12 @@ type PlayerData struct {
 	Slots        SlotDataList `db:"slots" json:"Slots"`
 	LastZoneId   *string      `db:"last_zone_id"`
 	LastRoomId   *string      `db:"last_room_id"`
-	Strength     int32        `db:"strength"`
-	Dexterity    int32        `db:"dexterity"`
-	Constitution int32        `db:"constitution"`
-	Intelligence int32        `db:"intelligence"`
-	Wisdom       int32        `db:"wisdom"`
-	Charisma     int32        `db:"charisma"`
+	Strength     int          `db:"strength"`
+	Dexterity    int          `db:"dexterity"`
+	Constitution int          `db:"constitution"`
+	Intelligence int          `db:"intelligence"`
+	Wisdom       int          `db:"wisdom"`
+	Charisma     int          `db:"charisma"`
 }
 
 const NewPlayerMaxHealth = 100
@@ -102,7 +102,7 @@ func ForceSavePlayer(player player.Player) (err error) {
 	return
 }
 
-func CreatePlayerData(playerName string, race int32, class int32, zoneId string, roomId string, abilities *player.Abilities) (result *PlayerData, err error) {
+func CreatePlayerData(playerName string, race int32, class int32, zoneId string, roomId string) (result *PlayerData, err error) {
 	log.Printf("DB - Create Player for %s", playerName)
 	res, err := watchdb.NamedQuery("INSERT INTO players (player_name, current_health, max_health, race_id, class, last_zone_id, last_room_id, "+
 		"strength, dexterity, constitution, intelligence, wisdom, charisma) "+
@@ -116,12 +116,6 @@ func CreatePlayerData(playerName string, race int32, class int32, zoneId string,
 			"class":      class,
 			"lastZoneId": zoneId,
 			"lastRoomId": roomId,
-			"str":        abilities.Strength,
-			"dex":        abilities.Dexterity,
-			"con":        abilities.Constitution,
-			"int":        abilities.Intelligence,
-			"wis":        abilities.Wisdom,
-			"cha":        abilities.Charisma,
 		})
 	if err != nil {
 		log.Fatal().Err(err).Msg("Error while creating player")
@@ -131,20 +125,14 @@ func CreatePlayerData(playerName string, race int32, class int32, zoneId string,
 	res.Scan(&newId)
 	log.Printf("newid %d", newId)
 	result = &PlayerData{
-		Id:           newId,
-		Name:         playerName,
-		CurHealth:    NewPlayerMaxHealth,
-		MaxHealth:    NewPlayerMaxHealth,
-		Race:         race,
-		Class:        class,
-		LastZoneId:   &zoneId,
-		LastRoomId:   &roomId,
-		Strength:     int32(abilities.Strength),
-		Dexterity:    int32(abilities.Dexterity),
-		Constitution: int32(abilities.Constitution),
-		Intelligence: int32(abilities.Intelligence),
-		Wisdom:       int32(abilities.Wisdom),
-		Charisma:     int32(abilities.Charisma),
+		Id:         newId,
+		Name:       playerName,
+		CurHealth:  NewPlayerMaxHealth,
+		MaxHealth:  NewPlayerMaxHealth,
+		Race:       race,
+		Class:      class,
+		LastZoneId: &zoneId,
+		LastRoomId: &roomId,
 	}
 	// TODO new player equipment, inventory ...
 	return

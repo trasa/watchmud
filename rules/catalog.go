@@ -61,17 +61,3 @@ func indexSpecies(all []*Species) (map[string]*Species, map[string]*Lineage, err
 	}
 	return species, lineages, nil
 }
-
-func indexClasses(all []*Class) (map[string]*Class, error) {
-	classes := make(map[string]*Class, len(all))
-	for _, c := range all {
-		if c.Id == "" {
-			return nil, fmt.Errorf("class %q: missing id", c.Name)
-		}
-		if prev, dup := classes[c.Id]; dup {
-			return nil, fmt.Errorf("duplicate class id %q (%s and %s)", c.Id, prev.Name, c.Name)
-		}
-		classes[c.Id] = c
-	}
-	return classes, nil
-}

@@ -9,26 +9,6 @@ import (
 
 func (w *World) handleStat(msg *gameserver.HandlerParameter) {
 	player := msg.Player
-	// TODO cache these? don't want to hit the database
-	// TODO will have to use Catalog here instead, and will need to make a bunch of changes to support that!
-	/*
-		race, err := db.GetSingleRaceData(player.GetRaceId())
-		if err != nil {
-			log.Printf("stat: Failed to retrieve race for player %s: %v", player.GetName(), err)
-			_ = player.Send(message.StatResponse{
-				Success:    false,
-				ResultCode: "RACE_DB_ERROR",
-			})
-		}
-		class, err := db.GetSingleClassData(player.GetClassId())
-		if err != nil {
-			log.Printf("stat: Failed to retrieve class for player %s: %v", player.GetName(), err)
-			_ = player.Send(message.StatResponse{
-				Success:    false,
-				ResultCode: "CLASS_DB_ERROR",
-			})
-		}
-	*/
 	if err := player.Send(message.StatResponse{
 		Success:       true,
 		ResultCode:    "OK",
@@ -40,12 +20,12 @@ func (w *World) handleStat(msg *gameserver.HandlerParameter) {
 		ZoneId:        player.Location().ZoneId,
 		RoomId:        player.Location().RoomId,
 		// TODO change to correct abilities
-		Strength:     int32(player.Abilities().Strength),
-		Dexterity:    int32(player.Abilities().Dexterity),
-		Constitution: int32(player.Abilities().Constitution),
-		Intelligence: int32(player.Abilities().Intelligence),
-		Wisdom:       int32(player.Abilities().Wisdom),
-		Charisma:     int32(player.Abilities().Charisma),
+		Strength:     0,
+		Dexterity:    0,
+		Constitution: 0,
+		Intelligence: 0,
+		Wisdom:       0,
+		Charisma:     0,
 	}); err != nil {
 		log.Printf("stat: Failed to send StatResponse to player %s: %v", player.GetName(), err)
 	}

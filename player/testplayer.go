@@ -1,9 +1,11 @@
 package player
 
 import (
+	"log"
+
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/object"
-	"log"
+	"github.com/trasa/watchmud/rules"
 )
 
 type TestPlayer struct {
@@ -18,7 +20,7 @@ type TestPlayer struct {
 	class     int32
 	dirty     bool
 	location  *Location
-	abilities *Abilities
+	abilities rules.Abilities
 }
 
 // create a new test player that can track sent messages through 'sentmessages'
@@ -136,7 +138,7 @@ func (p *TestPlayer) Location() *Location {
 	return p.location
 }
 
-func (p *TestPlayer) Abilities() *Abilities {
+func (p *TestPlayer) Abilities() rules.Abilities {
 	return p.abilities
 }
 
