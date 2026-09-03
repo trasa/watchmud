@@ -15,11 +15,12 @@ type Target struct {
 
 // Take the target string and parse it into Target struct
 // Example usage:
-//      drop <item>
-//      drop all.<item>
-//      drop all
-//      drop <number> coins
-//   	drop 2.<item>
+//
+//	   drop <item>
+//	   drop all.<item>
+//	   drop all
+//	   drop <number> coins
+//		drop 2.<item>
 func parseTarget(target string) (result Target, err error) {
 
 	parts := strings.Split(target, " ")

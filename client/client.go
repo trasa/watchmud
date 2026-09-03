@@ -4,9 +4,9 @@ import (
 	"github.com/trasa/watchmud/player"
 )
 
-//noinspection GoNameStartsWithPackageName
+// noinspection GoNameStartsWithPackageName
 type Client interface {
-	Send(innerMessage interface{}) error
+	Send(innerMessage any) error
 	SetPlayer(player player.Player)
 	GetPlayer() player.Player
 	Close()

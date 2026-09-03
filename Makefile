@@ -28,7 +28,7 @@ fmt:
 ## fmt-check: fail if any files need formatting (CI)
 .PHONY: fmt-check
 fmt-check:
-	@files=$$(gofmt -files .); \
+	@files=$$(gofmt -l .); \
 	if [ -n "$$files" ]; then \
 	  echo "not gofmt'd:"; echo "$$files"; \
 	  exit 1; \

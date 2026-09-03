@@ -42,13 +42,13 @@ Nothing else is measurable until `go test ./...` means something.
 
 - `playergenerator/generator_test.go:35` fails (expects 16, got 15) — almost certainly
   fallout from the lineage/species rework in `e09628b`. Either fix the generator or pin the
-  test to current intent; don't leave it red as background noise.
+  test to current intent; don't leave it red as background noise. **DONE September 2 2026**
 - `make fmt-check` silently always passes: it calls `gofmt -files`, which is not a real
-  flag, and the target swallows the error. Change to `gofmt -l .`.
+  flag, and the target swallows the error. Change to `gofmt -l .`. **FIXED September 2 2026**
 - **Leave `make vet` red.** Every failure is `copylocks` from protobuf structs passed by
   value (`p.Send(message.LookResponse{...})`, `resp := x.(message.LookResponse)`). These
   disappear on their own if Phase 5 removes protobuf. Chasing them now is wasted work
-  against code that may not survive.
+  against code that may not survive. **NO ACTION REQUIRED September 2 2026**
 
 Exit: `make test` green, and you know what red means again.
 

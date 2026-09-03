@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-//noinspection GoNameStartsWithPackageName
+// noinspection GoNameStartsWithPackageName
 type Thing interface {
 	Id() string
 }
