@@ -51,6 +51,8 @@ Nothing else is measurable until `go test ./...` means something.
   against code that may not survive. **NO ACTION REQUIRED September 2 2026**
 
 Exit: `make test` green, and you know what red means again.
+**Completed** September 2 2026**
+All tests pass, `make fmt-check` succeeds, `make vet` still fails as expected.
 
 ---
 
