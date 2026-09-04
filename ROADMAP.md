@@ -112,13 +112,13 @@ Work:
   the mutex or drop it, but don't let it imply the world is concurrent. **DONE**
 - **Keep `combat.Combatant`.** That interface is real polymorphism — `*player.Player` and
   `*mobile.Instance` both fight, and `combat/melee.go` genuinely must not care which. Don't
-  collapse it along with the others.
+  collapse it along with the others. **DONE**
 
 Note after this lands: `client.Client` is now nearly redundant — `player.Sender` plus a
 `Close()`. Worth deleting in Phase 4 rather than pre-emptively here.
 
 Exit: `make test` green, `player.Player` is a struct, one fewer package in the cycle.
-
+**DONE September 4 2026**
 ---
 
 ## Phase 2 — Persistence behind an interface
