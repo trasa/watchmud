@@ -33,7 +33,7 @@ func (ri *RoomInventory) GetByInstanceId(id uuid.UUID) (inst *object.Instance, e
 	return
 }
 
-// Find the instance with this name in the room
+// GetByName finds the instance with this name in the room
 // note this needs to become much more sophisticated...
 // Note that there is much left undone by this implementation
 // (stacks of items, aliases...)

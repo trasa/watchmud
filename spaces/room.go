@@ -23,7 +23,7 @@ type Room struct {
 	flags       map[string]bool
 }
 
-// Create a new Room reference
+// NewRoom sets the properties of a room
 func NewRoom(zone *Zone, id string, name string, description string) *Room {
 	return &Room{
 		Id:          id,
