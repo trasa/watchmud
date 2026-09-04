@@ -5,20 +5,15 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud/client"
-	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
 )
 
 type handleTellAllSuite struct {
 	worldTestSuite
-	sender       *player.Player
-	senderRec    *player.Recorder
-	senderClient *client.TestClient
-	receiver     *player.Player
-	receiverRec  *player.Recorder
-	other        *player.Player
-	otherRec     *player.Recorder
+	receiver    *player.Player
+	receiverRec *player.Recorder
+	other       *player.Player
+	otherRec    *player.Recorder
 }
 
 func TestHandleTellAllSuite(t *testing.T) {
@@ -27,10 +22,6 @@ func TestHandleTellAllSuite(t *testing.T) {
 
 func (s *handleTellAllSuite) SetupTest() {
 	s.worldTestSuite.SetupTest()
-	s.senderRec = &player.Recorder{}
-	s.sender = player.NewTestPlayer("sender", "sender", s.senderRec)
-	s.w.AddPlayer(s.sender)
-	s.senderClient = client.NewTestClient(s.sender)
 
 	s.receiverRec = &player.Recorder{}
 	s.receiver = player.NewTestPlayer("receiver", "receiver", s.receiverRec)
@@ -41,38 +32,30 @@ func (s *handleTellAllSuite) SetupTest() {
 	s.w.AddPlayer(s.other)
 }
 
-func (s *handleTellAllSuite) handlerParameter(value string) *gameserver.HandlerParameter {
-	msg, err := message.NewGameMessage(message.TellAllRequest{
-		Value: value,
-	})
-	s.Assert().NoError(err)
-	return gameserver.NewHandlerParameter(s.senderClient, msg)
-}
-
 func (s *handleTellAllSuite) TestSuccess() {
 
-	s.w.handleTellAll(s.handlerParameter("hi"))
+	s.w.handleTellAll(s.handlerParameter(message.TellAllRequest{Value: "hi"}))
 
 	// did we tell otherPlayer?
 	s.Assert().Equal(1, len(s.otherRec.Sent))
 	s.Assert().Equal(1, len(s.receiverRec.Sent))
 
 	// sender should have gotten response but NOT part of the send to all players
-	s.Assert().Equal(1, len(s.senderRec.Sent))
-	senderResponse := s.senderRec.Sent[0].(message.TellAllResponse)
+	s.Assert().Equal(1, len(s.r.Sent))
+	senderResponse := sent[message.TellAllResponse](s.T(), s.r, 0)
 	s.Assert().True(senderResponse.Success)
 }
 
 func (s *handleTellAllSuite) TestNoValue() {
-	s.w.handleTellAll(s.handlerParameter(""))
+	s.w.handleTellAll(s.handlerParameter(message.TellAllRequest{Value: ""}))
 
 	// did we tell otherPlayer? (should be 0)
 	s.Assert().Equal(0, len(s.otherRec.Sent))
 	s.Assert().Equal(0, len(s.receiverRec.Sent))
 
 	// sender should have gotten response but NOT part of the send to all players
-	s.Assert().Equal(1, len(s.senderRec.Sent))
+	s.Assert().Equal(1, len(s.r.Sent))
 
-	senderResponse := s.senderRec.Sent[0].(message.TellAllResponse)
+	senderResponse := sent[message.TellAllResponse](s.T(), s.r, 0)
 	s.Assert().False(senderResponse.Success)
 }

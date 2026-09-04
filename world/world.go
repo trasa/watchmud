@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"iter"
-	"log"
 	"maps"
 	"slices"
 
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/gameserver"
@@ -77,18 +77,16 @@ func (w *World) initialLoad() (err error) {
 // Don't send room notifications.
 func (w *World) AddPlayer(players ...*player.Player) {
 	for _, p := range players {
-		log.Printf("Adding Player: %s", p.Name)
-		// TODO implement location ...
-		/*
-			r, exists := w.findRoomByLocation(p.Location())
-			if !exists {
-				log.Printf("Adding player %s to location %s but it doesn't exist - using start room instead.",
-					p.Name, p.Location)
-				r = w.StartRoom
-			}*/
+		log.Debug().Msgf("Adding player %s: %s", p.Id, p.Name)
+
+		// player (probably?) won't know their previous location, if we need
+		// to persist that information (and we probably do) we'll reconcile it
+		// elsewhere.
+		// so for now, this *always* adds to the start room.
+		r := w.StartRoom
 		w.playerList.Add(p)
-		//w.playerRooms.Add(p, r)
-		//r.AddPlayer(p)
+		w.playerRooms.Add(p, r)
+		r.AddPlayer(p)
 	}
 }
 

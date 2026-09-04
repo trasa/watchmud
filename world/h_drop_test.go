@@ -6,17 +6,11 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/slot"
-	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/player"
 )
 
 type HandleDropSuite struct {
-	suite.Suite
-	w *World
-	p *player.Player
-	r *player.Recorder
-	c *client.TestClient
+	worldTestSuite
 }
 
 func TestHandleDropSuite(t *testing.T) {
@@ -24,47 +18,28 @@ func TestHandleDropSuite(t *testing.T) {
 }
 
 func (s *HandleDropSuite) SetupTest() {
-	s.w, _ = newTestWorld()
-	s.p = player.NewTestPlayer("foo", "foo", s.r)
-	s.w.AddPlayer(s.p)
-	s.c = client.NewTestClient(s.p)
+	s.worldTestSuite.SetupTest()
 }
 
-func (s *HandleDropSuite) TestDrop_success() {
+func (s *HandleDropSuite) TestSuccess() {
 	// get first
-	getGameMessage, err := message.NewGameMessage(
-		message.GetRequest{
-			Target: "knife",
-		})
-	s.Assert().NoError(err)
-
-	getHP := gameserver.NewHandlerParameter(s.c, getGameMessage)
-	s.w.handleGet(getHP)
+	s.w.handleGet(s.handlerParameter(message.GetRequest{Target: "knife"}))
 
 	// now drop
-	dropGameMessage, err := message.NewGameMessage(
-		message.DropRequest{
-			Target: "knife",
-		},
-	)
-	s.Assert().NoError(err)
+	s.w.handleDrop(s.handlerParameter(message.DropRequest{Target: "knife"}))
 
-	dropHP := gameserver.NewHandlerParameter(s.c, dropGameMessage)
-	s.w.handleDrop(dropHP)
+	getResponse := sent[message.GetResponse](s.T(), s.r, 0)
+	s.Assert().True(getResponse.Success)
 
-	s.Assert().Equal(2, len(s.r.Sent))
-	getresp := s.r.Sent[0].(message.GetResponse)
-	s.Assert().True(getresp.Success)
-
-	dropresp := s.r.Sent[1].(message.DropResponse)
-	s.Assert().True(dropresp.Success)
+	dropResponse := sent[message.DropResponse](s.T(), s.r, 1)
+	s.Assert().True(dropResponse.Success)
 
 	// player now has zero items, room has its starting two
 	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
 	s.Assert().Equal(2, len(s.w.StartRoom.GetAllInventory()))
 }
 
-func (s *HandleDropSuite) TestDrop_Alias() {
+func (s *HandleDropSuite) TestAlias() {
 	// get first
 	getGameMessage, err := message.NewGameMessage(
 		message.GetRequest{
@@ -100,7 +75,7 @@ func (s *HandleDropSuite) TestDrop_Alias() {
 	s.Assert().Equal(2, len(s.w.StartRoom.GetAllInventory()))
 }
 
-func (s *HandleDropSuite) TestDrop_NoTarget() {
+func (s *HandleDropSuite) TestNoTarget() {
 	// drop
 	dropGameMessage, err := message.NewGameMessage(message.DropRequest{Target: ""})
 	s.Assert().NoError(err)
@@ -115,7 +90,7 @@ func (s *HandleDropSuite) TestDrop_NoTarget() {
 	s.Assert().Equal("NO_TARGET", dropresp.GetResultCode())
 }
 
-func (s *HandleDropSuite) TestDrop_NotFound() {
+func (s *HandleDropSuite) TestNotFound() {
 	// drop (but you don't have one)
 	dropGameMessage, err := message.NewGameMessage(message.DropRequest{Target: "knife"})
 	s.Assert().NoError(err)
@@ -131,7 +106,7 @@ func (s *HandleDropSuite) TestDrop_NotFound() {
 	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
 }
 
-func (s *HandleDropSuite) TestDrop_InUse() {
+func (s *HandleDropSuite) TestInUse() {
 	// get first
 	getGameMessage, err := message.NewGameMessage(
 		message.GetRequest{
@@ -167,7 +142,7 @@ func (s *HandleDropSuite) TestDrop_InUse() {
 	s.Assert().Equal(1, len(s.p.Inventory().GetAll()))
 }
 
-func (s *HandleDropSuite) TestDrop_InUse_But_Multiple_Items() {
+func (s *HandleDropSuite) TestInUseMultipleItems() {
 	// drop knife
 	// - there are two knives on you,
 	//   one you are holding, another in your inventory list.
