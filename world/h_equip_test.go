@@ -1,58 +1,57 @@
 package world
 
 import (
-	"github.com/stretchr/testify/assert"
+	"testing"
+
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
-	"testing"
 )
 
 type HandleEquipSuite struct {
 	suite.Suite
-	world      *World
-	player     *player.TestPlayer
-	testClient *client.TestClient
-	msg        *message.GameMessage
-	handle     *gameserver.HandlerParameter
+	w      *World
+	r      *player.Recorder
+	p      *player.Player
+	c      *client.TestClient
+	msg    *message.GameMessage
+	handle *gameserver.HandlerParameter
 }
 
 func TestHandleEquipSuite(t *testing.T) {
 	suite.Run(t, new(HandleEquipSuite))
 }
 
-func (suite *HandleEquipSuite) SetupTest() {
-	suite.world, _ = newTestWorld()
-	suite.player = player.NewTestPlayer("foo")
-	suite.world.AddPlayer(suite.player)
-	suite.testClient = client.NewTestClient(suite.player)
+func (s *HandleEquipSuite) SetupTest() {
+	s.w, _ = newTestWorld()
+	s.r = &player.Recorder{}
+	s.p = player.NewTestPlayer("foo", "foo", s.r)
+	s.w.AddPlayer(s.p)
+	s.c = client.NewTestClient(s.p)
 
 	msg, err := message.NewGameMessage(message.EquipRequest{})
-	assert.NoError(suite.T(), err)
-	suite.msg = msg
-	suite.handle = gameserver.NewHandlerParameter(suite.testClient, suite.msg)
+	s.Assert().NoError(err)
+	s.msg = msg
+	s.handle = gameserver.NewHandlerParameter(s.c, s.msg)
 }
 
-func (suite *HandleEquipSuite) TestNoSlot() {
+func (s *HandleEquipSuite) TestNoSlot() {
+	s.w.handleEquip(s.handle)
 
-	suite.world.handleEquip(suite.handle)
-
-	assert.Equal(suite.T(), 1, suite.player.SentMessageCount())
-	resp := suite.player.GetSentResponse(0).(message.EquipResponse)
-	assert.False(suite.T(), resp.Success)
-	assert.Equal(suite.T(), "NO_SLOT_GIVEN", resp.ResultCode)
+	s.Assert().Equal(1, len(s.r.Sent))
+	resp := s.r.Sent[0].(message.EquipResponse)
+	s.Assert().False(resp.Success)
+	s.Assert().Equal("NO_SLOT_GIVEN", resp.ResultCode)
 }
 
-func (suite *HandleEquipSuite) TestNoTarget() {
+func (s *HandleEquipSuite) TestNoTarget() {
+	s.msg.GetEquipRequest().SlotLocation = 1
+	s.w.handleEquip(s.handle)
 
-	suite.msg.GetEquipRequest().SlotLocation = 1
-
-	suite.world.handleEquip(suite.handle)
-
-	assert.Equal(suite.T(), 1, suite.player.SentMessageCount())
-	resp := suite.player.GetSentResponse(0).(message.EquipResponse)
-	assert.False(suite.T(), resp.Success)
-	assert.Equal(suite.T(), "NO_TARGET", resp.ResultCode)
+	s.Assert().Equal(1, len(s.r.Sent))
+	resp := s.r.Sent[0].(message.EquipResponse)
+	s.Assert().False(resp.Success)
+	s.Assert().Equal("NO_TARGET", resp.ResultCode)
 }

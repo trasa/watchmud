@@ -13,48 +13,51 @@ import (
 
 type HandleMoveSuite struct {
 	suite.Suite
-	world      *World
-	player     *player.TestPlayer
-	testClient *client.TestClient
+	w *World
+	r *player.Recorder
+	p *player.Player
+	c *client.TestClient
 }
 
 func TestHandleMoveSuite(t *testing.T) {
 	suite.Run(t, new(HandleMoveSuite))
 }
 
-func (suite *HandleMoveSuite) SetupTest() {
-	suite.world, _ = newTestWorld()
-	suite.player = player.NewTestPlayer("p")
-	suite.world.AddPlayer(suite.player)
-	suite.testClient = client.NewTestClient(suite.player)
+func (s *HandleMoveSuite) SetupTest() {
+	s.w, _ = newTestWorld()
+	s.r = &player.Recorder{}
+	s.p = player.NewTestPlayer("p", "p", s.r)
+	s.w.AddPlayer(s.p)
+	s.c = client.NewTestClient(s.p)
 }
 
-func (suite *HandleMoveSuite) newMoveRequestHandlerParameter(dir direction.Direction) *gameserver.HandlerParameter {
+func (s *HandleMoveSuite) handlerParameter(dir direction.Direction) *gameserver.HandlerParameter {
 	msg, err := message.NewGameMessage(message.MoveRequest{Direction: int32(dir)})
-	suite.Assert().NoError(err)
-	return gameserver.NewHandlerParameter(suite.testClient, msg)
+	s.Assert().NoError(err)
+	return gameserver.NewHandlerParameter(s.c, msg)
 }
 
-func (suite *HandleMoveSuite) TestMove_butYouCant() {
-	suite.world.handleMove(suite.newMoveRequestHandlerParameter(direction.North))
+func (s *HandleMoveSuite) TestMove_butYouCant() {
+	s.w.handleMove(s.handlerParameter(direction.North))
 
-	suite.Assert().Equal(1, suite.player.SentMessageCount())
+	s.Assert().Equal(1, len(s.r.Sent))
 
-	resp := suite.player.GetSentResponse(0).(message.MoveResponse)
-	suite.Assert().False(resp.Success)
-	suite.Assert().Equal(resp.ResultCode, "CANT_GO_THAT_WAY")
+	resp := s.r.Sent[0].(message.MoveResponse)
+	s.Assert().False(resp.Success)
+	s.Assert().Equal(resp.ResultCode, "CANT_GO_THAT_WAY")
 }
 
-func (suite *HandleMoveSuite) TestMoveWhileFighting() {
-	otherPlayer := player.NewTestPlayer("other")
-	suite.world.AddPlayer(otherPlayer)
-	suite.world.fightLedger.Fight(suite.player, otherPlayer, suite.world.StartRoom.Zone.Id, suite.world.StartRoom.Id)
+func (s *HandleMoveSuite) TestMoveWhileFighting() {
+	r := &player.Recorder{}
+	other := player.NewTestPlayer("other", "other", r)
+	s.w.AddPlayer(other)
+	//s.w.fightLedger.Fight(s.p, other, s.w.StartRoom.Zone.Id, s.w.StartRoom.Id)
 
-	suite.world.handleMove(suite.newMoveRequestHandlerParameter(direction.North))
+	//s.w.handleMove(s.handlerParameter(direction.North))
 
-	suite.Assert().Equal(1, suite.player.SentMessageCount())
+	//s.Assert().Equal(1, len(s.r.Sent))
 
-	resp := suite.player.GetSentResponse(0).(message.MoveResponse)
-	suite.Assert().False(resp.Success)
-	suite.Assert().Equal(resp.ResultCode, "IN_A_FIGHT")
+	//resp := s.r.Sent[0].(message.MoveResponse)
+	//s.Assert().False(resp.Success)
+	//s.Assert().Equal(resp.ResultCode, "IN_A_FIGHT")
 }

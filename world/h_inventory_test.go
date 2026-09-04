@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/client"
@@ -13,30 +13,54 @@ import (
 	"github.com/trasa/watchmud/player"
 )
 
-func newInventoryRequestHandlerParameter(t *testing.T, c *client.TestClient) *gameserver.HandlerParameter {
-	msg, err := message.NewGameMessage(message.InventoryRequest{})
-	assert.NoError(t, err)
-	return gameserver.NewHandlerParameter(c, msg)
+type handleInventorySuite struct {
+	suite.Suite
+	w *World
+	r *player.Recorder
+	p *player.Player
+	c *client.TestClient
 }
 
-func TestInventory_success(t *testing.T) {
-	w, _ := newTestWorld()
-	p := player.NewTestPlayer("guy")
-	c := client.NewTestClient(p)
+func TestHandleInventorySuite(t *testing.T) {
+	suite.Run(t, new(handleInventorySuite))
+}
+func (s *handleInventorySuite) SetupTest() {
+	s.w, _ = newTestWorld()
+	s.r = &player.Recorder{}
+	s.p = player.NewTestPlayer("foo", "foo", s.r)
+	s.w.AddPlayer(s.p)
+	s.c = client.NewTestClient(s.p)
+}
 
-	defnPtr := object.NewDefinition("defnid", "name", "zone",
-		object.Treasure, []string{}, "short desc", "in room", slot.None)
+func (s *handleInventorySuite) handleParameter() *gameserver.HandlerParameter {
+	msg, err := message.NewGameMessage(message.InventoryRequest{})
+	s.Assert().NoError(err)
+	return gameserver.NewHandlerParameter(s.c, msg)
+}
+
+func (s *handleInventorySuite) TestInventory_Success() {
+	defnPtr := object.NewDefinition(
+		"defnid",
+		"name",
+		"zone",
+		object.Treasure,
+		[]string{},
+		"short desc",
+		"in room",
+		slot.None,
+	)
 	instPtr := &object.Instance{
 		InstanceId: uuid.New(),
 		Definition: defnPtr,
 	}
-	p.Inventory().Add(instPtr)
+	s.Assert().NoError(s.p.Inventory().Add(instPtr))
 
-	invHP := newInventoryRequestHandlerParameter(t, c)
-	w.handleInventory(invHP)
+	invHP := s.handleParameter()
+	s.w.handleInventory(invHP)
 
-	assert.Equal(t, 1, p.SentMessageCount())
-	resp := p.GetSentResponse(0).(message.InventoryResponse)
-	assert.Equal(t, 1, len(resp.InventoryItems))
-	assert.Equal(t, instPtr.Id(), resp.InventoryItems[0].Id)
+	s.Assert().Equal(1, len(s.r.Sent))
+	resp := s.r.Sent[0].(message.InventoryResponse)
+	s.Assert().Equal(1, len(resp.InventoryItems))
+	s.Assert().Equal(instPtr.Id(), resp.InventoryItems[0].Id)
+	s.Assert().Equal(instPtr.Id(), resp.InventoryItems[0].Id)
 }

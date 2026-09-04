@@ -14,6 +14,7 @@ func (w *World) handleLoad(msg *gameserver.HandlerParameter) {
 
 	targetRoom := w.getRoomContainingPlayer(msg.Player)
 	if targetRoom == nil {
+		// TODO error handling
 		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "YOU_ARE_NOT_IN_A_ROOM"})
 		return
 	}
@@ -22,7 +23,7 @@ func (w *World) handleLoad(msg *gameserver.HandlerParameter) {
 		loadRequest.Zone = targetRoom.Zone.Id
 	}
 	logWizCommand(msg.Player, "load",
-		"Player %s is creating %s of %s.%s", msg.Player.GetName(), loadRequest.Type, loadRequest.Zone, loadRequest.Id)
+		"Player %s is creating %s of %s.%s", msg.Player.Name, loadRequest.Type, loadRequest.Zone, loadRequest.Id)
 
 	if loadRequest.Type == "mob" {
 		w.handleLoadCreateMob(msg, loadRequest, targetRoom)

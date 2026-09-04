@@ -8,14 +8,14 @@ import (
 
 type HandlerParameter struct {
 	Client  client.Client
-	Player  player.Player
+	Player  *player.Player
 	Message *message.GameMessage
 }
 
-func NewHandlerParameter(client client.Client, msg *message.GameMessage) *HandlerParameter {
+func NewHandlerParameter(c client.Client, msg *message.GameMessage) *HandlerParameter {
 	return &HandlerParameter{
-		Client:  client,
-		Player:  client.GetPlayer(),
+		Client:  c,
+		Player:  c.Player(),
 		Message: msg,
 	}
 }

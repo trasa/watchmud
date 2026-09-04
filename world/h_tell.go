@@ -7,13 +7,15 @@ import (
 
 func (w *World) handleTell(msg *gameserver.HandlerParameter) {
 	tellRequest := msg.Message.GetTellRequest()
-	sender := msg.Player.GetName()
+	sender := msg.Player.Name
 	receiver := w.findPlayerByName(tellRequest.ReceiverPlayerName)
 	value := tellRequest.Value
 
 	if receiver == nil {
+		// TODO error handling
 		msg.Player.Send(message.TellResponse{Success: false, ResultCode: "TO_PLAYER_NOT_FOUND"})
 	} else {
+		// TODO error handling ...
 		receiver.Send(message.TellNotification{
 			Success:    true,
 			ResultCode: "OK",

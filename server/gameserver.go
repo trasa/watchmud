@@ -6,9 +6,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/client"
-	"github.com/trasa/watchmud/db"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/world"
@@ -142,7 +140,7 @@ func (gs *GameServer) Logout(c client.Client, cause string) {
 func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) {
 	// is this connection already authenticated?
 	// see if we can find an existing player ..
-	if msg.Client.GetPlayer() != nil {
+	if msg.Client.Player() != nil {
 		// you've already got one
 		err = msg.Client.Send(message.LoginResponse{
 			Success:    false,
@@ -172,65 +170,58 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) 
 
 	// todo authentication and stuff - does GRPC have a built in authentication method?
 
-	playerName := msg.Message.GetLoginRequest().PlayerName
-	playerData, err := db.GetPlayerData(playerName)
-	if err != nil {
-		log.Error().Err(err).Str("playerName", playerName).Msg("Error trying to retrieve playerData")
-		clientErr := msg.Client.Send(message.LoginResponse{
-			Success:    false,
-			ResultCode: "PLAYER_DATA_ERROR",
-		})
-		if clientErr != nil {
-			log.Error().Err(err).Msg("client error trying to send PLAYER_DATA_ERROR on login")
-		}
-		return // err
-	}
-	player := NewClientPlayerFromPlayerData(msg.Message.GetLoginRequest().PlayerName, &playerData, msg.Client)
+	//playerName := msg.Message.GetLoginRequest().PlayerName
+	//playerData, err := db.GetPlayerData(playerName)
+	//player := NewClientPlayerFromPlayerData(msg.Message.GetLoginRequest().PlayerName, &playerData, msg.Client)
 
 	// load inventory: have to convert PlayerInventoryData into
 	// instances and definitions here, because we need 'the world' to do it.
-	for _, inv := range playerData.Inventory {
-		inst, err := gs.world.CreateObjectInstance(inv.ZoneId, inv.DefinitionId, inv.InstanceId)
-		if err != nil {
-			log.Error().Err(err).Msgf("Error trying to load player %d (%s) inventory instance (%s-%s-%s) -- %s", playerData.Id, playerName, inv.ZoneId, inv.DefinitionId, inv.InstanceId, err)
-			clientErr := msg.Client.Send(message.LoginResponse{
-				Success:    false,
-				ResultCode: "PLAYER_INVENTORY_DATA_ERROR",
-			})
-			if clientErr != nil {
-				log.Error().Err(clientErr).Msg("client error trying to send PLAYER_INVENTORY_DATA_ERROR on login")
+	/*
+		for _, inv := range playerData.Inventory {
+			inst, err := gs.world.CreateObjectInstance(inv.ZoneId, inv.DefinitionId, inv.InstanceId)
+			if err != nil {
+				log.Error().Err(err).Msgf("Error trying to load player %d (%s) inventory instance (%s-%s-%s) -- %s", playerData.Id, playerName, inv.ZoneId, inv.DefinitionId, inv.InstanceId, err)
+				clientErr := msg.Client.Send(message.LoginResponse{
+					Success:    false,
+					ResultCode: "PLAYER_INVENTORY_DATA_ERROR",
+				})
+				if clientErr != nil {
+					log.Error().Err(clientErr).Msg("client error trying to send PLAYER_INVENTORY_DATA_ERROR on login")
+				}
+				return err
 			}
-			return err
+			player.Inventory().Load(inst)
 		}
-		player.Inventory().Load(inst)
-	}
+	*/
 	// slots - need inventory before we can set slots
-	for _, sd := range playerData.Slots.Slots {
-		inst, exists := player.Inventory().GetByInstanceId(sd.InstanceId)
-		if !exists {
-			log.Error().Msgf("Error trying to load player %d (%s) slot: %d object instance doesn't exist in inventory: %s",
-				playerData.Id, playerName, sd.Location, sd.InstanceId)
-		} else {
-			player.Slots().Set(slot.Location(sd.Location), inst)
+	/*
+		for _, sd := range playerData.Slots.Slots {
+			inst, exists := player.Inventory().GetByInstanceId(sd.InstanceId)
+			if !exists {
+				log.Error().Msgf("Error trying to load player %d (%s) slot: %d object instance doesn't exist in inventory: %s",
+					playerData.Id, playerName, sd.Location, sd.InstanceId)
+			} else {
+				player.Slots().Set(slot.Location(sd.Location), inst)
+			}
 		}
-	}
+	*/
 
-	msg.Client.SetPlayer(player)
-	msg.Player = player
+	//msg.Client.SetPlayer(player)
+	//msg.Player = player
 
 	// add player to world
-	gs.world.AddPlayer(player)
+	//gs.world.AddPlayer(player)
 
-	err = player.Send(message.LoginResponse{
-		Success:    true,
-		ResultCode: "OK",
-		PlayerName: player.GetName(),
-	})
+	//err = player.Send(message.LoginResponse{
+	//	Success:    true,
+	//	ResultCode: "OK",
+	//	PlayerName: player.GetName(),
+	//})
 	return
 }
 
 func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) (err error) {
-	if msg.Client.GetPlayer() != nil {
+	if msg.Client.Player() != nil {
 		// you've already got one
 		err = msg.Client.Send(message.CreatePlayerResponse{
 			Success:    false,

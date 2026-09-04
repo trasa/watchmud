@@ -1,43 +1,45 @@
 package world
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
-	"testing"
 )
 
 type HandleDropSuite struct {
 	suite.Suite
-	world      *World
-	player     *player.TestPlayer
-	testClient *client.TestClient
+	w *World
+	p *player.Player
+	r *player.Recorder
+	c *client.TestClient
 }
 
 func TestHandleDropSuite(t *testing.T) {
 	suite.Run(t, new(HandleDropSuite))
 }
 
-func (suite *HandleDropSuite) SetupTest() {
-	suite.world, _ = newTestWorld()
-	suite.player = player.NewTestPlayer("foo")
-	suite.world.AddPlayer(suite.player)
-	suite.testClient = client.NewTestClient(suite.player)
+func (s *HandleDropSuite) SetupTest() {
+	s.w, _ = newTestWorld()
+	s.p = player.NewTestPlayer("foo", "foo", s.r)
+	s.w.AddPlayer(s.p)
+	s.c = client.NewTestClient(s.p)
 }
 
-func (suite *HandleDropSuite) TestDrop_success() {
+func (s *HandleDropSuite) TestDrop_success() {
 	// get first
 	getGameMessage, err := message.NewGameMessage(
 		message.GetRequest{
 			Target: "knife",
 		})
-	suite.Assert().NoError(err)
+	s.Assert().NoError(err)
 
-	getHP := gameserver.NewHandlerParameter(suite.testClient, getGameMessage)
-	suite.world.handleGet(getHP)
+	getHP := gameserver.NewHandlerParameter(s.c, getGameMessage)
+	s.w.handleGet(getHP)
 
 	// now drop
 	dropGameMessage, err := message.NewGameMessage(
@@ -45,35 +47,33 @@ func (suite *HandleDropSuite) TestDrop_success() {
 			Target: "knife",
 		},
 	)
-	suite.Assert().NoError(err)
+	s.Assert().NoError(err)
 
-	dropHP := gameserver.NewHandlerParameter(suite.testClient, dropGameMessage)
-	suite.world.handleDrop(dropHP)
+	dropHP := gameserver.NewHandlerParameter(s.c, dropGameMessage)
+	s.w.handleDrop(dropHP)
 
-	suite.Assert().Equal(2, suite.player.SentMessageCount())
-	//noinspection GoVetCopyLock
-	getresp := suite.player.GetSentResponse(0).(message.GetResponse)
-	suite.Assert().True(getresp.Success)
+	s.Assert().Equal(2, len(s.r.Sent))
+	getresp := s.r.Sent[0].(message.GetResponse)
+	s.Assert().True(getresp.Success)
 
-	//noinspection GoVetCopyLock
-	dropresp := suite.player.GetSentResponse(1).(message.DropResponse)
-	suite.Assert().True(dropresp.Success)
+	dropresp := s.r.Sent[1].(message.DropResponse)
+	s.Assert().True(dropresp.Success)
 
 	// player now has zero items, room has its starting two
-	suite.Assert().Equal(0, len(suite.player.Inventory().GetAll()))
-	suite.Assert().Equal(2, len(suite.world.StartRoom.GetAllInventory()))
+	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
+	s.Assert().Equal(2, len(s.w.StartRoom.GetAllInventory()))
 }
 
-func (suite *HandleDropSuite) TestDrop_Alias() {
+func (s *HandleDropSuite) TestDrop_Alias() {
 	// get first
 	getGameMessage, err := message.NewGameMessage(
 		message.GetRequest{
 			Target: "helmet",
 		})
-	suite.Assert().NoError(err)
+	s.Assert().NoError(err)
 
-	getHP := gameserver.NewHandlerParameter(suite.testClient, getGameMessage)
-	suite.world.handleGet(getHP)
+	getHP := gameserver.NewHandlerParameter(s.c, getGameMessage)
+	s.w.handleGet(getHP)
 
 	// now drop
 	dropGameMessage, err := message.NewGameMessage(
@@ -81,67 +81,66 @@ func (suite *HandleDropSuite) TestDrop_Alias() {
 			Target: "helmet",
 		},
 	)
-	suite.Assert().NoError(err)
+	s.Assert().NoError(err)
 
-	dropHP := gameserver.NewHandlerParameter(suite.testClient, dropGameMessage)
-	suite.world.handleDrop(dropHP)
+	dropHP := gameserver.NewHandlerParameter(s.c, dropGameMessage)
+	s.w.handleDrop(dropHP)
 
-	suite.Assert().Equal(2, suite.player.SentMessageCount())
+	s.Assert().Equal(2, len(s.r.Sent))
 	//noinspection GoVetCopyLock
-	getresp := suite.player.GetSentResponse(0).(message.GetResponse)
-	suite.Assert().True(getresp.Success)
+	getresp := s.r.Sent[0].(message.GetResponse)
+	s.Assert().True(getresp.Success)
 
 	//noinspection GoVetCopyLock
-	dropresp := suite.player.GetSentResponse(1).(message.DropResponse)
-	suite.Assert().True(dropresp.Success)
+	dropresp := s.r.Sent[1].(message.DropResponse)
+	s.Assert().True(dropresp.Success)
 
 	// player now has zero items, room has its starting two
-	suite.Assert().Equal(0, len(suite.player.Inventory().GetAll()))
-	suite.Assert().Equal(2, len(suite.world.StartRoom.GetAllInventory()))
+	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
+	s.Assert().Equal(2, len(s.w.StartRoom.GetAllInventory()))
 }
 
-func (suite *HandleDropSuite) TestDrop_NoTarget() {
+func (s *HandleDropSuite) TestDrop_NoTarget() {
 	// drop
 	dropGameMessage, err := message.NewGameMessage(message.DropRequest{Target: ""})
-	suite.Assert().NoError(err)
+	s.Assert().NoError(err)
 
-	dropHP := gameserver.NewHandlerParameter(suite.testClient, dropGameMessage)
-	suite.world.handleDrop(dropHP)
+	dropHP := gameserver.NewHandlerParameter(s.c, dropGameMessage)
+	s.w.handleDrop(dropHP)
 
-	suite.Assert().Equal(1, suite.player.SentMessageCount())
+	s.Assert().Equal(1, len(s.r.Sent))
 
-	//noinspection GoVetCopyLock
-	dropresp := suite.player.GetSentResponse(0).(message.DropResponse)
-	suite.Assert().False(dropresp.Success)
-	suite.Assert().Equal("NO_TARGET", dropresp.GetResultCode())
+	dropresp := s.r.Sent[0].(message.DropResponse)
+	s.Assert().False(dropresp.Success)
+	s.Assert().Equal("NO_TARGET", dropresp.GetResultCode())
 }
 
-func (suite *HandleDropSuite) TestDrop_NotFound() {
+func (s *HandleDropSuite) TestDrop_NotFound() {
 	// drop (but you don't have one)
 	dropGameMessage, err := message.NewGameMessage(message.DropRequest{Target: "knife"})
-	suite.Assert().NoError(err)
+	s.Assert().NoError(err)
 
-	dropHP := gameserver.NewHandlerParameter(suite.testClient, dropGameMessage)
-	suite.world.handleDrop(dropHP)
+	dropHP := gameserver.NewHandlerParameter(s.c, dropGameMessage)
+	s.w.handleDrop(dropHP)
 
-	suite.Assert().Equal(1, suite.player.SentMessageCount())
+	s.Assert().Equal(1, len(s.r.Sent))
 	//noinspection GoVetCopyLock
-	dropresp := suite.player.GetSentResponse(0).(message.DropResponse)
-	suite.Assert().False(dropresp.Success)
-	suite.Assert().Equal("TARGET_NOT_FOUND", dropresp.GetResultCode())
-	suite.Assert().Equal(0, len(suite.player.Inventory().GetAll()))
+	dropresp := s.r.Sent[0].(message.DropResponse)
+	s.Assert().False(dropresp.Success)
+	s.Assert().Equal("TARGET_NOT_FOUND", dropresp.GetResultCode())
+	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
 }
 
-func (suite *HandleDropSuite) TestDrop_InUse() {
+func (s *HandleDropSuite) TestDrop_InUse() {
 	// get first
 	getGameMessage, err := message.NewGameMessage(
 		message.GetRequest{
 			Target: "knife",
 		})
-	suite.Assert().NoError(err)
+	s.Assert().NoError(err)
 
-	getHP := gameserver.NewHandlerParameter(suite.testClient, getGameMessage)
-	suite.world.handleGet(getHP)
+	getHP := gameserver.NewHandlerParameter(s.c, getGameMessage)
+	s.w.handleGet(getHP)
 
 	// now wield the knife
 	wieldGameMessage, err := message.NewGameMessage(
@@ -149,8 +148,8 @@ func (suite *HandleDropSuite) TestDrop_InUse() {
 			Target:       "knife",
 			SlotLocation: int32(slot.Wield),
 		})
-	suite.Assert().NoError(err)
-	suite.world.handleEquip(gameserver.NewHandlerParameter(suite.testClient, wieldGameMessage))
+	s.Assert().NoError(err)
+	s.w.handleEquip(gameserver.NewHandlerParameter(s.c, wieldGameMessage))
 
 	// now drop
 	dropGameMessage, err := message.NewGameMessage(
@@ -158,18 +157,17 @@ func (suite *HandleDropSuite) TestDrop_InUse() {
 			Target: "knife",
 		},
 	)
-	suite.Assert().NoError(err)
-	dropHP := gameserver.NewHandlerParameter(suite.testClient, dropGameMessage)
+	s.Assert().NoError(err)
+	dropHP := gameserver.NewHandlerParameter(s.c, dropGameMessage)
 
-	suite.world.handleDrop(dropHP)
-	//noinspection GoVetCopyLock
-	dropresp := suite.player.GetSentResponse(2).(message.DropResponse)
-	suite.Assert().False(dropresp.Success)
-	suite.Assert().Equal("TARGET_IN_USE", dropresp.GetResultCode())
-	suite.Assert().Equal(1, len(suite.player.Inventory().GetAll()))
+	s.w.handleDrop(dropHP)
+	dropresp := s.r.Sent[2].(message.DropResponse)
+	s.Assert().False(dropresp.Success)
+	s.Assert().Equal("TARGET_IN_USE", dropresp.GetResultCode())
+	s.Assert().Equal(1, len(s.p.Inventory().GetAll()))
 }
 
-func (suite *HandleDropSuite) TestDrop_InUse_But_Multiple_Items() {
+func (s *HandleDropSuite) TestDrop_InUse_But_Multiple_Items() {
 	// drop knife
 	// - there are two knives on you,
 	//   one you are holding, another in your inventory list.

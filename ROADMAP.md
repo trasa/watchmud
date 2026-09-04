@@ -97,19 +97,19 @@ telnet connection satisfies it too, which is the whole point of doing this befor
 
 Work:
 - New concrete `player.Player` struct in `player/player.go`, absorbing the fields and all 30
-  method bodies from `server/clientplayer.go`.
+  method bodies from `server/clientplayer.go`. **DONE**
 - **Delete `server/clientplayer.go` and `player/testplayer.go`.** Replace the test double
   with a tiny `player.Recorder` implementing `Sender` and capturing sent messages; tests
   become `p := player.New("testdood", rec)` and `rec.Sent(0).(message.LookResponse)`,
   replacing today's `p.GetSentResponse(0)`. Same for `client.TestClient`, which mostly
-  duplicates it.
+  duplicates it. **DONE**
 - Mechanical sweep `player.Player` → `*player.Player` in `spaces/` (`room.go`,
   `roominventory.go`), `world/` (`playerroommap.go`, most `h_*.go`), `gameserver/handlerparameter.go`,
   `client/client.go`.
 - `player/players.go`: `List` maps keyed on `*Player`. Its `sync.RWMutex` is vestigial —
   world state is single-goroutine by design (see the comment in `Room.CreateRoomDescription`)
   and stays that way after telnet, since connection goroutines only push to a channel. Leave
-  the mutex or drop it, but don't let it imply the world is concurrent.
+  the mutex or drop it, but don't let it imply the world is concurrent. **DONE**
 - **Keep `combat.Combatant`.** That interface is real polymorphism — `*player.Player` and
   `*mobile.Instance` both fight, and `combat/melee.go` genuinely must not care which. Don't
   collapse it along with the others.

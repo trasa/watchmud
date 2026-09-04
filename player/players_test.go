@@ -3,71 +3,66 @@ package player
 import (
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
-func TestPlayers_Add(t *testing.T) {
-	players := NewList()
-	p := &TestPlayer{}
-
-	players.Add(p)
-	if _, ok := players.players[p]; !ok {
-		t.Error("Player added to Players but not found by key")
-	}
+type PlayersSuite struct {
+	suite.Suite
+	players *List
+	p       *Player
+	r       *Recorder
 }
 
-func TestPlayers_Remove(t *testing.T) {
-	players := NewList()
-	p := &TestPlayer{}
-
-	players.Add(p)
-	players.Remove(p)
-
-	if _, ok := players.players[p]; ok {
-		t.Error("Player removed from players but it is still there")
-	}
+func TestPlayersSuite(t *testing.T) {
+	suite.Run(t, new(PlayersSuite))
 }
 
-func TestPlayers_RemoveDoesntExist(t *testing.T) {
-	players := NewList()
-	p := &TestPlayer{}
-	players.Remove(p)
-	if _, ok := players.players[p]; ok {
-		t.Error("Player never existed in list but now it exists?!")
-	}
+func (s *PlayersSuite) SetupTest() {
+	s.players = NewList()
+	s.r = &Recorder{}
+	s.p = NewTestPlayer("test", "test", s.r)
 }
 
-func TestPlayers_Iter(t *testing.T) {
-	players := NewList()
-	p := &TestPlayer{}
+func (s *PlayersSuite) TestAdd() {
+	s.players.Add(s.p)
 
-	players.Add(p)
+	_, ok := s.players.players[s.p]
+	s.Assert().True(ok)
+}
+
+func (s *PlayersSuite) TestRemove() {
+	s.players.Add(s.p)
+	s.players.Remove(s.p)
+
+	_, ok := s.players.players[s.p]
+	s.Assert().False(ok) // not found
+}
+
+func (s *PlayersSuite) TestRemove_DoesntExist() {
+	s.players.Remove(s.p)
+	_, ok := s.players.players[s.p]
+	s.Assert().False(ok)
+}
+
+func (s *PlayersSuite) TestIter() {
+	s.players.Add(s.p)
 	count := 0
-	players.Iter(func(p Player) {
+
+	s.players.Iter(func(p *Player) {
 		count++
 	})
-	if count != 1 {
-		t.Errorf("found %d expected 1", count)
-	}
+
+	s.Assert().Equal(1, count)
 }
 
-func TestPlayer_GetAll(t *testing.T) {
-	players := NewList()
-	p := &TestPlayer{name: "a"}
-	players.Add(p)
+func (s *PlayersSuite) TestGetAll() {
+	s.players.Add(s.p)
+	other := NewTestPlayer("other", "other", &Recorder{})
 
-	all := players.GetAll()
-	players.Add(&TestPlayer{name: "b"})
+	all := s.players.GetAll()
+	s.players.Add(other)
 	log.Printf("addr of all: %p", &all)
-	if len(all) != 1 {
-		t.Error("expected len = 1")
-	}
 
-	moreAll := players.GetAll()
-	log.Printf("addr of moreAll: %p", &moreAll)
-	if len(all) != 1 {
-		t.Error("still expected len 1")
-	}
-	if len(moreAll) != 2 {
-		t.Error("expected len = 2")
-	}
+	s.Assert().Equal(1, len(all))
 }

@@ -1,24 +1,24 @@
 package rpc
 
 import (
-	"fmt"
+	"io"
+
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
-	"io"
 )
 
 // An implementation of client.Client
 type client struct {
-	gameServerInstance gameserver.Instance
+	gameServerInstance *gameserver.Instance
 	stream             message.MudComm_SendReceiveServer
 	sendQueue          chan *message.GameMessage // sends down to client
 	quit               chan interface{}          // used to terminate client
-	Player             player.Player
+	Player             *player.Player
 }
 
-func newClient(stream message.MudComm_SendReceiveServer, gs gameserver.Instance) *client {
+func newClient(stream message.MudComm_SendReceiveServer, gs *gameserver.Instance) *client {
 	return &client{
 		gameServerInstance: gs,
 		stream:             stream,
@@ -40,28 +40,20 @@ func (c *client) Close() {
 	close(c.quit)
 }
 
-func (c *client) SetPlayer(player player.Player) {
-	c.Player = player
-}
-
-func (c *client) GetPlayer() player.Player {
-	return c.Player
-}
-
 func (c *client) readPump() {
 	for {
-		gameMessage, err := c.stream.Recv()
+		/*gameMessage*/ _, err := c.stream.Recv()
 		if err == io.EOF {
 			log.Info().Msg("EOF received")
-			c.gameServerInstance.Logout(c, "EOF received")
+			//c.gameServerInstance.Logout(c, "EOF received")
 			return
 		}
 		if err != nil {
 			log.Warn().Err(err).Msg("RPC Read Error")
-			c.gameServerInstance.Logout(c, fmt.Sprintf("Read Error: %v", err))
+			//c.gameServerInstance.Logout(c, fmt.Sprintf("Read Error: %v", err))
 			return
 		}
-		c.gameServerInstance.Receive(gameserver.NewHandlerParameter(c, gameMessage))
+		//c.gameServerInstance.Receive(gameserver.NewHandlerParameter(c, gameMessage))
 	}
 }
 
@@ -71,11 +63,11 @@ func (c *client) writePump() {
 		case msg := <-c.sendQueue:
 			if err := c.stream.Send(msg); err != nil {
 				log.Warn().Err(err).Msg("RPC Write Error")
-				c.gameServerInstance.Logout(c, fmt.Sprintf("Write Error: %v", err))
+				//c.gameServerInstance.Logout(c, fmt.Sprintf("Write Error: %v", err))
 				return
 			}
 		case <-c.quit:
-			c.gameServerInstance.Logout(c, "QUIT channel")
+			//c.gameServerInstance.Logout(c, "QUIT channel")
 			return
 		}
 	}

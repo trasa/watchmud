@@ -10,6 +10,7 @@ func (w *World) handleSay(msg *gameserver.HandlerParameter) {
 	room := w.playerRooms.playerToRoom[msg.Player]
 	if room == nil {
 		// player isn't in a room... not much to say really.
+		// TODO error handling
 		msg.Player.Send(message.SayResponse{
 			Success:    false,
 			ResultCode: "NOT_IN_A_ROOM",
@@ -19,7 +20,7 @@ func (w *World) handleSay(msg *gameserver.HandlerParameter) {
 			Success:    true,
 			ResultCode: "OK",
 			Value:      sayRequest.Value,
-			Sender:     msg.Player.GetName(),
+			Sender:     msg.Player.Name,
 		})
 		msg.Player.Send(message.SayResponse{
 			Success:    true,

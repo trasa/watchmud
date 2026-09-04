@@ -59,7 +59,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 	if err := room.AddInventory(objectToDrop); err != nil {
 		// failed to add to room..
 		log.Error().Msgf("Drop: Error while adding to room, player %s id %s; %s",
-			msg.Player.GetName(),
+			msg.Player.Name,
 			objectToDrop.Id(),
 			err)
 		_ = msg.Player.Send(message.DropResponse{
@@ -73,14 +73,14 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 		// failed to remove from player
 		log.Error().
 			Str("command", "drop").
-			Str("player", msg.Player.GetName()).
+			Str("player", msg.Player.Name).
 			Err(err).
 			Msgf("error while removing from player - object instance %s", objectToDrop.Id())
 
 		removeFromRoomError := room.RemoveInventory(objectToDrop)
 		log.Error().
 			Str("command", "drop").
-			Str("player", msg.Player.GetName()).
+			Str("player", msg.Player.Name).
 			Err(removeFromRoomError).
 			Msgf("error while removing from player, removing from room (duplicate items!) object instance %s", objectToDrop.Id())
 
@@ -99,7 +99,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 		message.DropNotification{
 			Success:    true,
 			ResultCode: "OK",
-			PlayerName: msg.Player.GetName(),
+			PlayerName: msg.Player.Name,
 			Target:     objectToDrop.Definition.Name, // what should this be?! "knife", "a knife", "those knives" ...
 		})
 }

@@ -1,9 +1,10 @@
 package world
 
 import (
+	"log"
+
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
-	"log"
 )
 
 func (w *World) handleGet(msg *gameserver.HandlerParameter) {
@@ -12,6 +13,7 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 	getreq := msg.Message.GetGetRequest()
 	findMode := message.FindMode(getreq.FindMode)
 	if findMode == message.FindIndividual && len(getreq.Target) == 0 {
+		// TODO error handling
 		msg.Player.Send(message.GetResponse{Success: false, ResultCode: "NO_TARGET"})
 		return
 	}
@@ -21,6 +23,7 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 		// target is in room
 
 		if !instPtr.IsGettable() {
+			// TODO error handling
 			msg.Player.Send(message.GetResponse{
 				Success:    false,
 				ResultCode: "NO_TAKE",
@@ -32,7 +35,8 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 		if err := msg.Player.Inventory().Add(instPtr); err != nil {
 			// uh oh failed to add
 			log.Printf("Get: Error while getting, Player %s adding Inventory %v: %s",
-				msg.Player.GetName(), instPtr, err)
+				msg.Player.Name, instPtr, err)
+			// TODO error handling
 			msg.Player.Send(message.GetResponse{Success: false, ResultCode: "ADD_INVENTORY_ERROR"})
 			return
 		}
@@ -40,7 +44,8 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 		// remove from room
 		if err := room.RemoveInventory(instPtr); err != nil {
 			// uh oh failed to remove from room
-			log.Printf("Get: Error while removing from room: Player %s Inventory %s: %s", msg.Player.GetName(), instPtr.Id(), err)
+			log.Printf("Get: Error while removing from room: Player %s Inventory %s: %s", msg.Player.Name, instPtr.Id(), err)
+			// TODO error handling
 			msg.Player.Inventory().Remove(instPtr)
 			msg.Player.Send(message.GetResponse{Success: false, ResultCode: "REMOVE_FROM_ROOM_ERROR"})
 			return
@@ -54,12 +59,13 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 				Success:    true,
 				ResultCode: "OK",
 				Target:     instPtr.Definition.Name, // what should be sent?! needs to handle various articles, plural...
-				PlayerName: msg.Player.GetName(),
+				PlayerName: msg.Player.Name,
 			})
 
 		return
 	} else {
 		// nothing here with that name
+		// TODO error handling
 		msg.Player.Send(message.GetResponse{Success: false, ResultCode: "TARGET_NOT_FOUND"})
 	}
 }

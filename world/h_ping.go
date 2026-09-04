@@ -1,16 +1,17 @@
 package world
 
 import (
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
-	"log"
 )
 
 func (w *World) handlePing(msg *gameserver.HandlerParameter) {
-	//noinspection ALL
+	// TODO remove this constant, use logging parameters intead
 	if VERBOSE_LOGGING {
-		log.Printf("Player %s Ping\n", msg.Player.GetName())
+		log.Trace().Msgf("Player %s Ping", msg.Player.Name)
 	}
+	// TODO error handling
 	msg.Player.Send(message.Pong{
 		Success:    true,
 		ResultCode: "OK",

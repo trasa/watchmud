@@ -1,26 +1,36 @@
 package world
 
 import (
-	"github.com/stretchr/testify/assert"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/spaces"
-	"testing"
 )
 
-func TestPlayerRoomMap_GetPlayers(t *testing.T) {
-	m := NewPlayerRoomMap()
-	bob := player.NewTestPlayer("bob")
-	alice := player.NewTestPlayer("alice")
+type PlayerRoomMapSuite struct {
+	suite.Suite
+	m         *PlayerRoomMap
+	bob       *player.Player
+	alice     *player.Player
+	northRoom *spaces.Room
+}
 
-	northRoom := spaces.NewTestRoom("north")
+func TestPlayerRoomMapSuite(t *testing.T) {
+	suite.Run(t, new(PlayerRoomMapSuite))
+}
 
-	m.Add(bob, northRoom)
-	m.Add(alice, northRoom)
+func (s *PlayerRoomMapSuite) SetupTest() {
+	s.m = NewPlayerRoomMap()
+	s.bob = player.NewTestPlayer("bob", "bob", &player.Recorder{})
+	s.alice = player.NewTestPlayer("alice", "alice", &player.Recorder{})
+	s.northRoom = spaces.NewTestRoom("north")
+	s.m.Add(s.bob, s.northRoom)
+	s.m.Add(s.alice, s.northRoom)
+}
 
-	assert.Equal(t, 2, len(m.GetPlayers(northRoom)))
-
-	m.Remove(bob)
-
-	assert.Equal(t, 1, len(m.GetPlayers(northRoom)))
-
+func (s *PlayerRoomMapSuite) TestGetPlayers() {
+	s.Assert().Equal(2, len(s.m.GetPlayers(s.northRoom)))
+	s.m.Remove(s.bob)
+	s.Assert().Equal(1, len(s.m.GetPlayers(s.northRoom)))
 }

@@ -1,34 +1,43 @@
 package world
 
 import (
-	"github.com/stretchr/testify/assert"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
-	"testing"
 )
 
-func newLookRequestHandlerParameter(t *testing.T, c *client.TestClient) *gameserver.HandlerParameter {
-	msg, err := message.NewGameMessage(message.LookRequest{})
-	assert.NoError(t, err)
-	return gameserver.NewHandlerParameter(c, msg)
+type handleLookSuite struct {
+	worldTestSuite
+	other *player.Player
 }
 
-func TestLook_successful(t *testing.T) {
-	w, _ := newTestWorld()
-	p := player.NewTestPlayer("testdood")
-	other := player.NewTestPlayer("other")
-	w.AddPlayer(p)
-	w.AddPlayer(other)
-	c := client.NewTestClient(p)
+func TestHandleLookSuite(t *testing.T) {
+	suite.Run(t, new(handleLookSuite))
+}
 
-	w.HandleIncomingMessage(newLookRequestHandlerParameter(t, c))
+func (s *handleLookSuite) SetupTest() {
+	s.worldTestSuite.SetupTest()
+	s.other = player.NewTestPlayer("other", "other", &player.Recorder{})
+	s.w.AddPlayer(s.other)
+}
 
-	resp := p.GetSentResponse(0).(message.LookResponse)
-	assert.True(t, resp.Success)
-	assert.NotNil(t, resp.RoomDescription.Name)
-	assert.NotNil(t, resp.RoomDescription.Description)
-	assert.Equal(t, 1, len(resp.RoomDescription.Players))
-	assert.Equal(t, "other", resp.RoomDescription.Players[0])
+func (s *handleLookSuite) handlerParameter() *gameserver.HandlerParameter {
+	msg, err := message.NewGameMessage(message.LookRequest{})
+	s.Assert().NoError(err)
+	return gameserver.NewHandlerParameter(s.c, msg)
+}
+
+func (s *handleLookSuite) TestLook_Successful() {
+
+	s.w.HandleIncomingMessage(s.handlerParameter())
+
+	resp := s.r.Sent[0].(message.LookResponse)
+	s.Assert().True(resp.Success)
+	s.Assert().NotNil(resp.RoomDescription.Name)
+	s.Assert().NotNil(resp.RoomDescription.Description)
+	s.Assert().Equal(1, len(resp.RoomDescription.Players))
+	s.Assert().Equal("other", resp.RoomDescription.Players[0])
 }

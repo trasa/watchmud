@@ -1,10 +1,10 @@
 package world
 
 import (
-	"github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud/db"
-	"github.com/trasa/watchmud/gameserver"
 	"log"
+
+	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/gameserver"
 )
 
 func (w *World) initializeHandlerMap() {
@@ -38,6 +38,7 @@ func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) {
 	handler := w.handlerMap[message.DecodeTypeName(msg.Message.Inner)]
 	if handler == nil {
 		log.Printf("world.HandleIncomingMessage: UNHANDLED messageType: %v, body %s", msg.Message.Inner, msg.Message)
+		// TODO error handling
 		msg.Client.Send(message.ErrorResponse{
 			Success:    false,
 			ResultCode: "UNKNOWN_MESSAGE_TYPE",
@@ -51,10 +52,11 @@ func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) {
 		// TODO what if the player has changed some other player somehow?
 		// (stabbed them, stole from them, etc.)
 		// See #32
-		if msg.Player != nil {
+		// TODO player persistence
+		/*if msg.Player != nil {
 			if err := db.SavePlayer(msg.Player); err != nil {
 				log.Printf("Error saving player %s! Error: %v", msg.Player.GetName(), err)
 			}
-		}
+		}*/
 	}
 }

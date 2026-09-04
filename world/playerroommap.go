@@ -4,32 +4,26 @@ import (
 	"github.com/trasa/syncmap"
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/spaces"
-	"sync"
 )
 
 type PlayerRoomMap struct {
-	sync.RWMutex
-	playerToRoom  map[player.Player]*spaces.Room
-	roomToPlayers syncmap.MapList
+	playerToRoom  map[*player.Player]*spaces.Room
+	roomToPlayers syncmap.MapList // TODO replace this
 }
 
 func NewPlayerRoomMap() *PlayerRoomMap {
 	return &PlayerRoomMap{
-		playerToRoom:  make(map[player.Player]*spaces.Room),
+		playerToRoom:  make(map[*player.Player]*spaces.Room),
 		roomToPlayers: syncmap.NewMapList(),
 	}
 }
 
-func (m *PlayerRoomMap) Add(p player.Player, r *spaces.Room) {
-	m.Lock()
-	defer m.Unlock()
+func (m *PlayerRoomMap) Add(p *player.Player, r *spaces.Room) {
 	m.playerToRoom[p] = r
 	m.roomToPlayers.Add(r, p)
 }
 
-func (m *PlayerRoomMap) Remove(p player.Player) {
-	m.Lock()
-	defer m.Unlock()
+func (m *PlayerRoomMap) Remove(p *player.Player) {
 	r := m.playerToRoom[p]
 	delete(m.playerToRoom, p)
 	if r != nil {
@@ -38,19 +32,14 @@ func (m *PlayerRoomMap) Remove(p player.Player) {
 	}
 }
 
-func (m *PlayerRoomMap) Get(p player.Player) *spaces.Room {
-	m.RLock()
-	defer m.RUnlock()
+func (m *PlayerRoomMap) Get(p *player.Player) *spaces.Room {
 	return m.playerToRoom[p]
 }
 
-func (m *PlayerRoomMap) GetPlayers(r *spaces.Room) []player.Player {
-	m.RLock()
-	defer m.RUnlock()
-
-	players := make([]player.Player, 0, len(m.roomToPlayers.Get(r)))
+func (m *PlayerRoomMap) GetPlayers(r *spaces.Room) []*player.Player {
+	players := make([]*player.Player, 0, len(m.roomToPlayers.Get(r)))
 	for _, p := range m.roomToPlayers.Get(r) {
-		players = append(players, p.(player.Player))
+		players = append(players, p.(*player.Player))
 	}
 	return players
 }

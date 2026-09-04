@@ -2,19 +2,20 @@ package rpc
 
 import (
 	"fmt"
+	"net"
+
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
 	"google.golang.org/grpc"
-	"net"
 )
 
-type server struct {
-	gameServerInstance gameserver.Instance
+type Server struct {
+	gameServerInstance *gameserver.Instance
 }
 
-// Begin listening on address and port
-func (s *server) Run(port int) {
+// Run listener on address and port
+func (s *Server) Run(port int) {
 	// TODO get from configuration
 	log.Printf("gRPC listening on port %d", port)
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
@@ -29,7 +30,7 @@ func (s *server) Run(port int) {
 
 // While this method is open, we have a connection from the client to the server.
 // When the client disconnects (or this returns), the connection is closed.
-func (s *server) SendReceive(stream message.MudComm_SendReceiveServer) error {
+func (s *Server) SendReceive(stream message.MudComm_SendReceiveServer) error {
 	c := newClient(stream, s.gameServerInstance)
 	go c.writePump()
 	c.readPump()
@@ -37,8 +38,8 @@ func (s *server) SendReceive(stream message.MudComm_SendReceiveServer) error {
 	return nil
 }
 
-func NewServer(gs gameserver.Instance) *server {
-	s := server{
+func NewServer(gs *gameserver.Instance) *Server {
+	s := Server{
 		gameServerInstance: gs,
 	}
 	return &s

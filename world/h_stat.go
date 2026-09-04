@@ -1,8 +1,7 @@
 package world
 
 import (
-	"log"
-
+	"github.com/rs/zerolog/log"
 	message "github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
 )
@@ -12,13 +11,13 @@ func (w *World) handleStat(msg *gameserver.HandlerParameter) {
 	if err := player.Send(message.StatResponse{
 		Success:       true,
 		ResultCode:    "OK",
-		PlayerName:    player.GetName(),
-		CurrentHealth: player.GetCurrentHealth(),
-		MaxHealth:     player.GetMaxHealth(),
-		Race:          "", // TODO rename race.RaceName,
+		PlayerName:    player.Name,
+		CurrentHealth: 0,  // TODO
+		MaxHealth:     0,  // TODO
+		Race:          "", // TODO rename Lineage
 		Class:         "", // TODO rename? class.ClassName,
-		ZoneId:        player.Location().ZoneId,
-		RoomId:        player.Location().RoomId,
+		ZoneId:        "", // TODO player.Location.ZoneId,
+		RoomId:        "", // TODO player.Location.RoomId,
 		// TODO change to correct abilities
 		Strength:     0,
 		Dexterity:    0,
@@ -27,6 +26,6 @@ func (w *World) handleStat(msg *gameserver.HandlerParameter) {
 		Wisdom:       0,
 		Charisma:     0,
 	}); err != nil {
-		log.Printf("stat: Failed to send StatResponse to player %s: %v", player.GetName(), err)
+		log.Error().Msgf("stat: Failed to send StatResponse to player %s: %v", player.Name, err)
 	}
 }

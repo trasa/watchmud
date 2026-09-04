@@ -1,56 +1,78 @@
 package world
 
 import (
-	"github.com/stretchr/testify/assert"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
-	"testing"
 )
 
-func newTellAllRequestHandlerParameter(t *testing.T, c *client.TestClient, value string) *gameserver.HandlerParameter {
+type handleTellAllSuite struct {
+	worldTestSuite
+	sender       *player.Player
+	senderRec    *player.Recorder
+	senderClient *client.TestClient
+	receiver     *player.Player
+	receiverRec  *player.Recorder
+	other        *player.Player
+	otherRec     *player.Recorder
+}
+
+func TestHandleTellAllSuite(t *testing.T) {
+	suite.Run(t, new(handleTellAllSuite))
+}
+
+func (s *handleTellAllSuite) SetupTest() {
+	s.worldTestSuite.SetupTest()
+	s.senderRec = &player.Recorder{}
+	s.sender = player.NewTestPlayer("sender", "sender", s.senderRec)
+	s.w.AddPlayer(s.sender)
+	s.senderClient = client.NewTestClient(s.sender)
+
+	s.receiverRec = &player.Recorder{}
+	s.receiver = player.NewTestPlayer("receiver", "receiver", s.receiverRec)
+	s.w.AddPlayer(s.receiver)
+
+	s.otherRec = &player.Recorder{}
+	s.other = player.NewTestPlayer("other", "other", s.otherRec)
+	s.w.AddPlayer(s.other)
+}
+
+func (s *handleTellAllSuite) handlerParameter(value string) *gameserver.HandlerParameter {
 	msg, err := message.NewGameMessage(message.TellAllRequest{
 		Value: value,
 	})
-	assert.NoError(t, err)
-	return gameserver.NewHandlerParameter(c, msg)
+	s.Assert().NoError(err)
+	return gameserver.NewHandlerParameter(s.senderClient, msg)
 }
 
-func TestHandleTellAll_success(t *testing.T) {
-	w, _ := newTestWorld()
-	senderPlayer := player.NewTestPlayer("sender")
-	otherPlayer := player.NewTestPlayer("other")
-	bobPlayer := player.NewTestPlayer("bob")
-	w.AddPlayer(senderPlayer, otherPlayer, bobPlayer)
-	c := client.NewTestClient(senderPlayer)
+func (s *handleTellAllSuite) TestSuccess() {
 
-	w.handleTellAll(newTellAllRequestHandlerParameter(t, c, "hi"))
+	s.w.handleTellAll(s.handlerParameter("hi"))
 
 	// did we tell otherPlayer?
-	assert.Equal(t, 1, otherPlayer.SentMessageCount())
-	assert.Equal(t, 1, bobPlayer.SentMessageCount())
+	s.Assert().Equal(1, len(s.otherRec.Sent))
+	s.Assert().Equal(1, len(s.receiverRec.Sent))
+
 	// sender should have gotten response but NOT part of the send to all players
-	assert.Equal(t, 1, senderPlayer.SentMessageCount())
-	senderResponse := senderPlayer.GetSentResponse(0).(message.TellAllResponse)
-	assert.True(t, senderResponse.Success)
+	s.Assert().Equal(1, len(s.senderRec.Sent))
+	senderResponse := s.senderRec.Sent[0].(message.TellAllResponse)
+	s.Assert().True(senderResponse.Success)
 }
 
-func TestHandleTellAll_noValue(t *testing.T) {
-	w, _ := newTestWorld()
-	senderPlayer := player.NewTestPlayer("sender")
-	otherPlayer := player.NewTestPlayer("other")
-	w.AddPlayer(senderPlayer, otherPlayer)
-	c := client.NewTestClient(senderPlayer)
-
-	w.handleTellAll(newTellAllRequestHandlerParameter(t, c, ""))
+func (s *handleTellAllSuite) TestNoValue() {
+	s.w.handleTellAll(s.handlerParameter(""))
 
 	// did we tell otherPlayer? (should be 0)
-	assert.Equal(t, 0, otherPlayer.SentMessageCount())
+	s.Assert().Equal(0, len(s.otherRec.Sent))
+	s.Assert().Equal(0, len(s.receiverRec.Sent))
 
 	// sender should have gotten response but NOT part of the send to all players
-	assert.Equal(t, 1, senderPlayer.SentMessageCount())
+	s.Assert().Equal(1, len(s.senderRec.Sent))
 
-	senderResponse := senderPlayer.GetSentResponse(0).(message.TellAllResponse)
-	assert.False(t, senderResponse.Success)
+	senderResponse := s.senderRec.Sent[0].(message.TellAllResponse)
+	s.Assert().False(senderResponse.Success)
 }

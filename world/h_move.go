@@ -11,21 +11,23 @@ import (
 func (w *World) handleMove(msg *gameserver.HandlerParameter) {
 
 	// is player in a fight?
-	if w.fightLedger.IsFighting(msg.Player) || w.fightLedger.IsBeingFought(msg.Player) {
-		msg.Player.Send(message.MoveResponse{
-			Success:    false,
-			ResultCode: "IN_A_FIGHT",
-		})
-		return
-	}
-
+	// TODO reimplement
+	/*
+		if w.fightLedger.IsFighting(msg.Player) || w.fightLedger.IsBeingFought(msg.Player) {
+			msg.Player.Send(message.MoveResponse{
+				Success:    false,
+				ResultCode: "IN_A_FIGHT",
+			})
+			return
+		}
+	*/
 	// go somewhere
 	playerRoom := w.getRoomContainingPlayer(msg.Player)
 	// get the direction we want to go to
 	dir := direction.Direction(msg.Message.GetMoveRequest().Direction)
 
 	log.Printf("player %s in room %s wants to move %s",
-		msg.Player.GetName(),
+		msg.Player.Name,
 		playerRoom.Name,
 		dir.String(),
 	)
@@ -35,6 +37,7 @@ func (w *World) handleMove(msg *gameserver.HandlerParameter) {
 		// make it happen
 		w.movePlayer(msg.Player, dir, playerRoom, targetRoom)
 		// send response message
+		// TODO error handling
 		msg.Player.Send(message.MoveResponse{
 			Success:         true,
 			ResultCode:      "OK",
@@ -42,6 +45,7 @@ func (w *World) handleMove(msg *gameserver.HandlerParameter) {
 		})
 	} else {
 		// you can't go that way, tell player about error
+		// TODO error handling
 		msg.Player.Send(message.MoveResponse{
 			Success:    false,
 			ResultCode: "CANT_GO_THAT_WAY",

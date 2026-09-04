@@ -11,19 +11,21 @@ func (w *World) handleRestore(msg *gameserver.HandlerParameter) {
 
 	targetRoom := w.getRoomContainingPlayer(msg.Player)
 	if targetRoom == nil {
+		// TODO error handling
 		_ = msg.Player.Send(message.RestoreResponse{Success: false, ResultCode: "YOU_ARE_NOT_IN_A_ROOM"})
 		return
 	}
 
 	logWizCommand(msg.Player, "restore", "Player %s is attempting to restore %s",
-		msg.Player.GetName(), restoreRequest.Target)
+		msg.Player.Name, restoreRequest.Target)
 
 	// find a matching player
 	if targetPlayer, found := targetRoom.FindPlayer(restoreRequest.Target); found {
-		targetPlayer.Restore()
+		// TODO implement restore
+		//targetPlayer.Restore()
 		targetRoom.Notify(message.RestoreNotification{
 			IsPlayer: true,
-			Target:   targetPlayer.GetName(),
+			Target:   targetPlayer.Name,
 		})
 		_ = msg.Player.Send(message.RestoreResponse{Success: true, ResultCode: "OK"})
 		return

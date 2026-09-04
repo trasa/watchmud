@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
@@ -15,7 +17,39 @@ import (
 	"github.com/trasa/watchmud/zonereset"
 )
 
-func TestWorld_New(t *testing.T) {
+type worldTestSuite struct {
+	suite.Suite
+	w *World
+	r *player.Recorder
+	p *player.Player
+	c *client.TestClient
+}
+
+// sent returns the ith message in the recorder
+func sent[T any](t *testing.T, r *player.Recorder, i int) T {
+	t.Helper()
+	require.Greater(t, len(r.Sent), i, "wanted Sent[%d], only %d sent", i, len(r.Sent))
+	v, ok := r.Sent[i].(T)
+	require.Truef(t, ok, "Sent[%d] is %T, want %T", i, r.Sent[i], *new(T))
+	return v
+}
+
+func (s *worldTestSuite) handlerParameter(req interface{}) *gameserver.HandlerParameter {
+	s.T().Helper()
+	msg, err := message.NewGameMessage(req)
+	s.Require().NoError(err)
+	return gameserver.NewHandlerParameter(s.c, msg)
+}
+
+func (s *worldTestSuite) SetupTest() {
+	s.w, _ = newTestWorld()
+	s.r = &player.Recorder{}
+	s.p = player.NewTestPlayer("testdood", "testdood", s.r)
+	s.w.AddPlayer(s.p)
+	s.c = client.NewTestClient(s.p)
+}
+
+func TestWorldNew(t *testing.T) {
 	settings := loader.Settings{
 		StartZone: "z",
 		StartRoom: "r",
@@ -35,28 +69,22 @@ func TestWorld_New(t *testing.T) {
 	assert.NotNil(t, w)
 }
 
-func TestWorld_handleMessage_unknownMessageType(t *testing.T) {
-	w, _ := newTestWorld()
-	p := player.NewTestPlayer("sender")
-	c := client.NewTestClient(p)
+func (s *worldTestSuite) TestUnknownMessageType() {
 	m := &message.GameMessage{} // not a valid message, has no inner type
-	h := gameserver.NewHandlerParameter(c, m)
+	h := gameserver.NewHandlerParameter(s.c, m)
 
-	w.HandleIncomingMessage(h)
+	s.w.HandleIncomingMessage(h)
 
-	resp := c.GetSentResponse(0).(message.ErrorResponse)
-	assert.False(t, resp.Success)
-	assert.Equal(t, "UNKNOWN_MESSAGE_TYPE", resp.ResultCode)
+	resp := sent[message.ErrorResponse](s.T(), s.r, 0)
+	s.Assert().False(resp.Success)
+	s.Assert().Equal("UNKNOWN_MESSAGE_TYPE", resp.ResultCode)
 }
 
-func TestWorld_RemovePlayer(t *testing.T) {
-	w, _ := newTestWorld()
-	p := player.NewTestPlayer("dood")
-	w.AddPlayer(p)
-	w.RemovePlayer(p)
+func (s *worldTestSuite) TestRemovePlayer() {
+	s.w.RemovePlayer(s.p)
 
-	assert.Equal(t, 0, w.playerList.Count())
-	assert.Nil(t, w.playerRooms.playerToRoom[p])
-	assert.Equal(t, 0, len(w.playerRooms.roomToPlayers.Get(w.StartRoom)))
-	assert.Equal(t, 0, len(w.StartRoom.GetPlayers()))
+	s.Assert().Equal(0, s.w.playerList.Count())
+	s.Assert().Nil(s.w.playerRooms.playerToRoom[s.p])
+	s.Assert().Equal(0, len(s.w.playerRooms.roomToPlayers.Get(s.w.StartRoom)))
+	s.Assert().Equal(0, len(s.w.StartRoom.GetPlayers()))
 }

@@ -75,41 +75,44 @@ func (w *World) initialLoad() (err error) {
 // AddPlayer or players to the world putting them in the correct room they were
 // in last time, or the start room if we can't figure that out.
 // Don't send room notifications.
-func (w *World) AddPlayer(players ...player.Player) {
+func (w *World) AddPlayer(players ...*player.Player) {
 	for _, p := range players {
-		log.Printf("Adding Player: %s", p.GetName())
-		r, exists := w.findRoomByLocation(p.Location())
-		if !exists {
-			log.Printf("Adding player %s to location %s but it doesn't exist - using start room instead.",
-				p.GetName(), p.Location())
-			r = w.StartRoom
-		}
+		log.Printf("Adding Player: %s", p.Name)
+		// TODO implement location ...
+		/*
+			r, exists := w.findRoomByLocation(p.Location())
+			if !exists {
+				log.Printf("Adding player %s to location %s but it doesn't exist - using start room instead.",
+					p.Name, p.Location)
+				r = w.StartRoom
+			}*/
 		w.playerList.Add(p)
-		w.playerRooms.Add(p, r)
-		r.AddPlayer(p)
+		//w.playerRooms.Add(p, r)
+		//r.AddPlayer(p)
 	}
 }
 
-func (w *World) RemovePlayer(players ...player.Player) {
+func (w *World) RemovePlayer(players ...*player.Player) {
 	for _, p := range players {
-		log.Printf("Removing Player: %s", p.GetName())
+		log.Printf("Removing Player: %s", p.Name)
 		w.playerList.Remove(p)
 		w.playerRooms.Remove(p)
 	}
 }
 
 // Player is moving from src room to dest room.
-func (w *World) movePlayer(p player.Player, dir direction.Direction, src *spaces.Room, dest *spaces.Room) {
+func (w *World) movePlayer(p *player.Player, dir direction.Direction, src *spaces.Room, dest *spaces.Room) {
 	src.PlayerLeaves(p, dir)
 	dest.PlayerEnters(p)
 	w.playerRooms.Remove(p)
 	w.playerRooms.Add(p, dest)
-	p.Location().RoomId = dest.Id
-	p.Location().ZoneId = dest.Zone.Id
+	// TODO reimplement
+	//p.Location().RoomId = dest.Id
+	//p.Location().ZoneId = dest.Zone.Id
 }
 
 // Player is jumping from the room they are currently in to the destination.
-func (w *World) movePlayerMagically(p player.Player, dest *spaces.Room) {
+func (w *World) movePlayerMagically(p *player.Player, dest *spaces.Room) {
 	src := w.getRoomContainingPlayer(p)
 	w.movePlayer(p, direction.None, src, dest)
 }
@@ -132,7 +135,7 @@ func (w *World) removeMobile(mob *mobile.Instance) {
 	w.mobileRooms.Remove(mob)
 }
 
-func (w *World) getRoomContainingPlayer(p player.Player) *spaces.Room {
+func (w *World) getRoomContainingPlayer(p *player.Player) *spaces.Room {
 	return w.playerRooms.Get(p)
 }
 
@@ -157,21 +160,22 @@ func (w *World) findRoomByLocation(loc *player.Location) (*spaces.Room, bool) {
 	return w.findRoomById(loc.ZoneId, loc.RoomId)
 }
 
-func (w *World) findPlayerByName(name string) player.Player {
+func (w *World) findPlayerByName(name string) *player.Player {
 	return w.playerList.FindByName(name)
 }
 
 // Send a message to all players in the world.
 func (w *World) SendToAllPlayers(message interface{}) {
-	w.playerList.Iter(func(p player.Player) {
+	w.playerList.Iter(func(p *player.Player) {
+		// TODO handle error
 		p.Send(message)
 	})
 }
 
-func (w *World) SendToAllPlayersExcept(exception player.Player, message interface{}) {
-	w.playerList.Iter(func(p player.Player) {
+func (w *World) SendToAllPlayersExcept(exception *player.Player, message interface{}) {
+	w.playerList.Iter(func(p *player.Player) {
 		if exception != p {
-			p.Send(message)
+			p.Send(message) // TODO error handling
 		}
 	})
 }

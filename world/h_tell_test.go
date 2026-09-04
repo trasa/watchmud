@@ -1,64 +1,74 @@
 package world
 
 import (
-	"github.com/stretchr/testify/assert"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
-	"testing"
 )
 
-func newTellRequestHandlerParameter(t *testing.T, c *client.TestClient, receiver string, value string) *gameserver.HandlerParameter {
+type handleTellSuite struct {
+	worldTestSuite
+	sender       *player.Player
+	senderRec    *player.Recorder
+	senderClient *client.TestClient
+	receiver     *player.Player
+	receiverRec  *player.Recorder
+}
+
+func TestHandleTellSuite(t *testing.T) {
+	suite.Run(t, new(handleTellSuite))
+}
+
+func (s *handleTellSuite) SetupTest() {
+	s.worldTestSuite.SetupTest()
+	s.senderRec = &player.Recorder{}
+	s.sender = player.NewTestPlayer("sender", "sender", s.senderRec)
+	s.w.AddPlayer(s.sender)
+	s.senderClient = client.NewTestClient(s.sender)
+
+	s.receiverRec = &player.Recorder{}
+	s.receiver = player.NewTestPlayer("receiver", "receiver", s.receiverRec)
+	s.w.AddPlayer(s.receiver)
+}
+
+func (s *handleTellSuite) handlerParameter(value string) *gameserver.HandlerParameter {
 	msg, err := message.NewGameMessage(message.TellRequest{
-		ReceiverPlayerName: receiver,
+		ReceiverPlayerName: s.receiver.Name,
 		Value:              value,
 	})
-	assert.NoError(t, err)
-	return gameserver.NewHandlerParameter(c, msg)
+	s.Assert().NoError(err)
+	return gameserver.NewHandlerParameter(s.senderClient, msg)
 }
 
-// tell receiver about it
-func TestHandleTell_success(t *testing.T) {
-	// arrange
-	w, _ := newTestWorld()
-	senderPlayer := player.NewTestPlayer("sender")
-	receiverPlayer := player.NewTestPlayer("receiver")
-	w.AddPlayer(receiverPlayer)
-	w.AddPlayer(senderPlayer)
-	c := client.NewTestClient(senderPlayer)
+func (s *handleTellSuite) TestHandleTell() {
+	s.w.handleTell(s.handlerParameter("hi"))
 
-	// act
-	w.handleTell(newTellRequestHandlerParameter(t, c, "receiver", "hi"))
-
-	// assert
 	// assert tell to receiver
-	assert.Equal(t, 1, receiverPlayer.SentMessageCount())
-	recdMessage := receiverPlayer.GetSentResponse(0).(message.TellNotification)
-	assert.Equal(t, senderPlayer.GetName(), recdMessage.Sender)
-	assert.Equal(t, "hi", recdMessage.Value)
+	s.Assert().Equal(1, len(s.receiverRec.Sent))
+	recdMessage := s.receiverRec.Sent[0].(message.TellNotification)
+	s.Assert().Equal(s.sender.Name, recdMessage.Sender)
+	s.Assert().Equal("hi", recdMessage.Value)
 
 	// assert tell-response to sender
-	assert.Equal(t, 1, senderPlayer.SentMessageCount())
-	senderResponse := senderPlayer.GetSentResponse(0).(message.TellResponse)
-	assert.Equal(t, "OK", senderResponse.ResultCode)
-	assert.True(t, senderResponse.Success)
+	s.Assert().Equal(1, len(s.senderRec.Sent))
+	response := s.senderRec.Sent[0].(message.TellResponse)
+	s.Assert().Equal("OK", response.ResultCode)
+	s.Assert().True(response.Success)
 }
 
-func TestHandleTell_receiverNotFound(t *testing.T) {
-	// arrange
-	w, _ := newTestWorld()
-	senderPlayer := player.NewTestPlayer("sender")
-	c := client.NewTestClient(senderPlayer)
-	// note: receiver doesn't exist
-	w.AddPlayer(senderPlayer)
+func (s *handleTellSuite) ReceiverNotFound() {
+	s.w.RemovePlayer(s.receiver)
 
 	// act
-	w.handleTell(newTellRequestHandlerParameter(t, c, "receiver", "hi"))
+	s.w.handleTell(s.handlerParameter("hi"))
 
 	// assert tell-response to sender
-	assert.Equal(t, 1, senderPlayer.SentMessageCount())
-	senderResponse := senderPlayer.GetSentResponse(0).(message.TellResponse)
-	assert.Equal(t, "TO_PLAYER_NOT_FOUND", senderResponse.ResultCode)
-	assert.False(t, senderResponse.Success)
+	s.Assert().Equal(1, len(s.senderRec.Sent))
+	response := s.senderRec.Sent[0].(message.TellResponse)
+	s.Assert().Equal("TO_PLAYER_NOT_FOUND", response.ResultCode)
+	s.Assert().False(response.Success)
 }

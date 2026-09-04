@@ -6,5 +6,5 @@ import (
 
 type Instance interface {
 	Receive(handlerParam *HandlerParameter)
-	Logout(c client.Client, cause string)
+	Logout(c *client.Client, cause string)
 }

@@ -72,18 +72,19 @@ func (r *Room) GetFlags() (result []string) {
 	return
 }
 
-// Player leaves a room. Tells other room residents about it.
-func (r *Room) PlayerLeaves(p player.Player, dir direction.Direction) {
+// PlayerLeaves a room. Tells other room residents about it.
+func (r *Room) PlayerLeaves(p *player.Player, dir direction.Direction) {
 	r.playerList.Remove(p)
 	r.Send(message.LeaveRoomNotification{
 		Success:    true,
 		ResultCode: "OK",
-		Name:       p.GetName(),
+		Name:       p.Name,
 		Direction:  int32(dir),
 	})
 }
 
 func (r *Room) MobileLeaves(mob *mobile.Instance, dir direction.Direction) {
+	// TODO unhandled error
 	r.mobs.Remove(mob)
 	r.Send(message.LeaveRoomNotification{
 		Success:    true,
@@ -93,35 +94,40 @@ func (r *Room) MobileLeaves(mob *mobile.Instance, dir direction.Direction) {
 	})
 }
 
-// Add a player to a room. Don't send notifications.
-func (r *Room) AddPlayer(p player.Player) {
+// AddPlayer to the Room, without sending notifications
+func (r *Room) AddPlayer(p *player.Player) {
 	r.playerList.Add(p)
 }
 
-func (r *Room) RemovePlayer(p player.Player) {
+// RemovePlayer from the Room, without sending notifications
+func (r *Room) RemovePlayer(p *player.Player) {
 	r.playerList.Remove(p)
 }
 
-func (r *Room) GetPlayers() []player.Player {
+func (r *Room) GetPlayers() []*player.Player {
 	return r.playerList.GetAll()
 }
 
-// Player enters a room. Tells other room residents about it.
-func (r *Room) PlayerEnters(p player.Player) {
+// PlayerEnters a room, telling other room entities about it.
+func (r *Room) PlayerEnters(p *player.Player) {
+	// TODO how does this make sense next to the other Add, etc funcs?
 	r.Send(message.EnterRoomNotification{
 		Success:    true,
 		ResultCode: "OK",
-		Name:       p.GetName(),
+		Name:       p.Name,
 	})
 	r.AddPlayer(p)
 }
 
+// MobileEnters a room, telling other room entities about it.
 func (r *Room) MobileEnters(mob *mobile.Instance) {
+	// TODO how does this make sense next to the other Add, etc funcs?
 	r.Send(message.EnterRoomNotification{
 		Success:    true,
 		ResultCode: "OK",
 		Name:       mob.Definition.Name,
 	})
+	// TODO error handling
 	r.AddMobile(mob)
 }
 
@@ -139,30 +145,34 @@ func (r *Room) GetMobs() []*mobile.Instance {
 
 // Send to every player in the room.
 func (r *Room) Send(msg interface{}) {
-	r.playerList.Iter(func(p player.Player) {
+	r.playerList.Iter(func(p *player.Player) {
+		// TODO error handling
 		p.Send(msg)
 	})
 }
 
-// Send to all players in a room, except for one of them.
-func (r *Room) SendExcept(exception player.Player, msg interface{}) {
-	r.playerList.Iter(func(p player.Player) {
+// SendExcept to one player
+func (r *Room) SendExcept(exception *player.Player, msg interface{}) {
+	r.playerList.Iter(func(p *player.Player) {
 		if exception != p {
+			// TODO error handling
 			p.Send(msg)
 		}
 	})
 }
 
-// tell all players and all mobs in a room about something
+// Notify everything in a room about something
 func (r *Room) Notify(msg interface{}) {
+	// TODO error handling
 	for _, m := range r.mobs.GetAll() {
 		m.Send(msg)
 	}
 	r.Send(msg)
 }
 
-// Describe this room.
-func (r *Room) CreateRoomDescription(exclude player.Player) *message.RoomDescription {
+// CreateRoomDescription describes the room, except for one player
+func (r *Room) CreateRoomDescription(exclude *player.Player) *message.RoomDescription {
+	// TODO rework this
 	desc := message.RoomDescription{
 		Name:        r.Name,
 		Description: r.Description,
@@ -171,9 +181,9 @@ func (r *Room) CreateRoomDescription(exclude player.Player) *message.RoomDescrip
 	// Note: the thread-safe iteration isn't necessary because only
 	// one message is processed at a time (our server isn't actually
 	// multithreaded...)
-	r.playerList.Iter(func(p player.Player) {
+	r.playerList.Iter(func(p *player.Player) {
 		if p != exclude {
-			desc.Players = append(desc.Players, p.GetName())
+			desc.Players = append(desc.Players, p.Name)
 		}
 	})
 	for _, o := range r.inventory.GetAll() {
@@ -198,7 +208,7 @@ func (r *Room) GetInventoryByInstanceId(instanceId uuid.UUID) (inst *object.Inst
 	return
 }
 
-// Find an object.Instance that matches this name
+// GetInventoryByName finds the object.Instance matching by name
 func (r *Room) GetInventoryByName(name string) (inst *object.Instance, exists bool) {
 	inst, exists = r.inventory.GetByName(name)
 	return
@@ -208,8 +218,7 @@ func (r *Room) GetAllInventory() []*object.Instance {
 	return r.inventory.GetAll()
 }
 
-// Attempt to find an inventory object in this room which matches the
-// terms given. Search the object name and aliases.
+// FindInventory in the room matching terms given. Searches the object names and aliases.
 func (r *Room) FindInventory(findMode message.FindMode, index string, target string) (inst *object.Instance, exists bool) {
 	inst, exists = r.inventory.Find(findMode, index, target)
 	return
@@ -219,10 +228,10 @@ func (r *Room) FindMobile(target string) (mob *mobile.Instance, exists bool) {
 	return r.mobs.Find(target)
 }
 
-func (r *Room) FindPlayer(target string) (p player.Player, exists bool) {
-	p = r.playerList.FindByName(target)
+func (r *Room) FindPlayer(target string) (*player.Player, bool) {
+	p := r.playerList.FindByName(target)
 	if p != nil {
-		exists = true
+		return p, true
 	}
-	return
+	return nil, false
 }

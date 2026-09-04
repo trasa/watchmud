@@ -14,6 +14,7 @@ func (w *World) handleRoomStatus(msg *gameserver.HandlerParameter) {
 
 	room := w.getRoomContainingPlayer(msg.Player)
 	if room == nil {
+		// TODO error handling
 		msg.Player.Send(message.RoomStatusResponse{
 			Success:    false,
 			ResultCode: "NOT_IN_ROOM",
@@ -42,9 +43,9 @@ func (w *World) handleRoomStatus(msg *gameserver.HandlerParameter) {
 func createPlayerInfo(room *spaces.Room) (result []*message.RoomStatusResponse_PlayerInfo) {
 	for _, p := range room.GetPlayers() {
 		result = append(result, &message.RoomStatusResponse_PlayerInfo{
-			Name:          p.GetName(),
-			CurrentHealth: p.GetCurrentHealth(),
-			MaxHealth:     p.GetMaxHealth(),
+			Name:          p.Name,
+			CurrentHealth: 0, // TODO
+			MaxHealth:     0, // TODO
 		})
 	}
 	return

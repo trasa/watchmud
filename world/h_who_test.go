@@ -1,76 +1,68 @@
 package world
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud/client"
-	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/player"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
+	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/player"
 )
 
-func newWhoRequestHandlerParameter(t *testing.T, c *client.TestClient) *gameserver.HandlerParameter {
-	msg, err := message.NewGameMessage(message.WhoRequest{})
-	assert.NoError(t, err)
-	return gameserver.NewHandlerParameter(c, msg)
+type WhoSuite struct {
+	worldTestSuite
 }
 
-func TestWho_success(t *testing.T) {
-	w, _ := newTestWorld()
-	p := player.NewTestPlayer("guy")
-	w.AddPlayer(p)
-	c := client.NewTestClient(p)
-
-	w.handleWho(newWhoRequestHandlerParameter(t, c))
-
-	assert.Equal(t, 1, p.SentMessageCount())
-	resp := p.GetSentResponse(0).(message.WhoResponse)
-	assert.True(t, resp.Success)
-	assert.Equal(t, 1, len(resp.PlayerInfo))
-	assert.Equal(t, "guy", resp.PlayerInfo[0].PlayerName)
-	assert.NotEqual(t, "", resp.PlayerInfo[0].ZoneName)
-	assert.NotEqual(t, "", resp.PlayerInfo[0].RoomName)
+func TestWhoSuite(t *testing.T) {
+	suite.Run(t, new(WhoSuite))
 }
 
-func TestWho_notInRoom(t *testing.T) {
-	w, _ := newTestWorld()
-	p := player.NewTestPlayer("guy")
-	w.AddPlayer(p)
-	w.playerRooms.Remove(p)
-	c := client.NewTestClient(p)
-
-	w.handleWho(newWhoRequestHandlerParameter(t, c))
-
-	assert.Equal(t, 1, p.SentMessageCount())
-	resp := p.GetSentResponse(0).(message.WhoResponse)
-	assert.True(t, resp.Success)
-	assert.Equal(t, "", resp.PlayerInfo[0].ZoneName)
-	assert.Equal(t, "", resp.PlayerInfo[0].RoomName)
+func (s *WhoSuite) SetupTest() {
+	s.worldTestSuite.SetupTest()
 }
 
-func TestWho_sort(t *testing.T) {
-	w, _ := newTestWorld()
-	z := player.NewTestPlayer("z")
-	y := player.NewTestPlayer("y")
-	w.AddPlayer(z, y)
-	c := client.NewTestClient(z)
+func (s *WhoSuite) TestSuccess() {
+	s.w.handleWho(s.handlerParameter(message.WhoRequest{}))
 
-	w.handleWho(newWhoRequestHandlerParameter(t, c))
-
-	assert.Equal(t, "y", z.GetSentResponse(0).(message.WhoResponse).PlayerInfo[0].PlayerName)
-	assert.Equal(t, "z", z.GetSentResponse(0).(message.WhoResponse).PlayerInfo[1].PlayerName)
+	resp := sent[message.WhoResponse](s.T(), s.r, 0)
+	s.Assert().True(resp.Success)
+	s.Assert().Equal(1, len(resp.PlayerInfo))
+	s.Assert().Equal("testdood", resp.PlayerInfo[0].PlayerName)
+	s.Assert().NotEqual("", resp.PlayerInfo[0].ZoneName)
+	s.Assert().NotEqual("", resp.PlayerInfo[0].RoomName)
 }
 
-func TestWho_logoutRemovesPlayer(t *testing.T) {
-	w, _ := newTestWorld()
-	z := player.NewTestPlayer("z")
-	y := player.NewTestPlayer("y")
-	w.AddPlayer(z, y)
-	w.RemovePlayer(y)
-	c := client.NewTestClient(z)
+func (s *WhoSuite) TestNotInRoom() {
+	s.w.playerRooms.Remove(s.p)
 
-	w.handleWho(newWhoRequestHandlerParameter(t, c))
+	s.w.handleWho(s.handlerParameter(message.WhoRequest{}))
 
-	assert.Equal(t, 1, len(z.GetSentResponse(0).(message.WhoResponse).PlayerInfo))
-	assert.Equal(t, "z", z.GetSentResponse(0).(message.WhoResponse).PlayerInfo[0].PlayerName)
+	resp := sent[message.WhoResponse](s.T(), s.r, 0)
+	s.Assert().True(resp.Success)
+	s.Assert().Equal("", resp.PlayerInfo[0].ZoneName)
+	s.Assert().Equal("", resp.PlayerInfo[0].RoomName)
+}
+
+func (s *WhoSuite) TestSort() {
+	rec := &player.Recorder{}
+	otherPlayer := player.NewTestPlayer("other", "other", rec)
+	s.w.AddPlayer(otherPlayer)
+
+	s.w.handleWho(s.handlerParameter(message.WhoRequest{}))
+	response := sent[message.WhoResponse](s.T(), s.r, 0)
+
+	s.Assert().Equal("testdood", response.PlayerInfo[0].PlayerName)
+	s.Assert().Equal("other", response.PlayerInfo[1].PlayerName)
+}
+
+func (s *WhoSuite) TestLogoutRemovesPlayer() {
+
+	rec := &player.Recorder{}
+	otherPlayer := player.NewTestPlayer("other", "other", rec)
+	s.w.AddPlayer(otherPlayer)
+	s.w.RemovePlayer(otherPlayer)
+
+	s.w.handleWho(s.handlerParameter(message.WhoRequest{}))
+
+	response := sent[message.WhoResponse](s.T(), s.r, 0)
+	s.Assert().Equal("testdood", response.PlayerInfo[0].PlayerName)
 }
