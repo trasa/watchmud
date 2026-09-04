@@ -1,7 +1,7 @@
 package combat
 
 type TestCombatant struct {
-	Name          string
+	name          string
 	curHealth     int64
 	dead          bool
 	ac            int
@@ -11,7 +11,7 @@ type TestCombatant struct {
 
 func NewTestCombatant(name string, ac int, resists []DamageType, vulnerableTo []DamageType) *TestCombatant {
 	tc := &TestCombatant{
-		Name:          name,
+		name:          name,
 		curHealth:     100, // TODO need a default
 		ac:            ac,
 		resistance:    make(map[DamageType]bool),
@@ -26,8 +26,8 @@ func NewTestCombatant(name string, ac int, resists []DamageType, vulnerableTo []
 	return tc
 }
 
-func (t *TestCombatant) GetName() string {
-	return t.Name
+func (t *TestCombatant) Name() string {
+	return t.name
 }
 
 func (t *TestCombatant) TakeMeleeDamage(damage int64) (isDead bool) {
@@ -35,11 +35,11 @@ func (t *TestCombatant) TakeMeleeDamage(damage int64) (isDead bool) {
 	return t.curHealth <= 0
 }
 
-func (t *TestCombatant) IsDead() bool {
+func (t *TestCombatant) Dead() bool {
 	return t.dead
 }
 
-func (t *TestCombatant) CombatantType() CombatantType {
+func (t *TestCombatant) Type() CombatantType {
 	return NoCombatantType
 }
 

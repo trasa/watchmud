@@ -1,8 +1,9 @@
 package mobile
 
 import (
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type InstanceMeleeDamageSuite struct {
@@ -51,7 +52,7 @@ func (s *InstanceMeleeDamageSuite) TestOverwhelmingFatalMeleeDamage() {
 }
 
 func (s *InstanceMeleeDamageSuite) TestIsDead() {
-	s.Assert().False(s.instance.IsDead())
+	s.Assert().False(s.instance.Dead())
 	s.instance.CurHealth = 0
-	s.Assert().True(s.instance.IsDead())
+	s.Assert().True(s.instance.Dead())
 }

@@ -36,7 +36,7 @@ func (mob *Instance) Id() string {
 	return mob.InstanceId.String()
 }
 
-func (mob *Instance) GetName() string {
+func (mob *Instance) Name() string {
 	return mob.Definition.Name
 }
 
@@ -83,12 +83,12 @@ func (mob *Instance) TakeMeleeDamage(damage int64) (isDead bool) {
 }
 
 // Combatant
-func (mob *Instance) IsDead() bool {
+func (mob *Instance) Dead() bool {
 	return mob.CurHealth <= 0
 }
 
 // Combatant
-func (mob *Instance) CombatantType() combat.CombatantType {
+func (mob *Instance) Type() combat.CombatantType {
 	return combat.MobileCombatant
 }
 

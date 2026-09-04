@@ -1,10 +1,11 @@
 package world
 
 import (
+	"log"
+
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/mudtime"
-	"log"
 )
 
 // Walk through all the combat going on and
@@ -18,7 +19,7 @@ import (
 func (w *World) DoViolence(pulse mudtime.PulseCount) {
 
 	for _, fight := range w.fightLedger.GetFights() {
-		if fight.Fighter.IsDead() || fight.Fightee.IsDead() {
+		if fight.Fighter.Dead() || fight.Fightee.Dead() {
 			continue
 		}
 
@@ -41,8 +42,8 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 			room, found := w.findRoomById(fight.ZoneId, fight.RoomId)
 			if found {
 				room.Notify(message.ViolenceNotification{
-					Fighter:       fight.Fighter.GetName(),
-					Fightee:       fight.Fightee.GetName(),
+					Fighter:       fight.Fighter.Name(),
+					Fightee:       fight.Fightee.Name(),
 					SuccessfulHit: fightResult.WasHit,
 					Damage:        int32(fightResult.Damage),
 				})
@@ -55,8 +56,8 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 				// tell everybody what happened
 				if found {
 					room.Notify(message.DeathNotification{
-						Target:   fight.Fightee.GetName(),
-						IsPlayer: fight.Fightee.CombatantType() == combat.PlayerCombatant,
+						Target:   fight.Fightee.Name(),
+						IsPlayer: fight.Fightee.Type() == combat.PlayerCombatant,
 					})
 				}
 			}

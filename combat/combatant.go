@@ -1,25 +1,16 @@
 package combat
 
-// something capable of being in combat
+// Combatant is something capable of being in combat
 type Combatant interface {
-	GetName() string
-	// apply damage to Combatant and return if they are dead
+	Name() string
 	TakeMeleeDamage(damage int64) (isDead bool)
-	// u dead?
-	IsDead() bool
-	// what type of combatant are you?
-	CombatantType() CombatantType
-	// + and - to attack roll
+	Dead() bool
+	Type() CombatantType
 	CalculateMeleeRollModifiers() int
-	// armor class based on intrinsic properties and equipment
 	ArmorClass() int
-	// resistance to damage? (resistance = dam / 2)
 	HasResistanceTo(damageType DamageType) bool
-	// vulnerable to damage? (vuln = dam * 2)
 	IsVulnerableTo(damageType DamageType) bool
-	// string of dice roll for wielded weapon (i.e. "1d6")
 	WeaponDamageRoll() string
-	// what type of damage does wielded weapon do
 	WeaponDamageType() DamageType
 }
 

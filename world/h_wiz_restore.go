@@ -36,7 +36,7 @@ func (w *World) handleRestore(msg *gameserver.HandlerParameter) {
 		targetMob.Restore()
 		targetRoom.Notify(message.RestoreNotification{
 			IsPlayer: false,
-			Target:   targetMob.GetName(),
+			Target:   targetMob.Name(),
 		})
 		_ = msg.Player.Send(message.RestoreResponse{Success: true, ResultCode: "OK"})
 		return

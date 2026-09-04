@@ -105,7 +105,7 @@ Work:
   duplicates it. **DONE**
 - Mechanical sweep `player.Player` → `*player.Player` in `spaces/` (`room.go`,
   `roominventory.go`), `world/` (`playerroommap.go`, most `h_*.go`), `gameserver/handlerparameter.go`,
-  `client/client.go`.
+  `client/client.go`. **DONE**
 - `player/players.go`: `List` maps keyed on `*Player`. Its `sync.RWMutex` is vestigial —
   world state is single-goroutine by design (see the comment in `Room.CreateRoomDescription`)
   and stays that way after telnet, since connection goroutines only push to a channel. Leave

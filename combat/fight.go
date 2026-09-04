@@ -2,8 +2,9 @@ package combat
 
 import (
 	"fmt"
-	"github.com/trasa/watchmud/mudtime"
 	"time"
+
+	"github.com/trasa/watchmud/mudtime"
 )
 
 type Fight struct {
@@ -26,7 +27,7 @@ func newFight(fighter Combatant, fightee Combatant, zoneId string, roomId string
 }
 
 func (f Fight) String() string {
-	return fmt.Sprintf("%s fighting %s", f.Fighter.GetName(), f.Fightee.GetName())
+	return fmt.Sprintf("%s fighting %s", f.Fighter.Name(), f.Fightee.Name())
 }
 
 func (f *Fight) CanDoViolence(now mudtime.PulseCount) bool {

@@ -13,14 +13,14 @@ import (
 // becomeCorpse if you are dead
 func (w *World) becomeCorpse(deadCombatant combat.Combatant) {
 	// TODO: should be *Combatant?
-	log.Printf("%s is dead!", deadCombatant.GetName())
+	log.Printf("%s is dead!", deadCombatant.Name())
 
 	// if you were fighting, you stop
 	w.fightLedger.EndFight(deadCombatant)
 
 	// TODO error handling, names
 	// TODO case where its a PlayerCombatant
-	switch deadCombatant.CombatantType() {
+	switch deadCombatant.Type() {
 	case combat.MobileCombatant:
 		w.becomeCorpse_Mobile(deadCombatant.(*mobile.Instance))
 	}
