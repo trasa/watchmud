@@ -5,25 +5,20 @@ go 1.25.0
 require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.6.2
-	github.com/jmoiron/sqlx v0.0.0-20180614180643-0dae4fefe7c0
 	github.com/justinian/dice v1.0.0
-	github.com/lib/pq v1.0.0
 	github.com/pkg/errors v0.8.1
 	github.com/rs/zerolog v1.19.0
 	github.com/stretchr/testify v1.2.2
 	github.com/trasa/syncmap v1.0.0
 	github.com/trasa/watchmud-message v0.0.19
-	golang.org/x/crypto v0.55.0
 	google.golang.org/grpc v1.30.0
 	gopkg.in/yaml.v2 v2.3.0
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.0 // indirect
-	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
-	github.com/mattn/go-sqlite3 v1.11.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/mod v0.39.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
@@ -31,7 +26,6 @@ require (
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 	golang.org/x/tools v0.49.0 // indirect
-	google.golang.org/appengine v1.6.1 // indirect
 	google.golang.org/genproto v0.0.0-20200708133552-18036109789b // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 )

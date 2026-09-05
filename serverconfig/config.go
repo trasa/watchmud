@@ -17,20 +17,6 @@ type Config struct {
 	}
 	ServerPort int `yaml:"serverPort"`
 	WebPort    int `yaml:"webPort"`
-	DB         struct {
-		UseSSH bool `yaml:"useSSH"`
-		SSH    struct {
-			User    string
-			Host    string
-			Port    int
-			KeyFile string `yaml:"keyfile"`
-		}
-		User     string
-		Password string
-		Host     string
-		Port     int
-		Name     string
-	}
 }
 
 func Load(path string) (*Config, error) {

@@ -13,17 +13,3 @@ contentPath: ./content
 serverPort: 10000
 # HTTP listener
 webPort: 8888
-
-# Database Configuration
-db:
-  useSSH: false
-  ssh:
-    user: ssh-user
-    host: bastion.example.com
-    port: 22
-    keyfile: /Users/watchmud/.ssh/veryverysekrit.pem
-  user: watchmud
-  password: password1  # please don't
-  host: localhost
-  port: 5432
-  name: watchmud

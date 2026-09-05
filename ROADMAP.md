@@ -149,19 +149,20 @@ type Store interface {
 `Record` mirrors what `db.PlayerData` + `db.PlayerInventoryData` + `db.SlotDataList` carry
 today (see `db/sql/ddl.sql` for the full field list) — but **use string lineage/class ids
 now**, even though nothing consumes them until Phase 6. Writing `int32` race ids into a new
-store just to migrate them again is wasted motion.
+store just to migrate them again is wasted motion. **DONE**
 
 Rewire the four call sites: `server.handleLogin`, `server.handleCreatePlayer`,
 `world.HandleIncomingMessage` (the save-after-every-handler), and `world/h_logout.go`. Pass
 the `Store` into `server.New` and `world.New` rather than reaching for a package global —
 `db.watchdb` being a package-level var is part of why none of this is testable today.
+**IN PROGRESS**
 
 Then delete `db/` and drop `sqlx`, `lib/pq`, `go-sql-driver/mysql`, `mattn/go-sqlite3`, and
 the `golang.org/x/crypto/ssh` tunnel from `go.mod`; strip `DB` and `SSH` from
-`serverconfig.Config` and `app.local.yaml`.
+`serverconfig.Config` and `app.local.yaml`. **DONE**
 
 `memstore` is a `map[string]*player.Record` behind the interface. Players don't survive
-restart. That is fine and it unblocks login today.
+restart. That is fine and it unblocks login today. **DONE**
 
 One thing to notice while you're here: `HandleIncomingMessage` saves the player after
 *every* message. Free against a map, absurd against a real store. Leave it; the interface
