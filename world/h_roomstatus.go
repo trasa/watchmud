@@ -55,8 +55,8 @@ func createInventoryInfo(room *spaces.Room) (result []*message.RoomStatusRespons
 	for _, i := range room.GetAllInventory() {
 		result = append(result,
 			&message.RoomStatusResponse_InventoryInfo{
-				Id:                  i.Id(),
-				DefinitionId:        i.Definition.Id(),
+				Id:                  i.Id.String(),
+				DefinitionId:        i.Definition.IdStr(),
 				Aliases:             i.Definition.Aliases,
 				Categories:          i.Definition.Categories.ToStringList(),
 				Name:                i.Definition.Name,
@@ -73,7 +73,7 @@ func createMobInfo(room *spaces.Room) (result []*message.RoomStatusResponse_MobI
 	for _, m := range room.GetMobs() {
 		result = append(result,
 			&message.RoomStatusResponse_MobInfo{
-				Id:                m.Id(),
+				Id:                m.IdStr(),
 				DefinitionId:      m.Definition.Id,
 				Aliases:           m.Definition.Aliases,
 				Name:              m.Definition.Name,

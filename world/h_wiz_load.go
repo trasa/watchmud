@@ -77,11 +77,7 @@ func (w *World) handleLoadCreateObject(msg *gameserver.HandlerParameter, request
 	}
 
 	// create instance of the item
-	inst, err := object.NewInstance(objDefn)
-	if err != nil {
-		_ = msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "CREATE_INSTANCE_FAILED"})
-		return
-	}
+	inst := object.NewInstance(objDefn)
 
 	// add instance to room
 	if err := targetRoom.AddInventory(inst); err != nil {

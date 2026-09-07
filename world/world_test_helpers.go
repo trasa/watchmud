@@ -2,13 +2,23 @@ package world
 
 import (
 	"testing"
+	"time"
+	"uuid"
 
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	message "github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
+	"github.com/trasa/watchmud/loader"
+	"github.com/trasa/watchmud/memstore"
+	"github.com/trasa/watchmud/mobile"
+	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/rules"
+	"github.com/trasa/watchmud/spaces"
+	"github.com/trasa/watchmud/zonereset"
 )
 
 type worldTestSuite struct {
@@ -36,9 +46,88 @@ func (s *worldTestSuite) handlerParameter(req interface{}) *gameserver.HandlerPa
 }
 
 func (s *worldTestSuite) SetupTest() {
-	s.w, _ = newTestWorld()
+	w, err := newTestWorld()
+	require.NoError(s.T(), err)
+	s.w = w
 	s.r = &player.Recorder{}
-	s.p = player.NewTestPlayer("testdood", "testdood", s.r)
+	s.p = player.NewTestPlayer(uuid.New(), "testdood", s.r)
 	s.w.AddPlayer(s.p)
 	s.c = client.NewTestClient(s.p)
+}
+
+func newTestWorld() (*World, error) {
+
+	voidZone := spaces.NewZone("void", "void", zonereset.NEVER, time.Duration(0))
+	voidRoom := spaces.NewRoom(voidZone, "void", "void", "void")
+	voidZone.AddRoom(voidRoom)
+
+	startZone := spaces.NewZone("start", "start", zonereset.NEVER, time.Duration(0))
+	startRoom := spaces.NewRoom(startZone, "start", "start", "this is a test room.")
+	startZone.AddRoom(startRoom)
+
+	// stuff that's in the start room
+	knife := object.NewDefinition(
+		"knife",
+		"knife",
+		startZone.Id,
+		object.Weapon, []string{},
+		"knife",
+		"A knife is on the ground.",
+		slot.Wield,
+	)
+	knifeInstance := object.NewInstance(knife)
+	if err := startRoom.AddInventory(knifeInstance); err != nil {
+		return nil, err
+	}
+	helmet := object.NewDefinition(
+		"helmet",
+		"helmet",
+		startZone.Id,
+		object.Armor,
+		[]string{"helm", "iron", "helmet"},
+		"iron helmet",
+		"an iron helmet is on the ground",
+		slot.Head,
+	)
+	helmetInstance := object.NewInstance(helmet)
+	if err := startRoom.AddInventory(helmetInstance); err != nil {
+		return nil, err
+	}
+	mob := mobile.NewDefinition(
+		"targetDrone",
+		"Target Drone",
+		startZone.Id,
+		[]string{"target", "drone"},
+		"Target Drone",
+		"Target Drone buzzes around.",
+		25,
+		mobile.WanderingDefinition{CanWander: false},
+		10,
+	)
+	startZone.AddMobileDefinition(mob)
+	if err := startRoom.AddMobile(mobile.NewInstance(mob)); err != nil {
+		return nil, err
+	}
+
+	zones := []*spaces.Zone{
+		voidZone,
+		startZone,
+	}
+
+	settings := loader.Settings{
+		VoidZone:  "void",
+		VoidRoom:  "void",
+		StartZone: "start",
+		StartRoom: "start",
+	}
+
+	catalog, err := rules.NewTestCatalog()
+	if err != nil {
+		return nil, err
+	}
+
+	store := memstore.New()
+	content := loader.NewContent(&settings, catalog, zones)
+
+	return New(content, store)
 }

@@ -1,11 +1,12 @@
-package object
+package player
 
 import (
 	"testing"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message/slot"
+	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/thing"
 )
 
@@ -13,8 +14,8 @@ type SlotsSuite struct {
 	suite.Suite
 	slots         *Slots
 	slotInventory *SlotInventory
-	weaponInst    *Instance
-	armorInst     *Instance
+	weaponInst    *object.Instance
+	armorInst     *object.Instance
 }
 
 type SlotInventory struct {
@@ -32,30 +33,31 @@ func TestSlotsSuite(t *testing.T) {
 func (suite *SlotsSuite) SetupTest() {
 	suite.slotInventory = &SlotInventory{m: make(thing.Map)}
 	suite.slots = NewSlots()
-	suite.weaponInst = &Instance{
-		InstanceId: uuid.New(),
-		Definition: NewDefinition("weapon", "weapon", "zone", Weapon, []string{}, "weapon", "weapon", slot.Wield),
+	// hack: working around broken slots (messages) which is going away
+	suite.weaponInst = &object.Instance{
+		Id:         uuid.New(),
+		Definition: object.NewDefinition("weapon", "weapon", "zone", object.Weapon, []string{}, "weapon", "weapon", slot.Wield),
 	}
 	suite.slotInventory.m.Add(suite.weaponInst)
 
-	suite.armorInst = &Instance{
-		InstanceId: uuid.New(),
-		Definition: NewDefinition("armor", "armor", "zone", Armor, []string{}, "armor", "armor", slot.Head),
+	suite.armorInst = &object.Instance{
+		Id:         uuid.New(),
+		Definition: object.NewDefinition("armor", "armor", "zone", object.Armor, []string{}, "armor", "armor", slot.Head),
 	}
 }
 
 func (suite *SlotsSuite) TestCantEquipYouDontHaveOne() {
-	youdonthaveoneInst := &Instance{
-		InstanceId: uuid.New(),
-		Definition: NewDefinition("nothere", "nothere", "zone", Weapon, []string{}, "youdonthaveone", "youdonthaveone", slot.Wield),
+	youdonthaveoneInst := &object.Instance{
+		Id:         uuid.New(),
+		Definition: object.NewDefinition("nothere", "nothere", "zone", object.Weapon, []string{}, "youdonthaveone", "youdonthaveone", slot.Wield),
 	}
 	suite.slots.Set(slot.Wield, youdonthaveoneInst)
 }
 
 func (suite *SlotsSuite) TestNotEquippableWeapon() {
-	cantequipthat := &Instance{
-		InstanceId: uuid.New(),
-		Definition: NewDefinition("treasure", "treasure", "zone", Treasure, []string{}, "treasure", "treasure", slot.None),
+	cantequipthat := &object.Instance{
+		Id:         uuid.New(),
+		Definition: object.NewDefinition("treasure", "treasure", "zone", object.Treasure, []string{}, "treasure", "treasure", slot.None),
 	}
 	suite.slotInventory.m.Add(cantequipthat)
 

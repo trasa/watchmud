@@ -44,9 +44,6 @@ func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) {
 			ResultCode: "UNKNOWN_MESSAGE_TYPE",
 		})
 	} else {
-		if msg.Player != nil {
-			msg.Player.ResetDirtyFlag()
-		}
 		handler(msg)
 		// if the player object has changed, persist the changes to the database
 		// TODO what if the player has changed some other player somehow?

@@ -2,6 +2,7 @@ package world
 
 import (
 	"testing"
+	"uuid"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
@@ -26,12 +27,12 @@ func TestHandleTellSuite(t *testing.T) {
 func (s *handleTellSuite) SetupTest() {
 	s.worldTestSuite.SetupTest()
 	s.senderRec = &player.Recorder{}
-	s.sender = player.NewTestPlayer("sender", "sender", s.senderRec)
+	s.sender = player.NewTestPlayer(uuid.New(), "sender", s.senderRec)
 	s.w.AddPlayer(s.sender)
 	s.senderClient = client.NewTestClient(s.sender)
 
 	s.receiverRec = &player.Recorder{}
-	s.receiver = player.NewTestPlayer("receiver", "receiver", s.receiverRec)
+	s.receiver = player.NewTestPlayer(uuid.New(), "receiver", s.receiverRec)
 	s.w.AddPlayer(s.receiver)
 }
 

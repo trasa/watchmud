@@ -1,8 +1,6 @@
 package combat
 
-import (
-	"github.com/pkg/errors"
-)
+import "fmt"
 
 type FightLedger struct {
 	fightMap map[Combatant]*Fight
@@ -16,7 +14,8 @@ func NewFightLedger() *FightLedger {
 
 func (f *FightLedger) Fight(fighter Combatant, fightee Combatant, zoneId string, roomId string) error {
 	if f.IsFighting(fighter) {
-		return errors.New("Fighter is already fighting someone")
+		// TODO fixme
+		return fmt.Errorf("Fighter is already fighting someone")
 	}
 	f.fightMap[fighter] = newFight(fighter, fightee, zoneId, roomId)
 

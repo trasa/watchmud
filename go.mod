@@ -1,12 +1,10 @@
 module github.com/trasa/watchmud
 
-go 1.25.0
+go 1.27.0
 
 require (
-	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.6.2
 	github.com/justinian/dice v1.0.0
-	github.com/pkg/errors v0.8.1
 	github.com/rs/zerolog v1.19.0
 	github.com/stretchr/testify v1.2.2
 	github.com/trasa/syncmap v1.0.0

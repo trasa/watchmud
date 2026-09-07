@@ -3,8 +3,8 @@ package spaces
 import (
 	"errors"
 	"fmt"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/trasa/watchmud/mobile"
 )
 

@@ -43,7 +43,7 @@ func NewDefinition(definitionId string, name string, zoneId string, category Cat
 	return d
 }
 
-func (d *Definition) Id() string {
+func (d *Definition) IdStr() string {
 	return BuildDefinitionId(d.ZoneId, d.id)
 }
 
@@ -59,6 +59,10 @@ func (d *Definition) AddCategory(cat Category) {
 func (d *Definition) CanEquipWeapon() bool {
 	// for now, you can equip this if it is a weapon
 	return d.Categories.Contains(Weapon)
+}
+
+func (d *Definition) IsGettable() bool {
+	return !d.Behaviors.Contains(behavior.NoTake)
 }
 
 func (d *Definition) CanWear() bool {

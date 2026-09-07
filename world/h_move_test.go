@@ -2,6 +2,7 @@ package world
 
 import (
 	"testing"
+	"uuid"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
@@ -26,7 +27,7 @@ func TestHandleMoveSuite(t *testing.T) {
 func (s *HandleMoveSuite) SetupTest() {
 	s.w, _ = newTestWorld()
 	s.r = &player.Recorder{}
-	s.p = player.NewTestPlayer("p", "p", s.r)
+	s.p = player.NewTestPlayer(uuid.New(), "p", s.r)
 	s.w.AddPlayer(s.p)
 	s.c = client.NewTestClient(s.p)
 }
@@ -49,7 +50,7 @@ func (s *HandleMoveSuite) TestMove_butYouCant() {
 
 func (s *HandleMoveSuite) TestMoveWhileFighting() {
 	r := &player.Recorder{}
-	other := player.NewTestPlayer("other", "other", r)
+	other := player.NewTestPlayer(uuid.New(), "other", r)
 	s.w.AddPlayer(other)
 	//s.w.fightLedger.Fight(s.p, other, s.w.StartRoom.Zone.Id, s.w.StartRoom.Id)
 

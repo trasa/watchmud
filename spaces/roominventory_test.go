@@ -2,8 +2,8 @@ package spaces
 
 import (
 	"testing"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/object"
@@ -24,10 +24,11 @@ func TestRoomInventorySuite(t *testing.T) {
 func (suite *RoomInventorySuite) SetupTest() {
 	suite.roomInventory = NewRoomInventory()
 	suite.defn = object.NewDefinition("id", "name", "zoneid", object.Other, []string{}, "short desc", "on ground", slot.None)
-	suite.inst, _ = object.NewInstance(suite.defn)
-	suite.instTwo, _ = object.NewInstance(suite.defn)
-	suite.roomInventory.Add(suite.inst)
-	suite.roomInventory.Add(suite.instTwo)
+	suite.inst = object.NewInstance(suite.defn)
+	suite.instTwo = object.NewInstance(suite.defn)
+	// TODO error handling
+	_ = suite.roomInventory.Add(suite.inst)
+	_ = suite.roomInventory.Add(suite.instTwo)
 }
 
 func (suite *RoomInventorySuite) TestRoomInventory_AddMany() {
@@ -39,11 +40,11 @@ func (suite *RoomInventorySuite) TestRoomInventory_AddMany() {
 	all := suite.roomInventory.GetAll()
 	suite.Assert().Equal(2, len(all))
 
-	retone, exists := suite.roomInventory.GetByInstanceId(suite.inst.InstanceId)
+	retone, exists := suite.roomInventory.GetByInstanceId(suite.inst.Id)
 	suite.Assert().True(exists)
 	suite.Assert().Equal(retone, suite.inst)
 
-	rettwo, exists := suite.roomInventory.GetByInstanceId(suite.instTwo.InstanceId)
+	rettwo, exists := suite.roomInventory.GetByInstanceId(suite.instTwo.Id)
 	suite.Assert().True(exists)
 	suite.Assert().Equal(rettwo, suite.instTwo)
 
@@ -58,7 +59,7 @@ func (suite *RoomInventorySuite) TestRoomInventory_Remove() {
 
 	suite.Assert().Equal(1, len(suite.roomInventory.GetAll()))
 
-	ret, exists := suite.roomInventory.GetByInstanceId(suite.inst.InstanceId)
+	ret, exists := suite.roomInventory.GetByInstanceId(suite.inst.Id)
 	suite.Assert().False(exists)
 	suite.Assert().Nil(ret)
 }

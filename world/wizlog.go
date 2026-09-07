@@ -7,7 +7,7 @@ import (
 
 func logWizCommand(p *player.Player, command string, msg string, args ...interface{}) {
 	log.Warn().
-		Str("playerId", p.Id).
+		Str("playerId", p.Id.String()).
 		Str("playerName", p.Name).
 		Str("commandType", "wiz").
 		Str("command", command).

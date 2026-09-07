@@ -1,7 +1,8 @@
 package player
 
 import (
-	"github.com/trasa/watchmud/object"
+	"uuid"
+
 	"github.com/trasa/watchmud/rules"
 )
 
@@ -11,21 +12,20 @@ type Sender interface {
 }
 
 type Player struct {
-	Id        string
+	Id        uuid.UUID
 	Name      string
 	out       Sender // was: client.Client, via ClientPlayer
 	Lineage   *rules.Lineage
 	Class     *rules.Class
 	inventory *Inventory
-	slots     *object.Slots
+	slots     *Slots
 	curHealth int64
 	maxHealth int64
-	isDirty   bool // If true, need to write back to the database.
-	location  *Location
+	location  Location
 	abilities rules.Abilities
 }
 
-func New(id string,
+func New(id uuid.UUID,
 	name string,
 	out Sender,
 	lineage *rules.Lineage,
@@ -39,7 +39,7 @@ func New(id string,
 		Lineage:   lineage,
 		Class:     class,
 		inventory: NewInventory(),
-		slots:     object.NewSlots(),
+		slots:     NewSlots(),
 		curHealth: 100, // TODO need a default here,
 		maxHealth: 100,
 		abilities: abilities,
@@ -54,14 +54,14 @@ func (p *Player) Inventory() *Inventory {
 }
 
 // Slots returns the inventory
-func (p *Player) Slots() *object.Slots {
+func (p *Player) Slots() *Slots {
 	// TODO is this needed? Should p.Inventory become visible?
 	// is needing this call indicating a problem?
 	return p.slots
 }
 
 // NewTestPlayer that tracks messages
-func NewTestPlayer(id string, name string, out Sender) *Player {
+func NewTestPlayer(id uuid.UUID, name string, out Sender) *Player {
 	if out == nil {
 		out = &Recorder{}
 	}
@@ -78,7 +78,6 @@ func (p *Player) Send(msg interface{}) error {
 }
 
 func (p *Player) TakeMeleeDamage(damage int64) bool {
-	p.isDirty = true
 	p.curHealth -= damage
 	if p.curHealth <= 0 {
 		return true
@@ -92,10 +91,4 @@ func (p *Player) RestoreHealth(amount int64) {
 
 func (p *Player) IsDead() bool {
 	return p.curHealth <= 0
-}
-
-func (p *Player) ResetDirtyFlag() {
-	p.isDirty = false
-	p.inventory.ResetDirtyFlag()
-	p.slots.ResetDirtyFlag()
 }

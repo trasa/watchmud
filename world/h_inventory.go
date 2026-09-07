@@ -10,7 +10,7 @@ func (w *World) handleInventory(msg *gameserver.HandlerParameter) {
 	for _, instPtr := range msg.Player.Inventory().GetAll() {
 		if !msg.Player.Slots().IsItemInUse(instPtr) {
 			items = append(items, &message.InventoryResponse_InventoryItem{
-				Id:               instPtr.Id(),
+				Id:               instPtr.Id.String(),
 				ShortDescription: instPtr.Definition.ShortDescription,
 				ObjectCategories: instPtr.Definition.Categories.ToInt32List(),
 			})

@@ -44,10 +44,10 @@ func (a Abilities) Set(name string, score int) Abilities {
 	return a
 }
 
-// FillEmptyScoreByPriority fills the first empty ability score with the given score.
+// fillEmptyScoreByPriority fills the first empty ability score with the given score.
 // Where the priority is determined by rules.
 // TODO: in the future we want to encode this in rules/*.json not hardcoded here.
-func (a Abilities) FillEmptyScoreByPriority(score int) Abilities {
+func (a Abilities) fillEmptyScoreByPriority(score int) Abilities {
 	if a.Con == 0 {
 		a.Con = score
 	} else if a.Dex == 0 {
@@ -61,6 +61,29 @@ func (a Abilities) FillEmptyScoreByPriority(score int) Abilities {
 	} else if a.Cha == 0 {
 		a.Cha = score
 	}
+	return a
+}
+
+// StandardAbilities are the standard set of ability numbers,
+// distributed by assigning the preferences given first, then the rest
+// by the priority rules.
+func StandardAbilities(preferences []string) Abilities {
+	a := Abilities{}
+	// an array of ints from highest start value to lowest (these aren't random)
+	// TODO this should be a content, not a constant here...
+	startScores := []int{15, 14, 13, 12, 10, 8}
+	// staring with the highest value, map the value to the ability listed
+	// first (second, third...) in the class.AbilityPreference. once we're
+	// past that number of scores, the rest just get set in order.
+	for i, score := range startScores {
+		if i < len(preferences) {
+			a = a.Set(preferences[i], score)
+		} else {
+			// no further class preferences
+			a = a.fillEmptyScoreByPriority(score)
+		}
+	}
+
 	return a
 }
 

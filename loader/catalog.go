@@ -6,7 +6,7 @@ import (
 	"github.com/trasa/watchmud/rules"
 )
 
-func LoadRulesCatalog(rulesFS fs.FS) (*rules.Catalog, error) {
+func LoadCatalog(rulesFS fs.FS) (*rules.Catalog, error) {
 	species, err := readJSONFile[[]*rules.Species](rulesFS, "species.json")
 	if err != nil {
 		return nil, err

@@ -3,6 +3,7 @@ package player
 import (
 	"log"
 	"testing"
+	"uuid"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -21,7 +22,7 @@ func TestPlayersSuite(t *testing.T) {
 func (s *PlayersSuite) SetupTest() {
 	s.players = NewList()
 	s.r = &Recorder{}
-	s.p = NewTestPlayer("test", "test", s.r)
+	s.p = NewTestPlayer(uuid.New(), "test", s.r)
 }
 
 func (s *PlayersSuite) TestAdd() {
@@ -58,7 +59,7 @@ func (s *PlayersSuite) TestIter() {
 
 func (s *PlayersSuite) TestGetAll() {
 	s.players.Add(s.p)
-	other := NewTestPlayer("other", "other", &Recorder{})
+	other := NewTestPlayer(uuid.New(), "other", &Recorder{})
 
 	all := s.players.GetAll()
 	s.players.Add(other)

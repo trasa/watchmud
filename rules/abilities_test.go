@@ -20,7 +20,7 @@ func (s *AbilitiesTestSuite) SetupTest() {
 }
 
 func (s *AbilitiesTestSuite) Test_FillEmptyScoreByPriority() {
-	s.abilities = s.abilities.FillEmptyScoreByPriority(18)
+	s.abilities = s.abilities.fillEmptyScoreByPriority(18)
 	s.Assert().Equal(18, s.abilities.Con)
 	s.Assert().Equal(0, s.abilities.Dex)
 	s.Assert().Equal(0, s.abilities.Str)
@@ -28,7 +28,7 @@ func (s *AbilitiesTestSuite) Test_FillEmptyScoreByPriority() {
 	s.Assert().Equal(0, s.abilities.Wis)
 	s.Assert().Equal(0, s.abilities.Cha)
 
-	s.abilities = s.abilities.FillEmptyScoreByPriority(17)
+	s.abilities = s.abilities.fillEmptyScoreByPriority(17)
 	s.Assert().Equal(18, s.abilities.Con)
 	s.Assert().Equal(17, s.abilities.Dex)
 	s.Assert().Equal(0, s.abilities.Str)
@@ -36,7 +36,7 @@ func (s *AbilitiesTestSuite) Test_FillEmptyScoreByPriority() {
 	s.Assert().Equal(0, s.abilities.Wis)
 	s.Assert().Equal(0, s.abilities.Cha)
 
-	s.abilities = s.abilities.FillEmptyScoreByPriority(16)
+	s.abilities = s.abilities.fillEmptyScoreByPriority(16)
 	s.Assert().Equal(18, s.abilities.Con)
 	s.Assert().Equal(17, s.abilities.Dex)
 	s.Assert().Equal(16, s.abilities.Str)
@@ -44,7 +44,7 @@ func (s *AbilitiesTestSuite) Test_FillEmptyScoreByPriority() {
 	s.Assert().Equal(0, s.abilities.Wis)
 	s.Assert().Equal(0, s.abilities.Cha)
 
-	s.abilities = s.abilities.FillEmptyScoreByPriority(15)
+	s.abilities = s.abilities.fillEmptyScoreByPriority(15)
 	s.Assert().Equal(18, s.abilities.Con)
 	s.Assert().Equal(17, s.abilities.Dex)
 	s.Assert().Equal(16, s.abilities.Str)
@@ -52,7 +52,7 @@ func (s *AbilitiesTestSuite) Test_FillEmptyScoreByPriority() {
 	s.Assert().Equal(0, s.abilities.Wis)
 	s.Assert().Equal(0, s.abilities.Cha)
 
-	s.abilities = s.abilities.FillEmptyScoreByPriority(14)
+	s.abilities = s.abilities.fillEmptyScoreByPriority(14)
 	s.Assert().Equal(18, s.abilities.Con)
 	s.Assert().Equal(17, s.abilities.Dex)
 	s.Assert().Equal(16, s.abilities.Str)
@@ -60,7 +60,7 @@ func (s *AbilitiesTestSuite) Test_FillEmptyScoreByPriority() {
 	s.Assert().Equal(14, s.abilities.Wis)
 	s.Assert().Equal(0, s.abilities.Cha)
 
-	s.abilities = s.abilities.FillEmptyScoreByPriority(13)
+	s.abilities = s.abilities.fillEmptyScoreByPriority(13)
 	s.Assert().Equal(18, s.abilities.Con)
 	s.Assert().Equal(17, s.abilities.Dex)
 	s.Assert().Equal(16, s.abilities.Str)
@@ -68,7 +68,7 @@ func (s *AbilitiesTestSuite) Test_FillEmptyScoreByPriority() {
 	s.Assert().Equal(14, s.abilities.Wis)
 	s.Assert().Equal(13, s.abilities.Cha)
 
-	s.abilities = s.abilities.FillEmptyScoreByPriority(12)
+	s.abilities = s.abilities.fillEmptyScoreByPriority(12)
 	s.Assert().Equal(18, s.abilities.Con)
 	s.Assert().Equal(17, s.abilities.Dex)
 	s.Assert().Equal(16, s.abilities.Str)

@@ -60,7 +60,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 		// failed to add to room..
 		log.Error().Msgf("Drop: Error while adding to room, player %s id %s; %s",
 			msg.Player.Name,
-			objectToDrop.Id(),
+			objectToDrop.Id,
 			err)
 		_ = msg.Player.Send(message.DropResponse{
 			Success: false, ResultCode: "ADD_TO_ROOM_ERROR",
@@ -69,27 +69,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 	}
 
 	// remove from player
-	if err := msg.Player.Inventory().Remove(objectToDrop); err != nil {
-		// failed to remove from player
-		log.Error().
-			Str("command", "drop").
-			Str("player", msg.Player.Name).
-			Err(err).
-			Msgf("error while removing from player - object instance %s", objectToDrop.Id())
-
-		removeFromRoomError := room.RemoveInventory(objectToDrop)
-		log.Error().
-			Str("command", "drop").
-			Str("player", msg.Player.Name).
-			Err(removeFromRoomError).
-			Msgf("error while removing from player, removing from room (duplicate items!) object instance %s", objectToDrop.Id())
-
-		_ = msg.Player.Send(message.DropResponse{
-			Success: false, ResultCode: "REMOVE_FROM_PLAYER_ERROR",
-		})
-		return
-	}
-
+	msg.Player.Inventory().Remove(objectToDrop)
 	// success
 	_ = msg.Player.Send(message.DropResponse{
 		Success: true, ResultCode: "OK",

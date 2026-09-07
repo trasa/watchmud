@@ -3,8 +3,8 @@ package spaces
 import (
 	"errors"
 	"fmt"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/object"
 )
@@ -75,28 +75,28 @@ func (ri *RoomInventory) Find(findMode message.FindMode, index string, target st
 }
 
 func (ri *RoomInventory) Add(inst *object.Instance) (err error) {
-	if _, exists := ri.byId[inst.InstanceId]; exists {
-		return errors.New(fmt.Sprintf("instance id %s already exists in room_inventory", inst.InstanceId))
+	if _, exists := ri.byId[inst.Id]; exists {
+		return errors.New(fmt.Sprintf("instance id %s already exists in room_inventory", inst.Id))
 	}
 
-	ri.byId[inst.InstanceId] = inst
-	ri.byDefinition[inst.Definition.Id()] = append(ri.byDefinition[inst.Definition.Id()], inst)
+	ri.byId[inst.Id] = inst
+	ri.byDefinition[inst.Definition.IdStr()] = append(ri.byDefinition[inst.Definition.IdStr()], inst)
 	return nil
 }
 
 func (ri *RoomInventory) Remove(inst *object.Instance) (err error) {
-	if _, exists := ri.byId[inst.InstanceId]; !exists {
-		return errors.New(fmt.Sprintf("instance id %s does not exist in room_inventory", inst.InstanceId))
+	if _, exists := ri.byId[inst.Id]; !exists {
+		return errors.New(fmt.Sprintf("instance id %s does not exist in room_inventory", inst.Id))
 	}
-	delete(ri.byId, inst.InstanceId)
+	delete(ri.byId, inst.Id)
 	pos := ri.findPosition(inst)
-	ri.byDefinition[inst.Definition.Id()] = append(ri.byDefinition[inst.Definition.Id()][:pos], ri.byDefinition[inst.Definition.Id()][pos+1:]...)
+	ri.byDefinition[inst.Definition.IdStr()] = append(ri.byDefinition[inst.Definition.IdStr()][:pos], ri.byDefinition[inst.Definition.IdStr()][pos+1:]...)
 	return nil
 }
 
 func (ri *RoomInventory) findPosition(inst *object.Instance) int {
-	for pos, i := range ri.byDefinition[inst.Definition.Id()] {
-		if i.InstanceId == inst.InstanceId {
+	for pos, i := range ri.byDefinition[inst.Definition.IdStr()] {
+		if i.Id == inst.Id {
 			return pos
 		}
 	}

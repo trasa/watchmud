@@ -26,12 +26,18 @@ type Content struct {
 	Catalog  *rules.Catalog
 }
 
-func NewContent(settings *Settings, catalog *rules.Catalog) *Content {
-	return &Content{
+func NewContent(settings *Settings, catalog *rules.Catalog, zones []*spaces.Zone) *Content {
+	c := Content{
 		Zones:    make(map[string]*spaces.Zone),
 		Settings: settings,
 		Catalog:  catalog,
 	}
+
+	for _, zone := range zones {
+		c.addZone(zone)
+	}
+
+	return &c
 }
 
 func LoadContent(fsys fs.FS) (*Content, error) {
@@ -49,11 +55,13 @@ func LoadContent(fsys fs.FS) (*Content, error) {
 		return nil, err
 	}
 
-	cat, err := LoadRulesCatalog(rulesFS)
+	cat, err := LoadCatalog(rulesFS)
 	if err != nil {
 		return nil, err
 	}
-	c := NewContent(settings, cat)
+
+	// pass in empty zone list -- we'll load the zones from the manifest
+	c := NewContent(settings, cat, []*spaces.Zone{})
 
 	if err := c.loadZoneManifest(worldFS); err != nil {
 		return nil, err

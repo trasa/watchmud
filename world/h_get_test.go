@@ -48,9 +48,9 @@ func (s *HandleGetSuite) TestAliasTarget() {
 	s.Assert().True(response.Success)
 	s.Assert().Equal(1, len(s.p.Inventory().GetAll()))
 
-	found := s.p.Inventory().GetByNameOrAlias("iron_helmet")
+	found := s.p.Inventory().GetByNameOrAlias("helmet")
 	s.Assert().True(len(found) > 0)
-	s.Assert().Equal("iron_helmet", found[0].Definition.Name)
+	s.Assert().Equal("helmet", found[0].Definition.Name)
 	s.Assert().Equal(1, len(s.w.StartRoom.GetAllInventory()))
 }
 
@@ -81,29 +81,3 @@ func (s *HandleGetSuite) TestNoTarget() {
 	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
 	s.Assert().Equal(2, len(s.w.StartRoom.GetAllInventory()))
 }
-
-func (s *HandleGetSuite) TestPlayerAddFail() {
-	// TODO: some sort of world-wide list of inventory definitions
-	// give the player a knife to start with
-	// note that two different objects should not have the same instance id
-	// -- this is an arbitrary case to make the test work...
-	inv, exists := s.w.StartRoom.GetInventoryByName("knife")
-	s.Assert().True(exists)
-
-	s.Assert().NoError(s.p.Inventory().Add(inv))
-
-	s.w.handleGet(s.handlerParameter(message.GetRequest{Target: "knife"}))
-
-	s.Assert().Equal(1, len(s.r.Sent))
-	response := sent[message.GetResponse](s.T(), s.r, 0)
-	s.Assert().False(response.Success)
-	s.Assert().Equal("ADD_INVENTORY_ERROR", response.GetResultCode())
-
-	// player just has one item we added at beginning of this method
-	s.Assert().Equal(1, len(s.p.Inventory().GetAll()))
-	// room still has its two items
-	s.Assert().Equal(2, len(s.w.StartRoom.GetAllInventory()))
-}
-
-// TODO: test case for when room.Inventory.Remove fails
-// need to figure out how to mock the room

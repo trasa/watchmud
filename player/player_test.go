@@ -2,8 +2,8 @@ package player
 
 import (
 	"testing"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/object"
@@ -21,7 +21,7 @@ func TestPlayerSuite(t *testing.T) {
 
 func (s *PlayerSuite) SetupTest() {
 	s.r = &Recorder{}
-	s.p = NewTestPlayer("testdood", "testdood", s.r)
+	s.p = NewTestPlayer(uuid.New(), "testdood", s.r)
 }
 
 func (s *PlayerSuite) TestAddInventory_New() {
@@ -30,7 +30,7 @@ func (s *PlayerSuite) TestAddInventory_New() {
 	defnPtr := object.NewDefinition("defnid", "name", "zone",
 		object.Food, []string{}, "short desc", "in room", slot.None)
 	instPtr := &object.Instance{
-		InstanceId: uuid.New(),
+		Id:         uuid.New(),
 		Definition: defnPtr,
 	}
 
@@ -39,7 +39,7 @@ func (s *PlayerSuite) TestAddInventory_New() {
 	invs := s.p.inventory.GetAll()
 	s.Assert().Equal(1, len(invs))
 	obj := invs[0]
-	s.Assert().Equal(instPtr.Id(), obj.Id())
+	s.Assert().Equal(instPtr.Id, obj.Id)
 	s.Assert().Equal("defnid", obj.Definition.Identifier())
 }
 

@@ -2,6 +2,7 @@ package world
 
 import (
 	"testing"
+	"uuid"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/player"
@@ -22,8 +23,8 @@ func TestPlayerRoomMapSuite(t *testing.T) {
 
 func (s *PlayerRoomMapSuite) SetupTest() {
 	s.m = NewPlayerRoomMap()
-	s.bob = player.NewTestPlayer("bob", "bob", &player.Recorder{})
-	s.alice = player.NewTestPlayer("alice", "alice", &player.Recorder{})
+	s.bob = player.NewTestPlayer(uuid.New(), "bob", &player.Recorder{})
+	s.alice = player.NewTestPlayer(uuid.New(), "alice", &player.Recorder{})
 	s.northRoom = spaces.NewTestRoom("north")
 	s.m.Add(s.bob, s.northRoom)
 	s.m.Add(s.alice, s.northRoom)

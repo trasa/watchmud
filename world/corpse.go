@@ -39,16 +39,11 @@ func (w *World) becomeCorpse_Mobile(m *mobile.Instance) error {
 		fmt.Sprintf("The corpse of %s is lying here.", m.Definition.Name),
 		slot.None)
 
-	if corpse, err := object.NewInstance(corpseDefn); err != nil {
-		return err
-	} else {
-		// transfer m's possessions over to the corpse
-		// TODO mobiles can't have possessions at the moment, not implemented yet..
-
-		w.getRoomContainingMobile(m).AddInventory(corpse)
-
-		// remove the mobile instance
-		w.removeMobile(m)
-		return nil
-	}
+	corpse := object.NewInstance(corpseDefn)
+	// transfer m's possessions over to the corpse
+	// TODO mobiles can't have possessions at the moment, not implemented yet..
+	w.getRoomContainingMobile(m).AddInventory(corpse)
+	// remove the mobile instance
+	w.removeMobile(m)
+	return nil
 }

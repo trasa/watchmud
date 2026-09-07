@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/logging"
+	"github.com/trasa/watchmud/memstore"
 	"github.com/trasa/watchmud/server"
 	"github.com/trasa/watchmud/serverconfig"
 	"github.com/trasa/watchmud/world"
@@ -69,11 +70,14 @@ func run() error {
 		return fmt.Errorf("loading content: %w", err)
 	}
 
-	w, err := world.New(content)
+	// persistence
+	store := memstore.New()
+
+	w, err := world.New(content, store)
 	if err != nil {
 		return fmt.Errorf("loading world: %w", err)
 	}
-	gameServer := server.New(w)
+	gameServer := server.New(w, content.Catalog, store)
 	if err := gameServer.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 		return fmt.Errorf("game server: %w", err)
 	}

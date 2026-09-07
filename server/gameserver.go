@@ -2,26 +2,34 @@ package server
 
 import (
 	"context"
+	"errors"
 	"time"
+	"uuid"
 
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mudtime"
+	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/world"
 )
 
 type GameServer struct {
 	incomingBuffer chan *gameserver.HandlerParameter
 	world          *world.World
+	catalog        *rules.Catalog
 	tickInterval   time.Duration
+	store          player.Store
 }
 
-func New(w *world.World) *GameServer {
+func New(w *world.World, c *rules.Catalog, s player.Store) *GameServer {
 	return &GameServer{
 		incomingBuffer: make(chan *gameserver.HandlerParameter),
 		world:          w,
+		catalog:        c,
+		store:          s,
 	}
 }
 
@@ -137,16 +145,17 @@ func (gs *GameServer) Logout(c client.Client, cause string) {
 	}
 }
 
-func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) {
+func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) error {
 	// is this connection already authenticated?
 	// see if we can find an existing player ..
 	if msg.Client.Player() != nil {
 		// you've already got one
-		err = msg.Client.Send(message.LoginResponse{
+		// TODO error handling on send
+		msg.Client.Send(message.LoginResponse{
 			Success:    false,
 			ResultCode: "PLAYER_ALREADY_ATTACHED",
 		})
-		return
+		return errors.New("player already attached to client")
 	}
 	// what if player is logged in on a different client?
 	// TODO
@@ -168,69 +177,101 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) (err error) 
 		}
 	*/
 
-	// todo authentication and stuff - does GRPC have a built in authentication method?
-
-	//playerName := msg.Message.GetLoginRequest().PlayerName
-	//playerData, err := db.GetPlayerData(playerName)
-	//player := NewClientPlayerFromPlayerData(msg.Message.GetLoginRequest().PlayerName, &playerData, msg.Client)
-
-	// load inventory: have to convert PlayerInventoryData into
-	// instances and definitions here, because we need 'the world' to do it.
-	/*
-		for _, inv := range playerData.Inventory {
-			inst, err := gs.world.CreateObjectInstance(inv.ZoneId, inv.DefinitionId, inv.InstanceId)
-			if err != nil {
-				log.Error().Err(err).Msgf("Error trying to load player %d (%s) inventory instance (%s-%s-%s) -- %s", playerData.Id, playerName, inv.ZoneId, inv.DefinitionId, inv.InstanceId, err)
-				clientErr := msg.Client.Send(message.LoginResponse{
-					Success:    false,
-					ResultCode: "PLAYER_INVENTORY_DATA_ERROR",
-				})
-				if clientErr != nil {
-					log.Error().Err(clientErr).Msg("client error trying to send PLAYER_INVENTORY_DATA_ERROR on login")
-				}
-				return err
-			}
-			player.Inventory().Load(inst)
+	// TODO authentication and stuff...
+	playerName := msg.Message.GetLoginRequest().PlayerName
+	rec, found, loadErr := gs.store.Load(playerName)
+	if loadErr != nil {
+		// store error
+		log.Error().Err(loadErr).Str("playerName", playerName).Msgf("Error loading player %s from store", playerName)
+		loginResponse := message.LoginResponse{
+			Success:    false,
+			ResultCode: "PLAYER_STORE_ERROR",
 		}
-	*/
-	// slots - need inventory before we can set slots
-	/*
-		for _, sd := range playerData.Slots.Slots {
-			inst, exists := player.Inventory().GetByInstanceId(sd.InstanceId)
-			if !exists {
-				log.Error().Msgf("Error trying to load player %d (%s) slot: %d object instance doesn't exist in inventory: %s",
-					playerData.Id, playerName, sd.Location, sd.InstanceId)
-			} else {
-				player.Slots().Set(slot.Location(sd.Location), inst)
-			}
+		if err := msg.Client.Send(loginResponse); err != nil {
+			log.Error().Err(err).Msg("client error trying to send PLAYER_STORE_ERROR on login")
 		}
-	*/
+		return loadErr
+	}
+	if !found {
+		log.Warn().Str("playerName", playerName).Msgf("playerName %s not found in store", playerName)
+		loginResponse := message.LoginResponse{
+			Success:    false,
+			ResultCode: "PLAYER_LOGIN_FAILED",
+		}
+		if err := msg.Client.Send(loginResponse); err != nil {
+			log.Error().Err(err).Msg("client error trying to send PLAYER_LOGIN_FAILED on login")
+			// TODO deal with send error
+		}
+		// TODO should this return an error?
+		return errors.New("player not found in store")
+	}
 
-	//msg.Client.SetPlayer(player)
-	//msg.Player = player
+	p, err := player.FromRecord(rec, msg.Client, gs.catalog, gs.world)
+	if err != nil {
+		log.Error().Err(err).Msg("Error creating player from record")
+	}
+	msg.Player = p
 
 	// add player to world
-	//gs.world.AddPlayer(player)
+	gs.world.AddPlayer(p)
 
-	//err = player.Send(message.LoginResponse{
-	//	Success:    true,
-	//	ResultCode: "OK",
-	//	PlayerName: player.GetName(),
-	//})
-	return
+	if err := p.Send(message.LoginResponse{
+		Success:    true,
+		ResultCode: "OK",
+		PlayerName: p.Name,
+	}); err != nil {
+		log.Error().Err(err).Msg("Error sending LoginResponse")
+		return err
+	}
+	return nil
 }
 
-func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) (err error) {
+func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) error {
 	if msg.Client.Player() != nil {
 		// you've already got one
-		err = msg.Client.Send(message.CreatePlayerResponse{
+		// TODO error handling for send (there's not really much we can honestly do ... so don't return an error?)
+		// Or better, consolidate all the error handling back in what calls this
+		msg.Client.Send(message.CreatePlayerResponse{
 			Success:    false,
 			ResultCode: "PLAYER_ALREADY_ATTACHED",
 		})
-		return
+		return errors.New("player already attached")
 	}
-	// TODO fixme
-	return
+	req := msg.Message.GetCreatePlayerRequest()
+	playerName := req.PlayerName
+	// message sends an int but this is a string now, so default all to human
+	lineage := gs.catalog.Lineages["human"]
+	// message sends an int but this is a string now, so default all to fighter
+	class := gs.catalog.Classes["fighter"]
+	// TODO need check for name uniqueness, and shouldn't use it as the ID... need uuid support
+	// NOTE this doesn't set the location that's defered to the world I think...?
+	p := player.New(
+		uuid.New(),
+		playerName,
+		msg.Client,
+		lineage,
+		class,
+		rules.StandardAbilities(class.AbilityPreference),
+	)
+	// TODO how do we set Client.Player() now that we've changed things
+	// msg.Client.Player = p
+	msg.Player = p
+
+	// TODO need to set the location first (AddPlayer always puts the player in the start room, for now)
+
+	if err := gs.store.Save(p.Record()); err != nil {
+		log.Error().Err(err).Msgf("Error trying to save player record for %s", playerName)
+		// TODO send error to client
+		return errors.New("error saving player record")
+	}
+	gs.world.AddPlayer(p)
+
+	err := p.Send(message.CreatePlayerResponse{
+		Success:    true,
+		ResultCode: "OK",
+		PlayerName: p.Name,
+	})
+	return err
 }
 
 // The client is requesting game data: races, class definitions, something like that.

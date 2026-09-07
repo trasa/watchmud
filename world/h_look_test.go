@@ -2,6 +2,7 @@ package world
 
 import (
 	"testing"
+	"uuid"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
@@ -19,7 +20,7 @@ func TestHandleLookSuite(t *testing.T) {
 
 func (s *handleLookSuite) SetupTest() {
 	s.worldTestSuite.SetupTest()
-	s.other = player.NewTestPlayer("other", "other", nil)
+	s.other = player.NewTestPlayer(uuid.New(), "other", nil)
 	s.w.AddPlayer(s.other)
 }
 

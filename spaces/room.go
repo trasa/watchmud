@@ -2,8 +2,8 @@ package spaces
 
 import (
 	"fmt"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/mobile"
@@ -23,7 +23,7 @@ type Room struct {
 	flags       map[string]bool
 }
 
-// NewRoom sets the properties of a room
+// NewRoom creates a new room in this zone. It does NOT alter the Zone to include the new room however.
 func NewRoom(zone *Zone, id string, name string, description string) *Room {
 	return &Room{
 		Id:          id,

@@ -32,19 +32,12 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 		}
 
 		// add to player
-		if err := msg.Player.Inventory().Add(instPtr); err != nil {
-			// uh oh failed to add
-			log.Printf("Get: Error while getting, Player %s adding Inventory %v: %s",
-				msg.Player.Name, instPtr, err)
-			// TODO error handling
-			msg.Player.Send(message.GetResponse{Success: false, ResultCode: "ADD_INVENTORY_ERROR"})
-			return
-		}
+		msg.Player.Inventory().Add(instPtr)
 
 		// remove from room
 		if err := room.RemoveInventory(instPtr); err != nil {
 			// uh oh failed to remove from room
-			log.Printf("Get: Error while removing from room: Player %s Inventory %s: %s", msg.Player.Name, instPtr.Id(), err)
+			log.Printf("Get: Error while removing from room: Player %s Inventory %s: %s", msg.Player.Name, instPtr.Id, err)
 			// TODO error handling
 			msg.Player.Inventory().Remove(instPtr)
 			msg.Player.Send(message.GetResponse{Success: false, ResultCode: "REMOVE_FROM_ROOM_ERROR"})

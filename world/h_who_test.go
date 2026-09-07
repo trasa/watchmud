@@ -2,6 +2,7 @@ package world
 
 import (
 	"testing"
+	"uuid"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
@@ -44,7 +45,7 @@ func (s *WhoSuite) TestNotInRoom() {
 
 func (s *WhoSuite) TestSort() {
 	rec := &player.Recorder{}
-	otherPlayer := player.NewTestPlayer("other", "other", rec)
+	otherPlayer := player.NewTestPlayer(uuid.New(), "other", rec)
 	s.w.AddPlayer(otherPlayer)
 
 	s.w.handleWho(s.handlerParameter(message.WhoRequest{}))
@@ -58,7 +59,7 @@ func (s *WhoSuite) TestSort() {
 func (s *WhoSuite) TestLogoutRemovesPlayer() {
 
 	rec := &player.Recorder{}
-	otherPlayer := player.NewTestPlayer("other", "other", rec)
+	otherPlayer := player.NewTestPlayer(uuid.New(), "other", rec)
 	s.w.AddPlayer(otherPlayer)
 	s.w.RemovePlayer(otherPlayer)
 

@@ -7,13 +7,10 @@ type Location struct {
 	RoomId string
 }
 
-func NewLocation(zoneId *string, roomId *string) *Location {
-	if zoneId == nil || roomId == nil {
-		return &Location{}
-	}
-	return &Location{
-		ZoneId: *zoneId,
-		RoomId: *roomId,
+func NewLocation(zoneId string, roomId string) Location {
+	return Location{
+		ZoneId: zoneId,
+		RoomId: roomId,
 	}
 }
 

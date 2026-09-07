@@ -6,8 +6,8 @@ import (
 	"iter"
 	"maps"
 	"slices"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/combat"
@@ -25,6 +25,8 @@ type World struct {
 	VoidRoom  *spaces.Room
 	content   *loader.Content
 
+	store player.Store
+
 	// TODO merge playerList and playerRooms similar to MobileRoomMap merges mobList and mobRooms
 	playerList  *player.List   // list of players
 	playerRooms *PlayerRoomMap // player -> room; room -> players
@@ -36,13 +38,14 @@ type World struct {
 }
 
 // New creates a brand-new World based on this content
-func New(content *loader.Content) (w *World, err error) {
+func New(c *loader.Content, s player.Store) (w *World, err error) {
 	w = &World{
-		content:     content,
+		content:     c,
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
 		mobileRooms: spaces.NewMobileRoomMap(),
 		fightLedger: combat.NewFightLedger(),
+		store:       s,
 	}
 	w.initializeHandlerMap()
 	if err := w.initialLoad(); err != nil {
@@ -78,6 +81,8 @@ func (w *World) initialLoad() (err error) {
 func (w *World) AddPlayer(players ...*player.Player) {
 	for _, p := range players {
 		log.Debug().Msgf("Adding player %s: %s", p.Id, p.Name)
+
+		// TODO need support for location
 
 		// player (probably?) won't know their previous location, if we need
 		// to persist that information (and we probably do) we'll reconcile it
@@ -185,9 +190,25 @@ func (w *World) Zone(zoneId string) *spaces.Zone {
 	return w.content.Zones[zoneId]
 }
 
+// ObjectDefinition looks up by zoneId and definitionId, implementing player.DefinitionSource
+func (w *World) ObjectDefinition(zoneId, definitionId string) (*object.Definition, bool) {
+	z := w.Zone(zoneId)
+	if z == nil {
+		return nil, false
+	}
+	d, ok := z.ObjectDefinitions[definitionId]
+	if !ok {
+		return nil, false
+	}
+	return d, true
+}
+
 // CreateObjectInstance builds a new object.Instance for the zoneId, definitionId, and instanceId.
 func (w *World) CreateObjectInstance(zoneId string, definitionId string, instanceId uuid.UUID) (*object.Instance, error) {
-	z := w.Zone(zoneId)
-	d := z.ObjectDefinitions[definitionId]
-	return object.NewExistingInstance(instanceId, d)
+	// TODO this method should go away
+	d, found := w.ObjectDefinition(zoneId, definitionId)
+	if !found {
+		return nil, fmt.Errorf("object definition %s:%s not found", zoneId, definitionId)
+	}
+	return object.NewInstanceWithId(instanceId, d), nil
 }

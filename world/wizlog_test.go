@@ -2,6 +2,7 @@ package world
 
 import (
 	"testing"
+	"uuid"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/player"
@@ -17,7 +18,7 @@ func TestWizLog(t *testing.T) {
 }
 
 func (s *WizLogSuite) SetupTest() {
-	s.p = player.NewTestPlayer("testdood", "testdood", nil)
+	s.p = player.NewTestPlayer(uuid.New(), "testdood", nil)
 }
 
 func (s *WizLogSuite) TestLog() {

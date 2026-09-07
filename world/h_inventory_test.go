@@ -2,8 +2,8 @@ package world
 
 import (
 	"testing"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/slot"
@@ -27,7 +27,7 @@ func TestHandleInventorySuite(t *testing.T) {
 func (s *handleInventorySuite) SetupTest() {
 	s.w, _ = newTestWorld()
 	s.r = &player.Recorder{}
-	s.p = player.NewTestPlayer("foo", "foo", s.r)
+	s.p = player.NewTestPlayer(uuid.New(), "foo", s.r)
 	s.w.AddPlayer(s.p)
 	s.c = client.NewTestClient(s.p)
 }
@@ -50,10 +50,10 @@ func (s *handleInventorySuite) TestInventory_Success() {
 		slot.None,
 	)
 	instPtr := &object.Instance{
-		InstanceId: uuid.New(),
+		Id:         uuid.New(),
 		Definition: defnPtr,
 	}
-	s.Assert().NoError(s.p.Inventory().Add(instPtr))
+	s.p.Inventory().Add(instPtr)
 
 	invHP := s.handleParameter()
 	s.w.handleInventory(invHP)
@@ -61,6 +61,6 @@ func (s *handleInventorySuite) TestInventory_Success() {
 	s.Assert().Equal(1, len(s.r.Sent))
 	resp := s.r.Sent[0].(message.InventoryResponse)
 	s.Assert().Equal(1, len(resp.InventoryItems))
-	s.Assert().Equal(instPtr.Id(), resp.InventoryItems[0].Id)
-	s.Assert().Equal(instPtr.Id(), resp.InventoryItems[0].Id)
+	s.Assert().Equal(instPtr.Id.String(), resp.InventoryItems[0].Id)
+	s.Assert().Equal(instPtr.Id.String(), resp.InventoryItems[0].Id)
 }

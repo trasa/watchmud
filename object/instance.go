@@ -1,45 +1,35 @@
 package object
 
-import (
-	"github.com/google/uuid"
-	"github.com/pkg/errors"
-	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/behavior"
-)
+import "uuid"
 
-// The Instances of the Definitions in the world around you.
+// Instance of the Definitions in the world around you.
 // That ShinySword in your hand has certain properties, some of
 // which were inherited by what it means to be a ShinySword (Definition)
 // and others which have happened to that particular instance
 // (soul-bound to you, made invisible, with some damage to the hilt).
 type Instance struct {
-	InstanceId uuid.UUID
+	Id         uuid.UUID
 	Definition *Definition
 }
 
-func (i *Instance) Id() string {
-	return i.InstanceId.String()
-}
+// IdStr from the Thing interface TODO figure out if this can be removed
+func (i *Instance) IdStr() string { return i.Id.String() }
+
 func (i *Instance) CanEquipWeapon() bool {
 	return i.Definition.CanEquipWeapon()
 }
 
 func (i *Instance) IsGettable() bool {
-	return !i.Definition.Behaviors.Contains(behavior.NoTake)
+	return i.Definition.IsGettable()
 }
 
-func NewInstance(defn *Definition) (*Instance, error) {
-	id := uuid.New()
-	return NewExistingInstance(id, defn)
+func NewInstance(d *Definition) *Instance {
+	return NewInstanceWithId(uuid.New(), d)
 }
 
-func NewExistingInstance(id uuid.UUID, defn *Definition) (inst *Instance, err error) {
-	if defn == nil {
-		log.Error().Msgf("Error: asked to create instance for id %s with null definition!", id)
-		return nil, errors.New("Tried to create instance with null definition")
-	}
+func NewInstanceWithId(id uuid.UUID, d *Definition) *Instance {
 	return &Instance{
-		InstanceId: id,
-		Definition: defn,
-	}, nil
+		Id:         id,
+		Definition: d,
+	}
 }

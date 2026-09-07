@@ -8,13 +8,11 @@ import (
 
 type Store struct {
 	byName map[string]*player.Record
-	nextId int64
 }
 
 func New() *Store {
 	return &Store{
 		byName: make(map[string]*player.Record),
-		nextId: 1,
 	}
 }
 

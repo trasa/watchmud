@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/trasa/watchmud/combat"
 )
 
@@ -32,7 +32,7 @@ func NewInstance(defn *Definition) *Instance {
 	}
 }
 
-func (mob *Instance) Id() string {
+func (mob *Instance) IdStr() string {
 	return mob.InstanceId.String()
 }
 
