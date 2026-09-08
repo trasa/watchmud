@@ -51,11 +51,11 @@ func run() error {
 	}
 	defer closeLog()
 	log.Info().Msg("Logging initialized.")
-	curdir, err := os.Getwd()
+	d, err := os.Getwd()
 	if err != nil {
-		return fmt.Errorf("Getwd: %w", err)
+		return fmt.Errorf("main: %w", err)
 	}
-	log.Info().Msgf("Current Directory: %s", curdir)
+	log.Info().Msgf("Current Directory: %s", d)
 	log.Info().Msgf("Configuration Path: %s", *configPath)
 	log.Info().Msgf("Content Path: %s", cfg.ContentPath)
 

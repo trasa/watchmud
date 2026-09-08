@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+
+	"github.com/rs/zerolog/log"
 )
 
 func readJSONFile[T any](fsys fs.FS, name string) (T, error) {
@@ -22,6 +24,7 @@ func readJSONFile[T any](fsys fs.FS, name string) (T, error) {
 func readOptionalJSONFile[T any](fsys fs.FS, name string) (T, error) {
 	result, err := readJSONFile[T](fsys, name)
 	if errors.Is(err, fs.ErrNotExist) {
+		log.Warn().Err(err).Msgf("Optional file %s not found", name)
 		var zero T
 		return zero, nil
 	}
