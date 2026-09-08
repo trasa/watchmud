@@ -1,6 +1,7 @@
 package world
 
 import (
+	"errors"
 	"log"
 
 	"github.com/trasa/watchmud-message"
@@ -34,7 +35,7 @@ func (w *World) initializeHandlerMap() {
 	return
 }
 
-func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) {
+func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) error {
 	handler := w.handlerMap[message.DecodeTypeName(msg.Message.Inner)]
 	if handler == nil {
 		log.Printf("world.HandleIncomingMessage: UNHANDLED messageType: %v, body %s", msg.Message.Inner, msg.Message)
@@ -43,17 +44,19 @@ func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) {
 			Success:    false,
 			ResultCode: "UNKNOWN_MESSAGE_TYPE",
 		})
-	} else {
-		handler(msg)
-		// if the player object has changed, persist the changes to the database
-		// TODO what if the player has changed some other player somehow?
-		// (stabbed them, stole from them, etc.)
-		// See #32
-		// TODO player persistence
-		/*if msg.Player != nil {
-			if err := db.SavePlayer(msg.Player); err != nil {
-				log.Printf("Error saving player %s! Error: %v", msg.Player.GetName(), err)
-			}
-		}*/
+		return errors.New("unhandled message type")
 	}
+	handler(msg)
+	// if the player object has changed, persist the changes to the database
+	// TODO what if the player has changed some other player somehow?
+	// (stabbed them, stole from them, etc.)
+	// See #32
+	// TODO player persistence
+	// keeping this as-is (stupid) for now
+	if msg.Player != nil {
+		if err := w.store.Save(msg.Player.Record()); err != nil {
+			return err
+		}
+	}
+	return nil
 }

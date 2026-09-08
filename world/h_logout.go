@@ -1,17 +1,17 @@
 package world
 
 import (
-	"log"
-
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
 )
 
-func (w *World) handleLogout(msg *gameserver.HandlerParameter) {
+func (w *World) handleLogout(msg *gameserver.HandlerParameter) /*error */ {
+	// TODO: need to add error handling
 	if msg.Player == nil {
-		return
+		return /*nil*/
 	}
-	log.Printf("Player %s Logout", msg.Player.Name)
+	log.Info().Msgf("Player %s Logout", msg.Player.Name)
 	playerRoom := w.getRoomContainingPlayer(msg.Player)
 	w.RemovePlayer(msg.Player)
 	if playerRoom != nil {
@@ -21,10 +21,9 @@ func (w *World) handleLogout(msg *gameserver.HandlerParameter) {
 			PlayerName: msg.Player.Name,
 		})
 	}
-	// TODO reimplement saving
-	/*
-		log.Printf("final loc %s - %s", msg.Player.Location().ZoneId, msg.Player.Location().RoomId)
-		if err := db.ForceSavePlayer(msg.Player); err != nil {
-			log.Printf("Error saving player %s on logout - %s", msg.Player.GetName(), err)
-		}*/
+	if err := w.store.Save(msg.Player.Record()); err != nil {
+		log.Error().Err(err).Msg("Error saving player on logout")
+		return /*err*/
+	}
+	return /*nil*/
 }

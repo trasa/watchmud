@@ -155,7 +155,7 @@ Rewire the four call sites: `server.handleLogin`, `server.handleCreatePlayer`,
 `world.HandleIncomingMessage` (the save-after-every-handler), and `world/h_logout.go`. Pass
 the `Store` into `server.New` and `world.New` rather than reaching for a package global —
 `db.watchdb` being a package-level var is part of why none of this is testable today.
-**IN PROGRESS**
+**DONE**
 
 Then delete `db/` and drop `sqlx`, `lib/pq`, `go-sql-driver/mysql`, `mattn/go-sqlite3`, and
 the `golang.org/x/crypto/ssh` tunnel from `go.mod`; strip `DB` and `SSH` from
@@ -169,7 +169,7 @@ One thing to notice while you're here: `HandleIncomingMessage` saves the player 
 means the eventual implementation can batch or debounce without touching `world/`.
 
 Exit: no SQL in the tree, login path runs without a database.
-
+**DONE September 7 2026**
 ---
 
 ## Phase 3 — Make the loop answer typed input promptly

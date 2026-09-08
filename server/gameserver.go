@@ -88,10 +88,15 @@ func (gs *GameServer) heartbeat(pulse mudtime.PulseCount, delta time.Duration) {
 	// see issue #4
 	// for now, just process until buffer is empty...
 
-	// not really infinite as the method will return false if there was
-	// nothing to do.
-	//noinspection GoInfiniteFor
-	for gs.processIncomingMessage() {
+	// handle ALL the incoming messages, no matter how many ... see issue #4
+	for {
+		handled, err := gs.processIncomingMessage()
+		if err != nil {
+			log.Error().Err(err).Msg("Error processing incoming message")
+		}
+		if !handled {
+			break
+		}
 	}
 }
 
@@ -99,37 +104,38 @@ func (gs *GameServer) heartbeat(pulse mudtime.PulseCount, delta time.Duration) {
 // this doesn't block so if the buffer is empty, the method returns immediately
 // If a message was procssed (even in error) return true.
 // Otherwise return false.
-func (gs *GameServer) processIncomingMessage() bool {
-	received := false
+func (gs *GameServer) processIncomingMessage() (bool, error) {
 	select {
 	case msg := <-gs.incomingBuffer:
-		received = true
 		switch msg.Message.Inner.(type) {
 		case *message.GameMessage_LoginRequest:
-			err := gs.handleLogin(msg) // TODO error handling
-			if err != nil {
-				log.Error().Err(err).Msg("Error from handleLogin")
+			if err := gs.handleLogin(msg); err != nil {
+				return true, err
 			}
+			return true, nil
 
 		case *message.GameMessage_CreatePlayerRequest:
-			err := gs.handleCreatePlayer(msg)
-			if err != nil {
-				log.Error().Err(err).Msg("Error from handleCreatePlayer")
+			if err := gs.handleCreatePlayer(msg); err != nil {
+				return true, err
 			}
+			return true, nil
 
 		case *message.GameMessage_DataRequest:
-			err := gs.handleDataRequest(msg)
-			if err != nil {
-				log.Error().Err(err).Msg("Error from handleDataRequest")
+			if err := gs.handleDataRequest(msg); err != nil {
+				return true, err
 			}
+			return true, nil
 
 		default:
-			gs.world.HandleIncomingMessage(msg)
+			if err := gs.world.HandleIncomingMessage(msg); err != nil {
+				return true, err
+			}
+			return true, nil
 		}
 	default:
 		// do nothing
 	}
-	return received
+	return false, nil
 }
 
 func (gs *GameServer) Receive(msg *gameserver.HandlerParameter) {
