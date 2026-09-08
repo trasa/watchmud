@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	message "github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/slot"
-	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/memstore"
@@ -26,7 +25,7 @@ type worldTestSuite struct {
 	w *World
 	r *player.Recorder
 	p *player.Player
-	c *client.TestClient
+	c *gameserver.TestConn
 }
 
 // sent returns the ith message in the recorder
@@ -52,7 +51,7 @@ func (s *worldTestSuite) SetupTest() {
 	s.r = &player.Recorder{}
 	s.p = player.NewTestPlayer(uuid.New(), "testdood", s.r)
 	s.w.AddPlayer(s.p)
-	s.c = client.NewTestClient(s.p)
+	s.c = gameserver.NewTestConn(s.p)
 }
 
 func newTestWorld() (*World, error) {

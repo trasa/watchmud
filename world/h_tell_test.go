@@ -6,18 +6,17 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
 )
 
 type handleTellSuite struct {
 	worldTestSuite
-	sender       *player.Player
-	senderRec    *player.Recorder
-	senderClient *client.TestClient
-	receiver     *player.Player
-	receiverRec  *player.Recorder
+	sender      *player.Player
+	senderRec   *player.Recorder
+	senderConn  *gameserver.TestConn
+	receiver    *player.Player
+	receiverRec *player.Recorder
 }
 
 func TestHandleTellSuite(t *testing.T) {
@@ -29,7 +28,7 @@ func (s *handleTellSuite) SetupTest() {
 	s.senderRec = &player.Recorder{}
 	s.sender = player.NewTestPlayer(uuid.New(), "sender", s.senderRec)
 	s.w.AddPlayer(s.sender)
-	s.senderClient = client.NewTestClient(s.sender)
+	s.senderConn = gameserver.NewTestConn(s.sender)
 
 	s.receiverRec = &player.Recorder{}
 	s.receiver = player.NewTestPlayer(uuid.New(), "receiver", s.receiverRec)
@@ -42,7 +41,7 @@ func (s *handleTellSuite) handlerParameter(value string) *gameserver.HandlerPara
 		Value:              value,
 	})
 	s.Assert().NoError(err)
-	return gameserver.NewHandlerParameter(s.senderClient, msg)
+	return gameserver.NewHandlerParameter(s.senderConn, msg)
 }
 
 func (s *handleTellSuite) TestHandleTell() {

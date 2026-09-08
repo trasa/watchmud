@@ -2,17 +2,16 @@ package gameserver
 
 import (
 	"github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/player"
 )
 
 type HandlerParameter struct {
-	Client  client.Client
+	Client  Conn
 	Player  *player.Player
 	Message *message.GameMessage
 }
 
-func NewHandlerParameter(c client.Client, msg *message.GameMessage) *HandlerParameter {
+func NewHandlerParameter(c Conn, msg *message.GameMessage) *HandlerParameter {
 	return &HandlerParameter{
 		Client:  c,
 		Player:  c.Player(),

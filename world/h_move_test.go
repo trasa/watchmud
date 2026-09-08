@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/direction"
-	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
 )
@@ -17,7 +16,7 @@ type HandleMoveSuite struct {
 	w *World
 	r *player.Recorder
 	p *player.Player
-	c *client.TestClient
+	c *gameserver.TestConn
 }
 
 func TestHandleMoveSuite(t *testing.T) {
@@ -29,7 +28,7 @@ func (s *HandleMoveSuite) SetupTest() {
 	s.r = &player.Recorder{}
 	s.p = player.NewTestPlayer(uuid.New(), "p", s.r)
 	s.w.AddPlayer(s.p)
-	s.c = client.NewTestClient(s.p)
+	s.c = gameserver.NewTestConn(s.p)
 }
 
 func (s *HandleMoveSuite) handlerParameter(dir direction.Direction) *gameserver.HandlerParameter {

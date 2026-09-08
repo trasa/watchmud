@@ -8,7 +8,6 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud/client"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/player"
@@ -117,7 +116,7 @@ func (gs *GameServer) Receive(msg *gameserver.HandlerParameter) {
 	gs.incomingBuffer <- msg
 }
 
-func (gs *GameServer) Logout(c client.Client, cause string) {
+func (gs *GameServer) Logout(c gameserver.Conn, cause string) {
 	gm, err := message.NewGameMessage(message.LogoutRequest{Cause: cause})
 	if err != nil {
 		log.Error().Err(err).Msg("Error creating GameMessage for LogoutRequest")
@@ -189,9 +188,11 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) error {
 
 	p, err := player.FromRecord(rec, msg.Client, gs.catalog, gs.world)
 	if err != nil {
+		// TODO FIXME: we failed to get "p" but fall through here and set msg.Player and msg.Client.SetPlayer ... oops.
 		log.Error().Err(err).Msg("Error creating player from record")
 	}
 	msg.Player = p
+	msg.Client.SetPlayer(p)
 
 	// add player to world
 	gs.world.AddPlayer(p)
@@ -234,8 +235,8 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) error
 		class,
 		rules.StandardAbilities(class.AbilityPreference),
 	)
-	// TODO how do we set Client.Player() now that we've changed things
-	// msg.Client.Player = p
+
+	msg.Client.SetPlayer(p)
 	msg.Player = p
 
 	// TODO need to set the location first (AddPlayer always puts the player in the start room, for now)
