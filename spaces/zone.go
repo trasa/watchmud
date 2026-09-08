@@ -3,9 +3,9 @@ package spaces
 import (
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/zonereset"
@@ -58,29 +58,33 @@ func (z *Zone) String() string {
 	return fmt.Sprintf("(Zone %s: '%s')", z.Id, z.Name)
 }
 
-func (z *Zone) Reset(mobileRoomMap *MobileRoomMap) (errors []error) {
-	log.Printf("Zone '%s': Reset", z.Name)
+func (z *Zone) Reset(mobileRoomMap *MobileRoomMap) []error {
+	log.Debug().Str("zone", z.Name).Msg("reset")
+	errs := []error{}
 	for _, cmd := range z.Commands {
 		switch cmd.(type) {
 		case CreateMobile:
 			var err error
 			if err = z.createMobile(mobileRoomMap, cmd.(CreateMobile)); err != nil {
-				log.Printf("Error processing CreateMobileCommand: %s - %s", cmd, err)
-				errors = append(errors, err)
+				errs = append(errs, err)
 			}
 		case CreateObject:
 			var err error
 			if err = z.createObject(cmd.(CreateObject)); err != nil {
-				log.Printf("Error processing CreateObjectCommand: %s - %s", cmd, err)
-				errors = append(errors, err)
+				errs = append(errs, err)
 			}
 		default:
-			log.Printf("Error: zone %s unhandled Zone Command Type: %s", z.Id, cmd)
+			errs = append(errs, fmt.Errorf("zone %s unhandled Zone Command Type: %s", z.Id, cmd))
 		}
 
 	}
+
+	// Set the last reset time, even if there were errors. Whatever
+	// was wrong is probably still wrong the next time, no reason to
+	// start spinning errors here.
 	z.LastReset = time.Now()
-	return nil
+
+	return errs
 }
 
 // Create a mobile.
