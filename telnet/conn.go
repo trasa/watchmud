@@ -12,29 +12,32 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
+	message "github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
 )
 
 type conn struct {
-	gs        gameserver.Instance
-	netConn   net.Conn
-	sendQueue chan any // NOT *message.GameMessage - see below.
-	quit      chan struct{}
-	closeOnce sync.Once
+	gs         gameserver.Instance
+	netConn    net.Conn
+	scanner    *bufio.Scanner
+	sendQueue  chan any // NOT *message.GameMessage - see below.
+	quit       chan struct{}
+	closeOnce  sync.Once
+	authResult chan bool // buffered 1; carries LoginResponse/CreatePlayerResponse success
 
-	mu     sync.Mutex // guards the two fields below, and only those
+	mu     sync.Mutex // guards the player
 	player *player.Player
-	//state  loginState
 }
 
 func newConn(c net.Conn, gs gameserver.Instance) *conn {
 	const sendQueueSize = 256
 	return &conn{
-		gs:        gs,
-		netConn:   c,
-		sendQueue: make(chan any, sendQueueSize),
-		quit:      make(chan struct{}),
+		gs:         gs,
+		netConn:    c,
+		sendQueue:  make(chan any, sendQueueSize),
+		quit:       make(chan struct{}),
+		authResult: make(chan bool, 1),
 	}
 }
 
@@ -79,6 +82,12 @@ func (c *conn) SetPlayer(p *player.Player) {
 }
 
 func (c *conn) Send(msg any) error {
+	switch m := msg.(type) {
+	case message.LoginResponse:
+		c.signalAuth(m.Success)
+	case message.CreatePlayerResponse:
+		c.signalAuth(m.Success)
+	}
 	select {
 	case c.sendQueue <- msg:
 		return nil
@@ -86,6 +95,91 @@ func (c *conn) Send(msg any) error {
 		c.Close()
 		return errors.New("send queue full")
 	}
+}
+
+func (c *conn) signalAuth(ok bool) {
+	select {
+	case c.authResult <- ok:
+	default: // don't block if the authResult channel is full
+	}
+}
+
+func (c *conn) awaitAuth() bool {
+	select {
+	case ok := <-c.authResult:
+		return ok
+	case <-c.quit:
+		return false
+	}
+}
+
+func (c *conn) login() bool {
+	for {
+		name, ok := c.prompt("By what name do you wish to be known? ")
+		if !ok {
+			return false // disconnected
+		}
+		if err := c.emit(message.LoginRequest{PlayerName: name}); err != nil {
+			return false
+		}
+		if c.awaitAuth() {
+			return true
+		}
+		// PLAYER_LOGIN_FAILED: no such player
+		yn, ok := c.prompt(fmt.Sprintf("No one by the name of %s. Create them? (yn) ", name))
+		if !ok {
+			return false
+		}
+		if strings.HasPrefix(strings.ToLower(yn), "y") {
+			if err := c.emit(message.CreatePlayerRequest{PlayerName: name}); err != nil {
+				return false
+			}
+			if c.awaitAuth() {
+				return true
+			}
+			c.Send("Something went wrong creating that character.\r\n")
+		}
+
+	}
+}
+
+// emit wraps a request and hands it to the game server.
+// It is the only path from this connection into the world.
+func (c *conn) emit(req any) error {
+	gm, err := message.NewGameMessage(req)
+	if err != nil {
+		log.Error().Err(err).Msgf("telnet %s: cannot wrap %T", c.netConn.RemoteAddr(), req)
+		return err
+	}
+	c.gs.Receive(gameserver.NewHandlerParameter(c, gm))
+	return nil
+}
+
+// prompt writes text with no trailing newline, then waits
+// for a reply. A bare Enter re-issues the prompt rather
+// than returning an empty string.
+func (c *conn) prompt(text string) (string, bool) {
+	for {
+		if err := c.Send(text); err != nil {
+			return "", false // queue full; conn is being torn down
+		}
+		line, ok := c.readLine()
+		if !ok {
+			return "", false
+		}
+		if line != "" {
+			return line, true
+		}
+	}
+}
+
+// readLine returns the next line from the client. ok is false once the
+// connection is finished: EOF, read error, Close.
+func (c *conn) readLine() (string, bool) {
+	if !c.scanner.Scan() {
+		return "", false
+	}
+	return strings.TrimSpace(c.scanner.Text()), true
 }
 
 func (c *conn) Close() {
@@ -146,24 +240,18 @@ func (c *conn) write(msg any) error {
 
 func (c *conn) readPump() {
 	defer c.Close()
-
-	scanner := bufio.NewScanner(&iacFilter{src: bufio.NewReader(c.netConn)})
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" {
-			continue
-		}
-		// STEP B: login state machine, then command table ->
-		// message.XRequest -> message.NewGameMessage ->
-		// c.gs.Receive(gameserver.NewHandlerParameter(c, gm))
-		if err := c.Send("you said: " + line + "\r\n"); err != nil {
-			return
-		}
+	c.scanner = bufio.NewScanner(&iacFilter{src: bufio.NewReader(c.netConn)})
+	if c.login() {
+		c.commandLoop()
 	}
 	cause := "client disconnected"
-	if err := scanner.Err(); err != nil {
+	if err := c.scanner.Err(); err != nil {
 		cause = fmt.Sprintf("read error: %v", err)
 	}
 	log.Info().Msgf("telnet %s: %s", c.netConn.RemoteAddr(), cause)
 	c.gs.Logout(c, cause)
+}
+
+func (c *conn) commandLoop() {
+
 }
