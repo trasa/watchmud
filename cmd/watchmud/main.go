@@ -15,6 +15,7 @@ import (
 	"github.com/trasa/watchmud/memstore"
 	"github.com/trasa/watchmud/server"
 	"github.com/trasa/watchmud/serverconfig"
+	"github.com/trasa/watchmud/telnet"
 	"github.com/trasa/watchmud/world"
 )
 
@@ -78,6 +79,10 @@ func run() error {
 		return fmt.Errorf("loading world: %w", err)
 	}
 	gameServer := server.New(w, content.Catalog, store)
+
+	// launch telnet listener
+	go telnet.Listen(ctx, fmt.Sprintf("localhost:%d", cfg.TelnetPort), gameServer)
+
 	if err := gameServer.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 		return fmt.Errorf("game server: %w", err)
 	}

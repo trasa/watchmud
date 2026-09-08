@@ -13,3 +13,5 @@ contentPath: ./content
 serverPort: 10000
 # HTTP listener
 webPort: 8888
+# Telnet listener
+telnetPort: 4000

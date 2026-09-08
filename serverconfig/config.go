@@ -17,6 +17,7 @@ type Config struct {
 	}
 	ServerPort int `yaml:"serverPort"`
 	WebPort    int `yaml:"webPort"`
+	TelnetPort int `yaml:"telnetPort"`
 }
 
 func Load(path string) (*Config, error) {
