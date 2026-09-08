@@ -11,8 +11,7 @@ func (w *World) handleRestore(msg *gameserver.HandlerParameter) {
 
 	targetRoom := w.getRoomContainingPlayer(msg.Player)
 	if targetRoom == nil {
-		// TODO error handling
-		_ = msg.Player.Send(message.RestoreResponse{Success: false, ResultCode: "YOU_ARE_NOT_IN_A_ROOM"})
+		msg.Player.Send(message.RestoreResponse{Success: false, ResultCode: "YOU_ARE_NOT_IN_A_ROOM"})
 		return
 	}
 
@@ -27,7 +26,7 @@ func (w *World) handleRestore(msg *gameserver.HandlerParameter) {
 			IsPlayer: true,
 			Target:   targetPlayer.Name,
 		})
-		_ = msg.Player.Send(message.RestoreResponse{Success: true, ResultCode: "OK"})
+		msg.Player.Send(message.RestoreResponse{Success: true, ResultCode: "OK"})
 		return
 	}
 
@@ -38,8 +37,8 @@ func (w *World) handleRestore(msg *gameserver.HandlerParameter) {
 			IsPlayer: false,
 			Target:   targetMob.Name(),
 		})
-		_ = msg.Player.Send(message.RestoreResponse{Success: true, ResultCode: "OK"})
+		msg.Player.Send(message.RestoreResponse{Success: true, ResultCode: "OK"})
 		return
 	}
-	_ = msg.Player.Send(message.RestoreResponse{Success: false, ResultCode: "TARGET_NOT_FOUND"})
+	msg.Player.Send(message.RestoreResponse{Success: false, ResultCode: "TARGET_NOT_FOUND"})
 }

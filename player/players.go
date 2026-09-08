@@ -1,5 +1,7 @@
 package player
 
+// List of players
+// TODO replace with generic
 type List struct {
 	players map[*Player]*Player
 	byName  map[string]*Player
@@ -12,38 +14,48 @@ func NewList() *List {
 	}
 }
 
-func (ps *List) Add(p *Player) {
-	ps.players[p] = p
-	ps.byName[p.Name] = p
+func (l *List) Add(p *Player) {
+	l.players[p] = p
+	l.byName[p.Name] = p
 }
 
-func (ps *List) Remove(p *Player) {
-	delete(ps.players, p)
-	delete(ps.byName, p.Name)
+func (l *List) Remove(p *Player) {
+	delete(l.players, p)
+	delete(l.byName, p.Name)
 }
 
-func (ps *List) GetAll() []*Player {
+func (l *List) GetAll() []*Player {
 	// copy the keys into a new slice
 	// and return that slice
 	var keys []*Player
-	for p := range ps.players {
+	for p := range l.players {
 		keys = append(keys, p)
 	}
 	return keys
 }
 
-func (ps *List) Iter(routine func(*Player)) {
-	for p := range ps.players {
+func (l *List) GetExcept(exclude *Player) []*Player {
+	var result []*Player
+	for p := range l.players {
+		if exclude != p {
+			result = append(result, p)
+		}
+	}
+	return result
+}
+
+func (l *List) Iter(routine func(*Player)) {
+	for p := range l.players {
 		routine(p)
 	}
 }
 
-func (ps *List) FindByName(name string) *Player {
+func (l *List) FindByName(name string) *Player {
 	// TODO what happens if name is not found?
-	return ps.byName[name]
+	return l.byName[name]
 }
 
-func (ps *List) Count() int {
+func (l *List) Count() int {
 	// TODO replace with support for len
-	return len(ps.players)
+	return len(l.players)
 }

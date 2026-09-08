@@ -10,7 +10,7 @@ func (w *World) handleWear(msg *gameserver.HandlerParameter) {
 
 	if len(objectsToWear) == 0 {
 		// nothing in inventory with that name
-		_ = msg.Player.Send(message.WearResponse{Success: false, ResultCode: "TARGET_NOT_FOUND"})
+		msg.Player.Send(message.WearResponse{Success: false, ResultCode: "TARGET_NOT_FOUND"})
 		return
 	}
 
@@ -18,7 +18,7 @@ func (w *World) handleWear(msg *gameserver.HandlerParameter) {
 	objectToWear := objectsToWear[0]
 
 	if !objectToWear.Definition.CanWear() {
-		_ = msg.Player.Send(message.WearResponse{Success: false, ResultCode: "CANT_WEAR_THAT"})
+		msg.Player.Send(message.WearResponse{Success: false, ResultCode: "CANT_WEAR_THAT"})
 		return
 	}
 
@@ -29,12 +29,12 @@ func (w *World) handleWear(msg *gameserver.HandlerParameter) {
 
 	// is something else already in the location?
 	if msg.Player.Slots().IsSlotInUse(loc) {
-		_ = msg.Player.Send(message.WearResponse{Success: false, ResultCode: "IN_USE"})
+		msg.Player.Send(message.WearResponse{Success: false, ResultCode: "IN_USE"})
 		return
 	}
 
 	// otherwise add the item to the location
 	// TODO fix this so that Set() only takes one thing?
 	msg.Player.Slots().Set(objectToWear.Definition.WearLocation, objectToWear)
-	_ = msg.Player.Send(message.WearResponse{Success: true, ResultCode: "OK"})
+	msg.Player.Send(message.WearResponse{Success: true, ResultCode: "OK"})
 }

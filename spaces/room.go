@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"uuid"
 
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/mobile"
@@ -23,7 +24,8 @@ type Room struct {
 	flags       map[string]bool
 }
 
-// NewRoom creates a new room in this zone. It does NOT alter the Zone to include the new room however.
+// NewRoom creates a new room in this zone.
+// It does NOT alter the Zone to include the new room, however.
 func NewRoom(zone *Zone, id string, name string, description string) *Room {
 	return &Room{
 		Id:          id,
@@ -38,13 +40,17 @@ func NewRoom(zone *Zone, id string, name string, description string) *Room {
 	}
 }
 
-// Build a strip down version of a Room, for testing
+// NewTestRoom creates a simpler room for tests
 func NewTestRoom(name string) *Room {
 	return NewRoom(nil, name, name, "")
 }
 
-func (r Room) String() string {
+func (r *Room) String() string {
 	return fmt.Sprintf("(Room %s: '%s')", r.Id, r.Name)
+}
+
+func (r *Room) Location() player.Location {
+	return player.NewLocation(r.Zone.Id, r.Id)
 }
 
 func (r *Room) SetFlags(flags []string) {
@@ -84,12 +90,14 @@ func (r *Room) PlayerLeaves(p *player.Player, dir direction.Direction) {
 }
 
 func (r *Room) MobileLeaves(mob *mobile.Instance, dir direction.Direction) {
-	// TODO unhandled error
-	r.mobs.Remove(mob)
+	if err := r.mobs.Remove(mob); err != nil {
+		log.Error().Err(err).Str("room", r.Location().String()).Msg("mobileLeaves: failed to leave room")
+		return
+	}
 	r.Send(message.LeaveRoomNotification{
 		Success:    true,
 		ResultCode: "OK",
-		Name:       mob.Definition.Name, // TODO figure out name here...
+		Name:       mob.Name(),
 		Direction:  int32(dir),
 	})
 }
@@ -108,6 +116,10 @@ func (r *Room) GetPlayers() []*player.Player {
 	return r.playerList.GetAll()
 }
 
+func (r *Room) getPlayersExcept(exclude *player.Player) []*player.Player {
+	return r.playerList.GetExcept(exclude)
+}
+
 // PlayerEnters a room, telling other room entities about it.
 func (r *Room) PlayerEnters(p *player.Player) {
 	// TODO how does this make sense next to the other Add, etc funcs?
@@ -121,14 +133,15 @@ func (r *Room) PlayerEnters(p *player.Player) {
 
 // MobileEnters a room, telling other room entities about it.
 func (r *Room) MobileEnters(mob *mobile.Instance) {
-	// TODO how does this make sense next to the other Add, etc funcs?
+	if err := r.AddMobile(mob); err != nil {
+		log.Error().Err(err).Str("room", r.Location().String()).Msg("MobileEnters: failed to add mobile")
+		return
+	}
 	r.Send(message.EnterRoomNotification{
 		Success:    true,
 		ResultCode: "OK",
 		Name:       mob.Definition.Name,
 	})
-	// TODO error handling
-	r.AddMobile(mob)
 }
 
 func (r *Room) AddMobile(inst *mobile.Instance) error {
@@ -144,26 +157,23 @@ func (r *Room) GetMobs() []*mobile.Instance {
 }
 
 // Send to every player in the room.
-func (r *Room) Send(msg interface{}) {
+func (r *Room) Send(msg any) {
 	r.playerList.Iter(func(p *player.Player) {
-		// TODO error handling
 		p.Send(msg)
 	})
 }
 
 // SendExcept to one player
-func (r *Room) SendExcept(exception *player.Player, msg interface{}) {
+func (r *Room) SendExcept(exception *player.Player, msg any) {
 	r.playerList.Iter(func(p *player.Player) {
 		if exception != p {
-			// TODO error handling
 			p.Send(msg)
 		}
 	})
 }
 
 // Notify everything in a room about something
-func (r *Room) Notify(msg interface{}) {
-	// TODO error handling
+func (r *Room) Notify(msg any) {
 	for _, m := range r.mobs.GetAll() {
 		m.Send(msg)
 	}
@@ -178,14 +188,11 @@ func (r *Room) CreateRoomDescription(exclude *player.Player) *message.RoomDescri
 		Description: r.Description,
 		Exits:       r.GetExitString(),
 	}
-	// Note: the thread-safe iteration isn't necessary because only
-	// one message is processed at a time (our server isn't actually
-	// multithreaded...)
-	r.playerList.Iter(func(p *player.Player) {
-		if p != exclude {
-			desc.Players = append(desc.Players, p.Name)
-		}
-	})
+
+	for _, p := range r.playerList.GetExcept(exclude) {
+		desc.Players = append(desc.Players, p.Name)
+	}
+
 	for _, o := range r.inventory.GetAll() {
 		desc.Objects = append(desc.Objects, o.Definition.DescriptionOnGround)
 	}

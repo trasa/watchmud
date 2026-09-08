@@ -9,7 +9,7 @@ import (
 func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 	dropReq := msg.Message.GetDropRequest()
 	if dropReq.Target == "" {
-		_ = msg.Player.Send(message.DropResponse{
+		msg.Player.Send(message.DropResponse{
 			Success: false, ResultCode: "NO_TARGET",
 		})
 		return
@@ -17,7 +17,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 
 	target, err := parseTarget(dropReq.Target)
 	if err != nil {
-		_ = msg.Player.Send(message.DropResponse{Success: false, ResultCode: "PARSE_ERROR_" + err.Error()})
+		msg.Player.Send(message.DropResponse{Success: false, ResultCode: "PARSE_ERROR_" + err.Error()})
 		return
 	}
 
@@ -33,7 +33,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 
 	if len(objectsToDrop) == 0 {
 		// not found
-		_ = msg.Player.Send(message.DropResponse{
+		msg.Player.Send(message.DropResponse{
 			Success: false, ResultCode: "TARGET_NOT_FOUND",
 		})
 		return
@@ -49,7 +49,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 	// is the object being held or otherwise in use?
 	if msg.Player.Slots().IsItemInUse(objectToDrop) {
 		// can't drop for 'reason'
-		_ = msg.Player.Send(message.DropResponse{
+		msg.Player.Send(message.DropResponse{
 			Success: false, ResultCode: "TARGET_IN_USE",
 		})
 		return
@@ -62,7 +62,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 			msg.Player.Name,
 			objectToDrop.Id,
 			err)
-		_ = msg.Player.Send(message.DropResponse{
+		msg.Player.Send(message.DropResponse{
 			Success: false, ResultCode: "ADD_TO_ROOM_ERROR",
 		})
 		return
@@ -71,7 +71,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 	// remove from player
 	msg.Player.Inventory().Remove(objectToDrop)
 	// success
-	_ = msg.Player.Send(message.DropResponse{
+	msg.Player.Send(message.DropResponse{
 		Success: true, ResultCode: "OK",
 	})
 	// tell everybody about it

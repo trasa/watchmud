@@ -14,7 +14,6 @@ func (w *World) handleLoad(msg *gameserver.HandlerParameter) {
 
 	targetRoom := w.getRoomContainingPlayer(msg.Player)
 	if targetRoom == nil {
-		// TODO error handling
 		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "YOU_ARE_NOT_IN_A_ROOM"})
 		return
 	}
@@ -30,7 +29,7 @@ func (w *World) handleLoad(msg *gameserver.HandlerParameter) {
 	} else if loadRequest.Type == "obj" {
 		w.handleLoadCreateObject(msg, loadRequest, targetRoom)
 	} else {
-		_ = msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_TYPE"})
+		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_TYPE"})
 	}
 }
 
@@ -38,14 +37,14 @@ func (w *World) handleLoadCreateMob(msg *gameserver.HandlerParameter, request *m
 	// get the zone we're looking for a mob in
 	z := w.Zone(request.Zone)
 	if z == nil {
-		_ = msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ZONE"})
+		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ZONE"})
 		return
 	}
 
 	// get the definition of this mob from that zone
 	mobDefn := z.MobileDefinitions[request.Id]
 	if mobDefn == nil {
-		_ = msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ID"})
+		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ID"})
 		return
 	}
 
@@ -58,21 +57,21 @@ func (w *World) handleLoadCreateMob(msg *gameserver.HandlerParameter, request *m
 	w.AddMobile(inst, targetRoom)
 
 	// success
-	_ = msg.Player.Send(message.LoadResponse{Success: true, ResultCode: "OK"})
+	msg.Player.Send(message.LoadResponse{Success: true, ResultCode: "OK"})
 }
 
 func (w *World) handleLoadCreateObject(msg *gameserver.HandlerParameter, request *message.LoadRequest, targetRoom *spaces.Room) {
 	// get the zone we're looking for an instance in
 	z := w.Zone(request.Zone)
 	if z == nil {
-		_ = msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ZONE"})
+		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ZONE"})
 		return
 	}
 
 	// get the definition of this object from that zone
 	objDefn := z.ObjectDefinitions[request.Id]
 	if objDefn == nil {
-		_ = msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ID"})
+		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ID"})
 		return
 	}
 
@@ -81,9 +80,9 @@ func (w *World) handleLoadCreateObject(msg *gameserver.HandlerParameter, request
 
 	// add instance to room
 	if err := targetRoom.AddInventory(inst); err != nil {
-		_ = msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "ADD_ROOM_INVENTORY_FAILED"})
+		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "ADD_ROOM_INVENTORY_FAILED"})
 		return
 	}
 	// success
-	_ = msg.Player.Send(message.LoadResponse{Success: true, ResultCode: "OK"})
+	msg.Player.Send(message.LoadResponse{Success: true, ResultCode: "OK"})
 }

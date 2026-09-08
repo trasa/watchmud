@@ -128,30 +128,19 @@ func (gs *GameServer) Logout(c gameserver.Conn, cause string) {
 
 func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) error {
 	// is this connection already authenticated?
-	// see if we can find an existing player ..
+	// see if we can find an existing player.
 	if msg.Client.Player() != nil {
 		// you've already got one - this is an error in our connection logic
 		return errors.New("player already attached to client")
 	}
+
 	// what if player is logged in on a different client?
-	// TODO
 	/*
-		p := FindPlayerByClient(message.Client)
-		if p != nil {
-			// already authenticated, can't login again
-			// TODO
-			// note that this isn't really working; the same username can log on twice
-			// instead the old player should be kicked and the new player take over
-			p.Send(LoginResponse{
-				Response: Response{
-					MessageType: "login_response",
-					Successful:  false,
-					ResultCode:  "ALREADY_AUTHENTICATED",
-				},
-			})
-			return
-		}
-	*/
+		if p := FindPlayerByClient(message.Client); p != nil {
+			// TODO: kick the old user and proceed with the new
+			// for now, fail the login
+			return errors.New("player already logged in")
+		}*/
 
 	// TODO authentication and stuff...
 	playerName := msg.Message.GetLoginRequest().PlayerName
@@ -270,8 +259,6 @@ func (gs *GameServer) handleDataRequest(msg *gameserver.HandlerParameter) (err e
 		}
 		resp.Data = append(resp.Data, classjson)
 	*/
-	if err = msg.Client.Send(resp); err != nil {
-		log.Error().Err(err).Msg("handleDataRequest failed to send race data")
-	}
+	msg.Client.Send(resp)
 	return
 }

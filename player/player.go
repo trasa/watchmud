@@ -8,7 +8,7 @@ import (
 
 // Sender is anything that can deliver a message to this player's connection
 type Sender interface {
-	Send(msg interface{}) error
+	Send(msg any)
 }
 
 type Player struct {
@@ -73,8 +73,8 @@ func NewTestPlayer(id uuid.UUID, name string, out Sender) *Player {
 		rules.Abilities{})
 }
 
-func (p *Player) Send(msg interface{}) error {
-	return p.out.Send(msg)
+func (p *Player) Send(msg any) {
+	p.out.Send(msg)
 }
 
 func (p *Player) TakeMeleeDamage(damage int64) bool {

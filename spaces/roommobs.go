@@ -1,7 +1,6 @@
 package spaces
 
 import (
-	"errors"
 	"fmt"
 	"uuid"
 
@@ -39,18 +38,16 @@ func (rm *RoomMobs) Find(target string) (inst *mobile.Instance, exists bool) {
 
 func (rm *RoomMobs) Remove(inst *mobile.Instance) error {
 	if _, exists := rm.byId[inst.InstanceId]; !exists {
-		return errors.New(fmt.Sprintf("instance id %s does not exist in room", inst.InstanceId))
+		return fmt.Errorf("remove: mob instance %s named %s does not exist in room", inst.InstanceId, inst.Name())
 	}
 	delete(rm.byId, inst.InstanceId)
-	// TODO other indexes
 	return nil
 }
 
 func (rm *RoomMobs) Add(inst *mobile.Instance) error {
 	if _, exists := rm.byId[inst.InstanceId]; exists {
-		return errors.New(fmt.Sprintf("instance id %s is already in the room", inst.InstanceId))
+		return fmt.Errorf("add: mob instance %s named %s is already in the room", inst.InstanceId, inst.Name())
 	}
 	rm.byId[inst.InstanceId] = inst
-	// TODO other indexes
 	return nil
 }

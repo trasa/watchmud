@@ -6,8 +6,7 @@ type Recorder struct {
 	Sent []interface{}
 }
 
-func (r *Recorder) Send(msg interface{}) error {
+func (r *Recorder) Send(msg interface{}) {
 	log.Debug().Msgf("sending message: %v", msg)
 	r.Sent = append(r.Sent, msg)
-	return nil
 }

@@ -14,8 +14,8 @@ func NewTestConn(p *player.Player) *TestConn {
 	}
 }
 
-func (c *TestConn) Send(msg interface{}) error {
-	return c.player.Send(msg)
+func (c *TestConn) Send(msg any) {
+	c.player.Send(msg)
 }
 
 func (c *TestConn) Player() *player.Player {

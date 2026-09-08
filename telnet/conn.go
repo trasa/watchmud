@@ -50,7 +50,7 @@ func Listen(ctx context.Context, addr string, gs gameserver.Instance) error {
 
 	go func() {
 		<-ctx.Done()
-		ln.Close() // unblocks the Accept, below
+		_ = ln.Close() // unblocks the Accept, below
 	}()
 
 	for {
@@ -81,7 +81,16 @@ func (c *conn) SetPlayer(p *player.Player) {
 	c.player = p
 }
 
-func (c *conn) Send(msg any) error {
+// Send sends a message for the player.Sender interface
+func (c *conn) Send(msg any) {
+	_ = c.send(msg)
+}
+
+// Send handles sending messages to the telnet client.
+// This can return an error if there's a legitimate sending error,
+// which makes it distinctive from player.Sender.Send.
+// Hooks into the login state signaling completion of login/create.
+func (c *conn) send(msg any) error {
 	switch m := msg.(type) {
 	case message.LoginResponse:
 		c.signalAuth(m.Success)
@@ -92,6 +101,7 @@ func (c *conn) Send(msg any) error {
 	case c.sendQueue <- msg:
 		return nil
 	default:
+		log.Warn().Msgf("telnet %s: send queue full, closing", c.netConn.RemoteAddr())
 		c.Close()
 		return errors.New("send queue full")
 	}
@@ -162,7 +172,7 @@ func (c *conn) emit(req any) error {
 // than returning an empty string.
 func (c *conn) prompt(text string) (string, bool) {
 	for {
-		if err := c.Send(text); err != nil {
+		if err := c.send(text); err != nil {
 			return "", false // queue full; conn is being torn down
 		}
 		line, ok := c.readLine()
@@ -197,7 +207,11 @@ func (c *conn) Close() {
 const writeTimeout = 10 * time.Second
 
 func (c *conn) writePump() {
-	defer c.netConn.Close() // this unblocks a parked readPump
+	defer func() {
+		// this unblocks a parked readPump
+		_ = c.netConn.Close()
+	}()
+
 	for {
 		select {
 		case msg := <-c.sendQueue:

@@ -11,14 +11,14 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter) {
 	requestedLocation := slot.Location(equipReq.SlotLocation)
 
 	if equipReq.SlotLocation <= 0 {
-		_ = msg.Player.Send(message.EquipResponse{
+		msg.Player.Send(message.EquipResponse{
 			Success:    false,
 			ResultCode: "NO_SLOT_GIVEN",
 		})
 		return
 	}
 	if equipReq.Target == "" {
-		_ = msg.Player.Send(message.EquipResponse{
+		msg.Player.Send(message.EquipResponse{
 			Success:    false,
 			ResultCode: "NO_TARGET",
 		})
@@ -27,7 +27,7 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter) {
 
 	target, err := parseTarget(equipReq.Target)
 	if err != nil {
-		_ = msg.Player.Send(message.EquipResponse{Success: false, ResultCode: "PARSE_ERROR_" + err.Error()})
+		msg.Player.Send(message.EquipResponse{Success: false, ResultCode: "PARSE_ERROR_" + err.Error()})
 		return
 	}
 
@@ -37,7 +37,7 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter) {
 	objectsToEquip := msg.Player.Inventory().GetByNameOrAlias(target.Name)
 	if len(objectsToEquip) == 0 {
 		// you don't have one
-		_ = msg.Player.Send(message.EquipResponse{
+		msg.Player.Send(message.EquipResponse{
 			Success:    false,
 			ResultCode: "TARGET_NOT_FOUND",
 		})
@@ -49,7 +49,7 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter) {
 
 	// do you already have something equipped in that location?
 	if msg.Player.Slots().Get(requestedLocation) != nil {
-		_ = msg.Player.Send(message.EquipResponse{
+		msg.Player.Send(message.EquipResponse{
 			Success:    false,
 			ResultCode: "LOCATION_IN_USE",
 		})
@@ -58,7 +58,7 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter) {
 
 	// can this object be equiped there?
 	if requestedLocation != objectToEquip.Definition.WearLocation {
-		_ = msg.Player.Send(message.EquipResponse{
+		msg.Player.Send(message.EquipResponse{
 			Success:    false,
 			ResultCode: "CANT_WEAR_THERE",
 		})
@@ -66,7 +66,7 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter) {
 	}
 	// success
 	msg.Player.Slots().Set(requestedLocation, objectToEquip)
-	_ = msg.Player.Send(message.EquipResponse{
+	msg.Player.Send(message.EquipResponse{
 		Success:    true,
 		ResultCode: "OK",
 	})
