@@ -148,6 +148,8 @@ func (c *conn) login() bool {
 func (c *conn) emit(req any) error {
 	gm, err := message.NewGameMessage(req)
 	if err != nil {
+		// log AND error, because this is a bad programming error (missing entry in table)
+		// and we want that to stand out...
 		log.Error().Err(err).Msgf("telnet %s: cannot wrap %T", c.netConn.RemoteAddr(), req)
 		return err
 	}

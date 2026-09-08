@@ -80,10 +80,9 @@ func (w *World) initialLoad() (err error) {
 // Don't send room notifications.
 func (w *World) AddPlayer(players ...*player.Player) {
 	for _, p := range players {
-		log.Debug().Msgf("Adding player %s: %s", p.Id, p.Name)
+		log.Debug().Str("playerName", p.Name).Str("playerId", p.Id.String()).Msgf("Adding player to world")
 
 		// TODO need support for location
-
 		// player (probably?) won't know their previous location, if we need
 		// to persist that information (and we probably do) we'll reconcile it
 		// elsewhere.

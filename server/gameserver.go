@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 	"uuid"
 
@@ -129,12 +130,7 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) error {
 	// is this connection already authenticated?
 	// see if we can find an existing player ..
 	if msg.Client.Player() != nil {
-		// you've already got one
-		// TODO error handling on send
-		msg.Client.Send(message.LoginResponse{
-			Success:    false,
-			ResultCode: "PLAYER_ALREADY_ATTACHED",
-		})
+		// you've already got one - this is an error in our connection logic
 		return errors.New("player already attached to client")
 	}
 	// what if player is logged in on a different client?
@@ -159,37 +155,26 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) error {
 
 	// TODO authentication and stuff...
 	playerName := msg.Message.GetLoginRequest().PlayerName
-	rec, found, loadErr := gs.store.Load(playerName)
-	if loadErr != nil {
-		// store error
-		log.Error().Err(loadErr).Str("playerName", playerName).Msgf("Error loading player %s from store", playerName)
-		loginResponse := message.LoginResponse{
-			Success:    false,
-			ResultCode: "PLAYER_STORE_ERROR",
-		}
-		if err := msg.Client.Send(loginResponse); err != nil {
-			log.Error().Err(err).Msg("client error trying to send PLAYER_STORE_ERROR on login")
-		}
-		return loadErr
+	rec, found, err := gs.store.Load(playerName)
+	if err != nil {
+		// store error - problem with the store, return an error
+		return err
 	}
 	if !found {
-		log.Warn().Str("playerName", playerName).Msgf("playerName %s not found in store", playerName)
+		// not an error - could represent a new player (player creation)
+		log.Info().Str("playerName", playerName).Msg("playerName not found in store")
 		loginResponse := message.LoginResponse{
 			Success:    false,
 			ResultCode: "PLAYER_LOGIN_FAILED",
 		}
-		if err := msg.Client.Send(loginResponse); err != nil {
-			log.Error().Err(err).Msg("client error trying to send PLAYER_LOGIN_FAILED on login")
-			// TODO deal with send error
-		}
-		// TODO should this return an error?
-		return errors.New("player not found in store")
+		msg.Client.Send(loginResponse)
+		return nil
 	}
 
+	// create the player
 	p, err := player.FromRecord(rec, msg.Client, gs.catalog, gs.world)
 	if err != nil {
-		// TODO FIXME: we failed to get "p" but fall through here and set msg.Player and msg.Client.SetPlayer ... oops.
-		log.Error().Err(err).Msg("Error creating player from record")
+		return err
 	}
 	msg.Player = p
 	msg.Client.SetPlayer(p)
@@ -197,27 +182,19 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) error {
 	// add player to world
 	gs.world.AddPlayer(p)
 
-	if err := p.Send(message.LoginResponse{
+	p.Send(message.LoginResponse{
 		Success:    true,
 		ResultCode: "OK",
 		PlayerName: p.Name,
-	}); err != nil {
-		log.Error().Err(err).Msg("Error sending LoginResponse")
-		return err
-	}
+	})
 	return nil
 }
 
 func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) error {
 	if msg.Client.Player() != nil {
 		// you've already got one
-		// TODO error handling for send (there's not really much we can honestly do ... so don't return an error?)
-		// Or better, consolidate all the error handling back in what calls this
-		msg.Client.Send(message.CreatePlayerResponse{
-			Success:    false,
-			ResultCode: "PLAYER_ALREADY_ATTACHED",
-		})
-		return errors.New("player already attached")
+		// this is a programming bug (login state machine), so report the error
+		return fmt.Errorf("player %s already attached to client", msg.Client.Player().Name)
 	}
 	req := msg.Message.GetCreatePlayerRequest()
 	playerName := req.PlayerName
@@ -225,8 +202,6 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) error
 	lineage := gs.catalog.Lineages["human"]
 	// message sends an int but this is a string now, so default all to fighter
 	class := gs.catalog.Classes["fighter"]
-	// TODO need check for name uniqueness, and shouldn't use it as the ID... need uuid support
-	// NOTE this doesn't set the location that's defered to the world I think...?
 	p := player.New(
 		uuid.New(),
 		playerName,
@@ -236,24 +211,23 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) error
 		rules.StandardAbilities(class.AbilityPreference),
 	)
 
+	// TODO need to set the location first (AddPlayer always puts the player in the start room, for now)
+
+	if _, err := gs.store.Create(p.Record()); err != nil {
+		return fmt.Errorf("handleCreatePlayer: %v", err)
+	}
+
 	msg.Client.SetPlayer(p)
 	msg.Player = p
 
-	// TODO need to set the location first (AddPlayer always puts the player in the start room, for now)
-
-	if err := gs.store.Save(p.Record()); err != nil {
-		log.Error().Err(err).Msgf("Error trying to save player record for %s", playerName)
-		// TODO send error to client
-		return errors.New("error saving player record")
-	}
 	gs.world.AddPlayer(p)
 
-	err := p.Send(message.CreatePlayerResponse{
+	p.Send(message.CreatePlayerResponse{
 		Success:    true,
 		ResultCode: "OK",
 		PlayerName: p.Name,
 	})
-	return err
+	return nil
 }
 
 // The client is requesting game data: races, class definitions, something like that.
