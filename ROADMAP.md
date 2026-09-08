@@ -202,7 +202,7 @@ time, never concurrently with a pulse. Give `incomingBuffer` a modest buffer (sa
 burst of input doesn't block connection goroutines.
 
 Exit: command latency is bounded by processing, not by the tick.
-
+**DONE September 7 2026**
 ---
 
 ## Phase 4 — The telnet listener

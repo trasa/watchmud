@@ -25,14 +25,16 @@ type GameServer struct {
 }
 
 func New(w *world.World, c *rules.Catalog, s player.Store) *GameServer {
+	const bufferSize = 64
 	return &GameServer{
-		incomingBuffer: make(chan *gameserver.HandlerParameter),
+		incomingBuffer: make(chan *gameserver.HandlerParameter, bufferSize),
 		world:          w,
 		catalog:        c,
 		store:          s,
 	}
 }
 
+// Run the game server, obviously.
 func (gs *GameServer) Run(ctx context.Context) error {
 	ticker := time.NewTicker(mudtime.PulseInterval)
 	defer ticker.Stop()
@@ -44,13 +46,17 @@ func (gs *GameServer) Run(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-
+		case msg := <-gs.incomingBuffer:
+			if err := gs.dispatch(msg); err != nil {
+				// don't return error, we're not halting the server
+				log.Error().Err(err).Msg("error dispatching message")
+			}
 		case <-ticker.C:
 			now := time.Now()
 			delta := now.Sub(last)
 			last = now
 			pulse++
-			gs.heartbeat(pulse, delta)
+			gs.heartbeat(pulse, delta) // zone/mob/violence pulses
 		}
 	}
 }
@@ -82,60 +88,29 @@ func (gs *GameServer) heartbeat(pulse mudtime.PulseCount, delta time.Duration) {
 
 	// mud-hour ("player tick")
 	// affect weather, regen ..
-
-	// handle an incoming message if one exists
-	// TODO tick time: figure out how many incoming messages we can handle
-	// see issue #4
-	// for now, just process until buffer is empty...
-
-	// handle ALL the incoming messages, no matter how many ... see issue #4
-	for {
-		handled, err := gs.processIncomingMessage()
-		if err != nil {
-			log.Error().Err(err).Msg("Error processing incoming message")
-		}
-		if !handled {
-			break
-		}
-	}
 }
 
-// read a message off of incomingMessageBuffer and do it
-// this doesn't block so if the buffer is empty, the method returns immediately
-// If a message was procssed (even in error) return true.
-// Otherwise return false.
-func (gs *GameServer) processIncomingMessage() (bool, error) {
-	select {
-	case msg := <-gs.incomingBuffer:
-		switch msg.Message.Inner.(type) {
-		case *message.GameMessage_LoginRequest:
-			if err := gs.handleLogin(msg); err != nil {
-				return true, err
-			}
-			return true, nil
-
-		case *message.GameMessage_CreatePlayerRequest:
-			if err := gs.handleCreatePlayer(msg); err != nil {
-				return true, err
-			}
-			return true, nil
-
-		case *message.GameMessage_DataRequest:
-			if err := gs.handleDataRequest(msg); err != nil {
-				return true, err
-			}
-			return true, nil
-
-		default:
-			if err := gs.world.HandleIncomingMessage(msg); err != nil {
-				return true, err
-			}
-			return true, nil
+// dispatch a message to its handler.
+func (gs *GameServer) dispatch(msg *gameserver.HandlerParameter) error {
+	switch msg.Message.Inner.(type) {
+	case *message.GameMessage_LoginRequest:
+		if err := gs.handleLogin(msg); err != nil {
+			return err
+		}
+	case *message.GameMessage_CreatePlayerRequest:
+		if err := gs.handleCreatePlayer(msg); err != nil {
+			return err
+		}
+	case *message.GameMessage_DataRequest:
+		if err := gs.handleDataRequest(msg); err != nil {
+			return err
 		}
 	default:
-		// do nothing
+		if err := gs.world.HandleIncomingMessage(msg); err != nil {
+			return err
+		}
 	}
-	return false, nil
+	return nil
 }
 
 func (gs *GameServer) Receive(msg *gameserver.HandlerParameter) {
