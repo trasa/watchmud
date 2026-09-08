@@ -1,8 +1,7 @@
 package world
 
 import (
-	"log"
-
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/gameserver"
@@ -21,31 +20,21 @@ func (w *World) handleMove(msg *gameserver.HandlerParameter) {
 			return
 		}
 	*/
-	// go somewhere
 	playerRoom := w.getRoomContainingPlayer(msg.Player)
-	// get the direction we want to go to
 	dir := direction.Direction(msg.Message.GetMoveRequest().Direction)
 
-	log.Printf("player %s in room %s wants to move %s",
-		msg.Player.Name,
-		playerRoom.Name,
-		dir.String(),
-	)
+	log.Trace().Str("player", msg.Player.Name).Str("room", playerRoom.Name).Msgf("player wants to move %s", dir.String())
 
 	// can player go in that direction?
 	if targetRoom := playerRoom.Get(dir); targetRoom != nil {
 		// make it happen
 		w.movePlayer(msg.Player, dir, playerRoom, targetRoom)
-		// send response message
-		// TODO error handling
 		msg.Player.Send(message.MoveResponse{
 			Success:         true,
 			ResultCode:      "OK",
 			RoomDescription: targetRoom.CreateRoomDescription(msg.Player),
 		})
 	} else {
-		// you can't go that way, tell player about error
-		// TODO error handling
 		msg.Player.Send(message.MoveResponse{
 			Success:    false,
 			ResultCode: "CANT_GO_THAT_WAY",
