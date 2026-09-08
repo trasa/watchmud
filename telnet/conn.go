@@ -163,8 +163,12 @@ func (c *conn) emit(req any) error {
 		log.Error().Err(err).Msgf("telnet %s: cannot wrap %T", c.netConn.RemoteAddr(), req)
 		return err
 	}
-	c.gs.Receive(gameserver.NewHandlerParameter(c, gm))
+	c.dispatch(gm)
 	return nil
+}
+
+func (c *conn) dispatch(gm *message.GameMessage) {
+	c.gs.Receive(gameserver.NewHandlerParameter(c, gm))
 }
 
 // prompt writes text with no trailing newline, then waits
@@ -269,5 +273,34 @@ func (c *conn) readPump() {
 }
 
 func (c *conn) commandLoop() {
+	for {
+		line, ok := c.readLine()
+		if !ok {
+			return
+		}
+		if line == "" {
+			continue // bare Enter: ignore. Note this is the opposite of prompt(), which re-asks. Different context, different policy.
+		}
+		tokens := message.Tokenize(line)
+		switch strings.ToLower(tokens[0]) {
+		case "quit":
+			_ = c.emit(message.LogoutRequest{Cause: "quit"})
+			c.Send("Goodbye.\r\n")
+			return
 
+		case "drop":
+			// TODO special case handling because the message defn doesn't protect against invalid drop messages
+			// fix later.
+			if len(tokens) < 2 {
+				c.Send("Drop what?\r\n")
+				continue
+			}
+		}
+		gm, err := message.TranslateLineToMessage(tokens)
+		if err != nil {
+			c.Send(err.Error() + "\r\n")
+			continue
+		}
+		c.dispatch(gm)
+	}
 }
