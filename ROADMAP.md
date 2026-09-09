@@ -311,6 +311,17 @@ Named so they don't get rediscovered as surprises:
   and the `Room`'s own `playerList` (plus `p.Location()`), and `World.movePlayer` must update
   all of them in step. Same pattern for `spaces.MobileRoomMap`. Any missed update silently
   desyncs the world. Worth collapsing to a single source of truth — after telnet works.
+- **`spaces.Room` conflates definition and instance.** One struct holds both the static
+  topology loaded from `content/` (`Id`, `Name`, `Description`, `Zone`, `directions`, `flags`)
+  and the live contents that change every tick (`playerList`, `Inventory`, `mobs`). Because
+  the loader is necessarily two-pass — exits are cyclic and cross-zone, so rooms are all
+  constructed before `Content.connectRooms` wires them — `Room.Connect` has to be exported,
+  and a handler can rewrite world topology at runtime by calling it. Hiding `Connect` would
+  fix little: `Name`, `Description`, `Zone` and `Inventory` are exported fields anyway. The
+  real fix is the split this codebase already applies everywhere else (see "Definition vs
+  Instance" in CLAUDE.md): a `RoomDefinition` owned by the `Zone`, immutable once loaded and
+  holding the exits, and a live `Room` pointing at it. Same refactor as the dual-bookkeeping
+  item above, seen from the other side — do them together, after telnet works.
 - **`web/`** serves a static page for a client that no longer exists. Delete with `rpc/`.
 - **`world/settings.go`** is a single `VERBOSE_LOGGING` const, and logging is split between
   zerolog and stdlib `log` depending on file age. Worth one consolidating pass eventually.

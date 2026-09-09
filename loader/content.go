@@ -192,7 +192,7 @@ func (c *Content) connectRooms(sourceZoneId string, sourceRoomId string, dir dir
 		return fmt.Errorf("connect rooms: destination room %q not found in zone %q (from %s/%s going %s)",
 			destRoomId, destZoneId, sourceZoneId, sourceRoomId, dir)
 	}
-	sourceRoom.ConnectRoom(dir, destRoom)
+	sourceRoom.Connect(dir, destRoom)
 	return nil
 }
 

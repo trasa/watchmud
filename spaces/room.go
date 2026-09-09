@@ -173,7 +173,7 @@ func (r *Room) SendExcept(exception *player.Player, msg any) {
 	})
 }
 
-// Notify everything in a room about something
+// Notify mobs and players in a room about something
 func (r *Room) Notify(msg any) {
 	// mobs
 	for _, m := range r.mobs.GetAll() {
@@ -236,14 +236,16 @@ func (r *Room) HasExit(dir direction.Direction) bool {
 	return ok
 }
 
-// DestinationRoom returns the room that is in this direction,
-// or nil if there isn't a room that way.
+// DestinationRoom returns the room in this direction or nil if there isn't one.
 func (r *Room) DestinationRoom(dir direction.Direction) (dest *Room) {
 	// TODO what about exits that are locked or closed?
 	return r.directions[dir]
 }
 
-func (r *Room) ConnectRoom(dir direction.Direction, destRoom *Room) {
+// Connect this room to the destination room in this direction.
+// Loader use only: room topology is immutable once content is loaded.
+// See ROADMAP "Known Problems": room conflates definition and instance.
+func (r *Room) Connect(dir direction.Direction, destRoom *Room) {
 	r.directions[dir] = destRoom
 }
 
