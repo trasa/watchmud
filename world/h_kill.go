@@ -30,7 +30,7 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter) {
 	}
 
 	//  does this room allow fighting..
-	if room.HasFlag(spaces.RoomFlagNoFight) {
+	if room.Flag(spaces.RoomFlagNoFight) {
 		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "NO_FIGHT_ROOM"})
 		return
 	}

@@ -17,6 +17,6 @@ func (w *World) handleRecall(msg *gameserver.HandlerParameter) {
 	msg.Player.Send(message.RecallResponse{
 		Success:         true,
 		ResultCode:      "OK",
-		RoomDescription: w.StartRoom.CreateRoomDescription(msg.Player),
+		RoomDescription: w.StartRoom.DescriptionExcept(msg.Player),
 	})
 }

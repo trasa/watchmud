@@ -17,6 +17,6 @@ func (w *World) handleLook(msg *gameserver.HandlerParameter) {
 	if playerRoom == nil {
 		playerRoom = w.VoidRoom
 	}
-	resp.RoomDescription = playerRoom.CreateRoomDescription(msg.Player)
+	resp.RoomDescription = playerRoom.DescriptionExcept(msg.Player)
 	msg.Player.Send(resp)
 }

@@ -63,11 +63,11 @@ func (r *Room) SetFlag(flag string) {
 	r.flags[flag] = true
 }
 
-func (r *Room) HasFlag(flag string) bool {
+func (r *Room) Flag(flag string) bool {
 	return r.flags[flag]
 }
 
-func (r *Room) GetFlags() (result []string) {
+func (r *Room) Flags() (result []string) {
 	for k, v := range r.flags {
 		if v {
 			result = append(result, k)
@@ -110,11 +110,11 @@ func (r *Room) RemovePlayer(p *player.Player) {
 	r.playerList.Remove(p)
 }
 
-func (r *Room) GetPlayers() []*player.Player {
+func (r *Room) Players() []*player.Player {
 	return r.playerList.GetAll()
 }
 
-func (r *Room) getPlayersExcept(exclude *player.Player) []*player.Player {
+func (r *Room) playersExcept(exclude *player.Player) []*player.Player {
 	return r.playerList.GetExcept(exclude)
 }
 
@@ -150,7 +150,7 @@ func (r *Room) RemoveMobile(inst *mobile.Instance) error {
 	return r.mobs.Remove(inst)
 }
 
-func (r *Room) GetMobs() []*mobile.Instance {
+func (r *Room) Mobs() []*mobile.Instance {
 	return r.mobs.GetAll()
 }
 
@@ -172,15 +172,16 @@ func (r *Room) SendExcept(exception *player.Player, msg any) {
 
 // Notify everything in a room about something
 func (r *Room) Notify(msg any) {
+	// mobs
 	for _, m := range r.mobs.GetAll() {
 		m.Send(msg)
 	}
+	// players
 	r.Send(msg)
 }
 
-// CreateRoomDescription describes the room, except for one player
-func (r *Room) CreateRoomDescription(exclude *player.Player) *message.RoomDescription {
-	// TODO rework this
+// DescriptionExcept describes the room, except for one player, if provided
+func (r *Room) DescriptionExcept(exclude *player.Player) *message.RoomDescription {
 	desc := message.RoomDescription{
 		Name:        r.Name,
 		Description: r.Description,

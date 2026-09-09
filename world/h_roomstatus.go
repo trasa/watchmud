@@ -33,14 +33,14 @@ func (w *World) handleRoomStatus(msg *gameserver.HandlerParameter) {
 		ZoneName:      room.Zone.Name,
 		ZoneId:        room.Zone.Id,
 		Directions:    createDirections(room),
-		Flags:         room.GetFlags(),
+		Flags:         room.Flags(),
 	}
 
 	msg.Player.Send(response)
 }
 
 func createPlayerInfo(room *spaces.Room) (result []*message.RoomStatusResponse_PlayerInfo) {
-	for _, p := range room.GetPlayers() {
+	for _, p := range room.Players() {
 		result = append(result, &message.RoomStatusResponse_PlayerInfo{
 			Name:          p.Name,
 			CurrentHealth: 0, // TODO
@@ -69,7 +69,7 @@ func createInventoryInfo(room *spaces.Room) (result []*message.RoomStatusRespons
 }
 
 func createMobInfo(room *spaces.Room) (result []*message.RoomStatusResponse_MobInfo) {
-	for _, m := range room.GetMobs() {
+	for _, m := range room.Mobs() {
 		result = append(result,
 			&message.RoomStatusResponse_MobInfo{
 				Id:                m.IdStr(),
@@ -94,7 +94,7 @@ func createDirections(room *spaces.Room) (result []*message.RoomStatusResponse_D
 				Dir:    ex.Direction.String(),
 				RoomId: ex.Room.Id,
 				ZoneId: ex.Room.Zone.Id,
-				Flags:  ex.Room.GetFlags(),
+				Flags:  ex.Room.Flags(),
 			})
 	}
 	return

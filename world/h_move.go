@@ -32,7 +32,7 @@ func (w *World) handleMove(msg *gameserver.HandlerParameter) {
 		msg.Player.Send(message.MoveResponse{
 			Success:         true,
 			ResultCode:      "OK",
-			RoomDescription: targetRoom.CreateRoomDescription(msg.Player),
+			RoomDescription: targetRoom.DescriptionExcept(msg.Player),
 		})
 	} else {
 		msg.Player.Send(message.MoveResponse{
