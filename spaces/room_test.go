@@ -15,12 +15,12 @@ func TestRoomExits_none(t *testing.T) {
 
 func TestRoomExits_all(t *testing.T) {
 	r := NewTestRoom("testing")
-	r.Set(direction.North, r)
-	r.Set(direction.South, r)
-	r.Set(direction.East, r)
-	r.Set(direction.West, r)
-	r.Set(direction.Up, r)
-	r.Set(direction.Down, r)
+	r.ConnectRoom(direction.North, r)
+	r.ConnectRoom(direction.South, r)
+	r.ConnectRoom(direction.East, r)
+	r.ConnectRoom(direction.West, r)
+	r.ConnectRoom(direction.Up, r)
+	r.ConnectRoom(direction.Down, r)
 
 	exits := r.Exits()
 	assert.Equal(t, "neswud", exits)
@@ -28,9 +28,9 @@ func TestRoomExits_all(t *testing.T) {
 
 func TestRoomExits_some(t *testing.T) {
 	r := NewTestRoom("test")
-	r.Set(direction.North, r)
-	r.Set(direction.East, r)
-	r.Set(direction.Up, r)
+	r.ConnectRoom(direction.North, r)
+	r.ConnectRoom(direction.East, r)
+	r.ConnectRoom(direction.Up, r)
 
 	exits := r.Exits()
 	assert.Equal(t, "neu", exits)
@@ -41,11 +41,11 @@ func TestRoom_GetExitInfo(t *testing.T) {
 	n := NewTestRoom("n")
 	s := NewTestRoom("s")
 
-	center.Set(direction.North, n)
-	n.Set(direction.South, center)
+	center.ConnectRoom(direction.North, n)
+	n.ConnectRoom(direction.South, center)
 
-	center.Set(direction.South, s)
-	s.Set(direction.North, center)
+	center.ConnectRoom(direction.South, s)
+	s.ConnectRoom(direction.North, center)
 
 	exitInfo := center.GetRoomExits(false)
 
@@ -61,14 +61,14 @@ func TestRoom_PickRandomDirection(t *testing.T) {
 	assert.Equal(t, direction.None, dir)
 
 	n := NewTestRoom("n")
-	center.Set(direction.North, n)
+	center.ConnectRoom(direction.North, n)
 	// one choice
 	dir = center.PickRandomDirection(false)
 	assert.Equal(t, direction.North, dir)
 
 	// two choices
 	s := NewTestRoom("s")
-	center.Set(direction.South, s)
+	center.ConnectRoom(direction.South, s)
 
 	dir = center.PickRandomDirection(false)
 	if !(dir == direction.North || dir == direction.South) {
@@ -87,11 +87,11 @@ func TestRoom_LimitToZone(t *testing.T) {
 	s := NewTestRoom("s")
 	s.Zone = zone2
 
-	center.Set(direction.North, n)
-	n.Set(direction.South, center)
+	center.ConnectRoom(direction.North, n)
+	n.ConnectRoom(direction.South, center)
 
-	center.Set(direction.South, s)
-	s.Set(direction.North, center)
+	center.ConnectRoom(direction.South, s)
+	s.ConnectRoom(direction.North, center)
 
 	result := center.GetRoomExits(true)
 	assert.Equal(t, 1, len(result))

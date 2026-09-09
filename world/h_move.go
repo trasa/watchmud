@@ -26,7 +26,7 @@ func (w *World) handleMove(msg *gameserver.HandlerParameter) {
 	log.Trace().Str("player", msg.Player.Name).Str("room", playerRoom.Name).Msgf("player wants to move %s", dir.String())
 
 	// can player go in that direction?
-	if targetRoom := playerRoom.Get(dir); targetRoom != nil {
+	if targetRoom := playerRoom.DestinationRoom(dir); targetRoom != nil {
 		// make it happen
 		w.movePlayer(msg.Player, dir, playerRoom, targetRoom)
 		msg.Player.Send(message.MoveResponse{

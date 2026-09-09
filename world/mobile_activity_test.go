@@ -33,8 +33,8 @@ func (s *MobileActivityTestSuite) SetupTest() {
 
 func (s *MobileActivityTestSuite) Test_getNextDirectionOnPath_Simple() {
 	r := spaces.NewTestRoom("a")
-	r.Set(direction.Up, spaces.NewTestRoom("b"))
-	r.Get(direction.Up).Set(direction.Down, r)
+	r.ConnectRoom(direction.Up, spaces.NewTestRoom("b"))
+	r.DestinationRoom(direction.Up).ConnectRoom(direction.Down, r)
 
 	// a -> b
 	dir, changeDirection, err := getNextDirectionOnPath(s.mobileInstance, r)
@@ -43,7 +43,7 @@ func (s *MobileActivityTestSuite) Test_getNextDirectionOnPath_Simple() {
 	s.Assert().False(changeDirection)
 
 	// b -> a
-	dir, changeDirection, err = getNextDirectionOnPath(s.mobileInstance, r.Get(direction.Up))
+	dir, changeDirection, err = getNextDirectionOnPath(s.mobileInstance, r.DestinationRoom(direction.Up))
 	s.Assert().NoError(err)
 	s.Assert().Equal(direction.Down, dir)
 	s.Assert().True(changeDirection)
@@ -55,10 +55,10 @@ func (s *MobileActivityTestSuite) Test_getNextDirectionOnPath_FullPath() {
 	a := spaces.NewTestRoom("a")
 	b := spaces.NewTestRoom("b")
 	c := spaces.NewTestRoom("c")
-	a.Set(direction.East, b)
-	b.Set(direction.West, a)
-	b.Set(direction.East, c)
-	c.Set(direction.West, b)
+	a.ConnectRoom(direction.East, b)
+	b.ConnectRoom(direction.West, a)
+	b.ConnectRoom(direction.East, c)
+	c.ConnectRoom(direction.West, b)
 
 	// a -> b
 	dir, changeDirection, err := getNextDirectionOnPath(s.mobileInstance, a)
