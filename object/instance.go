@@ -12,22 +12,15 @@ type Instance struct {
 	Definition *Definition
 }
 
-// IdStr from the Thing interface TODO figure out if this can be removed
+// IdStr from the Thing interface
+// TODO figure out if this can be removed
 func (i *Instance) IdStr() string { return i.Id.String() }
 
-func (i *Instance) CanEquipWeapon() bool {
-	return i.Definition.CanEquipWeapon()
-}
-
 func (i *Instance) IsGettable() bool {
-	return i.Definition.IsGettable()
+	return i.Definition.Gettable()
 }
 
-func NewInstance(d *Definition) *Instance {
-	return NewInstanceWithId(uuid.New(), d)
-}
-
-func NewInstanceWithId(id uuid.UUID, d *Definition) *Instance {
+func NewInstance(id uuid.UUID, d *Definition) *Instance {
 	return &Instance{
 		Id:         id,
 		Definition: d,

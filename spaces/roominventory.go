@@ -1,104 +1,71 @@
 package spaces
 
 import (
-	"errors"
 	"fmt"
 	"uuid"
 
-	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/object"
 )
 
 type RoomInventory struct {
-	byId         map[uuid.UUID]*object.Instance // instance_id -> instance object
-	byDefinition map[string][]*object.Instance  // (zone)(definition_id) -> list of Instances
+	byInstanceId map[uuid.UUID]*object.Instance
 }
 
 func NewRoomInventory() *RoomInventory {
 	return &RoomInventory{
-		byId:         make(map[uuid.UUID]*object.Instance),
-		byDefinition: make(map[string][]*object.Instance),
+		byInstanceId: make(map[uuid.UUID]*object.Instance),
 	}
 }
 
 func (ri *RoomInventory) GetAll() (result []*object.Instance) {
-	for _, inst := range ri.byId {
+	for _, inst := range ri.byInstanceId {
 		result = append(result, inst)
 	}
 	return
 }
 
-func (ri *RoomInventory) GetByInstanceId(id uuid.UUID) (inst *object.Instance, exists bool) {
-	inst, exists = ri.byId[id]
+// InstanceId finds the instance with this id in the room
+func (ri *RoomInventory) InstanceId(id uuid.UUID) (inst *object.Instance, exists bool) {
+	inst, exists = ri.byInstanceId[id]
 	return
 }
 
-// GetByName finds the instance with this name in the room
-// note this needs to become much more sophisticated...
+// Name finds the instances with this name in the room.
+// TODO this needs to become much more sophisticated...
 // Note that there is much left undone by this implementation
 // (stacks of items, aliases...)
-func (ri *RoomInventory) GetByName(name string) (inst *object.Instance, exists bool) {
+func (ri *RoomInventory) Name(name string) []*object.Instance {
+	var result []*object.Instance
 	for _, inst := range ri.GetAll() {
 		if inst.Definition.Name == name {
-			return inst, true
+			result = append(result, inst)
 		}
 	}
-	return nil, false
+	return result
 }
 
-func (ri *RoomInventory) GetByNameOrAlias(target string) (inst *object.Instance, exists bool) {
+func (ri *RoomInventory) NameOrAlias(target string) []*object.Instance {
+	var result []*object.Instance
 	for _, inst := range ri.GetAll() {
-		if inst.Definition.Name == target {
-			return inst, true
-		}
-		if inst.Definition.HasAlias(target) {
-			return inst, true
+		if inst.Definition.Name == target || inst.Definition.HasAlias(target) {
+			result = append(result, inst)
 		}
 	}
-	return nil, false
+	return result
 }
 
-// Find an instance in this inventory with a name or alias
-// matching the terms given.
-func (ri *RoomInventory) Find(findMode message.FindMode, index string, target string) (inst *object.Instance, exists bool) {
-	switch findMode {
-	case message.FindIndividual:
-		// for now, just find the thing with this name or alias.
-		return ri.GetByNameOrAlias(target)
-	case message.FindAll:
-		return nil, false
-	case message.FindAllDot:
-		return nil, false
-	default:
-		return nil, false
+func (ri *RoomInventory) Add(inst *object.Instance) error {
+	if _, exists := ri.InstanceId(inst.Id); exists {
+		return fmt.Errorf("instance id %s already exists in room inventory", inst.Id)
 	}
-}
-
-func (ri *RoomInventory) Add(inst *object.Instance) (err error) {
-	if _, exists := ri.byId[inst.Id]; exists {
-		return errors.New(fmt.Sprintf("instance id %s already exists in room_inventory", inst.Id))
-	}
-
-	ri.byId[inst.Id] = inst
-	ri.byDefinition[inst.Definition.IdStr()] = append(ri.byDefinition[inst.Definition.IdStr()], inst)
+	ri.byInstanceId[inst.Id] = inst
 	return nil
 }
 
-func (ri *RoomInventory) Remove(inst *object.Instance) (err error) {
-	if _, exists := ri.byId[inst.Id]; !exists {
-		return errors.New(fmt.Sprintf("instance id %s does not exist in room_inventory", inst.Id))
+func (ri *RoomInventory) Remove(inst *object.Instance) error {
+	if _, exists := ri.InstanceId(inst.Id); !exists {
+		return fmt.Errorf("instance id %s does not exist in room inventory", inst.Id)
 	}
-	delete(ri.byId, inst.Id)
-	pos := ri.findPosition(inst)
-	ri.byDefinition[inst.Definition.IdStr()] = append(ri.byDefinition[inst.Definition.IdStr()][:pos], ri.byDefinition[inst.Definition.IdStr()][pos+1:]...)
+	delete(ri.byInstanceId, inst.Id)
 	return nil
-}
-
-func (ri *RoomInventory) findPosition(inst *object.Instance) int {
-	for pos, i := range ri.byDefinition[inst.Definition.IdStr()] {
-		if i.Id == inst.Id {
-			return pos
-		}
-	}
-	return -1
 }

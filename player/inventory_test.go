@@ -2,6 +2,7 @@ package player
 
 import (
 	"testing"
+	"uuid"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud-message/slot"
@@ -22,7 +23,7 @@ func TestInventorySuite(t *testing.T) {
 func (s *inventorySuite) SetupTest() {
 	s.inv = NewInventory()
 	s.definition = object.NewDefinition("defn", "defnName", "zone", object.Armor, []string{"alias"}, "desc", "descground", slot.Arms)
-	s.instance = object.NewInstance(s.definition)
+	s.instance = object.NewInstance(uuid.New(), s.definition)
 	s.inv.Add(s.instance)
 }
 

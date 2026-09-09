@@ -6,7 +6,6 @@ import (
 	"iter"
 	"maps"
 	"slices"
-	"uuid"
 
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message/direction"
@@ -200,14 +199,4 @@ func (w *World) ObjectDefinition(zoneId, definitionId string) (*object.Definitio
 		return nil, false
 	}
 	return d, true
-}
-
-// CreateObjectInstance builds a new object.Instance for the zoneId, definitionId, and instanceId.
-func (w *World) CreateObjectInstance(zoneId string, definitionId string, instanceId uuid.UUID) (*object.Instance, error) {
-	// TODO this method should go away
-	d, found := w.ObjectDefinition(zoneId, definitionId)
-	if !found {
-		return nil, fmt.Errorf("object definition %s:%s not found", zoneId, definitionId)
-	}
-	return object.NewInstanceWithId(instanceId, d), nil
 }

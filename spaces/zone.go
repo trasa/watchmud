@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"uuid"
 
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/mobile"
@@ -41,8 +42,7 @@ func (z *Zone) AddRoom(r *Room) {
 }
 
 func (z *Zone) AddObjectDefinition(obj *object.Definition) {
-	obj.ZoneId = z.Id
-	z.ObjectDefinitions[obj.Identifier()] = obj
+	z.ObjectDefinitions[obj.ObjectId.DefinitionId] = obj
 }
 
 func (z *Zone) AddMobileDefinition(mob *mobile.Definition) {
@@ -118,23 +118,6 @@ func (z *Zone) createObject(cmd CreateObject) error {
 	if r == nil {
 		return errors.New(fmt.Sprintf("createObject: room not found: %s", cmd))
 	}
-
-	// Note that the amount only deals with how many are in the room (on the floor
-	// so to speak) - not lying around attached to mobs, other players, and so on.
-	count := 0
-	// TODO not the most efficient way of figuring this out ..
-	for _, inst := range r.GetAllInventory() {
-		if inst.Definition.Identifier() == cmd.ObjectDefinitionId {
-			// found one
-			count++
-		}
-	}
-	if count >= cmd.InstanceMax {
-		log.Printf("Room %s has %d %s, max is %d (not creating more objects)",
-			r.Id,
-			count, cmd.ObjectDefinitionId,
-			cmd.InstanceMax)
-		return nil
-	}
-	return r.AddInventory(object.NewInstance(defn))
+	inst := object.NewInstance(uuid.New(), defn)
+	return r.Inventory.Add(inst)
 }

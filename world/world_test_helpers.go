@@ -74,8 +74,8 @@ func newTestWorld() (*World, error) {
 		"A knife is on the ground.",
 		slot.Wield,
 	)
-	knifeInstance := object.NewInstance(knife)
-	if err := startRoom.AddInventory(knifeInstance); err != nil {
+	knifeInstance := object.NewInstance(uuid.New(), knife)
+	if err := startRoom.Inventory.Add(knifeInstance); err != nil {
 		return nil, err
 	}
 	helmet := object.NewDefinition(
@@ -88,8 +88,8 @@ func newTestWorld() (*World, error) {
 		"an iron helmet is on the ground",
 		slot.Head,
 	)
-	helmetInstance := object.NewInstance(helmet)
-	if err := startRoom.AddInventory(helmetInstance); err != nil {
+	helmetInstance := object.NewInstance(uuid.New(), helmet)
+	if err := startRoom.Inventory.Add(helmetInstance); err != nil {
 		return nil, err
 	}
 	mob := mobile.NewDefinition(

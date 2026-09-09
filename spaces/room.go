@@ -2,13 +2,11 @@ package spaces
 
 import (
 	"fmt"
-	"uuid"
 
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/mobile"
-	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 )
 
@@ -18,7 +16,7 @@ type Room struct {
 	Description string
 	Zone        *Zone
 	playerList  *player.List // map of players by name
-	inventory   *RoomInventory
+	Inventory   *RoomInventory
 	mobs        *RoomMobs
 	directions  map[direction.Direction]*Room
 	flags       map[string]bool
@@ -33,7 +31,7 @@ func NewRoom(zone *Zone, id string, name string, description string) *Room {
 		Description: description,
 		Zone:        zone,
 		playerList:  player.NewList(),
-		inventory:   NewRoomInventory(),
+		Inventory:   NewRoomInventory(),
 		mobs:        NewRoomMobs(),
 		directions:  make(map[direction.Direction]*Room),
 		flags:       make(map[string]bool),
@@ -46,7 +44,7 @@ func NewTestRoom(name string) *Room {
 }
 
 func (r *Room) String() string {
-	return fmt.Sprintf("(Room %s: '%s')", r.Id, r.Name)
+	return fmt.Sprintf("(Room %s-%s: '%s')", r.Zone.Id, r.Id, r.Name)
 }
 
 func (r *Room) Location() player.Location {
@@ -193,42 +191,13 @@ func (r *Room) CreateRoomDescription(exclude *player.Player) *message.RoomDescri
 		desc.Players = append(desc.Players, p.Name)
 	}
 
-	for _, o := range r.inventory.GetAll() {
+	for _, o := range r.Inventory.GetAll() {
 		desc.Objects = append(desc.Objects, o.Definition.DescriptionOnGround)
 	}
 	for _, mob := range r.mobs.GetAll() {
 		desc.Mobs = append(desc.Mobs, mob.Definition.DescriptionInRoom)
 	}
 	return &desc
-}
-
-func (r *Room) AddInventory(inst *object.Instance) error {
-	return r.inventory.Add(inst)
-}
-
-func (r *Room) RemoveInventory(inst *object.Instance) error {
-	return r.inventory.Remove(inst)
-}
-
-func (r *Room) GetInventoryByInstanceId(instanceId uuid.UUID) (inst *object.Instance, exists bool) {
-	inst, exists = r.inventory.GetByInstanceId(instanceId)
-	return
-}
-
-// GetInventoryByName finds the object.Instance matching by name
-func (r *Room) GetInventoryByName(name string) (inst *object.Instance, exists bool) {
-	inst, exists = r.inventory.GetByName(name)
-	return
-}
-
-func (r *Room) GetAllInventory() []*object.Instance {
-	return r.inventory.GetAll()
-}
-
-// FindInventory in the room matching terms given. Searches the object names and aliases.
-func (r *Room) FindInventory(findMode message.FindMode, index string, target string) (inst *object.Instance, exists bool) {
-	inst, exists = r.inventory.Find(findMode, index, target)
-	return
 }
 
 func (r *Room) FindMobile(target string) (mob *mobile.Instance, exists bool) {

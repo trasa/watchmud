@@ -24,31 +24,30 @@ func TestRoomInventorySuite(t *testing.T) {
 func (suite *RoomInventorySuite) SetupTest() {
 	suite.roomInventory = NewRoomInventory()
 	suite.defn = object.NewDefinition("id", "name", "zoneid", object.Other, []string{}, "short desc", "on ground", slot.None)
-	suite.inst = object.NewInstance(suite.defn)
-	suite.instTwo = object.NewInstance(suite.defn)
-	// TODO error handling
-	_ = suite.roomInventory.Add(suite.inst)
-	_ = suite.roomInventory.Add(suite.instTwo)
+	suite.inst = object.NewInstance(uuid.New(), suite.defn)
+	suite.instTwo = object.NewInstance(uuid.New(), suite.defn)
+
+	suite.Require().NoError(suite.roomInventory.Add(suite.inst))
+	suite.Require().NoError(suite.roomInventory.Add(suite.instTwo))
 }
 
 func (suite *RoomInventorySuite) TestRoomInventory_AddMany() {
 
-	inst, exists := suite.roomInventory.GetByName("name")
-	suite.Assert().True(exists)
-	suite.Assert().NotNil(inst)
+	instances := suite.roomInventory.Name("name")
+	suite.Assert().NotEmpty(instances)
 
 	all := suite.roomInventory.GetAll()
 	suite.Assert().Equal(2, len(all))
 
-	retone, exists := suite.roomInventory.GetByInstanceId(suite.inst.Id)
+	retone, exists := suite.roomInventory.InstanceId(suite.inst.Id)
 	suite.Assert().True(exists)
 	suite.Assert().Equal(retone, suite.inst)
 
-	rettwo, exists := suite.roomInventory.GetByInstanceId(suite.instTwo.Id)
+	rettwo, exists := suite.roomInventory.InstanceId(suite.instTwo.Id)
 	suite.Assert().True(exists)
 	suite.Assert().Equal(rettwo, suite.instTwo)
 
-	nothing, exists := suite.roomInventory.GetByInstanceId(uuid.New())
+	nothing, exists := suite.roomInventory.InstanceId(uuid.New())
 	suite.Assert().False(exists)
 	suite.Assert().Nil(nothing)
 }
@@ -59,7 +58,7 @@ func (suite *RoomInventorySuite) TestRoomInventory_Remove() {
 
 	suite.Assert().Equal(1, len(suite.roomInventory.GetAll()))
 
-	ret, exists := suite.roomInventory.GetByInstanceId(suite.inst.Id)
+	ret, exists := suite.roomInventory.InstanceId(suite.inst.Id)
 	suite.Assert().False(exists)
 	suite.Assert().Nil(ret)
 }

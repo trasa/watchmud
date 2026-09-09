@@ -17,7 +17,7 @@ func (w *World) handleWear(msg *gameserver.HandlerParameter) {
 	// TODO for now only using first object returned
 	objectToWear := objectsToWear[0]
 
-	if !objectToWear.Definition.CanWear() {
+	if !objectToWear.Definition.Wearable() {
 		msg.Player.Send(message.WearResponse{Success: false, ResultCode: "CANT_WEAR_THAT"})
 		return
 	}

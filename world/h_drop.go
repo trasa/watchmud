@@ -56,7 +56,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 	}
 
 	// add to room
-	if err := room.AddInventory(objectToDrop); err != nil {
+	if err := room.Inventory.Add(objectToDrop); err != nil {
 		// failed to add to room..
 		log.Error().Msgf("Drop: Error while adding to room, player %s id %s; %s",
 			msg.Player.Name,

@@ -1,6 +1,8 @@
 package world
 
 import (
+	"uuid"
+
 	message "github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mobile"
@@ -69,17 +71,17 @@ func (w *World) handleLoadCreateObject(msg *gameserver.HandlerParameter, request
 	}
 
 	// get the definition of this object from that zone
-	objDefn := z.ObjectDefinitions[request.Id]
-	if objDefn == nil {
-		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ID"})
+	definition := z.ObjectDefinitions[request.Id]
+	if definition == nil {
+		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_DEFINITION_ID"})
 		return
 	}
 
 	// create instance of the item
-	inst := object.NewInstance(objDefn)
+	inst := object.NewInstance(uuid.New(), definition)
 
 	// add instance to room
-	if err := targetRoom.AddInventory(inst); err != nil {
+	if err := targetRoom.Inventory.Add(inst); err != nil {
 		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "ADD_ROOM_INVENTORY_FAILED"})
 		return
 	}

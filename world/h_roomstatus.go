@@ -14,7 +14,6 @@ func (w *World) handleRoomStatus(msg *gameserver.HandlerParameter) {
 
 	room := w.getRoomContainingPlayer(msg.Player)
 	if room == nil {
-		// TODO error handling
 		msg.Player.Send(message.RoomStatusResponse{
 			Success:    false,
 			ResultCode: "NOT_IN_ROOM",
@@ -52,17 +51,17 @@ func createPlayerInfo(room *spaces.Room) (result []*message.RoomStatusResponse_P
 }
 
 func createInventoryInfo(room *spaces.Room) (result []*message.RoomStatusResponse_InventoryInfo) {
-	for _, i := range room.GetAllInventory() {
+	for _, i := range room.Inventory.GetAll() {
 		result = append(result,
 			&message.RoomStatusResponse_InventoryInfo{
 				Id:                  i.Id.String(),
-				DefinitionId:        i.Definition.IdStr(),
+				DefinitionId:        i.Definition.ObjectId.DefinitionId,
 				Aliases:             i.Definition.Aliases,
 				Categories:          i.Definition.Categories.ToStringList(),
 				Name:                i.Definition.Name,
 				ShortDescription:    i.Definition.ShortDescription,
 				DescriptionOnGround: i.Definition.DescriptionOnGround,
-				ZoneId:              i.Definition.ZoneId,
+				ZoneId:              i.Definition.ObjectId.ZoneId,
 				Behaviors:           i.Definition.Behaviors.ToStringList(),
 			})
 	}

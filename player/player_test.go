@@ -40,7 +40,7 @@ func (s *PlayerSuite) TestAddInventory_New() {
 	s.Assert().Equal(1, len(invs))
 	obj := invs[0]
 	s.Assert().Equal(instPtr.Id, obj.Id)
-	s.Assert().Equal("defnid", obj.Definition.Identifier())
+	s.Assert().Equal("defnid", obj.Definition.ObjectId.DefinitionId)
 }
 
 func (s *PlayerSuite) TestMeleeDamage() {

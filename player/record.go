@@ -69,7 +69,7 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 			log.Warn().Str("player", rec.Name).Msgf("definition not found for %s / %s, dropping it", ir.ZoneId, ir.DefinitionId)
 			continue
 		}
-		i := object.NewInstanceWithId(ir.InstanceId, d)
+		i := object.NewInstance(ir.InstanceId, d)
 		p.inventory.Add(i)
 	}
 
@@ -104,8 +104,8 @@ func (i *Inventory) Record() []InventoryRecord {
 	for _, item := range i.GetAll() {
 		r := InventoryRecord{
 			InstanceId:   item.Id,
-			ZoneId:       item.Definition.ZoneId,
-			DefinitionId: item.Definition.IdStr(),
+			ZoneId:       item.Definition.ObjectId.ZoneId,
+			DefinitionId: item.Definition.ObjectId.DefinitionId,
 		}
 		records = append(records, r)
 	}
