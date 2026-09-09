@@ -9,23 +9,22 @@ import (
 	"github.com/trasa/watchmud-message/direction"
 )
 
-// Get all the valid exits from this room.
+// Exits returns all the valid exits from this room as a string.
 // Note the ordering of the letters in the exit string is important!
 // For example, with exits north, south, and up,
 // this returns "nsu"
-// TODO: exits can be locked and/or closed, this doesn't handle that.
-func (r *Room) GetExitString() string {
-	exits := []string{}
-
+func (r *Room) Exits() string {
+	// TODO: exits can be locked and/or closed, this doesn't handle that.
+	var exits []string
 	for _, exit := range r.GetRoomExits(false) {
 		exits = append(exits, exit.Direction.Abbrev())
 	}
 	return strings.Join(exits, "")
 }
 
-// Is there a valid exit in this direction in this room?
-// TODO what about exits that are locked or closed?
+// HasExit determines if there is a valid exit in this direction.
 func (r *Room) HasExit(dir direction.Direction) bool {
+	// TODO what about exits that are locked or closed?
 	_, ok := r.directions[dir]
 	return ok
 }

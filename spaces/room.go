@@ -185,7 +185,7 @@ func (r *Room) DescriptionExcept(exclude *player.Player) *message.RoomDescriptio
 	desc := message.RoomDescription{
 		Name:        r.Name,
 		Description: r.Description,
-		Exits:       r.GetExitString(),
+		Exits:       r.Exits(),
 	}
 
 	for _, p := range r.playerList.GetExcept(exclude) {

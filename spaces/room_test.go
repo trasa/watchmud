@@ -9,7 +9,7 @@ import (
 
 func TestRoomExits_none(t *testing.T) {
 	r := NewTestRoom("testing")
-	exits := r.GetExitString()
+	exits := r.Exits()
 	assert.Equal(t, "", exits)
 }
 
@@ -22,7 +22,7 @@ func TestRoomExits_all(t *testing.T) {
 	r.Set(direction.Up, r)
 	r.Set(direction.Down, r)
 
-	exits := r.GetExitString()
+	exits := r.Exits()
 	assert.Equal(t, "neswud", exits)
 }
 
@@ -32,7 +32,7 @@ func TestRoomExits_some(t *testing.T) {
 	r.Set(direction.East, r)
 	r.Set(direction.Up, r)
 
-	exits := r.GetExitString()
+	exits := r.Exits()
 	assert.Equal(t, "neu", exits)
 }
 
