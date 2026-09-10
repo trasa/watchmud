@@ -243,7 +243,11 @@ func (c *conn) writePump() {
 }
 
 func (c *conn) write(msg any) error {
-	text := render(msg)
+	name := ""
+	if c.Player() != nil {
+		name = c.Player().Name
+	}
+	text := render(msg, name)
 	text = strings.ReplaceAll(text, "\r\n", "\n") // normalize
 	text = strings.ReplaceAll(text, "\n", "\r\n") // replace with \r\n
 	if err := c.netConn.SetWriteDeadline(time.Now().Add(writeTimeout)); err != nil {

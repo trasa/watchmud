@@ -27,103 +27,103 @@ func render(msg any, self string) string {
 
 	case message.DropNotification:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("drop", m.ResultCode)
 		}
 		return m.PlayerName + " drops " + m.Target + ".\n"
 
 	case message.DropResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("drop", m.ResultCode)
 		}
 		return "Dropped.\n"
 
 	case message.EnterRoomNotification:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("enter", m.ResultCode)
 		}
 		return m.Name + " enters.\n"
 
 	case message.EquipResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("equip", m.ResultCode)
 		}
 		return "Equipped.\n"
 
 	case message.ExitsResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("exits", m.ResultCode)
 		}
 		return renderExits(m.ExitInfo)
 
 	case message.GetNotification:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("get", m.ResultCode)
 		}
 		return m.PlayerName + " gets " + m.Target + ".\n"
 
 	case message.GetResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("get", m.ResultCode)
 		}
 		return "Taken.\n"
 
 	case message.InventoryResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("inventory", m.ResultCode)
 		}
 		return renderInventory(m.InventoryItems)
 
 	case message.KillResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("kill", m.ResultCode)
 		}
 		return "Ok.\n"
 
 	case message.LeaveRoomNotification:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("leave", m.ResultCode)
 		}
 		return m.Name + " leaves " + strings.ToLower(direction.Direction(m.Direction).String()) + ".\n"
 
 	case message.LoadResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("load", m.ResultCode)
 		}
 		return "Loaded.\n"
 
 	case message.LogoutResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("logout", m.ResultCode)
 		}
 		return "Bye.\n"
 
 	case message.LookNotification:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("look", m.ResultCode)
 		}
 		return renderRoom(m.RoomDescription)
 
 	case message.LookResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("look", m.ResultCode)
 		}
 		return renderRoom(m.RoomDescription)
 
 	case message.MoveResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("move", m.ResultCode)
 		}
 		return renderRoom(m.RoomDescription)
 
 	case message.ShowEquipmentResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("show", m.ResultCode)
 		}
 		return renderEquipment(m.EquipmentInfo)
 
 	case message.RecallResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("recall", m.ResultCode)
 		}
 		return renderRoom(m.RoomDescription)
 
@@ -132,7 +132,7 @@ func render(msg any, self string) string {
 
 	case message.RestoreResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("restore", m.ResultCode)
 		}
 		return "Restored.\n"
 
@@ -142,37 +142,37 @@ func render(msg any, self string) string {
 
 	case message.SayNotification:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("say", m.ResultCode)
 		}
 		return m.Sender + " says, \"" + m.Value + "\".\n"
 
 	case message.SayResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("say", m.ResultCode)
 		}
 		return "You say, \"" + m.Value + "\".\n"
 
 	case message.TellAllNotification:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("tell", m.ResultCode)
 		}
 		return m.Sender + " shouts, \"" + m.Value + "\".\n"
 
 	case message.TellNotification:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("tell", m.ResultCode)
 		}
 		return m.Sender + " tells you, \"" + m.Value + "\".\n"
 
 	case message.TellAllResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("tell", m.ResultCode)
 		}
 		return "Told.\n"
 
 	case message.TellResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("tell", m.ResultCode)
 		}
 		return "Told.\n"
 
@@ -181,13 +181,13 @@ func render(msg any, self string) string {
 
 	case message.WearResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("wear", m.ResultCode)
 		}
 		return "Done.\n"
 
 	case message.WhoResponse:
 		if !m.Success {
-			return failureText(m.ResultCode)
+			return failureText("who", m.ResultCode)
 		}
 		return renderWho(m.PlayerInfo)
 

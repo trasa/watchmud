@@ -1,7 +1,94 @@
 package telnet
 
-import "fmt"
+import (
+	"strings"
 
-func failureText(resultCode string) string {
-	return fmt.Sprintf("Failure: %v\n", resultCode)
+	"github.com/rs/zerolog/log"
+)
+
+// failureText turns a handler's ResultCode into something a player can read.
+//
+// This table is keyed on the strings world/ emits, not on protobuf types, so
+// unlike render.go it survives the Phase 5 decision unchanged.
+//
+// verb is the command the player typed. Most codes mean the same thing
+// everywhere; the few that don't get a "verb/CODE" entry that wins.
+func failureText(verb, code string) string {
+	if s, ok := failureByVerb[verb+"/"+code]; ok {
+		return s + "\n"
+	}
+	if s, ok := failureByCode[code]; ok {
+		return s + "\n"
+	}
+	// TODO fix later ...
+	// h_drop.go:20, h_equip.go:30 and h_kill.go:49 build codes by concatenating
+	// an error onto a prefix, so the suffix is arbitrary — sometimes a raw
+	// strconv message. Never show it to the player.
+	for prefix, s := range failureByPrefix {
+		if strings.HasPrefix(code, prefix) {
+			return s + "\n"
+		}
+	}
+	log.Warn().Msgf("telnet: no failure text for %q (verb %q)", code, verb)
+	return "You can't do that.\n"
+}
+
+var failureByVerb = map[string]string{
+	"drop/TARGET_NOT_FOUND":  "You aren't carrying that.",
+	"wear/TARGET_NOT_FOUND":  "You aren't carrying that.",
+	"equip/TARGET_NOT_FOUND": "You aren't carrying that.",
+	"drop/NO_TARGET":         "Drop what?",
+	"get/NO_TARGET":          "Get what?",
+	"equip/NO_SLOT_GIVEN":    "Wield it where?",
+}
+
+var failureByCode = map[string]string{
+	// targets
+	"TARGET_NOT_FOUND":    "You don't see that here.",
+	"TARGET_NOT_GETTABLE": "You can't pick that up.",
+	"NO_TARGET":           "You'll have to be more specific.",
+
+	// carrying and wearing
+	"TARGET_IN_USE":   "You'll have to remove it first.",
+	"IN_USE":          "You're already wearing that.",
+	"LOCATION_IN_USE": "You're already using that slot.",
+	"CANT_WEAR_THAT":  "You can't wear that.",
+	"CANT_WEAR_THERE": "You can't wear that there.",
+
+	// movement and combat
+	"CANT_GO_THAT_WAY": "You can't go that way.",
+	"NO_FIGHT_ROOM":    "You feel far too peaceful to fight here.",
+	"NO_FIGHT":         "You can't attack that.",
+	"IN_A_FIGHT":       "You're too busy fighting!",
+	"ALREADY_FIGHTING": "You're already fighting!",
+
+	// talking
+	"TO_PLAYER_NOT_FOUND": "No one by that name is playing.",
+	"NO_VALUE":            "Say what?",
+
+	// three spellings of one broken state (h_roomstatus.go:19, h_say.go:16,
+	// h_wiz_load.go:19). Don't go fix the handlers; Phase 5 may rewrite them.
+	"NOT_IN_ROOM":           "You're nowhere at all.",
+	"NOT_IN_A_ROOM":         "You're nowhere at all.",
+	"YOU_ARE_NOT_IN_A_ROOM": "You're nowhere at all.",
+
+	// builder commands (h_wiz_load.go) — deliberately technical; the audience
+	// is someone editing content/
+	"UNKNOWN_TYPE":          "Unknown type: try mob or obj.",
+	"UNKNOWN_ZONE":          "No such zone.",
+	"UNKNOWN_ID":            "No such id.",
+	"UNKNOWN_DEFINITION_ID": "No such definition id.",
+
+	// internal failures: the player did nothing wrong
+	"ADD_TO_ROOM_ERROR":         "Something went wrong.",
+	"REMOVE_FROM_ROOM_ERROR":    "Something went wrong.",
+	"ADD_ROOM_INVENTORY_FAILED": "Something went wrong.",
+	"DATA_ERROR":                "Something went wrong.",
+
+	"UNKNOWN_MESSAGE_TYPE": "I don't understand that.",
+}
+
+var failureByPrefix = map[string]string{
+	"PARSE_ERROR_": "You'll have to phrase that differently.",
+	"ERROR_":       "Something went wrong.",
 }
