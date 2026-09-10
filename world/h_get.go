@@ -50,7 +50,7 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 		message.GetNotification{
 			Success:    true,
 			ResultCode: "OK",
-			Target:     item.Definition.Name,
+			Target:     item.Definition.ShortDescription,
 			PlayerName: msg.Player.Name,
 		})
 	return

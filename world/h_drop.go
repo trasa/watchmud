@@ -80,6 +80,6 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 			Success:    true,
 			ResultCode: "OK",
 			PlayerName: msg.Player.Name,
-			Target:     objectToDrop.Definition.Name, // what should this be?! "knife", "a knife", "those knives" ...
+			Target:     objectToDrop.Definition.ShortDescription, // rendered to clients, so use "a knife"
 		})
 }
