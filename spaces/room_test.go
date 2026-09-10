@@ -9,8 +9,8 @@ import (
 
 func TestRoomExits_none(t *testing.T) {
 	r := NewTestRoom("testing")
-	exits := r.Exits()
-	assert.Equal(t, "", exits)
+	exits := r.ExitString()
+	assert.Equal(t, "None!", exits)
 }
 
 func TestRoomExits_all(t *testing.T) {
@@ -22,8 +22,8 @@ func TestRoomExits_all(t *testing.T) {
 	r.Connect(direction.Up, r)
 	r.Connect(direction.Down, r)
 
-	exits := r.Exits()
-	assert.Equal(t, "neswud", exits)
+	exits := r.ExitString()
+	assert.Equal(t, "North, East, South, West, Up, Down", exits)
 }
 
 func TestRoomExits_some(t *testing.T) {
@@ -32,8 +32,8 @@ func TestRoomExits_some(t *testing.T) {
 	r.Connect(direction.East, r)
 	r.Connect(direction.Up, r)
 
-	exits := r.Exits()
-	assert.Equal(t, "neu", exits)
+	exits := r.ExitString()
+	assert.Equal(t, "North, East, Up", exits)
 }
 
 func TestRoom_GetExitInfo(t *testing.T) {
@@ -47,7 +47,7 @@ func TestRoom_GetExitInfo(t *testing.T) {
 	center.Connect(direction.South, s)
 	s.Connect(direction.North, center)
 
-	exitInfo := center.GetRoomExits(false)
+	exitInfo := center.Exits(false)
 
 	assert.Equal(t, 2, len(exitInfo))
 	assert.Equal(t, direction.North, exitInfo[0].Direction)
@@ -93,7 +93,7 @@ func TestRoom_LimitToZone(t *testing.T) {
 	center.Connect(direction.South, s)
 	s.Connect(direction.North, center)
 
-	result := center.GetRoomExits(true)
+	result := center.Exits(true)
 	assert.Equal(t, 1, len(result))
 	assert.Equal(t, direction.North, result[0].Direction)
 }

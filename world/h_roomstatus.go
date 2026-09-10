@@ -88,7 +88,7 @@ func createMobInfo(room *spaces.Room) (result []*message.RoomStatusResponse_MobI
 }
 
 func createDirections(room *spaces.Room) (result []*message.RoomStatusResponse_DirectionInfo) {
-	for _, ex := range room.GetRoomExits(false) {
+	for _, ex := range room.Exits(false) {
 		result = append(result,
 			&message.RoomStatusResponse_DirectionInfo{
 				Dir:    ex.Direction.String(),

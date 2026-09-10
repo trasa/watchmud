@@ -3,7 +3,7 @@ package spaces
 import (
 	"fmt"
 	"math/rand"
-	"strings"
+	"sort"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -184,11 +184,12 @@ func (r *Room) Notify(msg any) {
 }
 
 // DescriptionExcept describes the room, except for one player, if provided
+// The exits are stringified for telnet clients, not the abbreviations.
 func (r *Room) DescriptionExcept(exclude *player.Player) *message.RoomDescription {
 	desc := message.RoomDescription{
 		Name:        r.Name,
 		Description: r.Description,
-		Exits:       r.Exits(),
+		Exits:       r.ExitString(),
 	}
 
 	for _, p := range r.playerList.GetExcept(exclude) {
@@ -216,17 +217,14 @@ func (r *Room) FindPlayer(target string) (*player.Player, bool) {
 	return nil, false
 }
 
-// Exits returns all the valid exits from this room as a string.
-// Note the ordering of the letters in the exit string is important!
-// For example, with exits north, south, and up,
-// this returns "nsu"
-func (r *Room) Exits() string {
+// ExitString returns all the valid exits from this room as a string.
+func (r *Room) ExitString() string {
 	// TODO: exits can be locked and/or closed, this doesn't handle that.
-	var exits []string
-	for _, exit := range r.GetRoomExits(false) {
-		exits = append(exits, exit.Direction.Abbrev())
+	var exits []direction.Direction
+	for _, exit := range r.Exits(false) {
+		exits = append(exits, exit.Direction)
 	}
-	return strings.Join(exits, "")
+	return direction.Format(exits)
 }
 
 // HasExit determines if there is a valid exit in this direction.
@@ -253,7 +251,7 @@ func (r *Room) Connect(dir direction.Direction, destRoom *Room) {
 // If there aren't any, return direction.None.
 func (r *Room) PickRandomDirection(limitToZone bool) direction.Direction {
 	// TODO should this return a room and not a direction?
-	exits := r.GetRoomExits(limitToZone)
+	exits := r.Exits(limitToZone)
 	if len(exits) == 0 {
 		return direction.None
 	} else {
@@ -270,4 +268,18 @@ func (r *Room) PickRandomDirection(limitToZone bool) direction.Direction {
 		log.Warn().Msgf("Room.PickRandomDirection: Bizarre RandomDirection picked. len=%d, desired=%d", len(exits), desired)
 		return direction.None
 	}
+}
+
+// Exits returns the exits from this room.
+// Uses the direction.Direction ordering.
+// Does not take locks, doors, closures, etc. into account.
+func (r *Room) Exits(limitToZone bool) []RoomExit {
+	holder := roomExitHolder{}
+	for dir, dest := range r.directions {
+		if !limitToZone || r.Zone == dest.Zone {
+			holder.dirs = append(holder.dirs, RoomExit{dir, dest})
+		}
+	}
+	sort.Sort(holder)
+	return holder.dirs
 }

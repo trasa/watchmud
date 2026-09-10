@@ -118,14 +118,14 @@ func getNextDirectionOnPath(mob *mobile.Instance, mobRoom *spaces.Room) (dir dir
 		}
 	}
 	roomToFind := mob.Definition.Wandering.Path[nextIndex]
-	for _, rexit := range mobRoom.GetRoomExits(false) {
+	for _, rexit := range mobRoom.Exits(false) {
 		if rexit.Room.Id == roomToFind {
 			dir = rexit.Direction
 			break
 		}
 	}
 	if dir == direction.None {
-		return direction.None, false, errors.New(fmt.Sprintf("Couldn't find destination room %s from current room exits %v", roomToFind, mobRoom.GetRoomExits(false)))
+		return direction.None, false, errors.New(fmt.Sprintf("Couldn't find destination room %s from current room exits %v", roomToFind, mobRoom.Exits(false)))
 	}
 	return
 }

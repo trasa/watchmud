@@ -12,7 +12,7 @@ func (w *World) handleExits(msg *gameserver.HandlerParameter) {
 	}
 	// convert directions to strings because json
 	messageExitInfo := []*message.ExitInfo{}
-	for _, rexit := range r.GetRoomExits(false) {
+	for _, rexit := range r.Exits(false) {
 		messageExitInfo = append(messageExitInfo,
 			&message.ExitInfo{
 				Direction: int32(rexit.Direction),

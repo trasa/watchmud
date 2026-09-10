@@ -94,8 +94,10 @@ func (c *conn) send(msg any) error {
 	switch m := msg.(type) {
 	case message.LoginResponse:
 		c.signalAuth(m.Success)
+		return nil
 	case message.CreatePlayerResponse:
 		c.signalAuth(m.Success)
+		return nil
 	}
 	select {
 	case c.sendQueue <- msg:
@@ -241,16 +243,9 @@ func (c *conn) writePump() {
 }
 
 func (c *conn) write(msg any) error {
-	// STEP C: this type switch becomes the renderer — one case per
-	// message.XResponse / message.XNotification. Keep it in its own file
-	// and free of game logic; it's the chokepoint Phase 5 would retarget.
-	var text string
-	switch m := msg.(type) {
-	case string:
-		text = m
-	default:
-		text = fmt.Sprintf("%v\r\n", m)
-	}
+	text := render(msg)
+	text = strings.ReplaceAll(text, "\r\n", "\n") // normalize
+	text = strings.ReplaceAll(text, "\n", "\r\n") // replace with \r\n
 	if err := c.netConn.SetWriteDeadline(time.Now().Add(writeTimeout)); err != nil {
 		return err
 	}
