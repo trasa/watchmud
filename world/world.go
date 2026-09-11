@@ -50,7 +50,7 @@ func New(c *loader.Content, s player.Store) (w *World, err error) {
 	if err := w.initialLoad(); err != nil {
 		return nil, fmt.Errorf("building world: %w", err)
 	}
-	log.Print("World built.")
+	log.Info().Msg("World built.")
 	return w, nil
 }
 
@@ -95,7 +95,10 @@ func (w *World) AddPlayer(players ...*player.Player) {
 
 func (w *World) RemovePlayer(players ...*player.Player) {
 	for _, p := range players {
-		log.Printf("Removing Player: %s", p.Name())
+		log.Debug().Msgf("Removing Player: %s", p.Name())
+		if r := w.getRoomContainingPlayer(p); r != nil {
+			r.RemovePlayer(p)
+		}
 		w.playerList.Remove(p)
 		w.playerRooms.Remove(p)
 	}

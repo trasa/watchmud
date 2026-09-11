@@ -8,6 +8,8 @@ import (
 	message "github.com/trasa/watchmud-message"
 	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud-message/slot"
+	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/rules"
 )
 
 // Render turns anything sent to a connection into the text a telnet client
@@ -21,6 +23,9 @@ func render(msg any, self string) string {
 	switch m := msg.(type) {
 	case string: // raw transport text, greetings, prompts, goodbyes ...
 		return m
+
+	case message.CreatePlayerResponse:
+		return ""
 
 	case message.DeathNotification:
 		return m.Target + " is dead!\n"
@@ -91,6 +96,15 @@ func render(msg any, self string) string {
 		}
 		return "Loaded.\n"
 
+	case message.LoginResponse:
+		return ""
+
+	case message.LogoutNotification:
+		if !m.Success {
+			return failureText("logout", m.ResultCode)
+		}
+		return m.PlayerName + " has logged out.\n"
+
 	case message.LogoutResponse:
 		if !m.Success {
 			return failureText("logout", m.ResultCode)
@@ -120,6 +134,26 @@ func render(msg any, self string) string {
 			return failureText("show", m.ResultCode)
 		}
 		return renderEquipment(m.EquipmentInfo)
+
+	case message.StatResponse:
+		if !m.Success {
+			return failureText("stat", m.ResultCode)
+		}
+		return renderPlayerStat(m.PlayerName,
+			m.Race, // TODO replace with lineage/species
+			m.Class,
+			m.CurrentHealth,
+			m.MaxHealth,
+			player.NewLocation(m.ZoneId, m.RoomId), // TODO message should include type, and probably shouldn't be in player?
+			rules.Abilities{ // TODO should be a type in the message, should be int not int32
+				Str: int(m.Strength),
+				Dex: int(m.Dexterity),
+				Con: int(m.Constitution),
+				Int: int(m.Intelligence),
+				Wis: int(m.Wisdom),
+				Cha: int(m.Charisma),
+			},
+		)
 
 	case message.RecallResponse:
 		if !m.Success {
@@ -235,6 +269,22 @@ func renderInventory(items []*message.InventoryResponse_InventoryItem) string {
 	for _, item := range items {
 		b.WriteString(item.ShortDescription + "\n")
 	}
+	return b.String()
+}
+
+// renderPlayerStat formats a player's stats as a string for display to a mud client.
+// See TODOs on how this needs to be fixed up (message types etc)
+func renderPlayerStat(name string, race string, class string, currentHealth int64, maxHealth int64, location player.Location, abilities rules.Abilities) string {
+	var b strings.Builder
+	b.WriteString("Status:\n")
+	b.WriteString("Player:\t" + name + "\n")
+	b.WriteString("Race:\t" + race + "\tClass: " + class + "\n")
+	b.WriteString(fmt.Sprintf("Health:\t%d of %d\n", currentHealth, maxHealth))
+	b.WriteString("Location:\t" + location.String() + "\n")
+	b.WriteString("Abilities:\n")
+	b.WriteString(fmt.Sprintf("\tStr: %d\t Dex: %d\t Con: %d\n", abilities.Str, abilities.Dex, abilities.Con))
+	b.WriteString(fmt.Sprintf("\tWis: %d\t Int: %d\t Cha: %d\n", abilities.Wis, abilities.Int, abilities.Cha))
+	b.WriteString("\n")
 	return b.String()
 }
 
