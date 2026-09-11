@@ -14,6 +14,12 @@ const (
 	IAC  = 255 // interpret as command
 )
 
+// options
+const (
+	optEcho = 1
+	optNAWS = 31
+)
+
 // iacFilter parser states.
 type filterState int
 
