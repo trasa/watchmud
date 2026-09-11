@@ -23,7 +23,7 @@ func (w *World) handleWho(msg *gameserver.HandlerParameter) {
 			roomName = r.Name
 		}
 		info = append(info, &message.WhoResponse_PlayerInfo{
-			PlayerName: p.Name,
+			PlayerName: p.Name(),
 			ZoneName:   zoneName,
 			RoomName:   roomName,
 		})

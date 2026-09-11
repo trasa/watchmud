@@ -174,7 +174,7 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) error {
 	p.Send(message.LoginResponse{
 		Success:    true,
 		ResultCode: "OK",
-		PlayerName: p.Name,
+		PlayerName: p.Name(),
 	})
 	return nil
 }
@@ -183,7 +183,7 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) error
 	if msg.Client.Player() != nil {
 		// you've already got one
 		// this is a programming bug (login state machine), so report the error
-		return fmt.Errorf("player %s already attached to client", msg.Client.Player().Name)
+		return fmt.Errorf("player %s already attached to client", msg.Client.Player().Name())
 	}
 	req := msg.Message.GetCreatePlayerRequest()
 	playerName := req.PlayerName
@@ -214,7 +214,7 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) error
 	p.Send(message.CreatePlayerResponse{
 		Success:    true,
 		ResultCode: "OK",
-		PlayerName: p.Name,
+		PlayerName: p.Name(),
 	})
 	return nil
 }

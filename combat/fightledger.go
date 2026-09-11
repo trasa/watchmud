@@ -1,14 +1,17 @@
 package combat
 
-import "fmt"
+import (
+	"fmt"
+	"uuid"
+)
 
 type FightLedger struct {
-	fightMap map[Combatant]*Fight
+	fightMap map[uuid.UUID]*Fight
 }
 
 func NewFightLedger() *FightLedger {
 	return &FightLedger{
-		fightMap: make(map[Combatant]*Fight),
+		fightMap: make(map[uuid.UUID]*Fight),
 	}
 }
 
@@ -17,16 +20,16 @@ func (f *FightLedger) Fight(fighter Combatant, fightee Combatant, zoneId string,
 		// TODO fixme
 		return fmt.Errorf("Fighter is already fighting someone")
 	}
-	f.fightMap[fighter] = newFight(fighter, fightee, zoneId, roomId)
+	f.fightMap[fighter.Id()] = newFight(fighter, fightee, zoneId, roomId)
 
 	if !f.IsFighting(fightee) {
-		f.fightMap[fightee] = newFight(fightee, fighter, zoneId, roomId)
+		f.fightMap[fightee.Id()] = newFight(fightee, fighter, zoneId, roomId)
 	}
 	return nil
 }
 
 func (f *FightLedger) IsFighting(c Combatant) bool {
-	_, exists := f.fightMap[c]
+	_, exists := f.fightMap[c.Id()]
 	return exists
 }
 
@@ -40,7 +43,7 @@ func (f *FightLedger) IsBeingFought(c Combatant) bool {
 }
 
 func (f *FightLedger) GetFight(fighter Combatant) *Fight {
-	return f.fightMap[fighter]
+	return f.fightMap[fighter.Id()]
 }
 
 func (f *FightLedger) GetFights() (result []*Fight) {
@@ -51,5 +54,5 @@ func (f *FightLedger) GetFights() (result []*Fight) {
 }
 
 func (f *FightLedger) EndFight(fighter Combatant) {
-	delete(f.fightMap, fighter)
+	delete(f.fightMap, fighter.Id())
 }

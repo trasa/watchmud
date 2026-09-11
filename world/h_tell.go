@@ -7,7 +7,7 @@ import (
 
 func (w *World) handleTell(msg *gameserver.HandlerParameter) {
 	tellRequest := msg.Message.GetTellRequest()
-	sender := msg.Player.Name
+	sender := msg.Player.Name()
 	receiver := w.findPlayerByName(tellRequest.ReceiverPlayerName)
 	value := tellRequest.Value
 

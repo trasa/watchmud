@@ -245,7 +245,7 @@ func (c *conn) writePump() {
 func (c *conn) write(msg any) error {
 	name := ""
 	if c.Player() != nil {
-		name = c.Player().Name
+		name = c.Player().Name()
 	}
 	text := render(msg, name)
 	text = strings.ReplaceAll(text, "\r\n", "\n") // normalize

@@ -42,7 +42,7 @@ func (w *World) handleRoomStatus(msg *gameserver.HandlerParameter) {
 func createPlayerInfo(room *spaces.Room) (result []*message.RoomStatusResponse_PlayerInfo) {
 	for _, p := range room.Players() {
 		result = append(result, &message.RoomStatusResponse_PlayerInfo{
-			Name:          p.Name,
+			Name:          p.Name(),
 			CurrentHealth: 0, // TODO
 			MaxHealth:     0, // TODO
 		})

@@ -1,26 +1,35 @@
 package combat
 
-// Combatant is something capable of being in combat
-type Combatant interface {
+import "uuid"
+
+// Attacker and Defender ae roles in a single attack sequence.
+// They swap every round, so nothing durable about an entity
+// belongs here.
+type Attacker interface {
 	Name() string
-	TakeMeleeDamage(damage int64) (isDead bool)
-	Dead() bool
-	Type() CombatantType
 	CalculateMeleeRollModifiers() int
-	ArmorClass() int
-	HasResistanceTo(damageType DamageType) bool
-	IsVulnerableTo(damageType DamageType) bool
 	WeaponDamageRoll() string
 	WeaponDamageType() DamageType
 }
 
-type CombatantType int
+type Defender interface {
+	Name() string
+	ArmorClass() int
+	HasResistanceTo(damageType DamageType) bool
+	IsVulnerableTo(damageType DamageType) bool
+}
 
-const (
-	NoCombatantType CombatantType = iota // for testing
-	PlayerCombatant
-	MobileCombatant
-)
+// Combatant is an entity that persists across rounds. The ledger
+// and DoViolence work in these terms, melee.go does not.
+type Combatant interface {
+	Attacker
+	Defender
+	Id() uuid.UUID
+	TakeMeleeDamage(damager int64) bool
+	Dead() bool
+}
+
+type CombatantType int
 
 type DamageType int
 

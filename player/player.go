@@ -3,6 +3,7 @@ package player
 import (
 	"uuid"
 
+	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/rules"
 )
 
@@ -12,8 +13,8 @@ type Sender interface {
 }
 
 type Player struct {
-	Id        uuid.UUID
-	Name      string
+	id        uuid.UUID
+	name      string
 	out       Sender // was: client.Client, via ClientPlayer
 	Lineage   *rules.Lineage
 	Class     *rules.Class
@@ -33,8 +34,8 @@ func New(id uuid.UUID,
 	abilities rules.Abilities,
 ) *Player {
 	return &Player{
-		Id:        id,
-		Name:      name,
+		id:        id,
+		name:      name,
 		out:       out,
 		Lineage:   lineage,
 		Class:     class,
@@ -44,6 +45,14 @@ func New(id uuid.UUID,
 		maxHealth: 100,
 		abilities: abilities,
 	}
+}
+
+func (p *Player) Id() uuid.UUID {
+	return p.id
+}
+
+func (p *Player) Name() string {
+	return p.name
 }
 
 // Inventory returns the inventory
@@ -60,21 +69,29 @@ func (p *Player) Slots() *Slots {
 	return p.slots
 }
 
-// NewTestPlayer that tracks messages
-func NewTestPlayer(id uuid.UUID, name string, out Sender) *Player {
-	if out == nil {
-		out = &Recorder{}
-	}
-	return New(id,
-		name,
-		out,
-		&rules.Lineage{},
-		&rules.Class{},
-		rules.Abilities{})
-}
-
 func (p *Player) Send(msg any) {
 	p.out.Send(msg)
+}
+
+func (p *Player) RestoreHealth(amount int64) {
+	p.curHealth = min(p.curHealth+amount, p.maxHealth)
+}
+
+func (p *Player) Dead() bool {
+	return p.curHealth <= 0
+}
+
+func (p *Player) ArmorClass() int {
+	return p.slots.ArmorClass()
+}
+
+func (p *Player) CalculateMeleeRollModifiers() int {
+	return 0
+}
+
+func (p *Player) HasResistanceTo(damageType combat.DamageType) bool {
+	// TODO
+	return false
 }
 
 func (p *Player) TakeMeleeDamage(damage int64) bool {
@@ -85,10 +102,17 @@ func (p *Player) TakeMeleeDamage(damage int64) bool {
 	return false
 }
 
-func (p *Player) RestoreHealth(amount int64) {
-	p.curHealth = min(p.curHealth+amount, p.maxHealth)
+func (p *Player) IsVulnerableTo(damageType combat.DamageType) bool {
+	// TODO
+	return false
 }
 
-func (p *Player) IsDead() bool {
-	return p.curHealth <= 0
+func (p *Player) WeaponDamageRoll() string {
+	// TODO
+	return "1d6"
+}
+
+func (p *Player) WeaponDamageType() combat.DamageType {
+	// TODO
+	return combat.Piercing
 }

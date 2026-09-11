@@ -13,7 +13,7 @@ func (w *World) handleTellAll(msg *gameserver.HandlerParameter) {
 			Success:    true,
 			ResultCode: "OK",
 			Value:      tellAllRequest.Value,
-			Sender:     msg.Player.Name,
+			Sender:     msg.Player.Name(),
 		})
 		// TODO error handling
 		msg.Player.Send(message.TellAllResponse{Success: true, ResultCode: "OK"})

@@ -16,7 +16,7 @@ func (w *World) handleRestore(msg *gameserver.HandlerParameter) {
 	}
 
 	logWizCommand(msg.Player, "restore", "Player %s is attempting to restore %s",
-		msg.Player.Name, restoreRequest.Target)
+		msg.Player.Name(), restoreRequest.Target)
 
 	// find a matching player
 	if targetPlayer, found := targetRoom.FindPlayer(restoreRequest.Target); found {
@@ -24,7 +24,7 @@ func (w *World) handleRestore(msg *gameserver.HandlerParameter) {
 		//targetPlayer.Restore()
 		targetRoom.Notify(message.RestoreNotification{
 			IsPlayer: true,
-			Target:   targetPlayer.Name,
+			Target:   targetPlayer.Name(),
 		})
 		msg.Player.Send(message.RestoreResponse{Success: true, ResultCode: "OK"})
 		return

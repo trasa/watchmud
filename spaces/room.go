@@ -85,7 +85,7 @@ func (r *Room) PlayerLeaves(p *player.Player, dir direction.Direction) {
 	r.Send(message.LeaveRoomNotification{
 		Success:    true,
 		ResultCode: "OK",
-		Name:       p.Name,
+		Name:       p.Name(),
 		Direction:  int32(dir),
 	})
 }
@@ -127,7 +127,7 @@ func (r *Room) PlayerEnters(p *player.Player) {
 	r.Send(message.EnterRoomNotification{
 		Success:    true,
 		ResultCode: "OK",
-		Name:       p.Name,
+		Name:       p.Name(),
 	})
 	r.AddPlayer(p)
 }
@@ -193,7 +193,7 @@ func (r *Room) DescriptionExcept(exclude *player.Player) *message.RoomDescriptio
 	}
 
 	for _, p := range r.playerList.GetExcept(exclude) {
-		desc.Players = append(desc.Players, p.Name)
+		desc.Players = append(desc.Players, p.Name())
 	}
 
 	for _, o := range r.Inventory.GetAll() {

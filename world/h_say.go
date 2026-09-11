@@ -20,7 +20,7 @@ func (w *World) handleSay(msg *gameserver.HandlerParameter) {
 			Success:    true,
 			ResultCode: "OK",
 			Value:      sayRequest.Value,
-			Sender:     msg.Player.Name,
+			Sender:     msg.Player.Name(),
 		})
 		msg.Player.Send(message.SayResponse{
 			Success:    true,

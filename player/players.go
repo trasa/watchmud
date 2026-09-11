@@ -16,12 +16,12 @@ func NewList() *List {
 
 func (l *List) Add(p *Player) {
 	l.players[p] = p
-	l.byName[p.Name] = p
+	l.byName[p.name] = p
 }
 
 func (l *List) Remove(p *Player) {
 	delete(l.players, p)
-	delete(l.byName, p.Name)
+	delete(l.byName, p.name)
 }
 
 func (l *List) GetAll() []*Player {

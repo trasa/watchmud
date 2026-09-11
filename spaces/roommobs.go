@@ -37,17 +37,17 @@ func (rm *RoomMobs) Find(target string) (inst *mobile.Instance, exists bool) {
 }
 
 func (rm *RoomMobs) Remove(inst *mobile.Instance) error {
-	if _, exists := rm.byId[inst.InstanceId]; !exists {
-		return fmt.Errorf("remove: mob instance %s named %s does not exist in room", inst.InstanceId, inst.Name())
+	if _, exists := rm.byId[inst.Id()]; !exists {
+		return fmt.Errorf("remove: mob instance %s named %s does not exist in room", inst.Id(), inst.Name())
 	}
-	delete(rm.byId, inst.InstanceId)
+	delete(rm.byId, inst.Id())
 	return nil
 }
 
 func (rm *RoomMobs) Add(inst *mobile.Instance) error {
-	if _, exists := rm.byId[inst.InstanceId]; exists {
-		return fmt.Errorf("add: mob instance %s named %s is already in the room", inst.InstanceId, inst.Name())
+	if _, exists := rm.byId[inst.Id()]; exists {
+		return fmt.Errorf("add: mob instance %s named %s is already in the room", inst.Id(), inst.Name())
 	}
-	rm.byId[inst.InstanceId] = inst
+	rm.byId[inst.Id()] = inst
 	return nil
 }

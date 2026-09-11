@@ -79,7 +79,7 @@ func (w *World) initialLoad() (err error) {
 // Don't send room notifications.
 func (w *World) AddPlayer(players ...*player.Player) {
 	for _, p := range players {
-		log.Debug().Str("playerName", p.Name).Str("playerId", p.Id.String()).Msgf("Adding player to world")
+		log.Debug().Str("playerName", p.Name()).Str("playerId", p.Id().String()).Msgf("Adding player to world")
 
 		// TODO need support for location
 		// player (probably?) won't know their previous location, if we need
@@ -95,7 +95,7 @@ func (w *World) AddPlayer(players ...*player.Player) {
 
 func (w *World) RemovePlayer(players ...*player.Player) {
 	for _, p := range players {
-		log.Printf("Removing Player: %s", p.Name)
+		log.Printf("Removing Player: %s", p.Name())
 		w.playerList.Remove(p)
 		w.playerRooms.Remove(p)
 	}

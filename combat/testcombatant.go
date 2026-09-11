@@ -1,6 +1,9 @@
 package combat
 
+import "uuid"
+
 type TestCombatant struct {
+	id            uuid.UUID
 	name          string
 	curHealth     int64
 	dead          bool
@@ -11,8 +14,9 @@ type TestCombatant struct {
 
 func NewTestCombatant(name string, ac int, resists []DamageType, vulnerableTo []DamageType) *TestCombatant {
 	tc := &TestCombatant{
+		id:            uuid.New(),
 		name:          name,
-		curHealth:     100, // TODO need a default
+		curHealth:     100,
 		ac:            ac,
 		resistance:    make(map[DamageType]bool),
 		vulnerability: make(map[DamageType]bool),
@@ -26,6 +30,10 @@ func NewTestCombatant(name string, ac int, resists []DamageType, vulnerableTo []
 	return tc
 }
 
+func (t *TestCombatant) Id() uuid.UUID {
+	return t.id
+}
+
 func (t *TestCombatant) Name() string {
 	return t.name
 }
@@ -37,10 +45,6 @@ func (t *TestCombatant) TakeMeleeDamage(damage int64) (isDead bool) {
 
 func (t *TestCombatant) Dead() bool {
 	return t.dead
-}
-
-func (t *TestCombatant) Type() CombatantType {
-	return NoCombatantType
 }
 
 func (t *TestCombatant) CalculateMeleeRollModifiers() int {

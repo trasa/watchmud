@@ -10,30 +10,34 @@ import (
 	"github.com/trasa/watchmud/combat"
 )
 
-// The Mobile standing in front of you is an Instance of
-// its definition. Mobiles of definition 'lizard' are all
+// Instance is a Mobile standing in front of you, representing
+// its definition. ex. Mobile of definition 'lizard' are all
 // immune to poison, but this instance of 'lizard' is wearing
-// a magic hat and has a sword in it's hand. (scary lizard)
+// a magic hat and has a sword in its hand. (scary lizard)
 type Instance struct {
-	InstanceId        uuid.UUID
+	id                uuid.UUID
 	Definition        *Definition
 	LastWanderingTime time.Time // when was the last time this mob went wandering?
 	WanderingForward  bool      // do you wander forward on the path or backwards?
 	CurHealth         int64
 }
 
-func NewInstance(defn *Definition) *Instance {
+func NewInstance(d *Definition) *Instance {
 	return &Instance{
-		InstanceId:        uuid.New(),
-		Definition:        defn,
+		id:                uuid.New(),
+		Definition:        d,
 		LastWanderingTime: time.Now(),
 		WanderingForward:  true, // by default
-		CurHealth:         defn.MaxHealth,
+		CurHealth:         d.MaxHealth,
 	}
 }
 
+func (mob *Instance) Id() uuid.UUID {
+	return mob.id
+}
+
 func (mob *Instance) IdStr() string {
-	return mob.InstanceId.String()
+	return mob.id.String()
 }
 
 func (mob *Instance) Name() string {
@@ -85,11 +89,6 @@ func (mob *Instance) TakeMeleeDamage(damage int64) (isDead bool) {
 // Combatant
 func (mob *Instance) Dead() bool {
 	return mob.CurHealth <= 0
-}
-
-// Combatant
-func (mob *Instance) Type() combat.CombatantType {
-	return combat.MobileCombatant
 }
 
 // Combatant

@@ -7,9 +7,9 @@ import (
 )
 
 func (w *World) handlePing(msg *gameserver.HandlerParameter) {
-	// TODO remove this constant, use logging parameters intead
+	// TODO remove this constant, use logging parameters instead
 	if VERBOSE_LOGGING {
-		log.Trace().Msgf("Player %s Ping", msg.Player.Name)
+		log.Trace().Msgf("Player %s Ping", msg.Player.Name())
 	}
 	// TODO error handling
 	msg.Player.Send(message.Pong{

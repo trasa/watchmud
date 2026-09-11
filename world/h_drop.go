@@ -59,7 +59,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 	if err := room.Inventory.Add(objectToDrop); err != nil {
 		// failed to add to room..
 		log.Error().Msgf("Drop: Error while adding to room, player %s id %s; %s",
-			msg.Player.Name,
+			msg.Player.Name(),
 			objectToDrop.Id,
 			err)
 		msg.Player.Send(message.DropResponse{
@@ -79,7 +79,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 		message.DropNotification{
 			Success:    true,
 			ResultCode: "OK",
-			PlayerName: msg.Player.Name,
+			PlayerName: msg.Player.Name(),
 			Target:     objectToDrop.Definition.ShortDescription, // rendered to clients, so use "a knife"
 		})
 }

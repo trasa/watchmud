@@ -56,8 +56,7 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 				// tell everybody what happened
 				if found {
 					room.Notify(message.DeathNotification{
-						Target:   fight.Fightee.Name(),
-						IsPlayer: fight.Fightee.Type() == combat.PlayerCombatant,
+						Target: fight.Fightee.Name(),
 					})
 				}
 			}

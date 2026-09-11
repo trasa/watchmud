@@ -24,7 +24,7 @@ func (w *World) handleLoad(msg *gameserver.HandlerParameter) {
 		loadRequest.Zone = targetRoom.Zone.Id
 	}
 	logWizCommand(msg.Player, "load",
-		"Player %s is creating %s of %s.%s", msg.Player.Name, loadRequest.Type, loadRequest.Zone, loadRequest.Id)
+		"Player %s is creating %s of %s.%s", msg.Player.Name(), loadRequest.Type, loadRequest.Zone, loadRequest.Id)
 
 	if loadRequest.Type == "mob" {
 		w.handleLoadCreateMob(msg, loadRequest, targetRoom)

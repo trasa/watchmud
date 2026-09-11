@@ -37,7 +37,7 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 	// remove from room
 	if err := room.Inventory.Remove(item); err != nil {
 		// uh oh failed to remove from room
-		log.Error().Err(err).Str("zone", room.Zone.Name).Str("playerName", msg.Player.Name).Str("room", room.Name).Msgf("handle_get: error removing item %s (%s) from room", item.Id, item.Definition.ObjectId.String())
+		log.Error().Err(err).Str("zone", room.Zone.Name).Str("playerName", msg.Player.Name()).Str("room", room.Name).Msgf("handle_get: error removing item %s (%s) from room", item.Id, item.Definition.ObjectId.String())
 		msg.Player.Send(message.GetResponse{Success: false, ResultCode: "REMOVE_FROM_ROOM_ERROR"})
 		return
 	}
@@ -51,7 +51,7 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter) {
 			Success:    true,
 			ResultCode: "OK",
 			Target:     item.Definition.ShortDescription,
-			PlayerName: msg.Player.Name,
+			PlayerName: msg.Player.Name(),
 		})
 	return
 }

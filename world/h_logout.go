@@ -11,14 +11,14 @@ func (w *World) handleLogout(msg *gameserver.HandlerParameter) /*error */ {
 	if msg.Player == nil {
 		return /*nil*/
 	}
-	log.Info().Msgf("Player %s Logout", msg.Player.Name)
+	log.Info().Msgf("Player %s Logout", msg.Player.Name())
 	playerRoom := w.getRoomContainingPlayer(msg.Player)
 	w.RemovePlayer(msg.Player)
 	if playerRoom != nil {
 		playerRoom.Send(message.LogoutNotification{
 			Success:    true,
 			ResultCode: "OK",
-			PlayerName: msg.Player.Name,
+			PlayerName: msg.Player.Name(),
 		})
 	}
 	if err := w.store.Save(msg.Player.Record()); err != nil {

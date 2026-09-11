@@ -12,12 +12,11 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter) {
 	// killing a mob. for now this will just be killing mobs.
 	killRequest := msg.Message.GetKillRequest()
 
-	// TODO reimplement this
 	// if you're already in a fight, you can't start a new fight
-	/*	if w.fightLedger.IsFighting(msg.Player) {
+	if w.fightLedger.IsFighting(msg.Player) {
 		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "ALREADY_FIGHTING"})
 		return
-	}*/
+	}
 
 	// figure out if the target of your fight is valid
 	//	are they in the room (still)

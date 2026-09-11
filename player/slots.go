@@ -15,35 +15,40 @@ func NewSlots() *Slots {
 	}
 }
 
-func (slots *Slots) GetAll() map[slot.Location]*object.Instance {
+func (s *Slots) GetAll() map[slot.Location]*object.Instance {
 	m := make(map[slot.Location]*object.Instance)
-	for k, v := range slots.slotMap {
+	for k, v := range s.slotMap {
 		m[k] = v
 	}
 	return m
 }
 
-func (slots *Slots) Get(s slot.Location) *object.Instance {
-	if s == slot.None {
+func (s *Slots) Get(l slot.Location) *object.Instance {
+	if l == slot.None {
 		return nil
 	}
-	return slots.slotMap[s]
+	return s.slotMap[l]
 }
 
-func (slots *Slots) Set(s slot.Location, obj *object.Instance) {
-	slots.slotMap[s] = obj
+func (s *Slots) Set(l slot.Location, obj *object.Instance) {
+	s.slotMap[l] = obj
 }
 
-func (slots *Slots) IsSlotInUse(s slot.Location) (result bool) {
-	_, result = slots.slotMap[s]
+func (s *Slots) IsSlotInUse(l slot.Location) (result bool) {
+	_, result = s.slotMap[l]
 	return
 }
 
-func (slots *Slots) IsItemInUse(obj *object.Instance) bool {
-	for _, inst := range slots.slotMap {
+func (s *Slots) IsItemInUse(obj *object.Instance) bool {
+	for _, inst := range s.slotMap {
 		if inst == obj {
 			return true
 		}
 	}
 	return false
+}
+
+func (s *Slots) ArmorClass() int {
+	// TODO build me
+	return 10
 }

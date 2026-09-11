@@ -48,8 +48,8 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 		return nil, errors.New("bad class")
 	}
 	p := &Player{
-		Id:        rec.Id,
-		Name:      rec.Name,
+		id:        rec.Id,
+		name:      rec.Name,
 		out:       out,
 		Lineage:   lineage,
 		Class:     class,
@@ -85,8 +85,8 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 
 func (p *Player) Record() *Record {
 	return &Record{
-		Id:         p.Id,
-		Name:       p.Name,
+		Id:         p.Id(),
+		Name:       p.Name(),
 		CurHealth:  p.curHealth,
 		MaxHealth:  p.maxHealth,
 		LineageId:  p.Lineage.Id,

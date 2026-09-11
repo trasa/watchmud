@@ -23,7 +23,7 @@ func (w *World) handleMove(msg *gameserver.HandlerParameter) {
 	playerRoom := w.getRoomContainingPlayer(msg.Player)
 	dir := direction.Direction(msg.Message.GetMoveRequest().Direction)
 
-	log.Trace().Str("player", msg.Player.Name).Str("room", playerRoom.Name).Msgf("player wants to move %s", dir.String())
+	log.Trace().Str("player", msg.Player.Name()).Str("room", playerRoom.Name).Msgf("player wants to move %s", dir.String())
 
 	// can player go in that direction?
 	if targetRoom := playerRoom.DestinationRoom(dir); targetRoom != nil {

@@ -22,6 +22,6 @@ func (s *WizLogSuite) SetupTest() {
 }
 
 func (s *WizLogSuite) TestLog() {
-	logWizCommand(s.p, "foo", "%s is %s", s.p.Name, s.p.Name)
+	logWizCommand(s.p, "foo", "%s is %s", s.p.Name(), s.p.Name())
 	// TODO finish test
 }

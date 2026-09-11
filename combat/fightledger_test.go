@@ -1,9 +1,10 @@
 package combat
 
 import (
-	"github.com/stretchr/testify/suite"
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type FightLedgerSuite struct {
@@ -53,7 +54,7 @@ func (suite *FightLedgerSuite) TestFightingSomeoneWhoIsFighting() {
 	suite.Assert().NoError(suite.fightLedger.Fight(otherFighter, fightee, "zoneId", "roomId"))
 	// can be fought by more than 1
 	suite.Assert().NoError(suite.fightLedger.Fight(fighter, fightee, "zoneId", "roomId"))
-	suite.Assert().Equal(otherFighter, suite.fightLedger.fightMap[fightee].Fightee)
+	suite.Assert().Equal(otherFighter, suite.fightLedger.fightMap[fightee.Id()].Fightee)
 }
 
 func (suite *FightLedgerSuite) TestEndFight() {

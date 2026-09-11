@@ -37,7 +37,7 @@ func (s *handleTellSuite) SetupTest() {
 
 func (s *handleTellSuite) handlerParameter(value string) *gameserver.HandlerParameter {
 	msg, err := message.NewGameMessage(message.TellRequest{
-		ReceiverPlayerName: s.receiver.Name,
+		ReceiverPlayerName: s.receiver.Name(),
 		Value:              value,
 	})
 	s.Assert().NoError(err)
@@ -50,7 +50,7 @@ func (s *handleTellSuite) TestHandleTell() {
 	// assert tell to receiver
 	s.Assert().Equal(1, len(s.receiverRec.Sent))
 	recdMessage := s.receiverRec.Sent[0].(message.TellNotification)
-	s.Assert().Equal(s.sender.Name, recdMessage.Sender)
+	s.Assert().Equal(s.sender.Name(), recdMessage.Sender)
 	s.Assert().Equal("hi", recdMessage.Value)
 
 	// assert tell-response to sender

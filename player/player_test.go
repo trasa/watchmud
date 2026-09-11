@@ -79,7 +79,7 @@ func (s *PlayerSuite) TestOverwhelminglyFatalMeleeDamage() {
 func (s *PlayerSuite) TestIsDead() {
 	// old test, do not trust it
 
-	s.Assert().False(s.p.IsDead())
+	s.Assert().False(s.p.Dead())
 	s.p.curHealth = 0
-	s.Assert().True(s.p.IsDead())
+	s.Assert().True(s.p.Dead())
 }

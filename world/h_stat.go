@@ -10,7 +10,7 @@ func (w *World) handleStat(msg *gameserver.HandlerParameter) {
 	player.Send(message.StatResponse{
 		Success:       true,
 		ResultCode:    "OK",
-		PlayerName:    player.Name,
+		PlayerName:    player.Name(),
 		CurrentHealth: 0,  // TODO
 		MaxHealth:     0,  // TODO
 		Race:          "", // TODO rename Lineage
