@@ -1,5 +1,15 @@
 # WatchMUD: strangler-fig migration to telnet
 
+## Status
+
+**Phases 0-4 are complete** (September 11 2026). The server is a working telnet MUD:
+`make run`, then `telnet localhost 4000`, create a character, and play. Phase 5 -- the
+protobuf decision -- is next, and the `telnet/render.go` type switch is the evidence it
+was waiting for.
+
+The Context section below describes the tree as it was in September 2026, before any of
+this landed. It is kept for its reasoning, not as a description of the present.
+
 ## Context
 
 This started as a learn-Go project: gRPC/protobuf transport, a separate console client
@@ -22,7 +32,8 @@ transport. `rpc/client.go` is one implementation. Telnet is a second one. Nothin
 
 Decisions taken up front:
 - **Telnet is the first live listener.** `rpc/` and `web/` stay on disk, unwired, as
-  reference; they get deleted once telnet covers their ground.
+  reference; they get deleted once telnet covers their ground. **DONE** -- both deleted
+  September 2026, along with `client/`.
 - **Persistence becomes an interface with an in-memory implementation.** The `db` package
   and Postgres go away now; the real replacement is chosen later, against a working server.
 - **Protobuf stays as the internal vocabulary for now.** Telnet parses text into
@@ -252,6 +263,60 @@ Wire it in `cmd/watchmud/main.go` alongside the existing setup, on a new `telnet
 `client.TestClient` once nothing references them.
 
 Exit: `telnet localhost 4000`, log in, `look`, `north`, `get knife`, `inventory`, `who`, `quit`.
+**DONE September 11 2026.** `telnet/` is `conn.go`, `protocol.go`, `render.go`,
+`resultcode.go`, with tests for the renderer and the IAC filter.
+
+What actually happened, where it differed from the plan above:
+
+- **`client.Client` didn't just get deleted, it moved and got a setter.** It became
+  `gameserver.Conn` (`player.Sender` + `Player`/`SetPlayer`/`Close`), next to `Instance`
+  and `HandlerParameter` in the package that already is the transport seam. Two bugs fell
+  out first, in their own commit: `gameserver.Instance.Logout` took `*client.Client` --
+  pointer to an interface -- so `*server.GameServer` had never satisfied `Instance`; and
+  nothing could attach a player to a connection, so `handleLogin`'s `msg.Player = p` was
+  discarded and every command after login would have seen a nil player.
+- **`player.Sender.Send` lost its `error` return.** 87 call sites, 5 used the error, and
+  the only error any implementation could return meant "this connection is already dead
+  and I already tore it down." Deleting it also deleted three `// TODO error handling`
+  comments in `spaces/room.go` that were never going to be resolved.
+- **The command table was never written.** `message.TranslateLineToMessage` already
+  existed in `watchmud-message` (written for the dead console client) and covers 20 of the
+  21 handlers, aliases included. `telnet` owns only `quit` -- which has no request type of
+  its own and becomes a `LogoutRequest` -- plus a bounds guard for `drop`, because
+  `translator.go` indexes `tokens[1]` unguarded and a bare `drop` panics the process.
+- **The login state machine is straight-line code, not a state field.** A login is a
+  sequential conversation, so it wants a stack, not a state machine: `login()` runs on the
+  read goroutine and blocks on an `authResult` channel that `Send` signals when a
+  `LoginResponse` or `CreatePlayerResponse` goes past. The connection mutex ended up
+  guarding only `player`.
+- **The renderer is two files, not one.** `render.go` is keyed on protobuf types and is
+  what Phase 5 retargets; `resultcode.go` maps the `ResultCode` strings `world/` emits to
+  player-facing text and survives Phase 5 untouched. `TARGET_NOT_FOUND` is used by six
+  handlers with two different meanings ("not here" vs "not carrying it"), so the table
+  takes a verb as well as a code.
+- **"Don't parse targets in the transport" was half right.** True for `drop` and `equip`,
+  which take a raw string and call `world.parseTarget`. False for `get`, which reads
+  `FindMode`/`Index`/`Target` and expects the *client* to have parsed them. Two grammars
+  live in the tree; the translator happens to satisfy both. Phase 5 resolves it.
+- **`kill` was blocked by something unrelated.** `h_kill.go`'s `fightLedger.Fight` call was
+  commented out because it did not compile: after Phase 1 collapsed `Player` to a struct,
+  `*player.Player` implemented exactly *one* of `combat.Combatant`'s ten methods, and
+  nothing caught it because nothing ever assigned one to the other. Fixed in this phase --
+  see the combat notes below.
+- **Two latent world bugs surfaced during manual testing.** `World.RemovePlayer` never
+  removed the player from the `Room`'s own list, so quitting left a ghost; and
+  `RoomInventory.GetAll` iterated a map, so a room's contents shuffled on every `look`.
+
+Combat was repaired here rather than deferred, since `kill` is in the exit criteria:
+`Combatant` split into `Attacker` and `Defender` (the roles in a single swing, which swap
+every round) plus `Combatant` (the entity that persists across them, holding `Id`,
+`Dead` and `TakeMeleeDamage`). `Type() CombatantType` and its enum are gone -- it existed
+so callers could un-abstract, and `corpse.go` now does an honest type switch. `FightLedger`
+is keyed on `uuid.UUID` instead of on the interface itself.
+
+That made combat *compile and cohere*, not work. The violence pulse runs and the melee math
+is correct, but nothing drives a fight -- no aggression, nothing that sustains or resolves
+one in play. Treat combat as structurally sound and behaviourally absent.
 
 ---
 
@@ -310,7 +375,9 @@ Named so they don't get rediscovered as surprises:
 - **Dual location bookkeeping.** A player's room is recorded in *both* `world.PlayerRoomMap`
   and the `Room`'s own `playerList` (plus `p.Location()`), and `World.movePlayer` must update
   all of them in step. Same pattern for `spaces.MobileRoomMap`. Any missed update silently
-  desyncs the world. Worth collapsing to a single source of truth — after telnet works.
+  desyncs the world. Worth collapsing to a single source of truth. This is not theoretical:
+  `World.RemovePlayer` was missing the `Room.RemovePlayer` half, so quitting left a ghost in
+  the room until it was fixed during Phase 4. Now unblocked.
 - **`spaces.Room` conflates definition and instance.** One struct holds both the static
   topology loaded from `content/` (`Id`, `Name`, `Description`, `Zone`, `directions`, `flags`)
   and the live contents that change every tick (`playerList`, `Inventory`, `mobs`). Because
@@ -321,8 +388,25 @@ Named so they don't get rediscovered as surprises:
   real fix is the split this codebase already applies everywhere else (see "Definition vs
   Instance" in CLAUDE.md): a `RoomDefinition` owned by the `Zone`, immutable once loaded and
   holding the exits, and a live `Room` pointing at it. Same refactor as the dual-bookkeeping
-  item above, seen from the other side — do them together, after telnet works.
-- **`web/`** serves a static page for a client that no longer exists. Delete with `rpc/`.
+  item above, seen from the other side — do them together. Now unblocked.
+- **Nothing drives combat.** `DoViolence` is wired to `PulseViolence` and the melee
+  calculation is done, but there is no aggression behaviour and nothing that carries a
+  fight through to a conclusion in normal play. The pieces are in place; the gameplay layer
+  on top of them is not written.
+- **The fight ledger leaks third-party attackers.** `Fight(A, B)` writes two entries,
+  `A->B` and `B->A`. When B kills A, `becomeCorpse` ends A's and `violence.go` ends B's --
+  but a third combatant C who was also attacking A keeps its entry forever. Every violence
+  pulse thereafter fetches it, sees `Fightee.Dead()`, and `continue`s. C is never told the
+  target died and the entry never goes away. `IsBeingFought`'s linear scan is the ledger
+  admitting it has no index for "who is attacking X"; an `EndAllFightsWith(id)` is the fix.
+- **`Fight` snapshots `ZoneId`/`RoomId`** at the moment it starts, so a fight that somehow
+  outlives its room notifies the wrong one. Same family as the location bookkeeping above.
+- **`combat.CombatantType` is a type with no values** left over from deleting `Type()`.
+  Delete it.
+- **`rules/species.go:6`** has a malformed struct tag (`json:"id""`) that `go vet` reports
+  separately from the copylocks noise -- the one vet finding that is a real bug.
+- **`server.handleLogin`** logs the error from `player.FromRecord` and then falls through
+  and uses the player anyway.
 - **`world/settings.go`** is a single `VERBOSE_LOGGING` const, and logging is split between
   zerolog and stdlib `log` depending on file age. Worth one consolidating pass eventually.
 
@@ -333,7 +417,12 @@ Named so they don't get rediscovered as surprises:
 Per phase:
 - **0–3:** `make test` green after each. Phase 3 additionally: server starts and idles
   without pegging a core.
-- **4:** manual `telnet localhost 4000` — create a player, `look`, move between rooms in
+- **4: DONE.** All of the below was exercised by hand, plus two automated suites that
+  need no socket: `telnet/render_test.go` drives command strings through `NewTestWorld`
+  and asserts on rendered text (parser, dispatch and renderer in one pass), and
+  `telnet/protocol_test.go` covers the IAC filter including subnegotiation payloads that
+  contain `0x00` and doubled `0xFF`.
+- **4 (original plan):** manual `telnet localhost 4000` — create a player, `look`, move between rooms in
   `content/world/wrathrock`, `get`/`drop`/`inventory`/`wear`, `kill` a mob from
   `content/world/sample`, `who`, `quit`, reconnect. Two simultaneous connections to confirm
   `say`/`tell` notifications reach the other session. Watch that mob wandering (10s pulse)

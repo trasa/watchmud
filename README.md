@@ -1,9 +1,29 @@
-# WatchMUD 
+# WatchMUD
 
 ### Really Simple Text-Based MUD engine
 
-This is a straightforward text MUD, written in Go and using gRPC instead
-of telnet. 
+A text MUD server written in Go, speaking telnet. Connect with any MUD client --
+tintin++, mudlet, or plain `telnet` -- create a character, and wander around.
+
+    $ make run
+    $ telnet localhost 4000
+
+### Where this is going
+
+The project is mid-migration, and [ROADMAP.md](ROADMAP.md) is the authoritative
+description of what's done and what isn't. The short version:
+
+- **Telnet is the transport.** The old gRPC listener, the static web page, and the
+  separate console client are deleted.
+- **Persistence is an interface with an in-memory implementation.** Characters do not
+  survive a restart yet. Postgres is gone; its replacement gets chosen later, against a
+  server that actually runs.
+- **Protobuf is still the internal vocabulary**, but it is on notice. Nothing serializes
+  these messages any more -- the telnet layer reads their fields directly -- so the next
+  decision is whether the `GameMessage` wrapper still earns its place.
+- **Combat exists but nothing drives it.** The interfaces and the melee math are there and
+  the violence pulse runs; what's missing is the gameplay layer that starts and sustains a
+  fight. It's on the list.
 
 ### History
 
@@ -12,12 +32,12 @@ This was fun, but XMPP has an awful lot of overhead and that turned into
 a lot of work. Also, Go seemed like a fun language to learn. So the Java
 code was scrapped for Go, and eventually the XMPP / eJabber implementation
 was scrapped for JSON over Web Sockets. The original client was a single
-web page app using JQuery, with the intention of replacing JQuery with 
+web page app using JQuery, with the intention of replacing JQuery with
 something better...
 
 I found that I was having to write a great amount of code translating
 JSON to Go structs and back, both on the server and in the client. So
-I replaced the JQuery web page with a Go Client application, 
+I replaced the JQuery web page with a Go Client application,
 [watchmud-client](https://github.com/trasa/watchmud-client).
 
 But there was still too much serializing-deserializing code between
@@ -25,62 +45,50 @@ client and server and websocket. So I replaced that with gRPC.
 
 What will I rewrite next??
 
+The transport, as it turns out. gRPC meant every player needed my custom client, which
+is a strange thing to ask of a MUD -- the genre has had a perfectly good wire protocol
+since 1978, and people already own clients they like. So gRPC came out and telnet went
+in, the console client was retired, and Postgres went with it. Writing a telnet server
+also turned out to be the cheapest way to find out which of the remaining abstractions
+were real: several of them, it turned out, had no working implementations at all.
+
 This has more [history](codereview.md) about this project.
 
-## Building the Server
+## Building
 
-Install Dependencies: you'll need Go 1.14+ to build this.
-You'll need to install go stringer:
+You'll need Go 1.27 or later. That's it -- `stringer` is declared as a tool
+dependency in `go.mod`, so there's nothing to install separately.
 
-    $ go get golang.org/x/tools/cmd/stringer
-    
-and then make sure that the directory this is installed to (probably something
-like ~/go/bin) is part of your path.
-    
-To compile and test the server:
+    $ make            # build -> bin/watchmud
+    $ make test
+    $ make help       # list every target
 
-    $ make
-    
-This will create a `watchmud` executable in the project/bin directory.
+`make vet` fails, and has for a long time. Nearly every finding is `copylocks` from
+passing protobuf structs by value, which is the house style throughout; those go away on
+their own if protobuf does. `make test` is the gate that means something.
 
-### Building the Database
+## Running the Server
 
-WatchMud uses Postgres to hold some information about the users, game state
-and other interesting stuff like that. You'll need to have an instance of
-Postgres running for watchmud.
+Configuration lives in [app.local.yaml](app.local.yaml) -- ports, content path, and log
+destination.
 
-Installing postgres:
+    $ make run                                   # uses ./app.local.yaml
+    $ ./bin/watchmud -config /path/to/other.yaml
+    $ ./bin/watchmud -content /path/to/content   # override just the content path
 
-    $ brew install postgresql
+Ctrl-C to terminate the server.
 
-Creating the user 'watchmud' and the schema:
+The world is loaded from `content/`: `content/rules/` holds species and classes,
+`content/world/` holds the zones (`wrathrock`, `sample`, `void`) plus the settings and
+zone manifest that say which of them load.
 
-See watchmud/db/sql/ddl.sql for table definitions and static data creation.
+## Playing
 
-    
-### Creating the Log Directory
+    $ telnet localhost 4000
 
-The logfile will be written to where the server.yaml specifies -- no longer
-writing to /var/log/watchmud (with all the headaches that entails).
+You'll be asked for a name; if there's no character by that name, you'll be offered the
+chance to create one. From there the usual verbs work -- `look`, `north` (or just `n`),
+`get`, `drop`, `inventory`, `wear`, `wield`, `say`, `tell`, `who`, `stat`, `exits`, and
+`quit`. Most have the abbreviations you'd expect.
 
-### Running the Server
-
-Example Settings are shown in [worldfiles/server.yaml](worldfiles/server.yaml)
-
-    $ ./watchmud -serverconfig ./worldfiles/myserverconfig.yaml
-    
-Ctrl-C to terminate the server. 
-
-## Building and running the Client
-
-See [the watchmud-client project](https://github.com/trasa/watchmud-client)
-for more details, but the basics are the same:
-
-    $ make
-    
-constructs the `watchmud-client` executable, and
-
-    $ ./watchmud-client --player=YourNameGoesHere
-    
-Starts it up, with a login attempt to localhost for username "YourNameGoesHere".
-(Settings, passwords, and other sorts of essentials also being on the "TODO" list.)
+Characters live in memory only, so they vanish when the server stops.
