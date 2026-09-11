@@ -45,7 +45,7 @@ func (s *worldTestSuite) handlerParameter(req interface{}) *gameserver.HandlerPa
 }
 
 func (s *worldTestSuite) SetupTest() {
-	w, err := newTestWorld()
+	w, err := NewTestWorld()
 	require.NoError(s.T(), err)
 	s.w = w
 	s.r = &player.Recorder{}
@@ -54,7 +54,7 @@ func (s *worldTestSuite) SetupTest() {
 	s.c = gameserver.NewTestConn(s.p)
 }
 
-func newTestWorld() (*World, error) {
+func NewTestWorld() (*World, error) {
 
 	voidZone := spaces.NewZone("void", "void", zonereset.NEVER, time.Duration(0))
 	voidRoom := spaces.NewRoom(voidZone, "void", "void", "void")

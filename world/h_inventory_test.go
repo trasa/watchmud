@@ -24,7 +24,7 @@ func TestHandleInventorySuite(t *testing.T) {
 	suite.Run(t, new(handleInventorySuite))
 }
 func (s *handleInventorySuite) SetupTest() {
-	s.w, _ = newTestWorld()
+	s.w, _ = NewTestWorld()
 	s.r = &player.Recorder{}
 	s.p = player.NewTestPlayer(uuid.New(), "foo", s.r)
 	s.w.AddPlayer(s.p)

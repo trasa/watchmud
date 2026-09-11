@@ -24,7 +24,7 @@ func TestHandleMoveSuite(t *testing.T) {
 }
 
 func (s *HandleMoveSuite) SetupTest() {
-	s.w, _ = newTestWorld()
+	s.w, _ = NewTestWorld()
 	s.r = &player.Recorder{}
 	s.p = player.NewTestPlayer(uuid.New(), "p", s.r)
 	s.w.AddPlayer(s.p)
