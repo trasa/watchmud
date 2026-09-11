@@ -8,7 +8,8 @@ import (
 )
 
 type RoomInventory struct {
-	byInstanceId map[uuid.UUID]*object.Instance
+	byInstanceId   map[uuid.UUID]*object.Instance
+	insertionOrder []*object.Instance
 }
 
 func NewRoomInventory() *RoomInventory {
@@ -17,17 +18,17 @@ func NewRoomInventory() *RoomInventory {
 	}
 }
 
-func (ri *RoomInventory) GetAll() (result []*object.Instance) {
-	for _, inst := range ri.byInstanceId {
-		result = append(result, inst)
-	}
-	return
+// GetAll instances in the room sorted by their insertion order
+func (ri *RoomInventory) GetAll() []*object.Instance {
+	return ri.insertionOrder
 }
 
 // InstanceId finds the instance with this id in the room
-func (ri *RoomInventory) InstanceId(id uuid.UUID) (inst *object.Instance, exists bool) {
-	inst, exists = ri.byInstanceId[id]
-	return
+func (ri *RoomInventory) InstanceId(id uuid.UUID) (*object.Instance, bool) {
+	if o, ok := ri.byInstanceId[id]; ok {
+		return o, true
+	}
+	return nil, false
 }
 
 // Name finds the instances with this name in the room.
@@ -59,6 +60,7 @@ func (ri *RoomInventory) Add(inst *object.Instance) error {
 		return fmt.Errorf("instance id %s already exists in room inventory", inst.Id)
 	}
 	ri.byInstanceId[inst.Id] = inst
+	ri.insertionOrder = append(ri.insertionOrder, inst)
 	return nil
 }
 
@@ -67,5 +69,12 @@ func (ri *RoomInventory) Remove(inst *object.Instance) error {
 		return fmt.Errorf("instance id %s does not exist in room inventory", inst.Id)
 	}
 	delete(ri.byInstanceId, inst.Id)
+
+	for i, o := range ri.insertionOrder {
+		if o.Id == inst.Id {
+			ri.insertionOrder = append(ri.insertionOrder[:i], ri.insertionOrder[i+1:]...)
+			break
+		}
+	}
 	return nil
 }
