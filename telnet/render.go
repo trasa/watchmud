@@ -202,13 +202,13 @@ func render(msg any, self string) string {
 		if !m.Success {
 			return failureText("tell", m.ResultCode)
 		}
-		return "Told.\n"
+		return "Ok.\n"
 
 	case message.TellResponse:
 		if !m.Success {
 			return failureText("tell", m.ResultCode)
 		}
-		return "Told.\n"
+		return "Ok.\n"
 
 	case message.ViolenceNotification:
 		return renderViolence(self, m.SuccessfulHit, m.Fighter, m.Fightee, m.Damage)
@@ -264,10 +264,13 @@ func renderExits(exits []*message.ExitInfo) string {
 // renderInventory formats a list of inventory items as a string for display
 // to a mud client.
 func renderInventory(items []*message.InventoryResponse_InventoryItem) string {
+	if len(items) == 0 {
+		return "You aren't carrying anything.\n"
+	}
 	var b strings.Builder
 	b.WriteString("You are carrying:\n")
 	for _, item := range items {
-		b.WriteString(item.ShortDescription + "\n")
+		b.WriteString("\t" + item.ShortDescription + "\n")
 	}
 	return b.String()
 }

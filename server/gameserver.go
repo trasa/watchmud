@@ -202,7 +202,7 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) error
 
 	// TODO need to set the location first (AddPlayer always puts the player in the start room, for now)
 
-	if _, err := gs.store.Create(p.Record()); err != nil {
+	if err := gs.store.Save(p.Record()); err != nil {
 		return fmt.Errorf("handleCreatePlayer: %v", err)
 	}
 
