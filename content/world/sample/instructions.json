@@ -18,6 +18,24 @@
     "instance_max": 1
   },
   {
+    "type": "CreateObject",
+    "object_id": "chain_shirt",
+    "room_id": "northRoom",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateObject",
+    "object_id": "tower_shield",
+    "room_id": "northRoom",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateObject",
+    "object_id": "healers_censer",
+    "room_id": "northRoom",
+    "instance_max": 1
+  },
+  {
     "type": "CreateMobile",
     "mobile_id": "walker",
     "room_id": "start",

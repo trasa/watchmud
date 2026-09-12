@@ -40,8 +40,12 @@ func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) error {
 		w.handlePing(msg, cmd)
 	case command.Recall:
 		w.handleRecall(msg, cmd)
+	case command.Remove:
+		w.handleRemove(msg, cmd)
 	case command.Restore:
 		w.handleRestore(msg, cmd)
+	case command.Role:
+		w.handleRole(msg, cmd)
 	case command.RoomStatus:
 		w.handleRoomStatus(msg, cmd)
 	case command.Say:

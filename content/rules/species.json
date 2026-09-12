@@ -2,88 +2,63 @@
   {
     "id": "human",
     "name": "Human",
-    "bonuses": {
-      "str": 1,
-      "dex": 1,
-      "con": 1,
-      "int": 1,
-      "wis": 1,
-      "cha": 1
-    },
+    "description": "Ubiquitous, adaptable, and everywhere you look.",
     "lineages": [
       {
         "id": "human",
         "name": "Human",
-        "bonuses": {}
+        "description": "From one of the river cities, most likely."
       }
     ]
   },
   {
     "id": "dwarf",
     "name": "Dwarf",
-    "bonuses": {},
+    "description": "Short, broad, and from somewhere with a ceiling.",
     "lineages": [
       {
         "id": "hill_dwarf",
         "name": "Hill Dwarf",
-        "bonuses": {
-          "con": 2,
-          "wis": 1
-        }
+        "description": "Weathered, from the terrace farms above the delvings."
       },
       {
         "id": "mountain_dwarf",
         "name": "Mountain Dwarf",
-        "bonuses": {
-          "str": 2,
-          "con": 2
-        }
+        "description": "Pale, from the deep halls, and unhurried about it."
       }
     ]
   },
   {
     "id": "elf",
     "name": "Elf",
-    "bonuses": {
-      "dex": 2
-    },
+    "description": "Tall, quiet, and unnervingly patient.",
     "lineages": [
       {
         "id": "high_elf",
         "name": "High Elf",
-        "bonuses": {
-          "int": 1
-        }
+        "description": "Raised among libraries and very sure of it."
       },
       {
         "id": "wood_elf",
         "name": "Wood Elf",
-        "bonuses": {
-          "wis": 1
-        }
+        "description": "Raised somewhere with no roads and no interest in any."
       }
     ]
   },
   {
     "id": "halfling",
     "name": "Halfling",
-    "bonuses": {
-      "dex": 2
-    },
+    "description": "Small, cheerful, and consistently underestimated.",
     "lineages": [
       {
         "id": "lightfoot_halfling",
         "name": "Lightfoot Halfling",
-        "bonuses": {
-          "cha": 1
-        }
+        "description": "Hard to notice leaving, harder to notice arriving."
       },
       {
         "id": "stout_halfling",
         "name": "Stout Halfling",
-        "bonuses": {
-          "con": 1
-        }
+        "description": "Built like a barrel and about as easy to move."
       }
     ]
   }

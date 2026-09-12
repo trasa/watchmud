@@ -14,7 +14,8 @@
     "category": "WEAPON",
     "short_description": "knife",
     "description_on_ground": "A knife is on the ground.",
-    "wear_location": "Wield"
+    "wear_location": "Wield",
+    "roles": { "striker": 2 }
   },
   {
     "id": "iron_helmet",
@@ -23,6 +24,37 @@
     "aliases": [ "helm", "iron", "helmet" ],
     "short_description": "iron helmet",
     "description_on_ground": "A plain iron helmet lies here.",
-    "wear_location": "head"
+    "wear_location": "head",
+    "roles": { "tank": 2 }
+  },
+  {
+    "id": "chain_shirt",
+    "name": "chain shirt",
+    "category": "ARMOR",
+    "aliases": [ "chain", "shirt", "mail" ],
+    "short_description": "chain shirt",
+    "description_on_ground": "A chain shirt is heaped here, gone dull with oil.",
+    "wear_location": "body",
+    "roles": { "tank": 3 }
+  },
+  {
+    "id": "tower_shield",
+    "name": "tower shield",
+    "category": "ARMOR",
+    "aliases": [ "tower", "shield" ],
+    "short_description": "tower shield",
+    "description_on_ground": "A tower shield leans against the wall.",
+    "wear_location": "arms",
+    "roles": { "tank": 3 }
+  },
+  {
+    "id": "healers_censer",
+    "name": "brass censer",
+    "category": "OTHER",
+    "aliases": [ "censer", "brass" ],
+    "short_description": "brass censer",
+    "description_on_ground": "A brass censer sits here, still warm.",
+    "wear_location": "hold",
+    "roles": { "healer": 3, "tank": 1 }
   }
 ]

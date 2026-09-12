@@ -244,6 +244,16 @@ func (c *Content) loadObjectDefinitions(fsys fs.FS) error {
 				d.Behaviors.Add(b)
 			}
 
+			// A role id that isn't in the catalog is a typo in content, and
+			// silently ignoring it would leave a builder wondering why their
+			// tank gear doesn't make anyone a tank.
+			for roleId := range obj.Roles {
+				if _, known := c.Catalog.Roles[roleId]; !known {
+					return fmt.Errorf("object %s/%s: unknown role %q", zonename, obj.Id, roleId)
+				}
+			}
+			d.RoleWeights = obj.Roles
+
 			c.Zones[zonename].AddObjectDefinition(d)
 		}
 	}

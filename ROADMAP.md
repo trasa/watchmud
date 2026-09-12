@@ -2,10 +2,11 @@
 
 ## Status
 
-**Phases 0-5 are complete** (September 12 2026). The server is a working telnet MUD:
+**Phases 0-6 are complete** (September 12 2026). The server is a working telnet MUD:
 `make run`, then `telnet localhost 4000`, create a character, and play. Protobuf is gone;
-the vocabulary is `command/` in and `event/` out. Phase 6 -- finishing lineage/species --
-is next.
+the vocabulary is `command/` in and `event/` out. Classes are gone too, and lineage is
+cosmetic: what a character is good at comes from the equipment they have on. Phase 7 --
+real MUD-client protocol support -- is next.
 
 The Context section below describes the tree as it was in September 2026, before any of
 this landed. It is kept for its reasoning, not as a description of the present.
@@ -380,24 +381,67 @@ Where it differed from the sketch above:
 
 ---
 
-## Phase 6 — Finish lineage/species, retire the int32 ids
+## Phase 6 — Lineage goes cosmetic, class goes away
 
-The `e09628b` rework left `rules.Catalog` (`rules/catalog.go`) loaded from
-`content/rules/{species,classes}.json` but connected to nothing. Meanwhile
-`player.Player` still exposes `GetRaceId() int32` / `GetClassId() int32`, pointing at SQL
-rows deleted in Phase 2, and `server.handleCreatePlayer` constructs a `rules.Lineage` full of
-`"PLACEHOLDER"` strings.
+**DONE September 12 2026.** The plan in this slot used to be "finish lineage/species and
+give `playergenerator` the catalog so ability generation reflects actual bonuses." That
+plan was thrown out before any of it was written, because the thing it was finishing was
+the thing that felt stale: a lineage that hands out +2 CON, and a class picked once at
+creation and carried forever.
 
-- Replace those two methods with `LineageId`/`ClassId` strings resolved via
-  `Catalog.Lineages[id]` / `Catalog.Classes[id]` — the `Record` from Phase 2 already stores
-  them that way.
-- Fix `world/h_stat.go`: the commented-out `db.GetSingleRaceData` block becomes a catalog
-  lookup, filling the `Race`/`Class` fields currently hardcoded to `""`.
-- Fix `handleCreatePlayer` to take a real lineage and class, and give `playergenerator` the
-  catalog so ability generation reflects actual bonuses (likely the root of the Phase 0 test
-  failure).
-- Character creation over telnet — choose species → lineage → class — is a natural extension
-  of the Phase 4 login state machine.
+Two decisions replaced it:
+
+- **A lineage is cosmetic.** It grants no bonuses and carries no penalties, the way a
+  gender wouldn't. Creation picks one and picks nothing else. `rules.Species` survives
+  purely to group lineages in the creation menu.
+- **There is no class. Equipment is the class.** Object definitions declare what they
+  contribute to each role; the weights of everything equipped are summed; the highest total
+  is your role. Wear armor in every slot and you are a Tank. Take it off, hold a censer, and
+  you are a Healer before the next prompt.
+
+What landed:
+
+- `rules.Class` and `content/rules/classes.json` deleted; `rules.Role` and
+  `content/rules/roles.json` (tank, healer, striker) in their place. `Catalog.RoleFor`
+  resolves a weight map to a role -- highest total, ties to whichever role the content
+  declared first, and **nil when the gear argues for nothing**, because "you are wearing
+  nothing in particular" is a real answer and a default would hide it.
+- `object.Definition.RoleWeights`, from the `"roles"` key in `objects.json`, validated
+  against the catalog at load time: an unknown role id is a hard startup failure rather
+  than gear that mysteriously does nothing.
+- `player.Slots.RoleWeights()` sums it. Nothing stores a role -- not on `Player`, not in
+  `Record` -- because a stored role can disagree with the equipment.
+- `Abilities` lost `Add` and `Set` along with the bonuses and preferences that used them.
+  `StandardAbilities()` takes no argument now; everyone starts equal. The score-priority
+  machinery stays for when players assign their own array.
+- `player.Record.ClassId` is gone, and an unrecognized `LineageId` stopped being fatal:
+  same reasoning as the missing-definition case next to it, since a cosmetic field is never
+  worth locking someone out of their character over.
+- New `stat` (which was entirely `// TODO Phase 6` placeholders and is now filled in),
+  `role`, and role in `who` where a class would traditionally sit.
+- Creation over telnet asks for a lineage, grouped by species, answered by number or by
+  any unambiguous prefix of the name. `telnet.Listen` takes the catalog for this; the
+  renderer already depended on `rules`.
+
+Three things surfaced that the plan above didn't anticipate:
+
+- **`remove` did not exist.** Wear and wield had no counterpart, so a character could put
+  gear on and never take it off. That is survivable when a class is a permanent label and
+  fatal when equipment *is* the class, so `remove` was written here rather than deferred --
+  "switch eq to switch role" is not a feature you can ship half of. Found by playing it,
+  not by a test.
+- **`Slots.Set(loc, nil)` was a trap.** `IsSlotInUse` tested for key presence, so a nil
+  left behind read as "occupied" and would have made a slot unusable for the rest of the
+  character's life. `Slots.Clear` deletes the key, `IsSlotInUse` tests the value, and
+  `FromRecord` now skips a slot whose item didn't survive a content edit instead of
+  storing a nil there.
+- **`handleShowEquipment` would have dereferenced that nil.** Pre-existing, unreachable
+  until `remove` made empty slots ordinary.
+
+Not done, deliberately: nothing in `combat/` reads a role. The melee math is fine but
+nothing drives a fight (see "Known problems"), so a tank bonus would be a number no player
+could observe. Roles are derived and displayed; wiring them into combat belongs with the
+gameplay layer that makes fights happen at all.
 
 ---
 
@@ -473,6 +517,12 @@ Per phase:
   actor must see "Dropped." while the bystander sees "testdood drops knife." Both
   `telnet/render_test.go` cases for that passed with their expected text **unchanged**
   through the whole conversion, which is the evidence no player-visible string moved.
+- **6: DONE.** `make check` green, plus `world/h_role_test.go` and `world/h_remove_test.go`
+  for the derivation and the slot bookkeeping, and cases in `telnet/render_test.go` for
+  `role`, `stat`, `who` and `remove`. Verified live, which is where the missing `remove`
+  turned up: create a character, pick a lineage from the menu, `load` the sample zone's
+  chain shirt / tower shield / censer / knife, and watch `role` and `who` follow the gear
+  as it goes on and comes off.
 - **7:** connect with tintin++ rather than raw telnet; verify negotiation, wrapping, color.
 
 Regression net worth adding early (cheap, and it makes every later phase safer): a table test

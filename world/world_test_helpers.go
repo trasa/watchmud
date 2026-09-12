@@ -73,6 +73,7 @@ func NewTestWorld() (*World, error) {
 		"A knife is on the ground.",
 		slot.Wield,
 	)
+	knife.RoleWeights = map[string]int{"striker": 2}
 	knifeInstance := object.NewInstance(uuid.New(), knife)
 	if err := startRoom.Inventory.Add(knifeInstance); err != nil {
 		return nil, err
@@ -87,6 +88,7 @@ func NewTestWorld() (*World, error) {
 		"an iron helmet is on the ground",
 		slot.Head,
 	)
+	helmet.RoleWeights = map[string]int{"tank": 2}
 	helmetInstance := object.NewInstance(uuid.New(), helmet)
 	if err := startRoom.Inventory.Add(helmetInstance); err != nil {
 		return nil, err

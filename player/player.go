@@ -13,11 +13,14 @@ type Sender interface {
 }
 
 type Player struct {
-	id        uuid.UUID
-	name      string
-	out       Sender // was: client.Client, via ClientPlayer
+	id   uuid.UUID
+	name string
+	out  Sender // was: client.Client, via ClientPlayer
+
+	// Lineage is cosmetic and nothing reads it but the renderer. There is no
+	// Class beside it any more and no Role in its place: a role is read off
+	// the equipped slots every time it is asked for, never stored.
 	Lineage   *rules.Lineage
-	Class     *rules.Class
 	inventory *Inventory
 	slots     *Slots
 	curHealth int64
@@ -30,7 +33,6 @@ func New(id uuid.UUID,
 	name string,
 	out Sender,
 	lineage *rules.Lineage,
-	class *rules.Class,
 	abilities rules.Abilities,
 ) *Player {
 	return &Player{
@@ -38,7 +40,6 @@ func New(id uuid.UUID,
 		name:      name,
 		out:       out,
 		Lineage:   lineage,
-		Class:     class,
 		inventory: NewInventory(),
 		slots:     NewSlots(),
 		curHealth: 100, // TODO need a default here,
@@ -67,6 +68,34 @@ func (p *Player) Slots() *Slots {
 	// TODO is this needed? Should p.Inventory become visible?
 	// is needing this call indicating a problem?
 	return p.slots
+}
+
+// RoleWeights totals what the player's equipped gear contributes to each
+// role. Resolving that to a rules.Role is the caller's job -- see
+// rules.Catalog.RoleFor.
+func (p *Player) RoleWeights() map[string]int {
+	return p.slots.RoleWeights()
+}
+
+// LineageName is the player's lineage for display. Cosmetic, and empty if
+// they somehow have none.
+func (p *Player) LineageName() string {
+	if p.Lineage == nil {
+		return ""
+	}
+	return p.Lineage.Name
+}
+
+func (p *Player) Abilities() rules.Abilities {
+	return p.abilities
+}
+
+func (p *Player) CurrentHealth() int64 {
+	return p.curHealth
+}
+
+func (p *Player) MaxHealth() int64 {
+	return p.maxHealth
 }
 
 func (p *Player) Send(msg any) {

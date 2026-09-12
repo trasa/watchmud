@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -16,10 +17,12 @@ import (
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/rules"
 )
 
 type conn struct {
 	gs         gameserver.Instance
+	cat        *rules.Catalog // read-only; the creation menu is built from it
 	netConn    net.Conn
 	scanner    *bufio.Scanner
 	sendQueue  chan any // NOT *message.GameMessage - see below.
@@ -31,10 +34,11 @@ type conn struct {
 	player *player.Player
 }
 
-func newConn(c net.Conn, gs gameserver.Instance) *conn {
+func newConn(c net.Conn, gs gameserver.Instance, cat *rules.Catalog) *conn {
 	const sendQueueSize = 256
 	return &conn{
 		gs:         gs,
+		cat:        cat,
 		netConn:    c,
 		sendQueue:  make(chan any, sendQueueSize),
 		quit:       make(chan struct{}),
@@ -42,7 +46,11 @@ func newConn(c net.Conn, gs gameserver.Instance) *conn {
 	}
 }
 
-func Listen(ctx context.Context, addr string, gs gameserver.Instance) error {
+// Listen takes the catalog as well as the game server because character
+// creation is a conversation held on this side of the seam, before there is a
+// player to hand a command to, and a menu of lineages is presentation. The
+// renderer already depends on rules for the same reason.
+func Listen(ctx context.Context, addr string, gs gameserver.Instance, cat *rules.Catalog) error {
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		return fmt.Errorf("telnet listen on %s: %w", addr, err)
@@ -63,7 +71,7 @@ func Listen(ctx context.Context, addr string, gs gameserver.Instance) error {
 			return fmt.Errorf("telnet accept: %w", err)
 		}
 		log.Info().Msgf("telnet connection from %s", nc.RemoteAddr())
-		c := newConn(nc, gs)
+		c := newConn(nc, gs, cat)
 		go c.writePump()
 		go c.readPump()
 		c.Send("Welcome to WatchMUD.\r\n")
@@ -143,7 +151,11 @@ func (c *conn) login() bool {
 			return false
 		}
 		if strings.HasPrefix(strings.ToLower(yn), "y") {
-			c.emit(command.CreatePlayer{Name: name})
+			lineage, ok := c.chooseLineage()
+			if !ok {
+				return false
+			}
+			c.emit(command.CreatePlayer{Name: name, Lineage: lineage})
 			if c.awaitAuth() {
 				return true
 			}
@@ -151,6 +163,98 @@ func (c *conn) login() bool {
 		}
 
 	}
+}
+
+// chooseLineage is the whole of character creation. There is no class step
+// after it and no ability step: a lineage decides nothing but how the
+// character is described, and what they are good at is decided later, by what
+// they pick up and put on.
+//
+// The player answers with a number or with any unambiguous part of a lineage
+// name, and an unrecognized answer re-asks rather than failing the creation.
+func (c *conn) chooseLineage() (string, bool) {
+	if c.cat == nil {
+		return "", true // no catalog: the server picks the default
+	}
+	choices := lineageChoices(c.cat)
+	if len(choices) == 0 {
+		return "", true
+	}
+
+	c.Send(lineageMenu(c.cat))
+	for {
+		answer, ok := c.prompt("Which lineage? ")
+		if !ok {
+			return "", false
+		}
+		if id, found := matchLineage(choices, answer); found {
+			return id, true
+		}
+		c.Send("That isn't one of them. Type a number, or the name.\r\n")
+	}
+}
+
+// lineageChoices flattens the species tree into the numbered list the menu
+// shows, in content order so the numbers are stable between sessions.
+func lineageChoices(cat *rules.Catalog) []*rules.Lineage {
+	var out []*rules.Lineage
+	for _, s := range cat.SpeciesList() {
+		out = append(out, s.Lineages...)
+	}
+	return out
+}
+
+// lineageMenu groups the numbered choices under their species, since the
+// species is the only thing the grouping is still for.
+func lineageMenu(cat *rules.Catalog) string {
+	var b strings.Builder
+	b.WriteString("\nChoose a lineage. It decides nothing but how you look;\n")
+	b.WriteString("what you're good at comes from what you carry.\n")
+	n := 0
+	for _, s := range cat.SpeciesList() {
+		b.WriteString("\n" + s.Name + "\n")
+		for _, l := range s.Lineages {
+			n++
+			if l.Description != "" {
+				fmt.Fprintf(&b, "  %2d) %-20s %s\n", n, l.Name, l.Description)
+			} else {
+				fmt.Fprintf(&b, "  %2d) %s\n", n, l.Name)
+			}
+		}
+	}
+	b.WriteString("\n")
+	return b.String()
+}
+
+// matchLineage accepts the menu number, the lineage id, or a case-insensitive
+// prefix of the name -- but only when exactly one lineage matches it, so
+// "h" doesn't silently pick Hill Dwarf over High Elf.
+func matchLineage(choices []*rules.Lineage, answer string) (string, bool) {
+	answer = strings.TrimSpace(answer)
+	if n, err := strconv.Atoi(answer); err == nil {
+		if n >= 1 && n <= len(choices) {
+			return choices[n-1].Id, true
+		}
+		return "", false
+	}
+
+	lower := strings.ToLower(answer)
+	var match *rules.Lineage
+	for _, l := range choices {
+		if strings.EqualFold(l.Id, answer) || strings.EqualFold(l.Name, answer) {
+			return l.Id, true // an exact hit beats any number of prefixes
+		}
+		if strings.HasPrefix(strings.ToLower(l.Name), lower) {
+			if match != nil {
+				return "", false // ambiguous
+			}
+			match = l
+		}
+	}
+	if match == nil {
+		return "", false
+	}
+	return match.Id, true
 }
 
 // emit hands a command to the game server.

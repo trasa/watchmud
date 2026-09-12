@@ -1,10 +1,10 @@
 package rules
 
-import "strings"
-
-// Abilities is a set of six ability scores. It serves double duty: as a
-// character's actual scores, and as the bonuses a species or lineage
-// contributes to them.
+// Abilities is a character's six ability scores.
+//
+// Nothing contributes to them any more: a lineage is cosmetic and grants no
+// bonuses, and there is no class to express a preference. Every character
+// starts with the same numbers, which is the point -- see Lineage and Role.
 type Abilities struct {
 	Str int `json:"str"`
 	Dex int `json:"dex"`
@@ -12,36 +12,6 @@ type Abilities struct {
 	Int int `json:"int"`
 	Wis int `json:"wis"`
 	Cha int `json:"cha"`
-}
-
-// Add returns the component-wise sum of two ability sets.
-func (a Abilities) Add(b Abilities) Abilities {
-	return Abilities{
-		Str: a.Str + b.Str,
-		Dex: a.Dex + b.Dex,
-		Con: a.Con + b.Con,
-		Int: a.Int + b.Int,
-		Wis: a.Wis + b.Wis,
-		Cha: a.Cha + b.Cha,
-	}
-}
-
-func (a Abilities) Set(name string, score int) Abilities {
-	switch strings.ToLower(name) {
-	case "str":
-		a.Str = score
-	case "dex":
-		a.Dex = score
-	case "con":
-		a.Con = score
-	case "int":
-		a.Int = score
-	case "wis":
-		a.Wis = score
-	case "cha":
-		a.Cha = score
-	}
-	return a
 }
 
 // fillEmptyScoreByPriority fills the first empty ability score with the given score.
@@ -64,26 +34,22 @@ func (a Abilities) fillEmptyScoreByPriority(score int) Abilities {
 	return a
 }
 
-// StandardAbilities are the standard set of ability numbers,
-// distributed by assigning the preferences given first, then the rest
-// by the priority rules.
-func StandardAbilities(preferences []string) Abilities {
+// StandardAbilities is the array every character starts with, highest score
+// first, handed out by the priority rules above.
+//
+// It used to take the ability preferences of the character's class and assign
+// the best numbers to them. There is no class now, so there is no preference,
+// so everyone begins equal. The distribution machinery stays because letting
+// a player assign their own array at creation is the obvious next step, and
+// that step needs exactly this.
+func StandardAbilities() Abilities {
 	a := Abilities{}
 	// an array of ints from highest start value to lowest (these aren't random)
 	// TODO this should be a content, not a constant here...
 	startScores := []int{15, 14, 13, 12, 10, 8}
-	// staring with the highest value, map the value to the ability listed
-	// first (second, third...) in the class.AbilityPreference. once we're
-	// past that number of scores, the rest just get set in order.
-	for i, score := range startScores {
-		if i < len(preferences) {
-			a = a.Set(preferences[i], score)
-		} else {
-			// no further class preferences
-			a = a.fillEmptyScoreByPriority(score)
-		}
+	for _, score := range startScores {
+		a = a.fillEmptyScoreByPriority(score)
 	}
-
 	return a
 }
 

@@ -81,7 +81,7 @@ func run() error {
 	gameServer := server.New(w, content.Catalog, store)
 
 	// launch telnet listener
-	go telnet.Listen(ctx, fmt.Sprintf("localhost:%d", cfg.TelnetPort), gameServer)
+	go telnet.Listen(ctx, fmt.Sprintf("localhost:%d", cfg.TelnetPort), gameServer, content.Catalog)
 
 	if err := gameServer.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 		return fmt.Errorf("game server: %w", err)

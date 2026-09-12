@@ -14,7 +14,9 @@ func (w *World) handleWho(msg *gameserver.HandlerParameter, cmd command.Who) {
 	// rank, security, other things, but for now show
 	// everybody everything.
 
-	// playerName, (level, class, other things we don't have yet), zoneName, roomName
+	// playerName, lineage, role, (level and other things we don't have yet),
+	// zoneName, roomName. The role is read off their gear as the list is
+	// built, so it is current as of this moment and not a moment earlier.
 	entries := []event.WhoEntry{}
 	w.playerList.Iter(func(p *player.Player) {
 		r := w.getRoomContainingPlayer(p)
@@ -25,6 +27,8 @@ func (w *World) handleWho(msg *gameserver.HandlerParameter, cmd command.Who) {
 		}
 		entries = append(entries, event.WhoEntry{
 			PlayerName: p.Name(),
+			Lineage:    p.LineageName(),
+			Role:       w.roleName(p.RoleWeights()),
 			ZoneName:   zoneName,
 			RoomName:   roomName,
 		})

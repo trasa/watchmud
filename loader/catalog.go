@@ -12,11 +12,11 @@ func LoadCatalog(rulesFS fs.FS) (*rules.Catalog, error) {
 		return nil, err
 	}
 
-	classes, err := readJSONFile[[]*rules.Class](rulesFS, "classes.json")
+	roles, err := readJSONFile[[]*rules.Role](rulesFS, "roles.json")
 	if err != nil {
 		return nil, err
 	}
 
-	c, err := rules.NewCatalog(species, classes)
+	c, err := rules.NewCatalog(species, roles)
 	return c, err
 }

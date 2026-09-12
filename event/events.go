@@ -91,6 +91,12 @@ type Equipped struct{}
 
 type Worn struct{}
 
+// Removed names the item so "Removed." doesn't leave the player guessing
+// which of two similarly named things came off.
+type Removed struct {
+	Item string
+}
+
 type Inventory struct {
 	Items []InventoryItem
 }
@@ -139,14 +145,19 @@ type Who struct {
 
 type WhoEntry struct {
 	PlayerName string
-	ZoneName   string
-	RoomName   string
+	Lineage    string
+	// Role is what that player's equipment adds up to right now, and is
+	// empty when it adds up to nothing.
+	Role     string
+	ZoneName string
+	RoomName string
 }
 
 type Stat struct {
-	PlayerName    string
-	Lineage       string
-	Class         string
+	PlayerName string
+	Lineage    string
+	// Role, empty when the player is wearing nothing that speaks to one.
+	Role          string
 	CurrentHealth int
 	MaxHealth     int
 	ZoneId        string
@@ -157,6 +168,28 @@ type Stat struct {
 	Intelligence  int
 	Wisdom        int
 	Charisma      int
+}
+
+// Role is the answer to "what am I, and why": the role the player's equipment
+// currently adds up to, plus the standings of every other role and the items
+// arguing for them. The breakdown is the point -- without it "you are a Tank"
+// is a verdict with no way to appeal, and the player can't tell what to swap.
+type Role struct {
+	// Current is the winning role's name, empty if no equipment speaks to any
+	// role at all.
+	Current     string
+	Description string
+	// Standings covers every role the game defines, in content order, so a
+	// role with nothing behind it still shows up as somewhere to go.
+	Standings []RoleStanding
+}
+
+type RoleStanding struct {
+	Name  string
+	Total int
+	// Sources are the equipped items contributing to this role, already
+	// formatted as "iron helmet 2", in slot order.
+	Sources []string
 }
 
 // ---- combat ----------------------------------------------------------------

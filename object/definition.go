@@ -22,6 +22,18 @@ type Definition struct {
 	DescriptionOnGround string // description of the object when lying on the ground: "A shiny sword is lying here."
 	WearLocation        slot.Location
 	Behaviors           behavior.BehaviorSet
+
+	// RoleWeights is what this object contributes to each role (by
+	// rules.Role.Id) while it is equipped: {"tank": 3} is solidly tanky gear,
+	// {"healer": 2, "tank": 1} is a healer's kit with some heft to it. The
+	// weights of everything a character has equipped are summed and the
+	// highest total is their role -- so this field, across a few objects, is
+	// the entire replacement for character classes.
+	//
+	// Set by the loader after construction, like Behaviors, and validated
+	// against the catalog there: an unknown role id is a content error.
+	// Nil for anything that isn't equipment, which is most objects.
+	RoleWeights map[string]int
 }
 
 func NewDefinition(

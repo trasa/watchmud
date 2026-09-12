@@ -9,6 +9,9 @@ import (
 func (w *World) handleShowEquipment(msg *gameserver.HandlerParameter, cmd command.ShowEquipment) {
 	var items []event.EquippedItem
 	for loc, inst := range msg.Player.Slots().GetAll() {
+		if inst == nil {
+			continue
+		}
 		items = append(items, event.EquippedItem{
 			Id:               inst.Id.String(),
 			ShortDescription: inst.Definition.ShortDescription,

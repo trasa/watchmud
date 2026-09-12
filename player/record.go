@@ -14,7 +14,7 @@ type Record struct {
 	Id                     uuid.UUID
 	Name                   string
 	CurHealth, MaxHealth   int64
-	LineageId, ClassId     string // string ids, not the int32s (see Phase 6)
+	LineageId              string // cosmetic; there is no ClassId beside it any more
 	LastZoneId, LastRoomId string
 	Abilities              rules.Abilities
 	Slots                  []SlotRecord
@@ -37,22 +37,23 @@ type DefinitionSource interface {
 }
 
 func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSource) (*Player, error) {
+	// Same reasoning as the missing definitions below: a lineage that content
+	// no longer defines used to refuse the login outright. It is cosmetic now
+	// -- it grants nothing and nothing depends on it -- so a retired lineage
+	// is worth a log line and a fallback, never a locked-out player.
 	lineage, found := cat.Lineages[rec.LineageId]
 	if !found {
-		log.Error().Str("playerName", rec.Name).Msgf("playerName %s lineage %s not found in catalog", rec.Name, rec.LineageId)
-		return nil, errors.New("bad lineage")
-	}
-	class, found := cat.Classes[rec.ClassId]
-	if !found {
-		log.Error().Str("playerName", rec.Name).Msgf("playerName %s class %s not found in catalog", rec.Name, rec.ClassId)
-		return nil, errors.New("bad class")
+		log.Warn().Str("player", rec.Name).Msgf("lineage %q not in catalog, falling back to the default", rec.LineageId)
+		lineage = cat.DefaultLineage()
+		if lineage == nil {
+			return nil, errors.New("no lineages defined in the catalog")
+		}
 	}
 	p := &Player{
 		id:        rec.Id,
 		name:      rec.Name,
 		out:       out,
 		Lineage:   lineage,
-		Class:     class,
 		inventory: NewInventory(),
 		slots:     NewSlots(),
 		curHealth: rec.CurHealth,
@@ -76,7 +77,10 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 	for _, s := range rec.Slots {
 		item, exists := p.inventory.ByInstanceId(s.InstanceId)
 		if !exists {
+			// the item didn't survive a content edit; leave the slot empty
+			// rather than filling it with a nil that reads as occupied.
 			log.Warn().Str("player", rec.Name).Msgf("instance %s not found for slot %s", s.InstanceId, s.Location)
+			continue
 		}
 		p.Slots().Set(s.Location, item)
 	}
@@ -90,7 +94,6 @@ func (p *Player) Record() *Record {
 		CurHealth:  p.curHealth,
 		MaxHealth:  p.maxHealth,
 		LineageId:  p.Lineage.Id,
-		ClassId:    p.Class.Id,
 		Abilities:  p.abilities,
 		LastZoneId: p.location.ZoneId,
 		LastRoomId: p.location.RoomId,

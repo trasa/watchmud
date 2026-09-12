@@ -136,6 +136,17 @@ func (w *World) removeMobile(mob *mobile.Instance) {
 	w.mobileRooms.Remove(mob)
 }
 
+// roleName resolves a player's equipment weights to a role's display name,
+// empty when the gear adds up to no role at all. A role is never stored, so
+// every caller that wants one derives it here -- see CLAUDE.md, "Lineage and
+// Role".
+func (w *World) roleName(weights map[string]int) string {
+	if r := w.content.Catalog.RoleFor(weights); r != nil {
+		return r.Name
+	}
+	return ""
+}
+
 func (w *World) getRoomContainingPlayer(p *player.Player) *spaces.Room {
 	return w.playerRooms.Get(p)
 }

@@ -78,6 +78,9 @@ func render(msg any, self string) string {
 	case event.Worn:
 		return "Done.\n"
 
+	case event.Removed:
+		return "You stop using " + m.Item + ".\n"
+
 	case event.Inventory:
 		return renderInventory(m.Items)
 
@@ -111,6 +114,9 @@ func render(msg any, self string) string {
 
 	case event.Stat:
 		return renderPlayerStat(m)
+
+	case event.Role:
+		return renderRole(m)
 
 	// ---- combat ------------------------------------------------------------
 
@@ -184,7 +190,7 @@ func renderInventory(items []event.InventoryItem) string {
 }
 
 // renderPlayerStat formats a player's stats as a string for display to a mud
-// client. The numbers are all zero until Phase 6 fills them in.
+// client.
 func renderPlayerStat(s event.Stat) string {
 	abilities := rules.Abilities{
 		Str: s.Strength,
@@ -197,13 +203,51 @@ func renderPlayerStat(s event.Stat) string {
 	var b strings.Builder
 	b.WriteString("Status:\n")
 	b.WriteString("Player:\t" + s.PlayerName + "\n")
-	b.WriteString("Lineage:\t" + s.Lineage + "\tClass: " + s.Class + "\n")
+	b.WriteString("Lineage:\t" + s.Lineage + "\tRole: " + roleOrNone(s.Role) + "\n")
 	b.WriteString(fmt.Sprintf("Health:\t%d of %d\n", s.CurrentHealth, s.MaxHealth))
 	b.WriteString("Location:\t" + player.NewLocation(s.ZoneId, s.RoomId).String() + "\n")
 	b.WriteString("Abilities:\n")
 	b.WriteString(fmt.Sprintf("\tStr: %d\t Dex: %d\t Con: %d\n", abilities.Str, abilities.Dex, abilities.Con))
 	b.WriteString(fmt.Sprintf("\tWis: %d\t Int: %d\t Cha: %d\n", abilities.Wis, abilities.Int, abilities.Cha))
 	b.WriteString("\n")
+	return b.String()
+}
+
+// roleOrNone is what goes where a role name goes when the player's equipment
+// doesn't add up to one. "none" rather than a blank, so the line doesn't read
+// like something failed to load.
+func roleOrNone(name string) string {
+	if name == "" {
+		return "none"
+	}
+	return name
+}
+
+// renderRole prints the standings for every role, not just the winning one.
+// A player who is told "you are a Tank" and nothing else has no way to work
+// out what to take off.
+func renderRole(r event.Role) string {
+	var b strings.Builder
+	if r.Current == "" {
+		b.WriteString("You aren't wearing anything that argues for a role.\n")
+	} else {
+		b.WriteString("You are fighting as a " + r.Current + ".\n")
+		if r.Description != "" {
+			b.WriteString(" " + r.Description + "\n")
+		}
+	}
+	width := 0
+	for _, s := range r.Standings {
+		width = max(width, len(s.Name))
+	}
+	for _, s := range r.Standings {
+		fmt.Fprintf(&b, "  %-*s %2d", width, s.Name, s.Total)
+		if len(s.Sources) > 0 {
+			b.WriteString("  (" + strings.Join(s.Sources, ", ") + ")")
+		}
+		b.WriteString("\n")
+	}
+	b.WriteString("Change what you're wearing to change your role.\n")
 	return b.String()
 }
 
@@ -285,7 +329,25 @@ func renderWho(players []event.WhoEntry) string {
 	}
 	b.WriteString("-- Who Is Here --\n")
 	for _, p := range players {
-		b.WriteString(p.PlayerName + " - " + p.RoomName + " - " + p.ZoneName + "\n")
+		b.WriteString(whoTitle(p) + " - " + p.RoomName + " - " + p.ZoneName + "\n")
 	}
 	return b.String()
+}
+
+// whoTitle is where a MUD traditionally prints a class. It prints the
+// lineage and the role instead, and the role can change between two
+// consecutive `who`s if the player swaps their gear in between. Either half
+// can be missing -- a player in no role at all is just "alice the Hill Dwarf".
+func whoTitle(p event.WhoEntry) string {
+	var parts []string
+	if p.Lineage != "" {
+		parts = append(parts, p.Lineage)
+	}
+	if p.Role != "" {
+		parts = append(parts, p.Role)
+	}
+	if len(parts) == 0 {
+		return p.PlayerName
+	}
+	return p.PlayerName + " the " + strings.Join(parts, " ")
 }

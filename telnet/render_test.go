@@ -113,7 +113,7 @@ var commandCases = []commandCase{
 	{
 		name:  "who lists everyone",
 		input: "who",
-		want:  "-- Who Is Here --\notherdood - start - start\ntestdood - start - start\n",
+		want:  "-- Who Is Here --\notherdood the Human - start - start\ntestdood the Human - start - start\n",
 	},
 	{
 		name:  "nothing equipped",
@@ -142,6 +142,71 @@ var commandCases = []commandCase{
 		// parseCommand rejects it before the world ever sees it; the
 		// connection prints the parser's error itself.
 		wantParseError: "Unknown request: florb",
+	},
+	{
+		name:  "role with nothing equipped",
+		input: "role",
+		want:  roleBlockNoGear,
+	},
+	{
+		// the phase in one test case: gear alone decides the role
+		name: "wearing armor makes you a tank",
+		setup: func(_ *world.World, p *player.Player, o *player.Player) {
+			p.Slots().Set(slot.Head, testHelmet())
+		},
+		input: "role",
+		want:  roleBlockTank,
+	},
+	{
+		name: "wielding a knife makes you a striker",
+		setup: func(_ *world.World, p *player.Player, o *player.Player) {
+			p.Slots().Set(slot.Wield, testKnife())
+		},
+		input: "roles",
+		want:  roleBlockStriker,
+	},
+	{
+		name: "remove something you aren't using",
+		setup: func(_ *world.World, p *player.Player, o *player.Player) {
+			p.Inventory().Add(testHelmet()) // carrying it is not using it
+		},
+		input: "remove helmet",
+		want:  "You aren't using that.\n",
+	},
+	{
+		name:  "remove with no target",
+		input: "remove",
+		want:  "Remove what?\n",
+	},
+	{
+		name: "taking the gear off takes the role with it",
+		setup: func(_ *world.World, p *player.Player, o *player.Player) {
+			p.Slots().Set(slot.Head, testHelmet())
+		},
+		input: "remove helmet",
+		want:  "You stop using iron helmet.\n",
+	},
+	{
+		name:  "stat shows lineage and role, not class",
+		input: "stat",
+		want:  statBlockNoGear,
+	},
+	{
+		name: "stat reflects what is equipped right now",
+		setup: func(_ *world.World, p *player.Player, o *player.Player) {
+			p.Slots().Set(slot.Head, testHelmet())
+		},
+		input: "stat",
+		want:  statBlockTank,
+	},
+	{
+		// a role shows up in who beside the lineage, where a class used to
+		name: "who shows the role",
+		setup: func(_ *world.World, p *player.Player, o *player.Player) {
+			p.Slots().Set(slot.Head, testHelmet())
+		},
+		input: "who",
+		want:  "-- Who Is Here --\notherdood the Human - start - start\ntestdood the Human Tank - start - start\n",
 	},
 	{
 		// recall moves with direction.None, which must not render as "none!"
@@ -208,7 +273,61 @@ otherdood is here.
 `
 
 func testKnife() *object.Instance {
-	return object.NewInstance(uuid.New(), object.NewDefinition(
+	d := object.NewDefinition(
 		"knife", "knife", "start", object.Weapon, []string{},
-		"knife", "A knife is on the ground.", slot.Wield))
+		"knife", "A knife is on the ground.", slot.Wield)
+	d.RoleWeights = map[string]int{"striker": 2}
+	return object.NewInstance(uuid.New(), d)
 }
+
+func testHelmet() *object.Instance {
+	d := object.NewDefinition(
+		"helmet", "helmet", "start", object.Armor, []string{"helm"},
+		"iron helmet", "an iron helmet is on the ground", slot.Head)
+	d.RoleWeights = map[string]int{"tank": 2}
+	return object.NewInstance(uuid.New(), d)
+}
+
+// The role listing always shows every role, including the ones with nothing
+// behind them: "you are a Tank" with no standings is a verdict the player
+// can't argue with or work out how to change.
+const roleBlockNoGear = `You aren't wearing anything that argues for a role.
+  Tank     0
+  Healer   0
+  Striker  0
+Change what you're wearing to change your role.
+`
+
+const roleBlockTank = `You are fighting as a Tank.
+  Tank     2  (iron helmet 2)
+  Healer   0
+  Striker  0
+Change what you're wearing to change your role.
+`
+
+const roleBlockStriker = `You are fighting as a Striker.
+  Tank     0
+  Healer   0
+  Striker  2  (knife 2)
+Change what you're wearing to change your role.
+`
+
+// Tabs, so these are quoted rather than raw. Everyone gets the same ability
+// array now -- there is no class to prefer one score over another.
+const statBlockNoGear = "Status:\n" +
+	"Player:\ttestdood\n" +
+	"Lineage:\tHuman\tRole: none\n" +
+	"Health:\t100 of 100\n" +
+	"Location:\t(start - start)\n" +
+	"Abilities:\n" +
+	"\tStr: 13\t Dex: 14\t Con: 15\n" +
+	"\tWis: 10\t Int: 12\t Cha: 8\n\n"
+
+const statBlockTank = "Status:\n" +
+	"Player:\ttestdood\n" +
+	"Lineage:\tHuman\tRole: Tank\n" +
+	"Health:\t100 of 100\n" +
+	"Location:\t(start - start)\n" +
+	"Abilities:\n" +
+	"\tStr: 13\t Dex: 14\t Con: 15\n" +
+	"\tWis: 10\t Int: 12\t Cha: 8\n\n"

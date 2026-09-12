@@ -167,17 +167,27 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter, cmd c
 		return fmt.Errorf("player %s already attached to client", msg.Client.Player().Name())
 	}
 	playerName := cmd.Name
-	// TODO Phase 6: character creation picks these. Until then, everyone is a
-	// human fighter.
-	lineage := gs.catalog.Lineages["human"]
-	class := gs.catalog.Classes["fighter"]
+
+	// The lineage is the only choice creation makes, and it is cosmetic. An
+	// id the catalog doesn't know means the transport offered something stale
+	// -- worth a log line, not worth refusing to make the character.
+	lineage, found := gs.catalog.Lineages[cmd.Lineage]
+	if !found {
+		if cmd.Lineage != "" {
+			log.Warn().Str("playerName", playerName).Msgf("unknown lineage %q at creation, using the default", cmd.Lineage)
+		}
+		lineage = gs.catalog.DefaultLineage()
+	}
+	if lineage == nil {
+		return errors.New("handleCreatePlayer: no lineages defined in the catalog")
+	}
+
 	p := player.New(
 		uuid.New(),
 		playerName,
 		msg.Client,
 		lineage,
-		class,
-		rules.StandardAbilities(class.AbilityPreference),
+		rules.StandardAbilities(),
 	)
 
 	// TODO need to set the location first (AddPlayer always puts the player in the start room, for now)

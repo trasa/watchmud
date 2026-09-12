@@ -1,34 +1,29 @@
 package rules
 
 func NewTestSpecies() []*Species {
-	humanBonus := Abilities{1, 1, 1, 1, 1, 1}
 	l := Lineage{
-		Id:         "human",
-		Name:       "human",
-		OwnBonuses: Abilities{},
+		Id:   "human",
+		Name: "human",
 	}
 	s := Species{
-		Id:         "human",
-		Name:       "human",
-		OwnBonuses: humanBonus,
+		Id:   "human",
+		Name: "human",
 	}
 	l.Species = &s
 	s.Lineages = []*Lineage{&l}
 	return []*Species{&s}
 }
 
-func NewTestClasses() []*Class {
-	c := Class{
-		Id:                "fighter",
-		Name:              "fighter",
-		AbilityPreference: []string{"str", "dex", "con"},
+// NewTestRoles mirrors the shape of content/rules/roles.json: three roles, in
+// a fixed declaration order, since that order is what breaks ties.
+func NewTestRoles() []*Role {
+	return []*Role{
+		{Id: "tank", Name: "Tank"},
+		{Id: "healer", Name: "Healer"},
+		{Id: "striker", Name: "Striker"},
 	}
-	return []*Class{&c}
 }
 
 func NewTestCatalog() (*Catalog, error) {
-	species := NewTestSpecies()
-	classes := NewTestClasses()
-	c, err := NewCatalog(species, classes)
-	return c, err
+	return NewCatalog(NewTestSpecies(), NewTestRoles())
 }

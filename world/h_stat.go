@@ -7,21 +7,30 @@ import (
 )
 
 func (w *World) handleStat(msg *gameserver.HandlerParameter, cmd command.Stat) {
-	player := msg.Player
-	player.Send(event.Stat{
-		PlayerName:    player.Name(),
-		CurrentHealth: 0,  // TODO
-		MaxHealth:     0,  // TODO
-		Lineage:       "", // TODO Phase 6: rules.Catalog lookup
-		Class:         "", // TODO Phase 6: class.ClassName
-		ZoneId:        "", // TODO player.Location.ZoneId
-		RoomId:        "", // TODO player.Location.RoomId
-		// TODO change to correct abilities
-		Strength:     0,
-		Dexterity:    0,
-		Constitution: 0,
-		Intelligence: 0,
-		Wisdom:       0,
-		Charisma:     0,
+	p := msg.Player
+	abilities := p.Abilities()
+
+	// The room the world has the player in, not p.Location(): the location on
+	// the player is only ever set at load time and movePlayer doesn't update
+	// it. See ROADMAP.md "Dual location bookkeeping".
+	var zoneId, roomId string
+	if r := w.getRoomContainingPlayer(p); r != nil {
+		zoneId, roomId = r.Zone.Id, r.Id
+	}
+
+	p.Send(event.Stat{
+		PlayerName:    p.Name(),
+		Lineage:       p.LineageName(),
+		Role:          w.roleName(p.RoleWeights()),
+		CurrentHealth: int(p.CurrentHealth()),
+		MaxHealth:     int(p.MaxHealth()),
+		ZoneId:        zoneId,
+		RoomId:        roomId,
+		Strength:      abilities.Str,
+		Dexterity:     abilities.Dex,
+		Constitution:  abilities.Con,
+		Intelligence:  abilities.Int,
+		Wisdom:        abilities.Wis,
+		Charisma:      abilities.Cha,
 	})
 }

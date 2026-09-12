@@ -17,8 +17,10 @@ func (Login) Verb() string { return "login" }
 type CreatePlayer struct {
 	Name     string
 	Password string
-	Lineage  string
-	Class    string
+	// Lineage is a rules.Lineage id, and the only choice creation makes. It
+	// is cosmetic: there is no class to pick beside it, because what a
+	// character is good at comes from the gear they put on.
+	Lineage string
 	// TODO other fields ...
 }
 
@@ -76,6 +78,15 @@ type Drop struct {
 
 func (Drop) Verb() string { return "drop" }
 
+// Remove takes an equipped item back off. It is the other half of wear and
+// wield: without it a character can add gear but never swap it, and a role is
+// only really chosen by equipment if it can be unchosen the same way.
+type Remove struct {
+	Target string
+}
+
+func (Remove) Verb() string { return "remove" }
+
 type Wear struct {
 	Target string
 }
@@ -127,6 +138,13 @@ func (Who) Verb() string { return "who" }
 type Stat struct{}
 
 func (Stat) Verb() string { return "stat" }
+
+// Role asks which role the player's equipment adds up to, and how close the
+// others are. There is nothing to change here -- you change your role by
+// changing your gear -- so it takes no arguments.
+type Role struct{}
+
+func (Role) Verb() string { return "role" }
 
 // ---- combat ----------------------------------------------------------------
 

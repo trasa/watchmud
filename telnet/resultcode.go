@@ -40,11 +40,15 @@ var failureByVerb = map[string]string{
 	"drop/TARGET_NOT_FOUND":  "You aren't carrying that.",
 	"wear/TARGET_NOT_FOUND":  "You aren't carrying that.",
 	"equip/TARGET_NOT_FOUND": "You aren't carrying that.",
-	"drop/NO_TARGET":         "Drop what?",
-	"get/NO_TARGET":          "Get what?",
-	"wear/NO_TARGET":         "Wear what?",
-	"equip/NO_TARGET":        "Wield what?",
-	"equip/NO_SLOT_GIVEN":    "Wield it where?",
+	// remove searches the slots, not the inventory: not finding it means it
+	// isn't equipped, which is a different sentence from not carrying it.
+	"remove/TARGET_NOT_FOUND": "You aren't using that.",
+	"remove/NO_TARGET":        "Remove what?",
+	"drop/NO_TARGET":          "Drop what?",
+	"get/NO_TARGET":           "Get what?",
+	"wear/NO_TARGET":          "Wear what?",
+	"equip/NO_TARGET":         "Wield what?",
+	"equip/NO_SLOT_GIVEN":     "Wield it where?",
 }
 
 var failureByCode = map[string]string{
