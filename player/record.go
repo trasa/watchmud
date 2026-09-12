@@ -5,9 +5,9 @@ import (
 	"uuid"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/rules"
+	"github.com/trasa/watchmud/slot"
 )
 
 type Record struct {

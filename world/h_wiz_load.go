@@ -3,50 +3,50 @@ package world
 import (
 	"uuid"
 
-	message "github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/spaces"
 )
 
-func (w *World) handleLoad(msg *gameserver.HandlerParameter) {
+func (w *World) handleLoad(msg *gameserver.HandlerParameter, cmd command.Load) {
 	// TODO figure out the level of the user and if they are allowed to run this wizcommand!
-	loadRequest := msg.Message.GetLoadRequest()
-
 	targetRoom := w.getRoomContainingPlayer(msg.Player)
 	if targetRoom == nil {
-		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "YOU_ARE_NOT_IN_A_ROOM"})
+		msg.Fail(event.YouAreNotInARoom)
 		return
 	}
 
-	if loadRequest.Zone == "" {
-		loadRequest.Zone = targetRoom.Zone.Id
+	if cmd.Zone == "" {
+		cmd.Zone = targetRoom.Zone.Id
 	}
 	logWizCommand(msg.Player, "load",
-		"Player %s is creating %s of %s.%s", msg.Player.Name(), loadRequest.Type, loadRequest.Zone, loadRequest.Id)
+		"Player %s is creating %s of %s.%s", msg.Player.Name(), cmd.Type, cmd.Zone, cmd.Id)
 
-	if loadRequest.Type == "mob" {
-		w.handleLoadCreateMob(msg, loadRequest, targetRoom)
-	} else if loadRequest.Type == "obj" {
-		w.handleLoadCreateObject(msg, loadRequest, targetRoom)
-	} else {
-		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_TYPE"})
+	switch cmd.Type {
+	case "mob":
+		w.handleLoadCreateMob(msg, cmd, targetRoom)
+	case "obj":
+		w.handleLoadCreateObject(msg, cmd, targetRoom)
+	default:
+		msg.Fail(event.UnknownType)
 	}
 }
 
-func (w *World) handleLoadCreateMob(msg *gameserver.HandlerParameter, request *message.LoadRequest, targetRoom *spaces.Room) {
+func (w *World) handleLoadCreateMob(msg *gameserver.HandlerParameter, cmd command.Load, targetRoom *spaces.Room) {
 	// get the zone we're looking for a mob in
-	z := w.Zone(request.Zone)
+	z := w.Zone(cmd.Zone)
 	if z == nil {
-		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ZONE"})
+		msg.Fail(event.UnknownZone)
 		return
 	}
 
 	// get the definition of this mob from that zone
-	mobDefn := z.MobileDefinitions[request.Id]
+	mobDefn := z.MobileDefinitions[cmd.Id]
 	if mobDefn == nil {
-		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ID"})
+		msg.Fail(event.UnknownId)
 		return
 	}
 
@@ -58,22 +58,21 @@ func (w *World) handleLoadCreateMob(msg *gameserver.HandlerParameter, request *m
 	// if you add directly to the target room then you'll cause problems.
 	w.AddMobile(inst, targetRoom)
 
-	// success
-	msg.Player.Send(message.LoadResponse{Success: true, ResultCode: "OK"})
+	msg.Player.Send(event.Loaded{})
 }
 
-func (w *World) handleLoadCreateObject(msg *gameserver.HandlerParameter, request *message.LoadRequest, targetRoom *spaces.Room) {
+func (w *World) handleLoadCreateObject(msg *gameserver.HandlerParameter, cmd command.Load, targetRoom *spaces.Room) {
 	// get the zone we're looking for an instance in
-	z := w.Zone(request.Zone)
+	z := w.Zone(cmd.Zone)
 	if z == nil {
-		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_ZONE"})
+		msg.Fail(event.UnknownZone)
 		return
 	}
 
 	// get the definition of this object from that zone
-	definition := z.ObjectDefinitions[request.Id]
+	definition := z.ObjectDefinitions[cmd.Id]
 	if definition == nil {
-		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "UNKNOWN_DEFINITION_ID"})
+		msg.Fail(event.UnknownDefinitionId)
 		return
 	}
 
@@ -82,9 +81,8 @@ func (w *World) handleLoadCreateObject(msg *gameserver.HandlerParameter, request
 
 	// add instance to room
 	if err := targetRoom.Inventory.Add(inst); err != nil {
-		msg.Player.Send(message.LoadResponse{Success: false, ResultCode: "ADD_ROOM_INVENTORY_FAILED"})
+		msg.Fail(event.AddRoomInventoryFailed)
 		return
 	}
-	// success
-	msg.Player.Send(message.LoadResponse{Success: true, ResultCode: "OK"})
+	msg.Player.Send(event.Loaded{})
 }

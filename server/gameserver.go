@@ -8,7 +8,8 @@ import (
 	"uuid"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/player"
@@ -91,26 +92,19 @@ func (gs *GameServer) heartbeat(pulse mudtime.PulseCount, delta time.Duration) {
 }
 
 // dispatch a message to its handler.
+//
+// The pre-world cases -- login, create player -- are handled here because
+// they need the store and player construction. Everything else falls through
+// to the world.
 func (gs *GameServer) dispatch(msg *gameserver.HandlerParameter) error {
-	switch msg.Message.Inner.(type) {
-	case *message.GameMessage_LoginRequest:
-		if err := gs.handleLogin(msg); err != nil {
-			return err
-		}
-	case *message.GameMessage_CreatePlayerRequest:
-		if err := gs.handleCreatePlayer(msg); err != nil {
-			return err
-		}
-	case *message.GameMessage_DataRequest:
-		if err := gs.handleDataRequest(msg); err != nil {
-			return err
-		}
+	switch cmd := msg.Command.(type) {
+	case command.Login:
+		return gs.handleLogin(msg, cmd)
+	case command.CreatePlayer:
+		return gs.handleCreatePlayer(msg, cmd)
 	default:
-		if err := gs.world.HandleIncomingMessage(msg); err != nil {
-			return err
-		}
+		return gs.world.HandleIncomingMessage(msg)
 	}
-	return nil
 }
 
 func (gs *GameServer) Receive(msg *gameserver.HandlerParameter) {
@@ -118,15 +112,10 @@ func (gs *GameServer) Receive(msg *gameserver.HandlerParameter) {
 }
 
 func (gs *GameServer) Logout(c gameserver.Conn, cause string) {
-	gm, err := message.NewGameMessage(message.LogoutRequest{Cause: cause})
-	if err != nil {
-		log.Error().Err(err).Msg("Error creating GameMessage for LogoutRequest")
-	} else {
-		gs.Receive(gameserver.NewHandlerParameter(c, gm))
-	}
+	gs.Receive(gameserver.NewHandlerParameter(c, command.Logout{Cause: cause}))
 }
 
-func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) error {
+func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter, cmd command.Login) error {
 	// is this connection already authenticated?
 	// see if we can find an existing player.
 	if msg.Client.Player() != nil {
@@ -143,7 +132,7 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) error {
 		}*/
 
 	// TODO authentication and stuff...
-	playerName := msg.Message.GetLoginRequest().PlayerName
+	playerName := cmd.Name
 	rec, found, err := gs.store.Load(playerName)
 	if err != nil {
 		// store error - problem with the store, return an error
@@ -152,18 +141,14 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) error {
 	if !found {
 		// not an error - could represent a new player (player creation)
 		log.Info().Str("playerName", playerName).Msg("playerName not found in store")
-		loginResponse := message.LoginResponse{
-			Success:    false,
-			ResultCode: "PLAYER_LOGIN_FAILED",
-		}
-		msg.Client.Send(loginResponse)
+		msg.Client.Send(event.LoginFailed{Reason: event.NoSuchPlayer})
 		return nil
 	}
 
 	// create the player
 	p, err := player.FromRecord(rec, msg.Client, gs.catalog, gs.world)
 	if err != nil {
-		return err
+		return fmt.Errorf("handleLogin %s: %w", playerName, err)
 	}
 	msg.Player = p
 	msg.Client.SetPlayer(p)
@@ -171,25 +156,20 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter) error {
 	// add player to world
 	gs.world.AddPlayer(p)
 
-	p.Send(message.LoginResponse{
-		Success:    true,
-		ResultCode: "OK",
-		PlayerName: p.Name(),
-	})
+	p.Send(event.LoggedIn{Name: p.Name()})
 	return nil
 }
 
-func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) error {
+func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter, cmd command.CreatePlayer) error {
 	if msg.Client.Player() != nil {
 		// you've already got one
 		// this is a programming bug (login state machine), so report the error
 		return fmt.Errorf("player %s already attached to client", msg.Client.Player().Name())
 	}
-	req := msg.Message.GetCreatePlayerRequest()
-	playerName := req.PlayerName
-	// message sends an int but this is a string now, so default all to human
+	playerName := cmd.Name
+	// TODO Phase 6: character creation picks these. Until then, everyone is a
+	// human fighter.
 	lineage := gs.catalog.Lineages["human"]
-	// message sends an int but this is a string now, so default all to fighter
 	class := gs.catalog.Classes["fighter"]
 	p := player.New(
 		uuid.New(),
@@ -211,54 +191,6 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter) error
 
 	gs.world.AddPlayer(p)
 
-	p.Send(message.CreatePlayerResponse{
-		Success:    true,
-		ResultCode: "OK",
-		PlayerName: p.Name(),
-	})
+	p.Send(event.PlayerCreated{Name: p.Name()})
 	return nil
-}
-
-// The client is requesting game data: races, class definitions, something like that.
-func (gs *GameServer) handleDataRequest(msg *gameserver.HandlerParameter) (err error) {
-	resp := message.DataResponse{
-		Success:    true,
-		ResultCode: "OK",
-	}
-	resp.DataType = append(resp.DataType, "races")
-	// TODO replace all this (or remove it)
-	/*
-		// get from db
-		racejson, err := db.GetRaceDataJson()
-		if err != nil {
-			log.Error().Err(err).Msg("GetRaceDataJson failed")
-			if clientErr := msg.Client.Send(message.DataResponse{
-				Success:    false,
-				ResultCode: "DATA_ERROR",
-			}); clientErr != nil {
-				log.Error().Err(clientErr).Msg("handleDataRequest failed to send DB_ERROR for 'races' request")
-			}
-			return
-		}
-		resp.Data = append(resp.Data, racejson)
-	*/
-
-	// TODO replace all this
-	/*
-		resp.DataType = append(resp.DataType, "classes")
-		classjson, err := db.GetClassDataJson()
-		if err != nil {
-			log.Error().Err(err).Msg("GetClassDataJson failed")
-			if clientErr := msg.Client.Send(message.DataResponse{
-				Success:    false,
-				ResultCode: "DATA_ERROR",
-			}); clientErr != nil {
-				log.Error().Err(clientErr).Msg("handleDataRequest failed to send DB_ERROR for 'classes' request")
-			}
-			return
-		}
-		resp.Data = append(resp.Data, classjson)
-	*/
-	msg.Client.Send(resp)
-	return
 }

@@ -1,47 +1,39 @@
 package world
 
 import (
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/spaces"
 )
 
-func (w *World) handleRoomStatus(msg *gameserver.HandlerParameter) {
+func (w *World) handleRoomStatus(msg *gameserver.HandlerParameter, cmd command.RoomStatus) {
 	// TODO security: must have admin privs (or, something) to use this command
-
-	//rr := msg.Message.GetRoomStatusRequest()
 	// TODO allow user to specify room and zone to get status of
 
 	room := w.getRoomContainingPlayer(msg.Player)
 	if room == nil {
-		msg.Player.Send(message.RoomStatusResponse{
-			Success:    false,
-			ResultCode: "NOT_IN_ROOM",
-		})
+		msg.Fail(event.NotInRoom)
 		return
 	}
 
-	response := message.RoomStatusResponse{
-		Success:       true,
-		ResultCode:    "OK",
-		PlayerInfo:    createPlayerInfo(room),
-		InventoryInfo: createInventoryInfo(room),
-		MobInfo:       createMobInfo(room),
-		Id:            room.Id,
-		Name:          room.Name,
-		Description:   room.Description,
-		ZoneName:      room.Zone.Name,
-		ZoneId:        room.Zone.Id,
-		Directions:    createDirections(room),
-		Flags:         room.Flags(),
-	}
-
-	msg.Player.Send(response)
+	msg.Player.Send(event.RoomStatus{
+		Id:          room.Id,
+		Name:        room.Name,
+		Description: room.Description,
+		ZoneName:    room.Zone.Name,
+		ZoneId:      room.Zone.Id,
+		Flags:       room.Flags(),
+		Players:     createPlayerInfo(room),
+		Items:       createInventoryInfo(room),
+		Mobs:        createMobInfo(room),
+		Exits:       createDirections(room),
+	})
 }
 
-func createPlayerInfo(room *spaces.Room) (result []*message.RoomStatusResponse_PlayerInfo) {
+func createPlayerInfo(room *spaces.Room) (result []event.RoomStatusPlayer) {
 	for _, p := range room.Players() {
-		result = append(result, &message.RoomStatusResponse_PlayerInfo{
+		result = append(result, event.RoomStatusPlayer{
 			Name:          p.Name(),
 			CurrentHealth: 0, // TODO
 			MaxHealth:     0, // TODO
@@ -50,10 +42,10 @@ func createPlayerInfo(room *spaces.Room) (result []*message.RoomStatusResponse_P
 	return
 }
 
-func createInventoryInfo(room *spaces.Room) (result []*message.RoomStatusResponse_InventoryInfo) {
+func createInventoryInfo(room *spaces.Room) (result []event.RoomStatusItem) {
 	for _, i := range room.Inventory.GetAll() {
 		result = append(result,
-			&message.RoomStatusResponse_InventoryInfo{
+			event.RoomStatusItem{
 				Id:                  i.Id.String(),
 				DefinitionId:        i.Definition.ObjectId.DefinitionId,
 				Aliases:             i.Definition.Aliases,
@@ -68,10 +60,10 @@ func createInventoryInfo(room *spaces.Room) (result []*message.RoomStatusRespons
 	return
 }
 
-func createMobInfo(room *spaces.Room) (result []*message.RoomStatusResponse_MobInfo) {
+func createMobInfo(room *spaces.Room) (result []event.RoomStatusMob) {
 	for _, m := range room.Mobs() {
 		result = append(result,
-			&message.RoomStatusResponse_MobInfo{
+			event.RoomStatusMob{
 				Id:                m.IdStr(),
 				DefinitionId:      m.Definition.Id,
 				Aliases:           m.Definition.Aliases,
@@ -79,22 +71,22 @@ func createMobInfo(room *spaces.Room) (result []*message.RoomStatusResponse_MobI
 				ShortDescription:  m.Definition.ShortDescription,
 				DescriptionInRoom: m.Definition.DescriptionInRoom,
 				ZoneId:            m.Definition.ZoneId,
-				CurrentHealth:     m.CurHealth,
-				MaxHealth:         m.Definition.MaxHealth,
+				CurrentHealth:     int(m.CurHealth),
+				MaxHealth:         int(m.Definition.MaxHealth),
 				Flags:             m.Definition.GetFlags(),
 			})
 	}
 	return
 }
 
-func createDirections(room *spaces.Room) (result []*message.RoomStatusResponse_DirectionInfo) {
+func createDirections(room *spaces.Room) (result []event.RoomStatusExit) {
 	for _, ex := range room.Exits(false) {
 		result = append(result,
-			&message.RoomStatusResponse_DirectionInfo{
-				Dir:    ex.Direction.String(),
-				RoomId: ex.Room.Id,
-				ZoneId: ex.Room.Zone.Id,
-				Flags:  ex.Room.Flags(),
+			event.RoomStatusExit{
+				Direction: ex.Direction,
+				RoomId:    ex.Room.Id,
+				ZoneId:    ex.Room.Zone.Id,
+				Flags:     ex.Room.Flags(),
 			})
 	}
 	return

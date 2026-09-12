@@ -8,9 +8,8 @@ import (
 	"slices"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud-message/direction"
 	"github.com/trasa/watchmud/combat"
-	"github.com/trasa/watchmud/gameserver"
+	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
@@ -31,7 +30,6 @@ type World struct {
 	playerRooms *PlayerRoomMap // player -> room; room -> players
 
 	mobileRooms *spaces.MobileRoomMap // mobile -> room; room -> mobiles
-	handlerMap  map[string]func(message *gameserver.HandlerParameter)
 
 	fightLedger *combat.FightLedger
 }
@@ -46,7 +44,6 @@ func New(c *loader.Content, s player.Store) (w *World, err error) {
 		fightLedger: combat.NewFightLedger(),
 		store:       s,
 	}
-	w.initializeHandlerMap()
 	if err := w.initialLoad(); err != nil {
 		return nil, fmt.Errorf("building world: %w", err)
 	}

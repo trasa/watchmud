@@ -5,8 +5,9 @@ import (
 	"uuid"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud-message/direction"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/direction"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
 )
@@ -31,20 +32,20 @@ func (s *HandleMoveSuite) SetupTest() {
 	s.c = gameserver.NewTestConn(s.p)
 }
 
-func (s *HandleMoveSuite) handlerParameter(dir direction.Direction) *gameserver.HandlerParameter {
-	msg, err := message.NewGameMessage(message.MoveRequest{Direction: int32(dir)})
-	s.Assert().NoError(err)
-	return gameserver.NewHandlerParameter(s.c, msg)
+func (s *HandleMoveSuite) move(dir direction.Direction) {
+	s.T().Helper()
+	cmd := command.Move{Direction: dir}
+	s.w.handleMove(gameserver.NewHandlerParameter(s.c, cmd), cmd)
 }
 
 func (s *HandleMoveSuite) TestMove_butYouCant() {
-	s.w.handleMove(s.handlerParameter(direction.North))
+	s.move(direction.North)
 
 	s.Assert().Equal(1, len(s.r.Sent))
 
-	resp := s.r.Sent[0].(message.MoveResponse)
-	s.Assert().False(resp.Success)
-	s.Assert().Equal(resp.ResultCode, "CANT_GO_THAT_WAY")
+	failed := s.r.Sent[0].(event.Failed)
+	s.Assert().Equal("move", failed.Verb)
+	s.Assert().Equal(event.CantGoThatWay, failed.Code)
 }
 
 func (s *HandleMoveSuite) TestMoveWhileFighting() {
@@ -53,11 +54,10 @@ func (s *HandleMoveSuite) TestMoveWhileFighting() {
 	s.w.AddPlayer(other)
 	//s.w.fightLedger.Fight(s.p, other, s.w.StartRoom.Zone.Id, s.w.StartRoom.Id)
 
-	//s.w.handleMove(s.handlerParameter(direction.North))
+	//s.move(direction.North)
 
 	//s.Assert().Equal(1, len(s.r.Sent))
 
-	//resp := s.r.Sent[0].(message.MoveResponse)
-	//s.Assert().False(resp.Success)
-	//s.Assert().Equal(resp.ResultCode, "IN_A_FIGHT")
+	//failed := s.r.Sent[0].(event.Failed)
+	//s.Assert().Equal(event.InAFight, failed.Code)
 }

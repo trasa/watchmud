@@ -1,22 +1,19 @@
 package world
 
 import (
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 )
 
-func (w *World) handleShowEquipment(msg *gameserver.HandlerParameter) {
-	var items []*message.ShowEquipmentResponse_EquipmentInfo
+func (w *World) handleShowEquipment(msg *gameserver.HandlerParameter, cmd command.ShowEquipment) {
+	var items []event.EquippedItem
 	for loc, inst := range msg.Player.Slots().GetAll() {
-		items = append(items, &message.ShowEquipmentResponse_EquipmentInfo{
+		items = append(items, event.EquippedItem{
 			Id:               inst.Id.String(),
 			ShortDescription: inst.Definition.ShortDescription,
-			SlotLocation:     int32(loc),
+			Slot:             loc,
 		})
 	}
-	msg.Player.Send(message.ShowEquipmentResponse{
-		Success:       true,
-		ResultCode:    "OK",
-		EquipmentInfo: items,
-	})
+	msg.Player.Send(event.Equipment{Items: items})
 }

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud-message/direction"
+	"github.com/trasa/watchmud/direction"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/player"
 )
@@ -82,12 +82,7 @@ func (r *Room) Flags() (result []string) {
 // PlayerLeaves a room. Tells other room residents about it.
 func (r *Room) PlayerLeaves(p *player.Player, dir direction.Direction) {
 	r.playerList.Remove(p)
-	r.Send(message.LeaveRoomNotification{
-		Success:    true,
-		ResultCode: "OK",
-		Name:       p.Name(),
-		Direction:  int32(dir),
-	})
+	r.Send(event.Left{Who: p.Name(), Direction: dir})
 }
 
 func (r *Room) MobileLeaves(mob *mobile.Instance, dir direction.Direction) {
@@ -95,12 +90,7 @@ func (r *Room) MobileLeaves(mob *mobile.Instance, dir direction.Direction) {
 		log.Error().Err(err).Str("room", r.Location().String()).Msg("mobileLeaves: failed to leave room")
 		return
 	}
-	r.Send(message.LeaveRoomNotification{
-		Success:    true,
-		ResultCode: "OK",
-		Name:       mob.Name(),
-		Direction:  int32(dir),
-	})
+	r.Send(event.Left{Who: mob.Name(), Direction: dir})
 }
 
 // AddPlayer to the Room, without sending notifications
@@ -124,11 +114,7 @@ func (r *Room) playersExcept(exclude *player.Player) []*player.Player {
 // PlayerEnters a room, telling other room entities about it.
 func (r *Room) PlayerEnters(p *player.Player) {
 	// TODO how does this make sense next to the other Add, etc funcs?
-	r.Send(message.EnterRoomNotification{
-		Success:    true,
-		ResultCode: "OK",
-		Name:       p.Name(),
-	})
+	r.Send(event.Entered{Who: p.Name()})
 	r.AddPlayer(p)
 }
 
@@ -138,11 +124,7 @@ func (r *Room) MobileEnters(mob *mobile.Instance) {
 		log.Error().Err(err).Str("room", r.Location().String()).Msg("MobileEnters: failed to add mobile")
 		return
 	}
-	r.Send(message.EnterRoomNotification{
-		Success:    true,
-		ResultCode: "OK",
-		Name:       mob.Definition.Name,
-	})
+	r.Send(event.Entered{Who: mob.Definition.Name})
 }
 
 func (r *Room) AddMobile(inst *mobile.Instance) error {
@@ -185,8 +167,8 @@ func (r *Room) Notify(msg any) {
 
 // DescriptionExcept describes the room, except for one player, if provided
 // The exits are stringified for telnet clients, not the abbreviations.
-func (r *Room) DescriptionExcept(exclude *player.Player) *message.RoomDescription {
-	desc := message.RoomDescription{
+func (r *Room) DescriptionExcept(exclude *player.Player) event.RoomDescription {
+	desc := event.RoomDescription{
 		Name:        r.Name,
 		Description: r.Description,
 		Exits:       r.ExitString(),
@@ -202,7 +184,7 @@ func (r *Room) DescriptionExcept(exclude *player.Player) *message.RoomDescriptio
 	for _, mob := range r.mobs.GetAll() {
 		desc.Mobs = append(desc.Mobs, mob.Definition.DescriptionInRoom)
 	}
-	return &desc
+	return desc
 }
 
 func (r *Room) FindMobile(target string) (mob *mobile.Instance, exists bool) {

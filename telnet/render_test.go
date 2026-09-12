@@ -7,11 +7,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	message "github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/slot"
 	"github.com/trasa/watchmud/world"
 )
 
@@ -21,6 +20,9 @@ type commandCase struct {
 	input     string
 	want      string
 	wantOther string
+	// wantParseError is set for input the parser rejects before the world
+	// sees it; the connection shows the player this text directly.
+	wantParseError string
 }
 
 var commandCases = []commandCase{
@@ -92,6 +94,62 @@ var commandCases = []commandCase{
 		want:      "Ok.\n",
 		wantOther: "testdood tells you, \"hi\".\n",
 	},
+	{
+		name:      "tellall reaches everyone else",
+		input:     "tellall listen up",
+		want:      "Ok.\n",
+		wantOther: "testdood shouts, \"listen up\".\n",
+	},
+	{
+		name:  "tellall with nothing to say",
+		input: "tellall",
+		want:  "Say what?\n",
+	},
+	{
+		name:  "exits",
+		input: "exits",
+		want:  "Exits:\nNone!\n",
+	},
+	{
+		name:  "who lists everyone",
+		input: "who",
+		want:  "-- Who Is Here --\notherdood - start - start\ntestdood - start - start\n",
+	},
+	{
+		name:  "nothing equipped",
+		input: "equipment",
+		want:  "Nothing equipped.\n",
+	},
+	{
+		name:  "wear something you aren't carrying",
+		input: "wear helmet",
+		want:  "You aren't carrying that.\n",
+	},
+	{
+		name:  "wield with no target",
+		input: "wield",
+		want:  "Wield what?\n",
+	},
+	{
+		name:  "kill something that isn't here",
+		input: "kill dragon",
+		want:  "You don't see that here.\n",
+	},
+	{
+		name:  "a verb nobody knows",
+		input: "florb the thing",
+		want:  "",
+		// parseCommand rejects it before the world ever sees it; the
+		// connection prints the parser's error itself.
+		wantParseError: "Unknown request: florb",
+	},
+	{
+		// recall moves with direction.None, which must not render as "none!"
+		name:      "recall leaves in no direction",
+		input:     "recall",
+		want:      startRoomBlock,
+		wantOther: "testdood leaves.\ntestdood enters.\n",
+	},
 }
 
 func TestCommandRendering(t *testing.T) {
@@ -115,9 +173,14 @@ func TestCommandRendering(t *testing.T) {
 				tc.setup(w, p, o)
 			}
 
-			gm, err := message.TranslateLineToMessage(message.Tokenize(tc.input))
+			// the same path the connection takes: parse, then dispatch.
+			cmd, err := parseCommand(strings.Fields(tc.input))
+			if tc.wantParseError != "" {
+				require.EqualError(t, err, tc.wantParseError)
+				return
+			}
 			require.NoError(t, err)
-			require.NoError(t, w.HandleIncomingMessage(gameserver.NewHandlerParameter(c, gm)))
+			require.NoError(t, w.HandleIncomingMessage(gameserver.NewHandlerParameter(c, cmd)))
 
 			var got strings.Builder
 			for _, m := range rec.Sent {

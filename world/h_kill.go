@@ -1,42 +1,41 @@
 package world
 
 import (
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/spaces"
 )
 
-func (w *World) handleKill(msg *gameserver.HandlerParameter) {
+func (w *World) handleKill(msg *gameserver.HandlerParameter, cmd command.Kill) {
 	// TODO make different kill command for killing a player vs
 	// killing a mob. for now this will just be killing mobs.
-	killRequest := msg.Message.GetKillRequest()
 
 	// if you're already in a fight, you can't start a new fight
 	if w.fightLedger.IsFighting(msg.Player) {
-		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "ALREADY_FIGHTING"})
+		msg.Fail(event.AlreadyFighting)
 		return
 	}
 
 	// figure out if the target of your fight is valid
 	//	are they in the room (still)
 	room := w.getRoomContainingPlayer(msg.Player)
-	mobileInstance, exists := room.FindMobile(killRequest.Target)
+	mobileInstance, exists := room.FindMobile(cmd.Target)
 	if !exists {
-		// TODO error handling
-		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "TARGET_NOT_FOUND"})
+		msg.Fail(event.TargetNotFound)
 		return
 	}
 
 	//  does this room allow fighting..
 	if room.Flag(spaces.RoomFlagNoFight) {
-		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "NO_FIGHT_ROOM"})
+		msg.Fail(event.NoFightRoom)
 		return
 	}
 
 	//	are they something you are allowed to fight (no_fight, other flags... objects...)
 	if mobileInstance.Definition.HasFlag(mobile.FlagNoFight) {
-		msg.Player.Send(message.KillResponse{Success: false, ResultCode: "NO_FIGHT"})
+		msg.Fail(event.NoFight)
 		return
 	}
 
@@ -45,10 +44,10 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter) {
 	// TODO reimplement
 	/*
 		if err := w.fightLedger.Fight(msg.Player, mobileInstance, room.Zone.Id, room.Id); err != nil {
-			msg.Player.Send(message.KillResponse{Success: false, ResultCode: "ERROR_" + err.Error()})
+			log.Error().Err(err).Msg("kill: couldn't start the fight")
+			msg.Fail(event.InternalError)
 			return
 		}
 	*/
-	msg.Player.Send(message.KillResponse{Success: true, ResultCode: "OK"})
-
+	msg.Player.Send(event.Attacking{Target: mobileInstance.Name()})
 }

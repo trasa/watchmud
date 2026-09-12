@@ -1,33 +1,27 @@
 package world
 
 import (
-	"github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud-message/slot"
+	"github.com/rs/zerolog/log"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
+	"github.com/trasa/watchmud/slot"
 )
 
-func (w *World) handleEquip(msg *gameserver.HandlerParameter) {
-	equipReq := msg.Message.GetEquipRequest()
-	requestedLocation := slot.Location(equipReq.SlotLocation)
-
-	if equipReq.SlotLocation <= 0 {
-		msg.Player.Send(message.EquipResponse{
-			Success:    false,
-			ResultCode: "NO_SLOT_GIVEN",
-		})
+func (w *World) handleEquip(msg *gameserver.HandlerParameter, cmd command.Equip) {
+	if cmd.Slot <= slot.None {
+		msg.Fail(event.NoSlotGiven)
 		return
 	}
-	if equipReq.Target == "" {
-		msg.Player.Send(message.EquipResponse{
-			Success:    false,
-			ResultCode: "NO_TARGET",
-		})
+	if cmd.Target == "" {
+		msg.Fail(event.NoTarget)
 		return
 	}
 
-	target, err := parseTarget(equipReq.Target)
+	target, err := parseTarget(cmd.Target)
 	if err != nil {
-		msg.Player.Send(message.EquipResponse{Success: false, ResultCode: "PARSE_ERROR_" + err.Error()})
+		log.Debug().Err(err).Str("player", msg.Player.Name()).Str("target", cmd.Target).Msg("equip: can't parse target")
+		msg.Fail(event.ParseError)
 		return
 	}
 
@@ -37,10 +31,7 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter) {
 	objectsToEquip := msg.Player.Inventory().GetByNameOrAlias(target.Name)
 	if len(objectsToEquip) == 0 {
 		// you don't have one
-		msg.Player.Send(message.EquipResponse{
-			Success:    false,
-			ResultCode: "TARGET_NOT_FOUND",
-		})
+		msg.Fail(event.TargetNotFound)
 		return
 	}
 
@@ -48,26 +39,17 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter) {
 	objectToEquip := objectsToEquip[0]
 
 	// do you already have something equipped in that location?
-	if msg.Player.Slots().Get(requestedLocation) != nil {
-		msg.Player.Send(message.EquipResponse{
-			Success:    false,
-			ResultCode: "LOCATION_IN_USE",
-		})
+	if msg.Player.Slots().Get(cmd.Slot) != nil {
+		msg.Fail(event.LocationInUse)
 		return
 	}
 
 	// can this object be equiped there?
-	if requestedLocation != objectToEquip.Definition.WearLocation {
-		msg.Player.Send(message.EquipResponse{
-			Success:    false,
-			ResultCode: "CANT_WEAR_THERE",
-		})
+	if cmd.Slot != objectToEquip.Definition.WearLocation {
+		msg.Fail(event.CantWearThere)
 		return
 	}
 	// success
-	msg.Player.Slots().Set(requestedLocation, objectToEquip)
-	msg.Player.Send(message.EquipResponse{
-		Success:    true,
-		ResultCode: "OK",
-	})
+	msg.Player.Slots().Set(cmd.Slot, objectToEquip)
+	msg.Player.Send(event.Equipped{})
 }

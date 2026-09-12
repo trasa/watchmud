@@ -1,62 +1,80 @@
 package world
 
 import (
-	"errors"
-	"log"
+	"fmt"
 
-	"github.com/trasa/watchmud-message"
+	"github.com/rs/zerolog/log"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 )
 
-func (w *World) initializeHandlerMap() {
-	w.handlerMap = map[string]func(parameter *gameserver.HandlerParameter){
-		"GameMessage_DropRequest":          w.handleDrop,
-		"GameMessage_EquipRequest":         w.handleEquip,
-		"GameMessage_ExitsRequest":         w.handleExits,
-		"GameMessage_GetRequest":           w.handleGet,
-		"GameMessage_InventoryRequest":     w.handleInventory,
-		"GameMessage_KillRequest":          w.handleKill,
-		"GameMessage_LoadRequest":          w.handleLoad,
-		"GameMessage_LogoutRequest":        w.handleLogout,
-		"GameMessage_LookRequest":          w.handleLook,
-		"GameMessage_MoveRequest":          w.handleMove,
-		"GameMessage_PingRequest":          w.handlePing,
-		"GameMessage_RecallRequest":        w.handleRecall,
-		"GameMessage_RestoreRequest":       w.handleRestore,
-		"GameMessage_RoomStatusRequest":    w.handleRoomStatus,
-		"GameMessage_SayRequest":           w.handleSay,
-		"GameMessage_ShowEquipmentRequest": w.handleShowEquipment,
-		"GameMessage_StatRequest":          w.handleStat,
-		"GameMessage_TellRequest":          w.handleTell,
-		"GameMessage_TellAllRequest":       w.handleTellAll,
-		"GameMessage_WearRequest":          w.handleWear,
-		"GameMessage_WhoRequest":           w.handleWho,
+// HandleIncomingMessage runs the handler for one command, then persists the
+// player.
+//
+// The switch is the whole dispatch table: no string keys, no reflection, and
+// each handler is handed its command already typed.
+func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) error {
+	switch cmd := msg.Command.(type) {
+	case command.Drop:
+		w.handleDrop(msg, cmd)
+	case command.Equip:
+		w.handleEquip(msg, cmd)
+	case command.Exits:
+		w.handleExits(msg, cmd)
+	case command.Get:
+		w.handleGet(msg, cmd)
+	case command.Inventory:
+		w.handleInventory(msg, cmd)
+	case command.Kill:
+		w.handleKill(msg, cmd)
+	case command.Load:
+		w.handleLoad(msg, cmd)
+	case command.Logout:
+		w.handleLogout(msg, cmd)
+	case command.Look:
+		w.handleLook(msg, cmd)
+	case command.Move:
+		w.handleMove(msg, cmd)
+	case command.Ping:
+		w.handlePing(msg, cmd)
+	case command.Recall:
+		w.handleRecall(msg, cmd)
+	case command.Restore:
+		w.handleRestore(msg, cmd)
+	case command.RoomStatus:
+		w.handleRoomStatus(msg, cmd)
+	case command.Say:
+		w.handleSay(msg, cmd)
+	case command.ShowEquipment:
+		w.handleShowEquipment(msg, cmd)
+	case command.Stat:
+		w.handleStat(msg, cmd)
+	case command.Tell:
+		w.handleTell(msg, cmd)
+	case command.TellAll:
+		w.handleTellAll(msg, cmd)
+	case command.Wear:
+		w.handleWear(msg, cmd)
+	case command.Who:
+		w.handleWho(msg, cmd)
+	default:
+		log.Warn().Msgf("world.HandleIncomingMessage: UNHANDLED command %T", msg.Command)
+		msg.Fail(event.UnknownCommand)
+		return fmt.Errorf("unhandled command %T", msg.Command)
 	}
-	return
+	return w.save(msg)
 }
 
-func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) error {
-	handler := w.handlerMap[message.DecodeTypeName(msg.Message.Inner)]
-	if handler == nil {
-		log.Printf("world.HandleIncomingMessage: UNHANDLED messageType: %v, body %s", msg.Message.Inner, msg.Message)
-		// TODO error handling
-		msg.Client.Send(message.ErrorResponse{
-			Success:    false,
-			ResultCode: "UNKNOWN_MESSAGE_TYPE",
-		})
-		return errors.New("unhandled message type")
+// save persists the player after a handler ran.
+// TODO what if the player has changed some other player somehow?
+// (stabbed them, stole from them, etc.) See #32.
+// Saving after every single message is stupid but free against a map; the
+// Store interface means a real implementation can batch or debounce without
+// world/ knowing.
+func (w *World) save(msg *gameserver.HandlerParameter) error {
+	if msg.Player == nil {
+		return nil
 	}
-	handler(msg)
-	// if the player object has changed, persist the changes to the database
-	// TODO what if the player has changed some other player somehow?
-	// (stabbed them, stole from them, etc.)
-	// See #32
-	// TODO player persistence
-	// keeping this as-is (stupid) for now
-	if msg.Player != nil {
-		if err := w.store.Save(msg.Player.Record()); err != nil {
-			return err
-		}
-	}
-	return nil
+	return w.store.Save(msg.Player.Record())
 }

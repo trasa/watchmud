@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud-message/direction"
+	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/spaces"
 )

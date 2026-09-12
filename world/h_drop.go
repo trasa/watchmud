@@ -2,22 +2,23 @@ package world
 
 import (
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 )
 
-func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
-	dropReq := msg.Message.GetDropRequest()
-	if dropReq.Target == "" {
-		msg.Player.Send(message.DropResponse{
-			Success: false, ResultCode: "NO_TARGET",
-		})
+func (w *World) handleDrop(msg *gameserver.HandlerParameter, cmd command.Drop) {
+	if cmd.Target == "" {
+		msg.Fail(event.NoTarget)
 		return
 	}
 
-	target, err := parseTarget(dropReq.Target)
+	target, err := parseTarget(cmd.Target)
 	if err != nil {
-		msg.Player.Send(message.DropResponse{Success: false, ResultCode: "PARSE_ERROR_" + err.Error()})
+		// the parse error is for us, not for the player: it's things like
+		// TOO_MANY_DOTS and strconv's complaint about "x.knife".
+		log.Debug().Err(err).Str("player", msg.Player.Name()).Str("target", cmd.Target).Msg("drop: can't parse target")
+		msg.Fail(event.ParseError)
 		return
 	}
 
@@ -32,10 +33,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 	// SORT by in use
 
 	if len(objectsToDrop) == 0 {
-		// not found
-		msg.Player.Send(message.DropResponse{
-			Success: false, ResultCode: "TARGET_NOT_FOUND",
-		})
+		msg.Fail(event.TargetNotFound)
 		return
 	}
 
@@ -48,38 +46,25 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter) {
 
 	// is the object being held or otherwise in use?
 	if msg.Player.Slots().IsItemInUse(objectToDrop) {
-		// can't drop for 'reason'
-		msg.Player.Send(message.DropResponse{
-			Success: false, ResultCode: "TARGET_IN_USE",
-		})
+		msg.Fail(event.TargetInUse)
 		return
 	}
 
 	// add to room
 	if err := room.Inventory.Add(objectToDrop); err != nil {
 		// failed to add to room..
-		log.Error().Msgf("Drop: Error while adding to room, player %s id %s; %s",
-			msg.Player.Name(),
-			objectToDrop.Id,
-			err)
-		msg.Player.Send(message.DropResponse{
-			Success: false, ResultCode: "ADD_TO_ROOM_ERROR",
-		})
+		log.Error().Err(err).Str("player", msg.Player.Name()).Stringer("id", objectToDrop.Id).Msg("drop: error while adding to room")
+		msg.Fail(event.AddToRoomError)
 		return
 	}
 
 	// remove from player
 	msg.Player.Inventory().Remove(objectToDrop)
-	// success
-	msg.Player.Send(message.DropResponse{
-		Success: true, ResultCode: "OK",
+
+	// one event, both audiences: the renderer says "Dropped." to the actor
+	// and "bob drops a knife." to everyone else.
+	room.Send(event.Dropped{
+		Actor: msg.Player.Name(),
+		Item:  objectToDrop.Definition.ShortDescription, // rendered to clients, so use "a knife"
 	})
-	// tell everybody about it
-	room.SendExcept(msg.Player,
-		message.DropNotification{
-			Success:    true,
-			ResultCode: "OK",
-			PlayerName: msg.Player.Name(),
-			Target:     objectToDrop.Definition.ShortDescription, // rendered to clients, so use "a knife"
-		})
 }

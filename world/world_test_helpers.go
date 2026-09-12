@@ -7,8 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	message "github.com/trasa/watchmud-message"
-	"github.com/trasa/watchmud-message/slot"
+	"github.com/trasa/watchmud/command"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/memstore"
@@ -16,6 +15,7 @@ import (
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/rules"
+	"github.com/trasa/watchmud/slot"
 	"github.com/trasa/watchmud/spaces"
 	"github.com/trasa/watchmud/zonereset"
 )
@@ -37,11 +37,10 @@ func sent[T any](t *testing.T, r *player.Recorder, i int) T {
 	return v
 }
 
-func (s *worldTestSuite) handlerParameter(req interface{}) *gameserver.HandlerParameter {
+// handlerParameter builds the handler input for a command.
+func (s *worldTestSuite) handlerParameter(cmd command.Command) *gameserver.HandlerParameter {
 	s.T().Helper()
-	msg, err := message.NewGameMessage(req)
-	s.Require().NoError(err)
-	return gameserver.NewHandlerParameter(s.c, msg)
+	return gameserver.NewHandlerParameter(s.c, cmd)
 }
 
 func (s *worldTestSuite) SetupTest() {

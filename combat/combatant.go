@@ -29,8 +29,6 @@ type Combatant interface {
 	Dead() bool
 }
 
-type CombatantType int
-
 type DamageType int
 
 const (

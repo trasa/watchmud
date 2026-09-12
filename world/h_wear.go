@@ -1,16 +1,17 @@
 package world
 
 import (
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 )
 
-func (w *World) handleWear(msg *gameserver.HandlerParameter) {
-	objectsToWear := msg.Player.Inventory().GetByNameOrAlias(msg.Message.GetWearRequest().Target)
+func (w *World) handleWear(msg *gameserver.HandlerParameter, cmd command.Wear) {
+	objectsToWear := msg.Player.Inventory().GetByNameOrAlias(cmd.Target)
 
 	if len(objectsToWear) == 0 {
 		// nothing in inventory with that name
-		msg.Player.Send(message.WearResponse{Success: false, ResultCode: "TARGET_NOT_FOUND"})
+		msg.Fail(event.TargetNotFound)
 		return
 	}
 
@@ -18,7 +19,7 @@ func (w *World) handleWear(msg *gameserver.HandlerParameter) {
 	objectToWear := objectsToWear[0]
 
 	if !objectToWear.Definition.Wearable() {
-		msg.Player.Send(message.WearResponse{Success: false, ResultCode: "CANT_WEAR_THAT"})
+		msg.Fail(event.CantWearThat)
 		return
 	}
 
@@ -29,12 +30,12 @@ func (w *World) handleWear(msg *gameserver.HandlerParameter) {
 
 	// is something else already in the location?
 	if msg.Player.Slots().IsSlotInUse(loc) {
-		msg.Player.Send(message.WearResponse{Success: false, ResultCode: "IN_USE"})
+		msg.Fail(event.InUse)
 		return
 	}
 
 	// otherwise add the item to the location
 	// TODO fix this so that Set() only takes one thing?
-	msg.Player.Slots().Set(objectToWear.Definition.WearLocation, objectToWear)
-	msg.Player.Send(message.WearResponse{Success: true, ResultCode: "OK"})
+	msg.Player.Slots().Set(loc, objectToWear)
+	msg.Player.Send(event.Worn{})
 }

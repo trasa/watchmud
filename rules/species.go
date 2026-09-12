@@ -3,7 +3,7 @@ package rules
 // A Species is the broad kind of creature: Elf, Dwarf, etc. It carries the
 // traits shared by every member, however specialized their lineage.
 type Species struct {
-	Id         string     `json:"id""`
+	Id         string     `json:"id"`
 	Name       string     `json:"name"`
 	OwnBonuses Abilities  `json:"bonuses"`
 	Lineages   []*Lineage `json:"lineages"`

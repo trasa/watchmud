@@ -1,31 +1,20 @@
 package world
 
 import (
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 )
 
-func (w *World) handleSay(msg *gameserver.HandlerParameter) {
-	sayRequest := msg.Message.GetSayRequest()
+func (w *World) handleSay(msg *gameserver.HandlerParameter, cmd command.Say) {
 	room := w.playerRooms.playerToRoom[msg.Player]
 	if room == nil {
 		// player isn't in a room... not much to say really.
-		// TODO error handling
-		msg.Player.Send(message.SayResponse{
-			Success:    false,
-			ResultCode: "NOT_IN_A_ROOM",
-		})
-	} else {
-		room.SendExcept(msg.Player, message.SayNotification{
-			Success:    true,
-			ResultCode: "OK",
-			Value:      sayRequest.Value,
-			Sender:     msg.Player.Name(),
-		})
-		msg.Player.Send(message.SayResponse{
-			Success:    true,
-			ResultCode: "OK",
-			Value:      sayRequest.Value,
-		})
+		msg.Fail(event.NotInARoom)
+		return
 	}
+	room.Send(event.Said{
+		Speaker: msg.Player.Name(),
+		Value:   cmd.Value,
+	})
 }

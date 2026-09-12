@@ -5,7 +5,8 @@ import (
 	"uuid"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/player"
 )
 
@@ -35,7 +36,8 @@ func (s *handleTellAllSuite) SetupTest() {
 
 func (s *handleTellAllSuite) TestSuccess() {
 
-	s.w.handleTellAll(s.handlerParameter(message.TellAllRequest{Value: "hi"}))
+	cmd := command.TellAll{Value: "hi"}
+	s.w.handleTellAll(s.handlerParameter(cmd), cmd)
 
 	// did we tell otherPlayer?
 	s.Assert().Equal(1, len(s.otherRec.Sent))
@@ -43,12 +45,14 @@ func (s *handleTellAllSuite) TestSuccess() {
 
 	// sender should have gotten response but NOT part of the send to all players
 	s.Assert().Equal(1, len(s.r.Sent))
-	senderResponse := sent[message.TellAllResponse](s.T(), s.r, 0)
-	s.Assert().True(senderResponse.Success)
+	shouted := sent[event.Shouted](s.T(), s.r, 0)
+	s.Assert().Equal("testdood", shouted.Speaker)
+	s.Assert().Equal("hi", shouted.Value)
 }
 
 func (s *handleTellAllSuite) TestNoValue() {
-	s.w.handleTellAll(s.handlerParameter(message.TellAllRequest{Value: ""}))
+	cmd := command.TellAll{Value: ""}
+	s.w.handleTellAll(s.handlerParameter(cmd), cmd)
 
 	// did we tell otherPlayer? (should be 0)
 	s.Assert().Equal(0, len(s.otherRec.Sent))
@@ -57,6 +61,6 @@ func (s *handleTellAllSuite) TestNoValue() {
 	// sender should have gotten response but NOT part of the send to all players
 	s.Assert().Equal(1, len(s.r.Sent))
 
-	senderResponse := sent[message.TellAllResponse](s.T(), s.r, 0)
-	s.Assert().False(senderResponse.Success)
+	failed := sent[event.Failed](s.T(), s.r, 0)
+	s.Assert().Equal(event.NoValue, failed.Code)
 }

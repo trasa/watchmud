@@ -5,7 +5,8 @@ import (
 	"uuid"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/player"
 )
 
@@ -22,25 +23,23 @@ func (s *WhoSuite) SetupTest() {
 }
 
 func (s *WhoSuite) TestSuccess() {
-	s.w.handleWho(s.handlerParameter(message.WhoRequest{}))
+	s.w.handleWho(s.handlerParameter(command.Who{}), command.Who{})
 
-	resp := sent[message.WhoResponse](s.T(), s.r, 0)
-	s.Assert().True(resp.Success)
-	s.Assert().Equal(1, len(resp.PlayerInfo))
-	s.Assert().Equal("testdood", resp.PlayerInfo[0].PlayerName)
-	s.Assert().NotEqual("", resp.PlayerInfo[0].ZoneName)
-	s.Assert().NotEqual("", resp.PlayerInfo[0].RoomName)
+	resp := sent[event.Who](s.T(), s.r, 0)
+	s.Assert().Equal(1, len(resp.Players))
+	s.Assert().Equal("testdood", resp.Players[0].PlayerName)
+	s.Assert().NotEqual("", resp.Players[0].ZoneName)
+	s.Assert().NotEqual("", resp.Players[0].RoomName)
 }
 
 func (s *WhoSuite) TestNotInRoom() {
 	s.w.playerRooms.Remove(s.p)
 
-	s.w.handleWho(s.handlerParameter(message.WhoRequest{}))
+	s.w.handleWho(s.handlerParameter(command.Who{}), command.Who{})
 
-	resp := sent[message.WhoResponse](s.T(), s.r, 0)
-	s.Assert().True(resp.Success)
-	s.Assert().Equal("", resp.PlayerInfo[0].ZoneName)
-	s.Assert().Equal("", resp.PlayerInfo[0].RoomName)
+	resp := sent[event.Who](s.T(), s.r, 0)
+	s.Assert().Equal("", resp.Players[0].ZoneName)
+	s.Assert().Equal("", resp.Players[0].RoomName)
 }
 
 func (s *WhoSuite) TestSort() {
@@ -48,12 +47,12 @@ func (s *WhoSuite) TestSort() {
 	otherPlayer := player.NewTestPlayer(uuid.New(), "other", rec)
 	s.w.AddPlayer(otherPlayer)
 
-	s.w.handleWho(s.handlerParameter(message.WhoRequest{}))
-	response := sent[message.WhoResponse](s.T(), s.r, 0)
+	s.w.handleWho(s.handlerParameter(command.Who{}), command.Who{})
+	response := sent[event.Who](s.T(), s.r, 0)
 
 	// TODO what sort order is the command working with?
-	s.Assert().Equal("other", response.PlayerInfo[0].PlayerName)
-	s.Assert().Equal("testdood", response.PlayerInfo[1].PlayerName)
+	s.Assert().Equal("other", response.Players[0].PlayerName)
+	s.Assert().Equal("testdood", response.Players[1].PlayerName)
 }
 
 func (s *WhoSuite) TestLogoutRemovesPlayer() {
@@ -63,8 +62,8 @@ func (s *WhoSuite) TestLogoutRemovesPlayer() {
 	s.w.AddPlayer(otherPlayer)
 	s.w.RemovePlayer(otherPlayer)
 
-	s.w.handleWho(s.handlerParameter(message.WhoRequest{}))
+	s.w.handleWho(s.handlerParameter(command.Who{}), command.Who{})
 
-	response := sent[message.WhoResponse](s.T(), s.r, 0)
-	s.Assert().Equal("testdood", response.PlayerInfo[0].PlayerName)
+	response := sent[event.Who](s.T(), s.r, 0)
+	s.Assert().Equal("testdood", response.Players[0].PlayerName)
 }

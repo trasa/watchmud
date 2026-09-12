@@ -12,7 +12,8 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	message "github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
 )
@@ -91,12 +92,13 @@ func (c *conn) Send(msg any) {
 // which makes it distinctive from player.Sender.Send.
 // Hooks into the login state signaling completion of login/create.
 func (c *conn) send(msg any) error {
-	switch m := msg.(type) {
-	case message.LoginResponse:
-		c.signalAuth(m.Success)
+	// the login conversation, below, is waiting on these four.
+	switch msg.(type) {
+	case event.LoggedIn, event.PlayerCreated:
+		c.signalAuth(true)
 		return nil
-	case message.CreatePlayerResponse:
-		c.signalAuth(m.Success)
+	case event.LoginFailed, event.CreateFailed:
+		c.signalAuth(false)
 		return nil
 	}
 	select {
@@ -131,9 +133,7 @@ func (c *conn) login() bool {
 		if !ok {
 			return false // disconnected
 		}
-		if err := c.emit(message.LoginRequest{PlayerName: name}); err != nil {
-			return false
-		}
+		c.emit(command.Login{Name: name})
 		if c.awaitAuth() {
 			return true
 		}
@@ -143,9 +143,7 @@ func (c *conn) login() bool {
 			return false
 		}
 		if strings.HasPrefix(strings.ToLower(yn), "y") {
-			if err := c.emit(message.CreatePlayerRequest{PlayerName: name}); err != nil {
-				return false
-			}
+			c.emit(command.CreatePlayer{Name: name})
 			if c.awaitAuth() {
 				return true
 			}
@@ -155,22 +153,10 @@ func (c *conn) login() bool {
 	}
 }
 
-// emit wraps a request and hands it to the game server.
+// emit hands a command to the game server.
 // It is the only path from this connection into the world.
-func (c *conn) emit(req any) error {
-	gm, err := message.NewGameMessage(req)
-	if err != nil {
-		// log AND error, because this is a bad programming error (missing entry in table)
-		// and we want that to stand out...
-		log.Error().Err(err).Msgf("telnet %s: cannot wrap %T", c.netConn.RemoteAddr(), req)
-		return err
-	}
-	c.dispatch(gm)
-	return nil
-}
-
-func (c *conn) dispatch(gm *message.GameMessage) {
-	c.gs.Receive(gameserver.NewHandlerParameter(c, gm))
+func (c *conn) emit(cmd command.Command) {
+	c.gs.Receive(gameserver.NewHandlerParameter(c, cmd))
 }
 
 // prompt writes text with no trailing newline, then waits
@@ -280,26 +266,15 @@ func (c *conn) commandLoop() {
 		if line == "" {
 			continue // bare Enter: ignore. Note this is the opposite of prompt(), which re-asks. Different context, different policy.
 		}
-		tokens := message.Tokenize(line)
-		switch strings.ToLower(tokens[0]) {
-		case "quit":
-			_ = c.emit(message.LogoutRequest{Cause: "quit"})
-			c.Send("Goodbye.\r\n")
-			return
-
-		case "drop":
-			// TODO special case handling because the message defn doesn't protect against invalid drop messages
-			// fix later.
-			if len(tokens) < 2 {
-				c.Send("Drop what?\r\n")
-				continue
-			}
-		}
-		gm, err := message.TranslateLineToMessage(tokens)
+		cmd, err := parseCommand(strings.Fields(line))
 		if err != nil {
 			c.Send(err.Error() + "\r\n")
 			continue
 		}
-		c.dispatch(gm)
+		c.emit(cmd)
+		if _, quitting := cmd.(command.Logout); quitting {
+			c.Send("Goodbye.\r\n")
+			return
+		}
 	}
 }

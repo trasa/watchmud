@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/trasa/watchmud-message/direction"
+	"github.com/trasa/watchmud/direction"
 )
 
 func TestRoomExits_none(t *testing.T) {

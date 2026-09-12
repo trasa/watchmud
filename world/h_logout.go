@@ -2,28 +2,23 @@ package world
 
 import (
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 )
 
-func (w *World) handleLogout(msg *gameserver.HandlerParameter) /*error */ {
-	// TODO: need to add error handling
+func (w *World) handleLogout(msg *gameserver.HandlerParameter, cmd command.Logout) {
 	if msg.Player == nil {
-		return /*nil*/
+		return
 	}
-	log.Info().Msgf("Player %s Logout", msg.Player.Name())
+	log.Info().Str("player", msg.Player.Name()).Str("cause", cmd.Cause).Msg("player logout")
 	playerRoom := w.getRoomContainingPlayer(msg.Player)
 	w.RemovePlayer(msg.Player)
 	if playerRoom != nil {
-		playerRoom.Send(message.LogoutNotification{
-			Success:    true,
-			ResultCode: "OK",
-			PlayerName: msg.Player.Name(),
-		})
+		// the player is already out of the room, so this reaches everyone else
+		playerRoom.Send(event.LoggedOut{Actor: msg.Player.Name()})
 	}
 	if err := w.store.Save(msg.Player.Record()); err != nil {
 		log.Error().Err(err).Msg("Error saving player on logout")
-		return /*err*/
 	}
-	return /*nil*/
 }

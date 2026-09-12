@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 )
 
 type HandleGetSuite struct {
@@ -24,11 +25,12 @@ func (s *HandleGetSuite) TestSuccess() {
 	s.Assert().Equal(2, len(s.w.StartRoom.Inventory.GetAll()))
 	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
 
-	s.w.handleGet(s.handlerParameter(message.GetRequest{Target: "knife"}))
+	cmd := command.Get{Target: "knife"}
+	s.w.handleGet(s.handlerParameter(cmd), cmd)
 
 	s.Assert().Equal(1, len(s.r.Sent))
-	resp := sent[message.GetResponse](s.T(), s.r, 0)
-	s.Assert().True(resp.Success)
+	got := sent[event.Got](s.T(), s.r, 0)
+	s.Assert().Equal("testdood", got.Actor)
 
 	// player has one item
 	s.Assert().Equal(1, len(s.p.Inventory().GetAll()))
@@ -41,11 +43,11 @@ func (s *HandleGetSuite) TestSuccess() {
 }
 
 func (s *HandleGetSuite) TestAliasTarget() {
-	s.w.handleGet(s.handlerParameter(message.GetRequest{Target: "iron"}))
+	cmd := command.Get{Target: "iron"}
+	s.w.handleGet(s.handlerParameter(cmd), cmd)
 
 	s.Assert().Equal(1, len(s.r.Sent))
-	response := sent[message.GetResponse](s.T(), s.r, 0)
-	s.Assert().True(response.Success)
+	sent[event.Got](s.T(), s.r, 0)
 	s.Assert().Equal(1, len(s.p.Inventory().GetAll()))
 
 	found := s.p.Inventory().GetByNameOrAlias("helmet")
@@ -55,12 +57,13 @@ func (s *HandleGetSuite) TestAliasTarget() {
 }
 
 func (s *HandleGetSuite) TestTargetNotInRoom() {
-	s.w.handleGet(s.handlerParameter(message.GetRequest{Target: "bag_of_coins"}))
+	cmd := command.Get{Target: "bag_of_coins"}
+	s.w.handleGet(s.handlerParameter(cmd), cmd)
 
 	s.Assert().Equal(1, len(s.r.Sent))
-	response := sent[message.GetResponse](s.T(), s.r, 0)
-	s.Assert().False(response.Success)
-	s.Assert().Equal("TARGET_NOT_FOUND", response.GetResultCode())
+	failed := sent[event.Failed](s.T(), s.r, 0)
+	s.Assert().Equal("get", failed.Verb)
+	s.Assert().Equal(event.TargetNotFound, failed.Code)
 
 	// player has zero items still
 	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
@@ -70,12 +73,12 @@ func (s *HandleGetSuite) TestTargetNotInRoom() {
 }
 
 func (s *HandleGetSuite) TestNoTarget() {
-	s.w.handleGet(s.handlerParameter(message.GetRequest{Target: ""}))
+	cmd := command.Get{Target: ""}
+	s.w.handleGet(s.handlerParameter(cmd), cmd)
 
 	s.Assert().Equal(1, len(s.r.Sent))
-	response := sent[message.GetResponse](s.T(), s.r, 0)
-	s.Assert().False(response.Success)
-	s.Assert().Equal("NO_TARGET", response.GetResultCode())
+	failed := sent[event.Failed](s.T(), s.r, 0)
+	s.Assert().Equal(event.NoTarget, failed.Code)
 
 	// player has zero items, start room still has 2
 	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))

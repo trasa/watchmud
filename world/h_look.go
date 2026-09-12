@@ -1,22 +1,16 @@
 package world
 
 import (
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
 	"github.com/trasa/watchmud/gameserver"
 )
 
-func (w *World) handleLook(msg *gameserver.HandlerParameter) {
+func (w *World) handleLook(msg *gameserver.HandlerParameter, cmd command.Look) {
 	// for now, only "look" (no args) is supported
 	// this will show the player the room they are in currently (if any)
-
-	// get room for player
 	playerRoom := w.getRoomContainingPlayer(msg.Player)
-	resp := message.LookResponse{
-		Success: true, ResultCode: "OK",
-	}
 	if playerRoom == nil {
 		playerRoom = w.VoidRoom
 	}
-	resp.RoomDescription = playerRoom.DescriptionExcept(msg.Player)
-	msg.Player.Send(resp)
+	msg.Player.Send(playerRoom.DescriptionExcept(msg.Player))
 }

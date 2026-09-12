@@ -3,18 +3,19 @@ package world
 import (
 	"sort"
 
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
 )
 
-func (w *World) handleWho(msg *gameserver.HandlerParameter) {
+func (w *World) handleWho(msg *gameserver.HandlerParameter, cmd command.Who) {
 	// in the future we'll need to split this up by
 	// rank, security, other things, but for now show
 	// everybody everything.
 
 	// playerName, (level, class, other things we don't have yet), zoneName, roomName
-	info := []*message.WhoResponse_PlayerInfo{}
+	entries := []event.WhoEntry{}
 	w.playerList.Iter(func(p *player.Player) {
 		r := w.getRoomContainingPlayer(p)
 		var zoneName, roomName string
@@ -22,7 +23,7 @@ func (w *World) handleWho(msg *gameserver.HandlerParameter) {
 			zoneName = r.Zone.Name
 			roomName = r.Name
 		}
-		info = append(info, &message.WhoResponse_PlayerInfo{
+		entries = append(entries, event.WhoEntry{
 			PlayerName: p.Name(),
 			ZoneName:   zoneName,
 			RoomName:   roomName,
@@ -30,14 +31,9 @@ func (w *World) handleWho(msg *gameserver.HandlerParameter) {
 	})
 
 	// sort results by name
-	sort.Slice(info, func(i, j int) bool {
-		return info[i].PlayerName < info[j].PlayerName
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].PlayerName < entries[j].PlayerName
 	})
 
-	// TODO error handling
-	msg.Player.Send(message.WhoResponse{
-		Success:    true,
-		ResultCode: "OK",
-		PlayerInfo: info,
-	})
+	msg.Player.Send(event.Who{Players: entries})
 }

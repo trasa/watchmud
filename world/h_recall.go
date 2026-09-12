@@ -1,11 +1,11 @@
 package world
 
 import (
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
 	"github.com/trasa/watchmud/gameserver"
 )
 
-func (w *World) handleRecall(msg *gameserver.HandlerParameter) {
+func (w *World) handleRecall(msg *gameserver.HandlerParameter, cmd command.Recall) {
 
 	// TODO determine if the player is allowed to do this command
 
@@ -14,9 +14,5 @@ func (w *World) handleRecall(msg *gameserver.HandlerParameter) {
 	w.movePlayerMagically(msg.Player, w.StartRoom)
 
 	// move the player to the "recall room"
-	msg.Player.Send(message.RecallResponse{
-		Success:         true,
-		ResultCode:      "OK",
-		RoomDescription: w.StartRoom.DescriptionExcept(msg.Player),
-	})
+	msg.Player.Send(w.StartRoom.DescriptionExcept(msg.Player))
 }

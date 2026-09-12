@@ -5,8 +5,8 @@ import (
 	"uuid"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/slot"
 )
 
 type PlayerSuite struct {

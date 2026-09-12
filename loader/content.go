@@ -8,12 +8,12 @@ import (
 	"slices"
 	"time"
 
-	"github.com/trasa/watchmud-message/direction"
-	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/behavior"
+	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/rules"
+	"github.com/trasa/watchmud/slot"
 	"github.com/trasa/watchmud/spaces"
 	"github.com/trasa/watchmud/zonereset"
 )

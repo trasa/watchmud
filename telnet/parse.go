@@ -1,0 +1,116 @@
+package telnet
+
+import (
+	"errors"
+	"strings"
+
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/direction"
+	"github.com/trasa/watchmud/slot"
+)
+
+// parseCommand turns a line the player typed into a command.
+//
+// It is the counterpart to render.go: one chokepoint in, one chokepoint out,
+// and no game logic in either.
+//
+// Target strings are passed through raw -- world.parseTarget owns the "all",
+// "all.knife", "2.knife", "20 coins" grammar, and duplicating that in a
+// transport is how the two drift apart. An empty target is not an error here
+// either; the handler answers NO_TARGET, which is why a bare "drop" no longer
+// needs a special case (it used to panic the process).
+//
+// The returned error is text to show the player, not a fault.
+func parseCommand(tokens []string) (command.Command, error) {
+	if len(tokens) == 0 {
+		return nil, nil
+	}
+	verb := strings.ToLower(tokens[0])
+	rest := strings.Join(tokens[1:], " ")
+
+	switch verb {
+	case "quit":
+		return command.Logout{Cause: "quit"}, nil
+
+	case "look", "l":
+		return command.Look{Target: rest}, nil
+
+	case "n", "north", "s", "south", "e", "east", "w", "west", "u", "up", "d", "down":
+		dir, err := direction.Parse(verb)
+		if err != nil {
+			return nil, errors.New("You can't go that way.")
+		}
+		return command.Move{Direction: dir}, nil
+
+	case "exits", "exit", "ex":
+		return command.Exits{}, nil
+
+	case "recall":
+		return command.Recall{}, nil
+
+	case "get":
+		return command.Get{Target: rest}, nil
+
+	case "drop":
+		return command.Drop{Target: rest}, nil
+
+	case "wear":
+		return command.Wear{Target: rest}, nil
+
+	case "wield":
+		return command.Equip{Target: rest, Slot: slot.Wield}, nil
+
+	case "inv", "inventory", "i":
+		return command.Inventory{}, nil
+
+	case "equipment", "equip", "eq":
+		return command.ShowEquipment{}, nil
+
+	case "'", "say":
+		return command.Say{Value: rest}, nil
+
+	case "tell", "t":
+		if len(tokens) < 3 {
+			return nil, errors.New("usage: tell [somebody] [something]")
+		}
+		return command.Tell{
+			To:    tokens[1],
+			Value: strings.Join(tokens[2:], " "),
+		}, nil
+
+	case "tellall", "ta":
+		return command.TellAll{Value: rest}, nil
+
+	case "who":
+		return command.Who{}, nil
+
+	case "stat", "stats":
+		return command.Stat{}, nil
+
+	case "kill", "attack":
+		if len(tokens) < 2 {
+			return nil, errors.New("What do you want to attack?")
+		}
+		return command.Kill{Target: tokens[1]}, nil
+
+	case "restore":
+		if len(tokens) < 2 {
+			return nil, errors.New("Restore whom?")
+		}
+		return command.Restore{Target: tokens[1]}, nil
+
+	case "roomstatus":
+		return command.RoomStatus{}, nil
+
+	case "load": // load (mob|obj) [zone] id
+		switch len(tokens) {
+		case 3:
+			return command.Load{Type: tokens[1], Id: tokens[2]}, nil
+		case 4:
+			return command.Load{Type: tokens[1], Zone: tokens[2], Id: tokens[3]}, nil
+		default:
+			return nil, errors.New("try: `load (mob|obj) [zone] id`")
+		}
+	}
+	return nil, errors.New("Unknown request: " + tokens[0])
+}

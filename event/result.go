@@ -1,0 +1,82 @@
+// Package event is the game's outbound vocabulary: plain structs describing
+// what happened, sent to players and mobiles.
+//
+// Two rules keep this package honest:
+//
+//   - It is a leaf. It imports direction, slot and the standard library, and
+//     nothing else. No *player.Player, no *spaces.Room, no *object.Instance in
+//     a field -- only strings, ints and typed enums. spaces imports event, so
+//     anything more would be a cycle waiting to happen.
+//   - A success event carries its payload and nothing else. There is no
+//     Success bool and no ResultCode; failure is Failed, below.
+package event
+
+// ResultCode says why a command could not be carried out.
+//
+// The values are the strings world/ has always emitted, so
+// telnet/resultcode.go -- which maps them to player-facing text -- keeps
+// working unchanged.
+type ResultCode string
+
+const (
+	// targets
+	TargetNotFound    ResultCode = "TARGET_NOT_FOUND"
+	TargetNotGettable ResultCode = "TARGET_NOT_GETTABLE"
+	NoTarget          ResultCode = "NO_TARGET"
+
+	// carrying and wearing
+	TargetInUse   ResultCode = "TARGET_IN_USE"
+	InUse         ResultCode = "IN_USE"
+	LocationInUse ResultCode = "LOCATION_IN_USE"
+	CantWearThat  ResultCode = "CANT_WEAR_THAT"
+	CantWearThere ResultCode = "CANT_WEAR_THERE"
+	NoSlotGiven   ResultCode = "NO_SLOT_GIVEN"
+
+	// movement and combat
+	CantGoThatWay   ResultCode = "CANT_GO_THAT_WAY"
+	NoFightRoom     ResultCode = "NO_FIGHT_ROOM"
+	NoFight         ResultCode = "NO_FIGHT"
+	InAFight        ResultCode = "IN_A_FIGHT"
+	AlreadyFighting ResultCode = "ALREADY_FIGHTING"
+
+	// talking
+	ToPlayerNotFound ResultCode = "TO_PLAYER_NOT_FOUND"
+	NoValue          ResultCode = "NO_VALUE"
+
+	// nowhere at all. Three spellings of one broken state, kept because
+	// telnet/resultcode.go already renders all three the same way.
+	NotInRoom        ResultCode = "NOT_IN_ROOM"
+	NotInARoom       ResultCode = "NOT_IN_A_ROOM"
+	YouAreNotInARoom ResultCode = "YOU_ARE_NOT_IN_A_ROOM"
+
+	// builder commands: the audience is someone editing content/
+	UnknownType         ResultCode = "UNKNOWN_TYPE"
+	UnknownZone         ResultCode = "UNKNOWN_ZONE"
+	UnknownId           ResultCode = "UNKNOWN_ID"
+	UnknownDefinitionId ResultCode = "UNKNOWN_DEFINITION_ID"
+
+	// internal failures: the player did nothing wrong
+	AddToRoomError         ResultCode = "ADD_TO_ROOM_ERROR"
+	RemoveFromRoomError    ResultCode = "REMOVE_FROM_ROOM_ERROR"
+	AddRoomInventoryFailed ResultCode = "ADD_ROOM_INVENTORY_FAILED"
+	DataError              ResultCode = "DATA_ERROR"
+	InternalError          ResultCode = "INTERNAL_ERROR"
+
+	// the parser or the dispatcher, not a handler
+	ParseError     ResultCode = "PARSE_ERROR"
+	UnknownCommand ResultCode = "UNKNOWN_COMMAND"
+
+	// login. This reaches telnet/conn.go's login(), not the renderer: it is
+	// what drives the "No one by that name. Create them?" prompt.
+	NoSuchPlayer ResultCode = "PLAYER_LOGIN_FAILED"
+)
+
+// Failed is what a command produces when it cannot be carried out.
+//
+// Verb is the command the player typed. It is here because a code can mean
+// different things to different commands: TARGET_NOT_FOUND is "you don't see
+// that here" to get, and "you aren't carrying that" to drop.
+type Failed struct {
+	Verb string
+	Code ResultCode
+}

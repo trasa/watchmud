@@ -1,6 +1,6 @@
 package loader
 
-import "github.com/trasa/watchmud-message/direction"
+import "github.com/trasa/watchmud/direction"
 
 type roomFileEntry struct {
 	Id          string   `json:"id"`

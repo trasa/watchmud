@@ -5,10 +5,10 @@ import (
 	"uuid"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud-message/slot"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/slot"
 )
 
 // becomeCorpse if you are dead

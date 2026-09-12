@@ -5,7 +5,8 @@ import (
 	"uuid"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
 )
@@ -35,40 +36,35 @@ func (s *handleTellSuite) SetupTest() {
 	s.w.AddPlayer(s.receiver)
 }
 
-func (s *handleTellSuite) handlerParameter(value string) *gameserver.HandlerParameter {
-	msg, err := message.NewGameMessage(message.TellRequest{
-		ReceiverPlayerName: s.receiver.Name(),
-		Value:              value,
-	})
-	s.Assert().NoError(err)
-	return gameserver.NewHandlerParameter(s.senderConn, msg)
+func (s *handleTellSuite) tell(value string) {
+	s.T().Helper()
+	cmd := command.Tell{To: s.receiver.Name(), Value: value}
+	s.w.handleTell(gameserver.NewHandlerParameter(s.senderConn, cmd), cmd)
 }
 
 func (s *handleTellSuite) TestHandleTell() {
-	s.w.handleTell(s.handlerParameter("hi"))
+	s.tell("hi")
 
-	// assert tell to receiver
+	// one event, delivered to both ends of the conversation
 	s.Assert().Equal(1, len(s.receiverRec.Sent))
-	recdMessage := s.receiverRec.Sent[0].(message.TellNotification)
-	s.Assert().Equal(s.sender.Name(), recdMessage.Sender)
-	s.Assert().Equal("hi", recdMessage.Value)
+	recd := s.receiverRec.Sent[0].(event.Told)
+	s.Assert().Equal(s.sender.Name(), recd.From)
+	s.Assert().Equal(s.receiver.Name(), recd.To)
+	s.Assert().Equal("hi", recd.Value)
 
-	// assert tell-response to sender
 	s.Assert().Equal(1, len(s.senderRec.Sent))
-	response := s.senderRec.Sent[0].(message.TellResponse)
-	s.Assert().Equal("OK", response.ResultCode)
-	s.Assert().True(response.Success)
+	s.Assert().Equal(recd, s.senderRec.Sent[0].(event.Told))
 }
 
 func (s *handleTellSuite) ReceiverNotFound() {
 	s.w.RemovePlayer(s.receiver)
 
 	// act
-	s.w.handleTell(s.handlerParameter("hi"))
+	s.tell("hi")
 
-	// assert tell-response to sender
+	// assert failure to sender
 	s.Assert().Equal(1, len(s.senderRec.Sent))
-	response := s.senderRec.Sent[0].(message.TellResponse)
-	s.Assert().Equal("TO_PLAYER_NOT_FOUND", response.ResultCode)
-	s.Assert().False(response.Success)
+	failed := s.senderRec.Sent[0].(event.Failed)
+	s.Assert().Equal("tell", failed.Verb)
+	s.Assert().Equal(event.ToPlayerNotFound, failed.Code)
 }

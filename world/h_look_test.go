@@ -5,7 +5,8 @@ import (
 	"uuid"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/player"
 )
 
@@ -25,13 +26,12 @@ func (s *handleLookSuite) SetupTest() {
 }
 
 func (s *handleLookSuite) TestSuccess() {
+	cmd := command.Look{}
+	s.w.handleLook(s.handlerParameter(cmd), cmd)
 
-	s.w.handleLook(s.handlerParameter(message.LookResponse{}))
-
-	response := sent[message.LookResponse](s.T(), s.r, 0)
-	s.Assert().True(response.Success)
-	s.Assert().NotNil(response.RoomDescription.Name)
-	s.Assert().NotNil(response.RoomDescription.Description)
-	s.Assert().Equal(1, len(response.RoomDescription.Players))
-	s.Assert().Equal("other", response.RoomDescription.Players[0])
+	desc := sent[event.RoomDescription](s.T(), s.r, 0)
+	s.Assert().NotEmpty(desc.Name)
+	s.Assert().NotEmpty(desc.Description)
+	s.Assert().Equal(1, len(desc.Players))
+	s.Assert().Equal("other", desc.Players[0])
 }

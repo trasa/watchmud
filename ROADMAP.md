@@ -2,10 +2,10 @@
 
 ## Status
 
-**Phases 0-4 are complete** (September 11 2026). The server is a working telnet MUD:
-`make run`, then `telnet localhost 4000`, create a character, and play. Phase 5 -- the
-protobuf decision -- is next, and the `telnet/render.go` type switch is the evidence it
-was waiting for.
+**Phases 0-5 are complete** (September 12 2026). The server is a working telnet MUD:
+`make run`, then `telnet localhost 4000`, create a character, and play. Protobuf is gone;
+the vocabulary is `command/` in and `event/` out. Phase 6 -- finishing lineage/species --
+is next.
 
 The Context section below describes the tree as it was in September 2026, before any of
 this landed. It is kept for its reasoning, not as a description of the present.
@@ -322,17 +322,61 @@ one in play. Treat combat as structurally sound and behaviourally absent.
 
 ## Phase 5 — Decide protobuf's fate
 
-Now, with the renderer written, judge it on evidence rather than taste. Protobuf earns its
-place only if you want a second non-text transport (a web client, GMCP structured data). If
-telnet is the only consumer, `message.GameMessage`'s oneof wrapper and
-`message.DecodeTypeName` string-keyed dispatch are pure overhead — and every `copylocks`
-error from Phase 0 is a symptom of value-copying types that were never meant to be copied.
+**Decided: it goes. DONE September 12 2026.** Telnet was the only consumer, so the
+`GameMessage` oneof wrapper and `DecodeTypeName` string-keyed dispatch were pure overhead,
+and every `copylocks` finding from Phase 0 was a symptom of value-copying types that were
+never meant to be copied.
 
-If it goes, the path is mechanical and the blast radius is known: 39 files in `world/`, 6 in
-`spaces/`, 4 in `object/`. Plain structs in a new `event` (out) and `command` (in) package;
-`world.handlerMap` keys on a real type or enum instead of a decoded string; the renderer's
-type switch is retargeted; `github.com/trasa/watchmud-message` and all of protobuf/gRPC leave
-`go.mod`. `rpc/` and `web/` get deleted here if they haven't already.
+`command/` (in) and `event/` (out) are plain Go structs. `make check` — fmt-check, vet and
+test — is green for the first time in the project's history, which is the signal the
+value-copying is actually gone rather than hidden.
+
+Where it differed from the sketch above:
+
+- **Three shape decisions mattered more than the mechanical conversion**, and were taken
+  before the structs were written rather than discovered afterwards:
+  - **`Success bool` + `ResultCode string` did not survive.** A success event carries its
+    payload and nothing else; failure is a single `event.Failed{Verb, Code}` with a typed
+    `event.ResultCode`. `render.go` had ~25 cases each opening with
+    `if !m.Success { return failureText("<verb>", m.ResultCode) }` where the verb was a
+    per-case constant — a table pretending to be a switch. It is now one case. The verb
+    comes from `command.Command.Verb()` via `HandlerParameter.Fail`, so a handler never
+    repeats its own name, and the `"PARSE_ERROR_" + err.Error()` string-splicing (which
+    could put a raw `strconv` message in front of a player) is gone.
+  - **Response and Notification merged** wherever the difference was only audience.
+    `renderViolence` already took `self` and did exactly this. Drop, get, say, tell and
+    shout became one event each with an `Actor`, and look/move/recall — which had always
+    rendered identically — became one `event.RoomDescription`. Roughly half as many types,
+    and response/notification can no longer drift apart.
+  - **Naming is imperative in, past tense out**: `command.Drop` / `event.Dropped`, not
+    `DropRequest` / `DropResponse`, which stuttered inside packages already named for the
+    direction of travel.
+- **`world.handlerMap` became a type switch, not a typed key.** Handlers take their command
+  as a second parameter, so `msg.Message.GetDropRequest()` is gone from every one of them.
+  The cost is that a type switch has no exhaustiveness check — a missing case compiles fine
+  — so `world_unknownMessage_test.go` now covers the default arm.
+- **`direction/` and `slot/` moved into this repo** as top-level packages. They were always
+  domain types rather than wire types: `object`, `player` and `loader` imported them
+  directly, with no `message` involved. `message.FindMode` was deleted outright rather than
+  moved — `get` now passes a raw target string like every other command, which closes the
+  "two target grammars" problem the Phase 4 notes left open.
+- **The parser came home too.** `message.TranslateLineToMessage` became `telnet/parse.go`,
+  returning `(command.Command, error)`. `quit` folded in as `command.Logout`, and the
+  bare-`drop` bounds guard disappeared entirely: an empty target is a normal `NO_TARGET`
+  failure, so the input that used to panic the process is now just a command that fails.
+- **Three bugs surfaced, two of them pre-existing.** `server.dispatch` dereferenced
+  `msg.Message` unconditionally and panicked the process on the first converted command
+  (found by a live telnet session, not by any test — nothing in `world/`'s unit tests
+  reaches `server.dispatch`). Recall rendered as "alice leaves none!." because
+  `movePlayerMagically` moves with `direction.None`; that had always been true and is now
+  guarded in the renderer. And `rules/species.go`'s malformed `json:"id""` tag — the one
+  real vet finding hiding in the copylocks noise — is fixed.
+- **`go mod tidy` dropped testify to v1.2.2**, which has no `require.Greater`. The message
+  module had been raising it through MVS all along. Bumped to v1.11.1.
+- **Deleted along the way**: `handleDataRequest` (nothing had emitted a `DataRequest` since
+  the console client died), `combat.CombatantType` (a type with no values), and from
+  `go.mod`: `watchmud-message`, grpc, protobuf, genproto, and `gorilla/mux` — the last two
+  already had zero Go references, left over from the deleted `web/` and `rpc/`.
 
 ---
 
@@ -401,10 +445,6 @@ Named so they don't get rediscovered as surprises:
   admitting it has no index for "who is attacking X"; an `EndAllFightsWith(id)` is the fix.
 - **`Fight` snapshots `ZoneId`/`RoomId`** at the moment it starts, so a fight that somehow
   outlives its room notifies the wrong one. Same family as the location bookkeeping above.
-- **`combat.CombatantType` is a type with no values** left over from deleting `Type()`.
-  Delete it.
-- **`rules/species.go:6`** has a malformed struct tag (`json:"id""`) that `go vet` reports
-  separately from the copylocks noise -- the one vet finding that is a real bug.
 - **`server.handleLogin`** logs the error from `player.FromRecord` and then falls through
   and uses the player anyway.
 - **`world/settings.go`** is a single `VERBOSE_LOGGING` const, and logging is split between
@@ -427,8 +467,12 @@ Per phase:
   `content/world/sample`, `who`, `quit`, reconnect. Two simultaneous connections to confirm
   `say`/`tell` notifications reach the other session. Watch that mob wandering (10s pulse)
   and zone reset (3min lifetime in `zone_manifest.json`) still fire while a client is idle.
-- **5:** `make vet` should be green for the first time — that's the signal the protobuf
-  value-copying is actually gone, not just hidden.
+- **5: DONE.** `make check` (fmt-check + vet + test) is green — vet for the first time ever.
+  Verified live as well, with two simultaneous telnet sessions, because the merged
+  audience-aware events are exactly the thing a single-connection test cannot check: the
+  actor must see "Dropped." while the bystander sees "testdood drops knife." Both
+  `telnet/render_test.go` cases for that passed with their expected text **unchanged**
+  through the whole conversion, which is the evidence no player-visible string moved.
 - **7:** connect with tintin++ rather than raw telnet; verify negotiation, wrapping, color.
 
 Regression net worth adding early (cheap, and it makes every later phase safer): a table test

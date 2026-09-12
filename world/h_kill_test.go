@@ -5,7 +5,8 @@ import (
 	"uuid"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud-message"
+	"github.com/trasa/watchmud/command"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
 )
@@ -30,22 +31,20 @@ func (s *HandleKillSuite) SetupTest() {
 	s.c = gameserver.NewTestConn(s.p)
 }
 
-func (s *HandleKillSuite) handleParameter(target string) *gameserver.HandlerParameter {
-	msg, err := message.NewGameMessage(message.KillRequest{Target: target})
-	s.Assert().NoError(err)
-	return gameserver.NewHandlerParameter(s.c, msg)
+func (s *HandleKillSuite) kill(target string) {
+	s.T().Helper()
+	cmd := command.Kill{Target: target}
+	s.w.handleKill(gameserver.NewHandlerParameter(s.c, cmd), cmd)
 }
 
 func (s *HandleKillSuite) TestSuccess() {
 	_ /*mob*/, _ = s.w.StartRoom.FindMobile("target")
-	killHP := s.handleParameter("target")
 
-	s.w.handleKill(killHP)
+	s.kill("target")
 
 	s.Assert().Equal(1, len(s.r.Sent))
-	resp := s.r.Sent[0].(message.KillResponse)
-	s.Assert().True(resp.Success)
-	s.Assert().Equal("OK", resp.ResultCode)
+	attacking := s.r.Sent[0].(event.Attacking)
+	s.Assert().Equal("Target Drone", attacking.Target)
 
 	//s.Assert().True(s.w.fightLedger.IsFighting(s.p))
 	//s.Assert().Equal(mob, s.w.fightLedger.GetFight(s.p).Fightee)

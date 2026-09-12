@@ -14,6 +14,9 @@ import (
 // verb is the command the player typed. Most codes mean the same thing
 // everywhere; the few that don't get a "verb/CODE" entry that wins.
 func failureText(verb, code string) string {
+	if code == "" {
+		return "You can't do that.\n"
+	}
 	if s, ok := failureByVerb[verb+"/"+code]; ok {
 		return s + "\n"
 	}
@@ -39,10 +42,17 @@ var failureByVerb = map[string]string{
 	"equip/TARGET_NOT_FOUND": "You aren't carrying that.",
 	"drop/NO_TARGET":         "Drop what?",
 	"get/NO_TARGET":          "Get what?",
+	"wear/NO_TARGET":         "Wear what?",
+	"equip/NO_TARGET":        "Wield what?",
 	"equip/NO_SLOT_GIVEN":    "Wield it where?",
 }
 
 var failureByCode = map[string]string{
+	// the parser and the dispatcher, not a handler
+	"PARSE_ERROR":     "You'll have to phrase that differently.",
+	"UNKNOWN_COMMAND": "I don't understand that.",
+	"INTERNAL_ERROR":  "Something went wrong.",
+
 	// targets
 	"TARGET_NOT_FOUND":    "You don't see that here.",
 	"TARGET_NOT_GETTABLE": "You can't pick that up.",

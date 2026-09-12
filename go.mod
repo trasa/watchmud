@@ -3,29 +3,20 @@ module github.com/trasa/watchmud
 go 1.27.0
 
 require (
-	github.com/gorilla/mux v1.6.2
 	github.com/justinian/dice v1.0.0
 	github.com/rs/zerolog v1.19.0
-	github.com/stretchr/testify v1.2.2
+	github.com/stretchr/testify v1.11.1
 	github.com/trasa/syncmap v1.0.0
-	github.com/trasa/watchmud-message v0.0.19
-	google.golang.org/grpc v1.30.0
 	gopkg.in/yaml.v2 v2.3.0
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.0 // indirect
-	github.com/golang/protobuf v1.4.2 // indirect
-	github.com/gorilla/context v1.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/mod v0.39.0 // indirect
-	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.41.0 // indirect
 	golang.org/x/tools v0.49.0 // indirect
-	google.golang.org/genproto v0.0.0-20200708133552-18036109789b // indirect
-	google.golang.org/protobuf v1.25.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 tool golang.org/x/tools/cmd/stringer
