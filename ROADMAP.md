@@ -411,9 +411,14 @@ What landed:
   than gear that mysteriously does nothing.
 - `player.Slots.RoleWeights()` sums it. Nothing stores a role -- not on `Player`, not in
   `Record` -- because a stored role can disagree with the equipment.
-- `Abilities` lost `Add` and `Set` along with the bonuses and preferences that used them.
-  `StandardAbilities()` takes no argument now; everyone starts equal. The score-priority
-  machinery stays for when players assign their own array.
+- **`rules.Abilities` deleted outright.** It went in stages and the first two were wrong:
+  first `Add` and `Set` went with the bonuses and preferences that used them, then
+  `StandardAbilities()` lost its argument so everyone started equal. At which point it was
+  a struct of six numbers that every character shared and only `stat` read -- dead code
+  wearing a crown, and exactly the sort of thing a later mechanic gets quietly routed
+  through. `event.Stat` lost its six fields, `player.Record` lost the column, and the
+  ability block is gone from `stat` output. If real combat stats arrive, derive them from
+  equipment rather than resurrecting this.
 - `player.Record.ClassId` is gone, and an unrecognized `LineageId` stopped being fatal:
   same reasoning as the missing-definition case next to it, since a cosmetic field is never
   worth locking someone out of their character over.
@@ -489,6 +494,20 @@ Named so they don't get rediscovered as surprises:
   admitting it has no index for "who is attacking X"; an `EndAllFightsWith(id)` is the fix.
 - **`Fight` snapshots `ZoneId`/`RoomId`** at the moment it starts, so a fight that somehow
   outlives its room notifies the wrong one. Same family as the location bookkeeping above.
+- **`RoleWeights` is a hand-authored number with no mechanical meaning.** A builder writing
+  `"roles": {"tank": 3}` is tuning an axis that has to stay consistent with any real stats
+  added later, by hand, forever. The intended fix is to derive it instead of authoring it:
+  chest-slot armor class (plate / leather / cloth) is how Albion effectively assigns a role,
+  and it means nobody types a weight at all. Not scheduled, but don't invest in the
+  hand-authored numbers as though they're permanent -- and if you add armor values, derive
+  from those rather than adding a third axis.
+- **`Catalog.RoleFor` is an argmax, so it has cliffs.** Plate plus a censer is Tank or
+  Healer depending on a tiebreak, with nothing in between, and one point of weight flips
+  it. This is fine -- genuinely fine, not tolerated -- while a role is a label a player
+  reads off `stat`, `role` and `who`. It stops being fine the instant anything mechanical
+  branches on the result, because a cliff in a display string is a cosmetic surprise and a
+  cliff in a damage formula is a balance bug. **The fix is not a smoother function; it is
+  not branching on it.** Combat that wants tankiness should read the armor, not the label.
 - **`server.handleLogin`** logs the error from `player.FromRecord` and then falls through
   and uses the player anyway.
 - **`world/settings.go`** is a single `VERBOSE_LOGGING` const, and logging is split between

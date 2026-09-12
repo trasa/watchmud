@@ -26,14 +26,12 @@ type Player struct {
 	curHealth int64
 	maxHealth int64
 	location  Location
-	abilities rules.Abilities
 }
 
 func New(id uuid.UUID,
 	name string,
 	out Sender,
 	lineage *rules.Lineage,
-	abilities rules.Abilities,
 ) *Player {
 	return &Player{
 		id:        id,
@@ -44,7 +42,6 @@ func New(id uuid.UUID,
 		slots:     NewSlots(),
 		curHealth: 100, // TODO need a default here,
 		maxHealth: 100,
-		abilities: abilities,
 	}
 }
 
@@ -84,10 +81,6 @@ func (p *Player) LineageName() string {
 		return ""
 	}
 	return p.Lineage.Name
-}
-
-func (p *Player) Abilities() rules.Abilities {
-	return p.abilities
 }
 
 func (p *Player) CurrentHealth() int64 {

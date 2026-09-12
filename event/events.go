@@ -162,12 +162,6 @@ type Stat struct {
 	MaxHealth     int
 	ZoneId        string
 	RoomId        string
-	Strength      int
-	Dexterity     int
-	Constitution  int
-	Intelligence  int
-	Wisdom        int
-	Charisma      int
 }
 
 // Role is the answer to "what am I, and why": the role the player's equipment

@@ -98,5 +98,4 @@ func (s *RoleTestSuite) TestStatReportsTheSameRole() {
 	s.Assert().Equal("start", st.ZoneId)
 	s.Assert().Equal("start", st.RoomId)
 	s.Assert().Equal(100, st.MaxHealth)
-	s.Assert().Equal(15, st.Constitution) // the standard array, same for everyone
 }

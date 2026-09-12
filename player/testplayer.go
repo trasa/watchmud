@@ -14,6 +14,5 @@ func NewTestPlayer(id uuid.UUID, name string, out Sender) *Player {
 	return New(id,
 		name,
 		out,
-		&rules.Lineage{Id: "human", Name: "Human"},
-		rules.StandardAbilities())
+		&rules.Lineage{Id: "human", Name: "Human"})
 }

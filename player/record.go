@@ -16,7 +16,6 @@ type Record struct {
 	CurHealth, MaxHealth   int64
 	LineageId              string // cosmetic; there is no ClassId beside it any more
 	LastZoneId, LastRoomId string
-	Abilities              rules.Abilities
 	Slots                  []SlotRecord
 	Inventory              []InventoryRecord
 }
@@ -58,7 +57,6 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 		slots:     NewSlots(),
 		curHealth: rec.CurHealth,
 		maxHealth: rec.MaxHealth,
-		abilities: rec.Abilities,
 		location:  NewLocation(rec.LastZoneId, rec.LastRoomId),
 	}
 
@@ -94,7 +92,6 @@ func (p *Player) Record() *Record {
 		CurHealth:  p.curHealth,
 		MaxHealth:  p.maxHealth,
 		LineageId:  p.Lineage.Id,
-		Abilities:  p.abilities,
 		LastZoneId: p.location.ZoneId,
 		LastRoomId: p.location.RoomId,
 		Slots:      p.slots.Record(),

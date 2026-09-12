@@ -8,7 +8,6 @@ import (
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/rules"
 )
 
 // render turns anything sent to a connection into the text a telnet client
@@ -192,23 +191,12 @@ func renderInventory(items []event.InventoryItem) string {
 // renderPlayerStat formats a player's stats as a string for display to a mud
 // client.
 func renderPlayerStat(s event.Stat) string {
-	abilities := rules.Abilities{
-		Str: s.Strength,
-		Dex: s.Dexterity,
-		Con: s.Constitution,
-		Int: s.Intelligence,
-		Wis: s.Wisdom,
-		Cha: s.Charisma,
-	}
 	var b strings.Builder
 	b.WriteString("Status:\n")
 	b.WriteString("Player:\t" + s.PlayerName + "\n")
 	b.WriteString("Lineage:\t" + s.Lineage + "\tRole: " + roleOrNone(s.Role) + "\n")
 	b.WriteString(fmt.Sprintf("Health:\t%d of %d\n", s.CurrentHealth, s.MaxHealth))
 	b.WriteString("Location:\t" + player.NewLocation(s.ZoneId, s.RoomId).String() + "\n")
-	b.WriteString("Abilities:\n")
-	b.WriteString(fmt.Sprintf("\tStr: %d\t Dex: %d\t Con: %d\n", abilities.Str, abilities.Dex, abilities.Con))
-	b.WriteString(fmt.Sprintf("\tWis: %d\t Int: %d\t Cha: %d\n", abilities.Wis, abilities.Int, abilities.Cha))
 	b.WriteString("\n")
 	return b.String()
 }

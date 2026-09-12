@@ -312,22 +312,17 @@ const roleBlockStriker = `You are fighting as a Striker.
 Change what you're wearing to change your role.
 `
 
-// Tabs, so these are quoted rather than raw. Everyone gets the same ability
-// array now -- there is no class to prefer one score over another.
+// Tabs, so these are quoted rather than raw. There is no ability block: what
+// a character can do is their gear, and the six scores were a number nothing
+// read.
 const statBlockNoGear = "Status:\n" +
 	"Player:\ttestdood\n" +
 	"Lineage:\tHuman\tRole: none\n" +
 	"Health:\t100 of 100\n" +
-	"Location:\t(start - start)\n" +
-	"Abilities:\n" +
-	"\tStr: 13\t Dex: 14\t Con: 15\n" +
-	"\tWis: 10\t Int: 12\t Cha: 8\n\n"
+	"Location:\t(start - start)\n\n"
 
 const statBlockTank = "Status:\n" +
 	"Player:\ttestdood\n" +
 	"Lineage:\tHuman\tRole: Tank\n" +
 	"Health:\t100 of 100\n" +
-	"Location:\t(start - start)\n" +
-	"Abilities:\n" +
-	"\tStr: 13\t Dex: 14\t Con: 15\n" +
-	"\tWis: 10\t Int: 12\t Cha: 8\n\n"
+	"Location:\t(start - start)\n\n"

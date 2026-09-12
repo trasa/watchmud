@@ -8,7 +8,6 @@ import (
 
 func (w *World) handleStat(msg *gameserver.HandlerParameter, cmd command.Stat) {
 	p := msg.Player
-	abilities := p.Abilities()
 
 	// The room the world has the player in, not p.Location(): the location on
 	// the player is only ever set at load time and movePlayer doesn't update
@@ -26,11 +25,5 @@ func (w *World) handleStat(msg *gameserver.HandlerParameter, cmd command.Stat) {
 		MaxHealth:     int(p.MaxHealth()),
 		ZoneId:        zoneId,
 		RoomId:        roomId,
-		Strength:      abilities.Str,
-		Dexterity:     abilities.Dex,
-		Constitution:  abilities.Con,
-		Intelligence:  abilities.Int,
-		Wisdom:        abilities.Wis,
-		Charisma:      abilities.Cha,
 	})
 }
