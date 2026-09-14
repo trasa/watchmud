@@ -13,7 +13,6 @@ import (
 
 // becomeCorpse if you are dead
 func (w *World) becomeCorpse(deadCombatant combat.Combatant) {
-	// TODO: should be *Combatant?
 	log.Printf("%s is dead!", deadCombatant.Name())
 
 	// if you were fighting, you stop
@@ -46,13 +45,14 @@ func (w *World) becomeMobileCorpse(m *mobile.Instance) {
 	corpse := object.NewInstance(uuid.New(), d)
 	// TODO transfer m's possessions over to the corpse
 	// TODO mobiles can't have possessions at the moment, not implemented yet..
-	w.removeMobile(m)
-	// figure out what room to put the corpse into
 	r := w.getRoomContainingMobile(m)
 	if r == nil {
 		log.Warn().Msgf("becomeMobileCorpse: could not find room containing mobile %s", m.Definition.Name)
 		return
 	}
+
+	w.removeMobile(m)
+
 	if err := r.Inventory.Add(corpse); err != nil {
 		log.Error().Msgf("becomeMobileCorpse: could not add corpse %s to room %s, %v", corpse.Definition.Name, r.Name, err)
 	}

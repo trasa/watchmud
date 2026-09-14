@@ -1,21 +1,16 @@
 package world
 
 import (
-	"log"
-
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/mudtime"
 )
 
-// Walk through all the combat going on and
-// do the things to make the combat happen.
-//
-// for each fight that is going on
-// determine if its "time" to do something
-// if so, determine what to do
-// then do it, updating the state
-// continue onwards.
+// DoViolence walks through all the combat going on and
+// makes the combat happen. For each fight, determine if
+// it is "time" to do something, and if so determine what to do.
+// Update the state, and continue.
 func (w *World) DoViolence(pulse mudtime.PulseCount) {
 
 	for _, fight := range w.fightLedger.GetFights() {
@@ -32,7 +27,7 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 		if fight.CanDoViolence(pulse) {
 			fight.LastPulse = pulse
 			fightResult := combat.CalculateMeleeAttack(fight.Fighter, fight.Fightee)
-			log.Printf("fight result: %s", fightResult)
+			log.Debug().Msgf("fight result: %s", fightResult)
 
 			var isDead = false
 			if fightResult.WasHit {
