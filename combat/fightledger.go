@@ -28,6 +28,10 @@ func (f *FightLedger) Fight(fighter Combatant, fightee Combatant, zoneId string,
 	return nil
 }
 
+func (f *FightLedger) InFight(c Combatant) bool {
+	return f.IsBeingFought(c) || f.IsFighting(c)
+}
+
 func (f *FightLedger) IsFighting(c Combatant) bool {
 	_, exists := f.fightMap[c.Id()]
 	return exists
@@ -56,6 +60,7 @@ func (f *FightLedger) GetFights() (result []*Fight) {
 func (f *FightLedger) EndFight(fighter Combatant) {
 	delete(f.fightMap, fighter.Id())
 }
+
 func (f *FightLedger) EndAllFightsWith(id uuid.UUID) {
 	for k, v := range f.fightMap {
 		if v.Fighter.Id() == id || v.Fightee.Id() == id {

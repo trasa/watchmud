@@ -44,6 +44,10 @@ func (mob *Instance) Name() string {
 	return mob.Definition.Name
 }
 
+func (mob *Instance) Flag(f Flag) bool {
+	return mob.Definition.HasFlag(f)
+}
+
 func (mob *Instance) CanWander() bool {
 	return mob.canWander(time.Now())
 }
@@ -130,7 +134,7 @@ func (mob *Instance) WeaponDamageType() combat.DamageType {
 	return combat.Piercing
 }
 
-func (mob *Instance) Send(msg interface{}) {
+func (mob *Instance) Send(msg any) {
 	// TODO do something with this notification
 }
 

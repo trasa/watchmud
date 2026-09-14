@@ -3,9 +3,9 @@ package world
 import (
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/spaces"
@@ -13,31 +13,52 @@ import (
 )
 
 // DoMobileActivity and walk through all the mob instances that are
-// in this world right now and tell them all to do things, if they have
-// anything they want to do.
+// in this world right now and tell them all to do the things that they
+// should do at this time.
 func (w *World) DoMobileActivity() {
 	// for each mob in the world
 	// wake it up and tell it to do stuff
 	// don't limit this to per zone or per room or something
 	// remember that mobs can leave the zone they started out in
-	// (if programmed to)
-	// (or if they really really want to)
+	// if programmed to
+	// or if they really want to...
 	for _, mob := range w.mobileRooms.GetAllMobiles() {
-		if !(w.fightLedger.IsBeingFought(mob) || w.fightLedger.IsFighting(mob)) && mob.CanWander() {
-			switch mob.Definition.Wandering.Style {
-			case wandering.Random:
-				// do random wander within the zone
-				if err := w.doMobRandomWander(mob); err != nil {
-					log.Printf("World.DoMobileActivity: %s error randomly wandering: %s", mob.Definition.Id, err)
-				}
-			case wandering.FollowPath:
-				if err := w.doMobFollowPathWander(mob); err != nil {
-					log.Printf("World.DoMobileActivity: %s error following path: %s", mob.Definition.Id, err)
-				}
-			default:
-				// unknown or unhandled wandering style, do nothing.
+		if w.fightLedger.InFight(mob) {
+			// actions where the mob is in a fight somewhere
+		} else {
+			// actions where the mob is NOT in a fight.
+			if mob.Flag(mobile.Aggressive) {
+				w.doMobAggro(mob)
+			} else if mob.CanWander() {
+				w.doMobWander(mob)
 			}
 		}
+	}
+}
+
+func (w *World) doMobAggro(mob *mobile.Instance) {
+	room := w.getRoomContainingMobile(mob)
+	players := room.Players()
+	if len(players) > 0 {
+		if err := w.fightLedger.Fight(mob, players[0], room.Zone.Id, room.Id); err != nil {
+			log.Warn().Msgf("World.doMobAggro: %s error starting fight: %s", mob.Definition.Id, err)
+		}
+	}
+}
+
+func (w *World) doMobWander(mob *mobile.Instance) {
+	switch mob.Definition.Wandering.Style {
+	case wandering.Random:
+		// do random wander within the zone
+		if err := w.doMobRandomWander(mob); err != nil {
+			log.Warn().Msgf("World.DoMobileActivity: %s error randomly wandering: %s", mob.Definition.Id, err)
+		}
+	case wandering.FollowPath:
+		if err := w.doMobFollowPathWander(mob); err != nil {
+			log.Warn().Msgf("World.DoMobileActivity: %s error following path: %s", mob.Definition.Id, err)
+		}
+	default:
+		// unknown or unhandled wandering style, do nothing.
 	}
 }
 
