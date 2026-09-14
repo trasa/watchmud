@@ -29,7 +29,7 @@ func (f *FightLedger) Fight(fighter Combatant, fightee Combatant, zoneId string,
 }
 
 func (f *FightLedger) InFight(c Combatant) bool {
-	return f.IsBeingFought(c) || f.IsFighting(c)
+	return f.isBeingFought(c) || f.IsFighting(c)
 }
 
 func (f *FightLedger) IsFighting(c Combatant) bool {
@@ -37,7 +37,7 @@ func (f *FightLedger) IsFighting(c Combatant) bool {
 	return exists
 }
 
-func (f *FightLedger) IsBeingFought(c Combatant) bool {
+func (f *FightLedger) isBeingFought(c Combatant) bool {
 	for _, fight := range f.fightMap {
 		if fight.Fightee == c {
 			return true
