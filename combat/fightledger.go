@@ -62,3 +62,10 @@ func (f *FightLedger) GetFights() (result []*Fight) {
 func (f *FightLedger) EndFight(fighter Combatant) {
 	delete(f.fightMap, fighter.Id())
 }
+func (f *FightLedger) EndAllFightsWith(id uuid.UUID) {
+	for k, v := range f.fightMap {
+		if v.Fighter.Id() == id || v.Fightee.Id() == id {
+			delete(f.fightMap, k)
+		}
+	}
+}

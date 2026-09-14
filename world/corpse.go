@@ -16,7 +16,7 @@ func (w *World) becomeCorpse(deadCombatant combat.Combatant) {
 	log.Printf("%s is dead!", deadCombatant.Name())
 
 	// if you were fighting, you stop
-	w.fightLedger.EndFight(deadCombatant)
+	w.fightLedger.EndAllFightsWith(deadCombatant.Id())
 
 	switch c := deadCombatant.(type) {
 	case *mobile.Instance:

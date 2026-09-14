@@ -47,8 +47,7 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 			if isDead {
 				w.becomeCorpse(fight.Fightee)
 				// TODO award points or other reward
-				w.fightLedger.EndFight(fight.Fighter)
-				// tell everybody what happened
+				w.fightLedger.EndAllFightsWith(fight.Fighter.Id())
 				if found {
 					room.Notify(event.Died{
 						Target: fight.Fightee.Name(),
