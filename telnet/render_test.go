@@ -269,6 +269,7 @@ const startRoomBlock = `start
 A knife is on the ground.
 an iron helmet is on the ground
 Target Drone buzzes around.
+Other Drone buzzes around.
 otherdood is here.
 `
 

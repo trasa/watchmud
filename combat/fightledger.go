@@ -2,7 +2,11 @@ package combat
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"uuid"
+
+	"github.com/rs/zerolog/log"
 )
 
 type FightLedger struct {
@@ -18,7 +22,7 @@ func NewFightLedger() *FightLedger {
 func (f *FightLedger) Fight(fighter Combatant, fightee Combatant, zoneId string, roomId string) error {
 	if f.IsFighting(fighter) {
 		// TODO fixme
-		return fmt.Errorf("Fighter is already fighting someone")
+		return fmt.Errorf("fighter is already fighting someone")
 	}
 	f.fightMap[fighter.Id()] = newFight(fighter, fightee, zoneId, roomId)
 
@@ -29,6 +33,8 @@ func (f *FightLedger) Fight(fighter Combatant, fightee Combatant, zoneId string,
 }
 
 func (f *FightLedger) IsFighting(c Combatant) bool {
+	allFights := slices.Collect(maps.Values(f.fightMap))
+	log.Debug().Msgf("all fights: %v", allFights)
 	_, exists := f.fightMap[c.Id()]
 	return exists
 }

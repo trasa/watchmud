@@ -1,6 +1,7 @@
 package world
 
 import (
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/command"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
@@ -41,13 +42,11 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter, cmd command.Kill) {
 
 	// begin a fight with that target (or join an existing fight if there's
 	// already one going on with that target)
-	// TODO reimplement
-	/*
-		if err := w.fightLedger.Fight(msg.Player, mobileInstance, room.Zone.Id, room.Id); err != nil {
-			log.Error().Err(err).Msg("kill: couldn't start the fight")
-			msg.Fail(event.InternalError)
-			return
-		}
-	*/
+
+	if err := w.fightLedger.Fight(msg.Player, mobileInstance, room.Zone.Id, room.Id); err != nil {
+		log.Error().Str("playerName", msg.Player.Name()).Str("target", mobileInstance.Name()).Err(err).Msg("kill: couldn't start the fight")
+		msg.Fail(event.InternalError)
+		return
+	}
 	msg.Player.Send(event.Attacking{Target: mobileInstance.Name()})
 }

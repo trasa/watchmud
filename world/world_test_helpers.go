@@ -105,7 +105,23 @@ func NewTestWorld() (*World, error) {
 		10,
 	)
 	startZone.AddMobileDefinition(mob)
-	if err := startRoom.AddMobile(mobile.NewInstance(mob)); err != nil {
+	otherDef := mobile.NewDefinition(
+		"otherDrone",
+		"Other Drone",
+		startZone.Id,
+		[]string{"other"},
+		"Other Drone",
+		"Other Drone buzzes around.",
+		25,
+		mobile.WanderingDefinition{CanWander: false},
+		10,
+	)
+	startZone.AddMobileDefinition(otherDef)
+
+	if err := addMob(startRoom, mob); err != nil {
+		return nil, err
+	}
+	if err := addMob(startRoom, otherDef); err != nil {
 		return nil, err
 	}
 
@@ -130,4 +146,11 @@ func NewTestWorld() (*World, error) {
 	content := loader.NewContent(&settings, catalog, zones)
 
 	return New(content, store)
+}
+
+func addMob(r *spaces.Room, d *mobile.Definition) error {
+	if err := r.AddMobile(mobile.NewInstance(d)); err != nil {
+		return err
+	}
+	return nil
 }
