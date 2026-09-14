@@ -92,10 +92,11 @@ func (w *World) AddPlayer(players ...*player.Player) {
 
 func (w *World) RemovePlayer(players ...*player.Player) {
 	for _, p := range players {
-		log.Debug().Msgf("Removing Player: %s", p.Name())
+		p.Log().Debug().Msg("Removing Player")
 		if r := w.getRoomContainingPlayer(p); r != nil {
 			r.RemovePlayer(p)
 		}
+		w.fightLedger.EndAllFightsWith(p.Id())
 		w.playerList.Remove(p)
 		w.playerRooms.Remove(p)
 	}

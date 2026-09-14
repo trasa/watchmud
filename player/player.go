@@ -3,22 +3,19 @@ package player
 import (
 	"uuid"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/rules"
 )
 
-// Sender is anything that can deliver a message to this player's connection
-type Sender interface {
-	Send(msg any)
-}
-
 type Player struct {
 	id   uuid.UUID
 	name string
-	out  Sender // was: client.Client, via ClientPlayer
+	out  Sender
 
 	// Lineage is cosmetic and nothing reads it but the renderer. There is no
-	// Class beside it any more and no Role in its place: a role is read off
+	// Class beside it and no Role in its place: a role is read off
 	// the equipped slots every time it is asked for, never stored.
 	Lineage   *rules.Lineage
 	inventory *Inventory
@@ -55,15 +52,13 @@ func (p *Player) Name() string {
 
 // Inventory returns the inventory
 func (p *Player) Inventory() *Inventory {
-	// TODO is this needed? Should p.Inventory become visible?
-	// is needing this call indicating a problem?
+	// TODO is needing this call indicating a problem?
 	return p.inventory
 }
 
 // Slots returns the inventory
 func (p *Player) Slots() *Slots {
-	// TODO is this needed? Should p.Inventory become visible?
-	// is needing this call indicating a problem?
+	// TODO is needing this call indicating a problem?
 	return p.slots
 }
 
@@ -137,4 +132,12 @@ func (p *Player) WeaponDamageRoll() string {
 func (p *Player) WeaponDamageType() combat.DamageType {
 	// TODO
 	return combat.Piercing
+}
+
+func (p *Player) Log() *zerolog.Logger {
+	l := log.Logger.With().
+		Str("playerName", p.Name()).
+		Str("playerId", p.Id().String()).
+		Logger()
+	return &l
 }
