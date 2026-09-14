@@ -8,6 +8,7 @@ import (
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/spaces"
+	"github.com/trasa/watchmud/wandering"
 )
 
 type MobileActivityTestSuite struct {
@@ -21,13 +22,16 @@ func TestMobileActivityTestSuite(t *testing.T) {
 }
 
 func (s *MobileActivityTestSuite) SetupTest() {
-	s.definition = mobile.NewDefinition("id", "name", "", []string{}, "desc", "room desc", 25, mobile.WanderingDefinition{
+	s.definition = mobile.NewDefinition("id", "name", "", []string{}, "desc", "room desc", 25, wandering.Definition{
 		CanWander:       true,
 		CheckFrequency:  time.Minute * 1,
 		CheckPercentage: 1.0,
-		Style:           mobile.WANDER_FOLLOW_PATH,
+		Style:           wandering.FollowPath,
 		Path:            []string{"a", "b"},
-	}, 10)
+	},
+		10,
+		false,
+	)
 	s.mobileInstance = mobile.NewInstance(s.definition)
 }
 

@@ -9,10 +9,11 @@ import (
 	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/spaces"
+	"github.com/trasa/watchmud/wandering"
 )
 
-// Walk through all the mob instances that are in this world
-// right now and tell them all to do something, if they have
+// DoMobileActivity and walk through all the mob instances that are
+// in this world right now and tell them all to do things, if they have
 // anything they want to do.
 func (w *World) DoMobileActivity() {
 	// for each mob in the world
@@ -24,12 +25,12 @@ func (w *World) DoMobileActivity() {
 	for _, mob := range w.mobileRooms.GetAllMobiles() {
 		if !(w.fightLedger.IsBeingFought(mob) || w.fightLedger.IsFighting(mob)) && mob.CanWander() {
 			switch mob.Definition.Wandering.Style {
-			case mobile.WANDER_RANDOM:
+			case wandering.Random:
 				// do random wander within the zone
 				if err := w.doMobRandomWander(mob); err != nil {
 					log.Printf("World.DoMobileActivity: %s error randomly wandering: %s", mob.Definition.Id, err)
 				}
-			case mobile.WANDER_FOLLOW_PATH:
+			case wandering.FollowPath:
 				if err := w.doMobFollowPathWander(mob); err != nil {
 					log.Printf("World.DoMobileActivity: %s error following path: %s", mob.Definition.Id, err)
 				}
@@ -37,7 +38,6 @@ func (w *World) DoMobileActivity() {
 				// unknown or unhandled wandering style, do nothing.
 			}
 		}
-
 	}
 }
 

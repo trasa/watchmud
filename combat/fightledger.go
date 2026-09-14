@@ -2,11 +2,7 @@ package combat
 
 import (
 	"fmt"
-	"maps"
-	"slices"
 	"uuid"
-
-	"github.com/rs/zerolog/log"
 )
 
 type FightLedger struct {
@@ -33,8 +29,6 @@ func (f *FightLedger) Fight(fighter Combatant, fightee Combatant, zoneId string,
 }
 
 func (f *FightLedger) IsFighting(c Combatant) bool {
-	allFights := slices.Collect(maps.Values(f.fightMap))
-	log.Debug().Msgf("all fights: %v", allFights)
 	_, exists := f.fightMap[c.Id()]
 	return exists
 }

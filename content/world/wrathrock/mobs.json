@@ -1,0 +1,14 @@
+[
+  {
+    "id": "rabbit",
+    "name": "rabbit",
+    "short_description": "A harmless rabbit.",
+    "description_in_room": "A harmless rabbit glares at you.",
+    "max_health": 2,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 1,
+    "aggressive": true
+  }
+]

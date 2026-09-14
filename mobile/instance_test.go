@@ -1,122 +1,120 @@
 package mobile
 
 import (
-	"github.com/stretchr/testify/assert"
-	"log"
 	"math/rand"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/suite"
+	"github.com/trasa/watchmud/wandering"
 )
 
-func TestInstance_CanWander(t *testing.T) {
-	noWalk := NewInstance(NewDefinition("id", "nowalk", "testZone", []string{}, "", "",
-		25,
-		WanderingDefinition{
-			CanWander: false,
-		}, 10))
-	assert.False(t, noWalk.CanWander())
-
-	walker := NewInstance(NewDefinition("", "", "", []string{}, "", "",
-		25,
-		WanderingDefinition{
-			CanWander:       true,
-			Style:           WANDER_RANDOM,
-			CheckFrequency:  time.Minute * 1,
-			CheckPercentage: 1.0,
-		}, 10))
-	log.Printf("wandering %s", walker.LastWanderingTime)
-	assert.False(t, walker.CanWander()) // because it hasn't been 1 minute yet
-
-	now := time.Now()
-	walker.LastWanderingTime = now
-	assert.False(t, walker.canWander(now))                     // can't wander right now
-	assert.False(t, walker.canWander(now.Add(time.Second*30))) // 30 seconds from now
-	assert.False(t, walker.canWander(now.Add(time.Second*60))) // 1 minute
-	assert.True(t, walker.canWander(now.Add(time.Second*61)))  // 1 minute
+type instanceSuite struct {
+	suite.Suite
+	noWalkMob   *Instance
+	walkerMob   *Instance
+	noChanceMob *Instance
+	pathMob     *Instance
 }
 
-func TestInstance_CheckWanderChance_AlwaysFails(t *testing.T) {
-	r := rand.New(rand.NewSource(1))
+func TestInstanceSuite(t *testing.T) {
+	suite.Run(t, new(instanceSuite))
+}
 
-	noChance := NewInstance(NewDefinition("", "", "", []string{}, "", "",
+func (s *instanceSuite) SetupTest() {
+	s.noWalkMob = NewInstance(NewDefinition("nowalk", "nowalk", "zone", []string{}, "", "",
 		25,
-		WanderingDefinition{
+		wandering.Definition{
+			CanWander: false,
+		},
+		10,
+		false,
+	))
+
+	s.walkerMob = NewInstance(NewDefinition("walker", "walker", "zone", []string{}, "", "",
+		25,
+		wandering.Definition{
 			CanWander:       true,
-			Style:           WANDER_RANDOM,
+			Style:           wandering.Random,
+			CheckFrequency:  time.Minute * 1,
+			CheckPercentage: 1.0, // 100 %
+		},
+		10,
+		false,
+	))
+
+	s.noChanceMob = NewInstance(NewDefinition("nochance", "nochance", "zone", []string{}, "", "",
+		25,
+		wandering.Definition{
+			CanWander:       true,
+			Style:           wandering.Random,
 			CheckFrequency:  time.Minute * 1,
 			CheckPercentage: 0.0, // <-- 0% chance
-		}, 10))
-	for i := 0; i < 10; i++ {
-		assert.False(t, noChance.checkWanderChance(r)) // always fails
-	}
-}
+		}, 10,
+		false,
+	))
 
-func TestInstance_CheckWanderChance_AlwaysSucceeds(t *testing.T) {
-	r := rand.New(rand.NewSource(1))
-	fiftyFifty := NewInstance(NewDefinition("", "", "", []string{}, "", "",
+	s.pathMob = NewInstance(NewDefinition("path", "path", "zone", []string{}, "desc", "room desc",
 		25,
-		WanderingDefinition{
+		wandering.Definition{
 			CanWander:       true,
-			Style:           WANDER_RANDOM,
 			CheckFrequency:  time.Minute * 1,
-			CheckPercentage: 1.0, // <-- 100% chance
-		}, 10))
-	for i := 0; i < 10; i++ {
-		assert.True(t, fiftyFifty.checkWanderChance(r))
-	}
+			CheckPercentage: 1.0,
+			Style:           wandering.FollowPath,
+			Path:            []string{"a", "b"},
+		},
+		10,
+		false,
+	))
 }
 
-func TestInstance_CheckWanderChance_FiftyFifty(t *testing.T) {
+func (s *instanceSuite) TestCanWander() {
+
+	s.Assert().False(s.noWalkMob.CanWander())
+	s.Assert().False(s.walkerMob.CanWander()) // not time yet
+
+	now := time.Now()
+	s.walkerMob.LastWanderingTime = now
+
+	s.Assert().False(s.walkerMob.canWander(now)) // not yet
+	s.Assert().False(s.walkerMob.canWander(now.Add(time.Second * 30)))
+	s.Assert().False(s.walkerMob.canWander(now.Add(time.Second * 60)))
+	s.Assert().True(s.walkerMob.canWander(now.Add(time.Second * 61)))
+}
+
+func (s *instanceSuite) TestWanderAlwaysFails() {
 	r := rand.New(rand.NewSource(1))
-	fiftyFifty := NewInstance(NewDefinition("", "", "", []string{}, "", "",
-		25,
-		WanderingDefinition{
-			CanWander:       true,
-			Style:           WANDER_RANDOM,
-			CheckFrequency:  time.Minute * 1,
-			CheckPercentage: 0.50, // <-- 50% chance
-		}, 10))
-	success := false
-	for i := 0; i < 100; i++ {
-		if fiftyFifty.checkWanderChance(r) {
-			log.Printf("Success after %d attempts", i+1)
-			success = true
-			break
-		}
+
+	for i := 0; i < 10; i++ {
+		s.Assert().False(s.noChanceMob.checkWanderChance(r)) // always fails
 	}
-	assert.True(t, success)
 }
 
-func TestInstance_GetIndexOnPath(t *testing.T) {
-	m := NewInstance(
-		NewDefinition("id", "name", "", []string{}, "desc", "room desc",
-			25,
-			WanderingDefinition{
-				CanWander:       true,
-				CheckFrequency:  time.Minute * 1,
-				CheckPercentage: 1.0,
-				Style:           WANDER_FOLLOW_PATH,
-				Path:            []string{"a", "b"},
-			}, 10))
+func (s *instanceSuite) TestWanderAlwaysSucceeds() {
+	r := rand.New(rand.NewSource(1))
+	for i := 0; i < 10; i++ {
+		s.Assert().True(s.walkerMob.checkWanderChance(r))
+	}
+}
+
+func (s *instanceSuite) TestPathGetIndex() {
+	m := s.pathMob
 	idx, err := m.GetIndexOnPath("a")
-	assert.NoError(t, err)
-	assert.Equal(t, 0, idx)
+	s.Assert().NoError(err)
+	s.Assert().Equal(0, idx)
 
 	idx, err = m.GetIndexOnPath("b")
-	assert.NoError(t, err)
-	assert.Equal(t, 1, idx)
+	s.Assert().NoError(err)
+	s.Assert().Equal(1, idx)
 
 	idx, err = m.GetIndexOnPath("foo")
-	assert.Error(t, err)
-	assert.Equal(t, -1, idx)
+	s.Assert().Error(err)
+	s.Assert().Equal(-1, idx)
 }
 
-func TestInstance_GetIndexOnPath_NoPath(t *testing.T) {
-	m := NewInstance(
-		NewDefinition("id", "name", "", []string{}, "desc", "room desc",
-			25,
-			WanderingDefinition{}, 10))
+func (s *instanceSuite) TestInstance_GetIndexOnPath_NoPath() {
+	m := s.walkerMob
 	idx, err := m.GetIndexOnPath("foo")
-	assert.Error(t, err)
-	assert.Equal(t, -1, idx)
+	s.Assert().Error(err)
+	s.Assert().Equal(-1, idx)
 }

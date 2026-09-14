@@ -1,30 +1,48 @@
 package spaces
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/trasa/watchmud/mobile"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
+	"github.com/trasa/watchmud/mobile"
+	"github.com/trasa/watchmud/wandering"
 )
 
-func TestMobileRoomMap_GetAllMobiles(t *testing.T) {
-	defn := mobile.NewDefinition("id", "name", "zone", []string{}, "shortdesc", "roomdesc", 25, mobile.WanderingDefinition{}, 10)
-	instOne := mobile.NewInstance(defn)
-	instTwo := mobile.NewInstance(defn)
-	r := NewTestRoom("test")
-
-	mobileMap := NewMobileRoomMap()
-	mobileMap.Add(instOne, r)
-	mobileMap.Add(instTwo, r)
-
-	result := mobileMap.GetAllMobiles()
-	assert.Equal(t, 2, len(result))
-	assert.True(t, instOne == result[0] || instOne == result[1])
-	assert.True(t, instTwo == result[0] || instTwo == result[1])
+type mobileRoomMapSuite struct {
+	suite.Suite
+	mob           *mobile.Definition
+	instances     []*mobile.Instance
+	room          *Room
+	mobileRoomMap *MobileRoomMap
 }
 
-func TestMobileRoomMap_GetAllMobiles_Empty(t *testing.T) {
-	mobileMap := NewMobileRoomMap()
+func TestMobileRoomMapSuite(t *testing.T) {
+	suite.Run(t, new(mobileRoomMapSuite))
+}
 
-	result := mobileMap.GetAllMobiles()
-	assert.Equal(t, 0, len(result))
+func (s *mobileRoomMapSuite) SetupTest() {
+	s.mob = mobile.NewDefinition(
+		"id",
+		"name",
+		"zone",
+		[]string{},
+		"shortdesc",
+		"roomdesc",
+		25, wandering.Definition{},
+		10,
+		false,
+	)
+	s.instances = append(s.instances, mobile.NewInstance(s.mob))
+	s.instances = append(s.instances, mobile.NewInstance(s.mob))
+
+	s.room = NewTestRoom("test")
+
+	s.mobileRoomMap = NewMobileRoomMap()
+	s.mobileRoomMap.Add(s.instances[0], s.room)
+	s.mobileRoomMap.Add(s.instances[1], s.room)
+}
+
+func (s *mobileRoomMapSuite) TestGetAll() {
+	result := s.mobileRoomMap.GetAllMobiles()
+	s.Assert().Equal(2, len(result))
 }

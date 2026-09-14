@@ -35,7 +35,7 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter, cmd command.Kill) {
 	}
 
 	//	are they something you are allowed to fight (no_fight, other flags... objects...)
-	if mobileInstance.Definition.HasFlag(mobile.FlagNoFight) {
+	if mobileInstance.Definition.HasFlag(mobile.PlayerCantFight) {
 		msg.Fail(event.NoFight)
 		return
 	}

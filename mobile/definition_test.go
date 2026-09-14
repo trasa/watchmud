@@ -1,8 +1,10 @@
 package mobile
 
 import (
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
+	"github.com/trasa/watchmud/wandering"
 )
 
 type DefinitionSuite struct {
@@ -22,8 +24,9 @@ func (suite *DefinitionSuite) SetupTest() {
 		"short desc",
 		"descr",
 		25,
-		WanderingDefinition{CanWander: false},
-		10)
+		wandering.Definition{CanWander: false},
+		10,
+		false)
 }
 
 func (suite *DefinitionSuite) TestFlags() {
@@ -33,10 +36,10 @@ func (suite *DefinitionSuite) TestFlags() {
 }
 
 func (suite *DefinitionSuite) TestSetFlags() {
-	suite.definition.SetFlags([]string{"a", "b"})
+	suite.definition.SetFlags([]Flag{"Aggressive", "PlayerCantFight"})
 	suite.definition.SetFlags(nil)
-	suite.definition.SetFlags([]string{})
+	suite.definition.SetFlags([]Flag{})
 
-	suite.Assert().True(suite.definition.HasFlag("a"))
+	suite.Assert().True(suite.definition.HasFlag("Aggressive"))
 
 }

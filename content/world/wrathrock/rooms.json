@@ -72,6 +72,36 @@
       {
         "direction": "north",
         "dest_room": "market_square"
+      },
+      {
+        "direction": "south",
+        "dest_room": "out_south_gate"
+      }
+    ]
+  },
+  {
+    "id": "out_south_gate",
+    "name": "Outside South Gate",
+    "description": "Outside the southern gate of Wrathrock.",
+    "exits": [
+      {
+        "direction": "north",
+        "dest_room": "south_gate"
+      },
+      {
+        "direction": "south",
+        "dest_room": "south_trail"
+      }
+    ]
+  },
+  {
+    "id": "south_trail",
+    "name": "southern path",
+    "description": "A trail leading south.",
+    "exits": [
+      {
+        "direction": "north",
+        "dest_room": "out_south_gate"
       }
     ]
   }

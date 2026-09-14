@@ -15,6 +15,7 @@ import (
 	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/slot"
 	"github.com/trasa/watchmud/spaces"
+	"github.com/trasa/watchmud/wandering"
 	"github.com/trasa/watchmud/zonereset"
 )
 
@@ -275,16 +276,18 @@ func (c *Content) loadMobileDefinitions(fsys fs.FS) error {
 				mob.ShortDescription,
 				mob.DescriptionInRoom,
 				mob.MaxHealth,
-				mobile.WanderingDefinition{
+				wandering.Definition{
 					CanWander:       mob.WanderingDefinition.CanWander,
 					CheckFrequency:  time.Second * time.Duration(mob.WanderingDefinition.CheckFrequencySeconds),
 					CheckPercentage: float32(mob.WanderingDefinition.CheckPercentage) / 100.0,
-					Style:           mobile.WanderingStyle(mob.WanderingDefinition.WanderStyle),
+					Style:           wandering.Style(mob.WanderingDefinition.WanderStyle),
 					Path:            mob.WanderingDefinition.Path,
 				},
 				mob.AC,
+				mob.Aggressive,
 			)
-			defn.SetFlags(mob.Flags)
+			flags := mobile.ConvertFlags(mob.Flags)
+			defn.SetFlags(flags)
 			c.Zones[zonename].AddMobileDefinition(defn)
 		}
 	}

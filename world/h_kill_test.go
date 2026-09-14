@@ -66,7 +66,7 @@ func (s *handleKillSuite) TestNoTarget() {
 
 func (s *handleKillSuite) TestNoFight() {
 	mob, _ := s.w.StartRoom.FindMobile("target")
-	mob.Definition.SetFlag(mobile.FlagNoFight)
+	mob.Definition.SetFlag(mobile.PlayerCantFight)
 
 	s.kill("target")
 

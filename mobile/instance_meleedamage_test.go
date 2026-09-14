@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trasa/watchmud/wandering"
 )
 
 type InstanceMeleeDamageSuite struct {
@@ -18,9 +19,10 @@ func TestInstanceMeleeDamageSuite(t *testing.T) {
 func (s *InstanceMeleeDamageSuite) SetupTest() {
 	defn := NewDefinition("id", "damaged", "testZone", []string{}, "", "",
 		25,
-		WanderingDefinition{
+		wandering.Definition{
 			CanWander: false,
-		}, 10)
+		}, 10,
+		false)
 	defn.MaxHealth = 100
 	s.instance = NewInstance(defn)
 	s.instance.CurHealth = 100

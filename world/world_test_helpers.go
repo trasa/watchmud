@@ -17,6 +17,7 @@ import (
 	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/slot"
 	"github.com/trasa/watchmud/spaces"
+	"github.com/trasa/watchmud/wandering"
 	"github.com/trasa/watchmud/zonereset"
 )
 
@@ -101,8 +102,9 @@ func NewTestWorld() (*World, error) {
 		"Target Drone",
 		"Target Drone buzzes around.",
 		25,
-		mobile.WanderingDefinition{CanWander: false},
+		wandering.Definition{CanWander: false},
 		10,
+		false,
 	)
 	startZone.AddMobileDefinition(mob)
 	otherDef := mobile.NewDefinition(
@@ -113,8 +115,9 @@ func NewTestWorld() (*World, error) {
 		"Other Drone",
 		"Other Drone buzzes around.",
 		25,
-		mobile.WanderingDefinition{CanWander: false},
+		wandering.Definition{CanWander: false},
 		10,
+		false,
 	)
 	startZone.AddMobileDefinition(otherDef)
 

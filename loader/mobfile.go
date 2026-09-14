@@ -11,6 +11,7 @@ type mobEntry struct {
 	Flags               []string       `json:"flags"`
 	MaxHealth           int64          `json:"max_health"`
 	AC                  int            `json:"ac"`
+	Aggressive          bool           `json:"aggressive"`
 }
 
 type WanderingEntry struct {

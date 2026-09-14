@@ -10,11 +10,11 @@ import (
 	"github.com/trasa/watchmud/player"
 )
 
-// render turns anything sent to a connection into the text a telnet client
+// Render turns anything sent to a connection into the text a telnet client
 // sees. It is the single chokepoint between the game's event vocabulary and
 // the wire, so keep game logic out of it.
 //
-// self is the name of the player this connection belongs to. Events that the
+// render.self is the name of the player this connection belongs to. Events that the
 // whole room sees arrive here once per player, and the case compares Actor to
 // self to pick between "Dropped." and "bob drops a knife." -- which is why
 // there is no separate notification type for them.

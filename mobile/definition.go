@@ -2,10 +2,11 @@ package mobile
 
 import (
 	"github.com/trasa/watchmud/combat"
-	"time"
+	"github.com/trasa/watchmud/wandering"
 )
 
-// Defines what it means to be a mob.
+// Definition defines what it means to be a mob.
+// Definitions turn into mob Instances.
 type Definition struct {
 	Id                string
 	Aliases           []string
@@ -13,9 +14,9 @@ type Definition struct {
 	ShortDescription  string
 	DescriptionInRoom string // description when in a room "A giant lizard is here."
 	ZoneId            string
-	Wandering         WanderingDefinition
+	Wandering         wandering.Definition
 	MaxHealth         int64
-	flags             map[string]bool
+	flags             map[Flag]bool
 	AC                int
 }
 
@@ -26,8 +27,9 @@ func NewDefinition(definitionId string,
 	shortDescription,
 	descriptionInRoom string,
 	maxHealth int64,
-	wandering WanderingDefinition,
-	AC int) *Definition {
+	wandering wandering.Definition,
+	AC int,
+	aggressive bool) *Definition {
 	d := &Definition{
 		Id:                definitionId,
 		Name:              name,
@@ -36,9 +38,12 @@ func NewDefinition(definitionId string,
 		DescriptionInRoom: descriptionInRoom,
 		Wandering:         wandering,
 		ZoneId:            zoneId,
-		flags:             make(map[string]bool),
+		flags:             make(map[Flag]bool),
 		MaxHealth:         maxHealth,
 		AC:                AC,
+	}
+	if aggressive {
+		d.SetFlag(Aggressive)
 	}
 	return d
 }
@@ -52,7 +57,7 @@ func (d *Definition) HasAlias(target string) bool {
 	return false
 }
 
-func (d *Definition) SetFlags(flags []string) {
+func (d *Definition) SetFlags(flags []Flag) {
 	if flags != nil {
 		for _, s := range flags {
 			d.SetFlag(s)
@@ -60,21 +65,22 @@ func (d *Definition) SetFlags(flags []string) {
 	}
 }
 
-func (d *Definition) SetFlag(flag string) {
+func (d *Definition) SetFlag(flag Flag) {
 	d.flags[flag] = true
 }
 
-func (d *Definition) HasFlag(flag string) bool {
+func (d *Definition) HasFlag(flag Flag) bool {
 	return d.flags[flag]
 }
 
-func (d *Definition) GetFlags() (result []string) {
+func (d *Definition) GetFlags() []string {
+	var result []string
 	for k, v := range d.flags {
 		if v {
-			result = append(result, k)
+			result = append(result, string(k))
 		}
 	}
-	return
+	return result
 }
 
 func (d *Definition) ArmorClass() int {
@@ -91,20 +97,3 @@ func (d *Definition) IsVulnerableTo(damageType combat.DamageType) bool {
 	// TODO vulnerability
 	return false
 }
-
-// Things to do with how mobs wander around
-type WanderingDefinition struct {
-	CanWander       bool
-	Style           WanderingStyle // how do you wander?
-	CheckFrequency  time.Duration  // how long between wandering?
-	CheckPercentage float32        // % chance of moving on each test
-	Path            []string
-}
-
-type WanderingStyle int
-
-const (
-	WANDER_NONE        WanderingStyle = iota // you don't wander
-	WANDER_RANDOM                            // wander within the zone randomly
-	WANDER_FOLLOW_PATH                       // wander a prescribed path which could cross zones
-)
