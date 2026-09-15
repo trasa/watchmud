@@ -128,6 +128,24 @@ func render(msg any, self string) string {
 	case event.Died:
 		return m.Target + " is dead!\n"
 
+	case event.Fleeing:
+		if m.Who == self {
+			return "You attempt to flee!\n"
+		}
+		return m.Who + " panics, and attempts to flee!\n"
+
+	case event.FleeAttemptFailed:
+		if m.Who == self {
+			return "PANIC! You couldn't escape!\n"
+		}
+		return m.Who + " attempts to flee, but can't!\n"
+
+	case event.Fled:
+		if m.Who == self {
+			return "You flee head over heels.\n"
+		}
+		return m.Who + " flees head over heels.\n"
+
 	case event.Restored:
 		return m.Target + " is restored!\n"
 

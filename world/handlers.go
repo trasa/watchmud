@@ -22,6 +22,8 @@ func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) error {
 		w.handleEquip(msg, cmd)
 	case command.Exits:
 		w.handleExits(msg, cmd)
+	case command.Flee:
+		w.handleFlee(msg, cmd)
 	case command.Get:
 		w.handleGet(msg, cmd)
 	case command.Inventory:
