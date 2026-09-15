@@ -14,6 +14,7 @@ import (
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/spaces"
 )
 
@@ -23,7 +24,8 @@ type World struct {
 	VoidRoom  *spaces.Room
 	content   *loader.Content
 
-	store player.Store
+	roller rules.Roller
+	store  player.Store
 
 	// TODO merge playerList and playerRooms similar to MobileRoomMap merges mobList and mobRooms
 	playerList  *player.List   // list of players
@@ -35,13 +37,14 @@ type World struct {
 }
 
 // New creates a brand-new World based on this content
-func New(c *loader.Content, s player.Store) (w *World, err error) {
+func New(c *loader.Content, s player.Store, roller rules.Roller) (w *World, err error) {
 	w = &World{
 		content:     c,
 		playerList:  player.NewList(),
 		playerRooms: NewPlayerRoomMap(),
 		mobileRooms: spaces.NewMobileRoomMap(),
 		fightLedger: combat.NewFightLedger(),
+		roller:      roller,
 		store:       s,
 	}
 	if err := w.initialLoad(); err != nil {

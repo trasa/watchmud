@@ -5,6 +5,7 @@ type instructionFileEntry struct {
 	Type        string `json:"type"`
 	ObjectId    string `json:"object_id"`
 	MobileId    string `json:"mobile_id"`
+	ZoneId      string `json:"zone_id"`
 	RoomId      string `json:"room_id"`
 	InstanceMax int    `json:"instance_max"`
 }

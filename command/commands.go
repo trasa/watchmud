@@ -154,6 +154,10 @@ type Kill struct {
 
 func (Kill) Verb() string { return "kill" }
 
+type Flee struct{}
+
+func (Flee) Verb() string { return "flee" }
+
 // ---- builder commands ------------------------------------------------------
 
 type Load struct {

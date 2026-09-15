@@ -23,16 +23,18 @@ const (
 type ZoneCommand interface {
 }
 
-// Command: Create an Object
+// CreateObject instructs the world to create an object in the world.
 type CreateObject struct {
 	ObjectDefinitionId string // what type of object
+	ZoneId             string // which zone is the definition in, leave empty for "this zone"
 	RoomId             string // where does the object go?
 	InstanceMax        int    // how many are allowed to be lying around the zone?
 }
 
 func (cmd CreateObject) String() string {
-	return fmt.Sprintf("Create Object '%s' in Room '%s', Max of %d",
+	return fmt.Sprintf("Create Object '%s-%s' in Room '%s', Max of %d",
 		cmd.ObjectDefinitionId,
+		cmd.ZoneId,
 		cmd.RoomId,
 		cmd.InstanceMax,
 	)
@@ -41,6 +43,7 @@ func (cmd CreateObject) String() string {
 // Command: Create a Mobile
 type CreateMobile struct {
 	MobileDefinitionId string // what type of mobile
+	ZoneId             string // where the mobile is defined, or empty for "this zone"
 	RoomId             string // where does the mobile go?
 	InstanceMax        int    // how many are allowed to be walking around the zone?
 	// TODO give equipment
@@ -48,8 +51,9 @@ type CreateMobile struct {
 }
 
 func (cmd CreateMobile) String() string {
-	return fmt.Sprintf("Create Mobile '%s' in Room '%s', Max of %d",
+	return fmt.Sprintf("Create Mobile '%s-%s' in Room '%s', Max of %d",
 		cmd.MobileDefinitionId,
+		cmd.ZoneId,
 		cmd.RoomId,
 		cmd.InstanceMax,
 	)

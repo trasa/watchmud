@@ -52,7 +52,7 @@ func (s *HandleGetSuite) TestAliasTarget() {
 
 	found := s.p.Inventory().GetByNameOrAlias("helmet")
 	s.Assert().True(len(found) > 0)
-	s.Assert().Equal("helmet", found[0].Definition.Name)
+	s.Assert().Equal("iron helmet", found[0].Definition.Name)
 	s.Assert().Equal(1, len(s.w.StartRoom.Inventory.GetAll()))
 }
 

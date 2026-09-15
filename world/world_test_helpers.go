@@ -1,8 +1,8 @@
 package world
 
 import (
+	"os"
 	"testing"
-	"time"
 	"uuid"
 
 	"github.com/stretchr/testify/require"
@@ -11,14 +11,7 @@ import (
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/memstore"
-	"github.com/trasa/watchmud/mobile"
-	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/rules"
-	"github.com/trasa/watchmud/slot"
-	"github.com/trasa/watchmud/spaces"
-	"github.com/trasa/watchmud/wandering"
-	"github.com/trasa/watchmud/zonereset"
 )
 
 type worldTestSuite struct {
@@ -55,105 +48,103 @@ func (s *worldTestSuite) SetupTest() {
 }
 
 func NewTestWorld() (*World, error) {
-
-	voidZone := spaces.NewZone("void", "void", zonereset.NEVER, time.Duration(0))
-	voidRoom := spaces.NewRoom(voidZone, "void", "void", "void")
-	voidZone.AddRoom(voidRoom)
-
-	startZone := spaces.NewZone("start", "start", zonereset.NEVER, time.Duration(0))
-	startRoom := spaces.NewRoom(startZone, "start", "start", "this is a test room.")
-	startZone.AddRoom(startRoom)
-
-	// stuff that's in the start room
-	knife := object.NewDefinition(
-		"knife",
-		"knife",
-		startZone.Id,
-		object.Weapon, []string{},
-		"knife",
-		"A knife is on the ground.",
-		slot.Wield,
-	)
-	knife.RoleWeights = map[string]int{"striker": 2}
-	knifeInstance := object.NewInstance(uuid.New(), knife)
-	if err := startRoom.Inventory.Add(knifeInstance); err != nil {
-		return nil, err
-	}
-	helmet := object.NewDefinition(
-		"helmet",
-		"helmet",
-		startZone.Id,
-		object.Armor,
-		[]string{"helm", "iron", "helmet"},
-		"iron helmet",
-		"an iron helmet is on the ground",
-		slot.Head,
-	)
-	helmet.RoleWeights = map[string]int{"tank": 2}
-	helmetInstance := object.NewInstance(uuid.New(), helmet)
-	if err := startRoom.Inventory.Add(helmetInstance); err != nil {
-		return nil, err
-	}
-	mob := mobile.NewDefinition(
-		"targetDrone",
-		"Target Drone",
-		startZone.Id,
-		[]string{"target", "drone"},
-		"Target Drone",
-		"Target Drone buzzes around.",
-		25,
-		wandering.Definition{CanWander: false},
-		10,
-		false,
-	)
-	startZone.AddMobileDefinition(mob)
-	otherDef := mobile.NewDefinition(
-		"otherDrone",
-		"Other Drone",
-		startZone.Id,
-		[]string{"other"},
-		"Other Drone",
-		"Other Drone buzzes around.",
-		25,
-		wandering.Definition{CanWander: false},
-		10,
-		false,
-	)
-	startZone.AddMobileDefinition(otherDef)
-
-	if err := addMob(startRoom, mob); err != nil {
-		return nil, err
-	}
-	if err := addMob(startRoom, otherDef); err != nil {
-		return nil, err
-	}
-
-	zones := []*spaces.Zone{
-		voidZone,
-		startZone,
-	}
-
-	settings := loader.Settings{
-		VoidZone:  "void",
-		VoidRoom:  "void",
-		StartZone: "start",
-		StartRoom: "start",
-	}
-
-	catalog, err := rules.NewTestCatalog()
+	fs := os.DirFS("../testcontent")
+	content, err := loader.LoadContent(fs)
 	if err != nil {
 		return nil, err
 	}
+	/*
+		voidZone := spaces.NewZone("void", "void", zonereset.NEVER, time.Duration(0))
+		voidRoom := spaces.NewRoom(voidZone, "void", "void", "void")
+		voidZone.AddRoom(voidRoom)
 
+		startZone := spaces.NewZone("start", "start", zonereset.NEVER, time.Duration(0))
+		startRoom := spaces.NewRoom(startZone, "start", "start", "this is a test room.")
+		startZone.AddRoom(startRoom)
+
+		// stuff that's in the start room
+		knife := object.NewDefinition(
+			"knife",
+			"knife",
+			startZone.Id,
+			object.Weapon, []string{},
+			"knife",
+			"A knife is on the ground.",
+			slot.Wield,
+		)
+		knife.RoleWeights = map[string]int{"striker": 2}
+		knifeInstance := object.NewInstance(uuid.New(), knife)
+		if err := startRoom.Inventory.Add(knifeInstance); err != nil {
+			return nil, err
+		}
+		helmet := object.NewDefinition(
+			"helmet",
+			"helmet",
+			startZone.Id,
+			object.Armor,
+			[]string{"helm", "iron", "helmet"},
+			"iron helmet",
+			"an iron helmet is on the ground",
+			slot.Head,
+		)
+		helmet.RoleWeights = map[string]int{"tank": 2}
+		helmetInstance := object.NewInstance(uuid.New(), helmet)
+		if err := startRoom.Inventory.Add(helmetInstance); err != nil {
+			return nil, err
+		}
+		mob := mobile.NewDefinition(
+			"targetDrone",
+			"Target Drone",
+			startZone.Id,
+			[]string{"target", "drone"},
+			"Target Drone",
+			"Target Drone buzzes around.",
+			25,
+			wandering.Definition{CanWander: false},
+			10,
+			false,
+		)
+		startZone.AddMobileDefinition(mob)
+		otherDef := mobile.NewDefinition(
+			"otherDrone",
+			"Other Drone",
+			startZone.Id,
+			[]string{"other"},
+			"Other Drone",
+			"Other Drone buzzes around.",
+			25,
+			wandering.Definition{CanWander: false},
+			10,
+			false,
+		)
+		startZone.AddMobileDefinition(otherDef)
+
+		if err := addMob(startRoom, mob); err != nil {
+			return nil, err
+		}
+		if err := addMob(startRoom, otherDef); err != nil {
+			return nil, err
+		}
+
+		zones := []*spaces.Zone{
+			voidZone,
+			startZone,
+		}
+
+		settings := loader.Settings{
+			VoidZone:  "void",
+			VoidRoom:  "void",
+			StartZone: "start",
+			StartRoom: "start",
+		}
+
+		catalog, err := rules.NewTestCatalog()
+		if err != nil {
+			return nil, err
+		}
+	*/
 	store := memstore.New()
-	content := loader.NewContent(&settings, catalog, zones)
+	roller := newLoadedDice()
 
-	return New(content, store)
-}
-
-func addMob(r *spaces.Room, d *mobile.Definition) error {
-	if err := r.AddMobile(mobile.NewInstance(d)); err != nil {
-		return err
-	}
-	return nil
+	return New(content, store, roller)
 }

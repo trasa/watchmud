@@ -1,0 +1,43 @@
+[
+  {
+    "id": "walker",
+    "name": "walker",
+    "short_description": "The Walker walks.",
+    "description_in_room": "The walker stands here...for now.",
+    "max_health": 25,
+    "wandering_definition": {
+      "can_wander": true,
+      "check_frequency_seconds": 30,
+      "check_percentage": 50,
+      "wander_style": 1
+    },
+    "ac": 10
+  },
+  {
+    "id": "scripty",
+    "name": "scripty",
+    "short_description": "Scripty thinks about things.",
+    "description_in_room": "Scripty is pondering something.",
+    "max_health": 25,
+    "wandering_definition": {
+      "can_wander": true,
+      "check_frequency_seconds": 10,
+      "check_percentage": 100,
+      "wander_style": 2,
+      "path": [ "start", "northRoom", "northeastRoom", "eastRoom" ]
+    },
+    "flags": ["nofight"],
+    "ac": 10
+  },
+  {
+    "id": "ratman",
+    "name": "ratman",
+    "short_description": "Ratman glares at you.",
+    "description_in_room": "Ratman glares at you.",
+    "max_health": 15,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 10
+  }
+]

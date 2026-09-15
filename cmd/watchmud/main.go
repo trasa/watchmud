@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"flag"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/rs/zerolog/log"
+	"github.com/trasa/watchmud/dice"
 	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/logging"
 	"github.com/trasa/watchmud/memstore"
@@ -74,17 +76,27 @@ func run() error {
 	// persistence
 	store := memstore.New()
 
-	w, err := world.New(content, store)
+	// randomness
+	var seed [32]byte
+	if _, err := rand.Read(seed[:]); err != nil {
+		return fmt.Errorf("generating random seed: %w", err)
+	}
+	roller := dice.New(seed)
+
+	w, err := world.New(content, store, roller)
 	if err != nil {
 		return fmt.Errorf("loading world: %w", err)
 	}
 	gameServer := server.New(w, content.Catalog, store)
 
 	// launch telnet listener
-	go telnet.Listen(ctx, fmt.Sprintf("localhost:%d", cfg.TelnetPort), gameServer, content.Catalog)
+	err = telnet.Listen(ctx, fmt.Sprintf("localhost:%d", cfg.TelnetPort), gameServer, content.Catalog)
+	if err != nil {
+		return fmt.Errorf("telnet listener: %w", err)
+	}
 
-	if err := gameServer.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
-		return fmt.Errorf("game server: %w", err)
+	if runErr := gameServer.Run(ctx); runErr != nil && !errors.Is(runErr, context.Canceled) {
+		return fmt.Errorf("game server: %w", runErr)
 	}
 	return nil
 }

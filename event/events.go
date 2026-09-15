@@ -212,6 +212,17 @@ type Restored struct {
 	IsPlayer bool
 }
 
+type Fleeing struct {
+	Who string
+}
+type FleeAttemptFailed struct {
+	Who string
+}
+
+type Fled struct {
+	Who string
+}
+
 // ---- builder commands ------------------------------------------------------
 
 type Loaded struct{}

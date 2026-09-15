@@ -112,8 +112,9 @@ func (r *Room) playersExcept(exclude *player.Player) []*player.Player {
 }
 
 // PlayerEnters a room, telling other room entities about it.
+// Different from AddPlayer, which just updates the list and
+// does not send notifications.
 func (r *Room) PlayerEnters(p *player.Player) {
-	// TODO how does this make sense next to the other Add, etc funcs?
 	r.Send(event.Entered{Who: p.Name()})
 	r.AddPlayer(p)
 }
@@ -209,9 +210,12 @@ func (r *Room) ExitString() string {
 	return direction.Format(exits)
 }
 
-// HasExit determines if there is a valid exit in this direction.
+// HasExit determines if there is a valid exit in this direction
+// usable for 'standard, normal' sorts of movement (not magical,
+// can't run through closed doors or walls, etc.)
 func (r *Room) HasExit(dir direction.Direction) bool {
 	// TODO what about exits that are locked or closed?
+	// this should also consider that.
 	_, ok := r.directions[dir]
 	return ok
 }

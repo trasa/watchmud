@@ -99,6 +99,9 @@ func parseCommand(tokens []string) (command.Command, error) {
 		}
 		return command.Kill{Target: tokens[1]}, nil
 
+	case "flee":
+		return command.Flee{}, nil
+
 	case "restore":
 		if len(tokens) < 2 {
 			return nil, errors.New("Restore whom?")

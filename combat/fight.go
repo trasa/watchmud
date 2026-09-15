@@ -26,7 +26,7 @@ func newFight(fighter Combatant, fightee Combatant, zoneId string, roomId string
 	}
 }
 
-func (f Fight) String() string {
+func (f *Fight) String() string {
 	return fmt.Sprintf("%s fighting %s", f.Fighter.Name(), f.Fightee.Name())
 }
 

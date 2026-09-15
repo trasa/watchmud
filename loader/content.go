@@ -308,11 +308,13 @@ func (c *Content) loadZoneInstructions(fsys fs.FS) error {
 				zone.AddCommand(spaces.CreateObject{
 					ObjectDefinitionId: entry.ObjectId,
 					RoomId:             entry.RoomId,
+					ZoneId:             entry.ZoneId,
 					InstanceMax:        entry.InstanceMax,
 				})
 			case "CreateMobile":
 				zone.AddCommand(spaces.CreateMobile{
 					MobileDefinitionId: entry.MobileId,
+					ZoneId:             entry.ZoneId,
 					RoomId:             entry.RoomId,
 					InstanceMax:        entry.InstanceMax,
 				})

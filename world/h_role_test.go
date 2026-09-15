@@ -22,7 +22,7 @@ func TestRoleTestSuite(t *testing.T) {
 // equip puts an item straight into a slot, skipping the wear handler: these
 // tests are about what equipment adds up to, not about how it got there.
 func (s *RoleTestSuite) equip(loc slot.Location, name string, weights map[string]int) {
-	d := object.NewDefinition(name, name, "start", object.Armor, nil, name, name+" is here.", loc)
+	d := object.NewDefinition(name, name, "wrathrock", object.Armor, nil, name, name+" is here.", loc)
 	d.RoleWeights = weights
 	s.p.Slots().Set(loc, object.NewInstance(uuid.New(), d))
 }
@@ -95,7 +95,7 @@ func (s *RoleTestSuite) TestStatReportsTheSameRole() {
 	st := sent[event.Stat](s.T(), s.r, 0)
 	s.Assert().Equal("Striker", st.Role)
 	s.Assert().Equal("Human", st.Lineage)
-	s.Assert().Equal("start", st.ZoneId)
-	s.Assert().Equal("start", st.RoomId)
+	s.Assert().Equal("wrathrock", st.ZoneId)
+	s.Assert().Equal("temple_square", st.RoomId)
 	s.Assert().Equal(100, st.MaxHealth)
 }

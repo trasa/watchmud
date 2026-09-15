@@ -87,7 +87,6 @@ func (z *Zone) Reset(mobileRoomMap *MobileRoomMap) []error {
 	return errs
 }
 
-// Create a mobile.
 func (z *Zone) createMobile(mobileRoomMap *MobileRoomMap, cmd CreateMobile) error {
 	// TODO determine how many of the definition are in the zone
 	defn := z.MobileDefinitions[cmd.MobileDefinitionId]

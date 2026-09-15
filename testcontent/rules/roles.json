@@ -1,0 +1,17 @@
+[
+  {
+    "id": "tank",
+    "name": "Tank",
+    "description": "Armored to the teeth and standing between the fight and everyone else."
+  },
+  {
+    "id": "healer",
+    "name": "Healer",
+    "description": "Carrying the kit that keeps other people upright."
+  },
+  {
+    "id": "striker",
+    "name": "Striker",
+    "description": "Carrying something sharp and no reason to be careful with it."
+  }
+]

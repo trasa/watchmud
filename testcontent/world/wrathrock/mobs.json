@@ -1,0 +1,36 @@
+[
+  {
+    "id": "rabbit",
+    "name": "rabbit",
+    "short_description": "A harmless rabbit.",
+    "description_in_room": "A harmless rabbit glares at you.",
+    "max_health": 2,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 1,
+    "aggressive": true
+  },
+  {
+    "id": "targetDrone",
+    "name": "Target Drone",
+    "short_description": "A target drone.",
+    "description_in_room": "Target Drone buzzes around.",
+    "aliases": [ "target", "drone"  ],
+    "max_health": 25,
+    "wandering_definition": { "can_wander": false },
+    "ac": 10,
+    "aggressive": false
+  },
+  {
+    "id": "littleDrone",
+    "name": "Little Drone",
+    "short_description": "A small drone.",
+    "description_in_room": "Little Drone buzzes around.",
+    "aliases": [ "little", "drone"  ],
+    "max_health": 25,
+    "wandering_definition": { "can_wander": false },
+    "ac": 10,
+    "aggressive": false
+  }
+]

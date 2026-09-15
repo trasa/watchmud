@@ -38,6 +38,7 @@ const (
 	NoFight         ResultCode = "NO_FIGHT"
 	InAFight        ResultCode = "IN_A_FIGHT"
 	AlreadyFighting ResultCode = "ALREADY_FIGHTING"
+	CantFlee        ResultCode = "CANT_FLEE"
 
 	// talking
 	ToPlayerNotFound ResultCode = "TO_PLAYER_NOT_FOUND"

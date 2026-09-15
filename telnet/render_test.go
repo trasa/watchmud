@@ -108,12 +108,12 @@ var commandCases = []commandCase{
 	{
 		name:  "exits",
 		input: "exits",
-		want:  "Exits:\nNone!\n",
+		want:  "Exits:\neast, south\n",
 	},
 	{
 		name:  "who lists everyone",
 		input: "who",
-		want:  "-- Who Is Here --\notherdood the Human - start - start\ntestdood the Human - start - start\n",
+		want:  "-- Who Is Here --\notherdood the Human - Temple Square - Wrathrock\ntestdood the Human - Temple Square - Wrathrock\n",
 	},
 	{
 		name:  "nothing equipped",
@@ -263,13 +263,13 @@ func TestCommandRendering(t *testing.T) {
 }
 
 // what NewTestWorld's start room looks like
-const startRoomBlock = `start
- this is a test room.
-[ Exits: None! ]
+const startRoomBlock = `Temple Square
+ The main square of the town. People come and go. East is a donation room, south is the marketplace.
+[ Exits: East, South ]
 A knife is on the ground.
-an iron helmet is on the ground
+A plain iron helmet lies here.
 Target Drone buzzes around.
-Other Drone buzzes around.
+Little Drone buzzes around.
 otherdood is here.
 `
 

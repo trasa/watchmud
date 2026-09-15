@@ -1,0 +1,32 @@
+[
+  {
+    "type": "CreateMobile",
+    "mobile_id": "rabbit",
+    "room_id": "south_trail",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "targetDrone",
+    "room_id": "temple_square",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "littleDrone",
+    "room_id": "temple_square",
+    "instance_max": 1
+  },
+  {
+  "type": "CreateObject",
+  "object_id": "knife",
+  "room_id": "temple_square",
+  "instance_max": 1
+  },
+  {
+  "type": "CreateObject",
+  "object_id": "iron_helmet",
+  "room_id": "temple_square",
+  "instance_max": 1
+  }
+]
