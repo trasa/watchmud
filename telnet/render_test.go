@@ -206,7 +206,7 @@ var commandCases = []commandCase{
 			p.Slots().Set(slot.Head, testHelmet())
 		},
 		input: "who",
-		want:  "-- Who Is Here --\notherdood the Human - start - start\ntestdood the Human Tank - start - start\n",
+		want:  "-- Who Is Here --\notherdood the Human - Temple Square - Wrathrock\ntestdood the Human Tank - Temple Square - Wrathrock\n",
 	},
 	{
 		// recall moves with direction.None, which must not render as "none!"
@@ -300,6 +300,7 @@ Change what you're wearing to change your role.
 `
 
 const roleBlockTank = `You are fighting as a Tank.
+ Armored to the teeth and standing between the fight and everyone else.
   Tank     2  (iron helmet 2)
   Healer   0
   Striker  0
@@ -307,6 +308,7 @@ Change what you're wearing to change your role.
 `
 
 const roleBlockStriker = `You are fighting as a Striker.
+ Carrying something sharp and no reason to be careful with it.
   Tank     0
   Healer   0
   Striker  2  (knife 2)
@@ -320,10 +322,10 @@ const statBlockNoGear = "Status:\n" +
 	"Player:\ttestdood\n" +
 	"Lineage:\tHuman\tRole: none\n" +
 	"Health:\t100 of 100\n" +
-	"Location:\t(start - start)\n\n"
+	"Location:\t(wrathrock - temple_square)\n\n"
 
 const statBlockTank = "Status:\n" +
 	"Player:\ttestdood\n" +
 	"Lineage:\tHuman\tRole: Tank\n" +
 	"Health:\t100 of 100\n" +
-	"Location:\t(start - start)\n\n"
+	"Location:\t(wrathrock - temple_square)\n\n"
