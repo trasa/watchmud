@@ -31,6 +31,7 @@ func (w *World) handleFlee(msg *gameserver.HandlerParameter, cmd command.Flee) {
 			msg.Fail(event.CantFlee)
 			return
 		}
+		i--
 		// is there an exit?
 		// TODO need to check other things like if the door is locked, etc.
 		dir := direction.All[i]

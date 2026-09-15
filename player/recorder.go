@@ -7,7 +7,7 @@ type Recorder struct {
 }
 
 func (r *Recorder) Send(msg any) {
-	log.Debug().Msgf("sending message: %v", msg)
+	log.Debug().Msgf("sending message: %T: %v", msg, msg)
 	r.Sent = append(r.Sent, msg)
 }
 
