@@ -89,11 +89,13 @@ func run() error {
 	}
 	gameServer := server.New(w, content.Catalog, store)
 
-	// launch telnet listener
-	err = telnet.Listen(ctx, fmt.Sprintf("localhost:%d", cfg.TelnetPort), gameServer, content.Catalog)
-	if err != nil {
-		return fmt.Errorf("telnet listener: %w", err)
-	}
+	// launch telnet listener as goroutine
+	go func() {
+		err := telnet.Listen(ctx, fmt.Sprintf("localhost:%d", cfg.TelnetPort), gameServer, content.Catalog)
+		if err != nil {
+			log.Error().Err(err).Msg("telnet listener")
+		}
+	}()
 
 	if runErr := gameServer.Run(ctx); runErr != nil && !errors.Is(runErr, context.Canceled) {
 		return fmt.Errorf("game server: %w", runErr)

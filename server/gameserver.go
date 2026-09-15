@@ -37,6 +37,7 @@ func New(w *world.World, c *rules.Catalog, s player.Store) *GameServer {
 
 // Run the game server, obviously.
 func (gs *GameServer) Run(ctx context.Context) error {
+	log.Info().Msg("starting game server Run loop")
 	ticker := time.NewTicker(mudtime.PulseInterval)
 	defer ticker.Stop()
 
