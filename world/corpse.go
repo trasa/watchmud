@@ -8,7 +8,7 @@ import (
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 )
 
 // becomeCorpse if you are dead
@@ -40,7 +40,8 @@ func (w *World) becomeMobileCorpse(m *mobile.Instance) {
 		m.Definition.Aliases,
 		corpseName,
 		fmt.Sprintf("The corpse of %s is lying here.", m.Definition.Name),
-		slot.None)
+		rules.SlotNone,
+		"cloth") // TODO this doesn't make sense ... this probably should be defined somewhere else for all corpses
 
 	corpse := object.NewInstance(uuid.New(), d)
 	// TODO transfer m's possessions over to the corpse

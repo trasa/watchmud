@@ -10,7 +10,7 @@ import (
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/world"
 )
 
@@ -152,7 +152,7 @@ var commandCases = []commandCase{
 		// the phase in one test case: gear alone decides the role
 		name: "wearing armor makes you a tank",
 		setup: func(_ *world.World, p *player.Player, o *player.Player) {
-			p.Slots().Set(slot.Head, testHelmet())
+			p.Equipment().Equip(rules.SlotHead, testHelmet())
 		},
 		input: "role",
 		want:  roleBlockTank,
@@ -160,7 +160,7 @@ var commandCases = []commandCase{
 	{
 		name: "wielding a knife makes you a striker",
 		setup: func(_ *world.World, p *player.Player, o *player.Player) {
-			p.Slots().Set(slot.Wield, testKnife())
+			p.Equipment().Equip(rules.SlotWield, testKnife())
 		},
 		input: "roles",
 		want:  roleBlockStriker,
@@ -181,7 +181,7 @@ var commandCases = []commandCase{
 	{
 		name: "taking the gear off takes the role with it",
 		setup: func(_ *world.World, p *player.Player, o *player.Player) {
-			p.Slots().Set(slot.Head, testHelmet())
+			p.Equipment().Equip(rules.SlotHead, testHelmet())
 		},
 		input: "remove helmet",
 		want:  "You stop using iron helmet.\n",
@@ -194,7 +194,7 @@ var commandCases = []commandCase{
 	{
 		name: "stat reflects what is equipped right now",
 		setup: func(_ *world.World, p *player.Player, o *player.Player) {
-			p.Slots().Set(slot.Head, testHelmet())
+			p.Equipment().Equip(rules.SlotHead, testHelmet())
 		},
 		input: "stat",
 		want:  statBlockTank,
@@ -203,7 +203,7 @@ var commandCases = []commandCase{
 		// a role shows up in who beside the lineage, where a class used to
 		name: "who shows the role",
 		setup: func(_ *world.World, p *player.Player, o *player.Player) {
-			p.Slots().Set(slot.Head, testHelmet())
+			p.Equipment().Equip(rules.SlotHead, testHelmet())
 		},
 		input: "who",
 		want:  "-- Who Is Here --\notherdood the Human - Temple Square - Wrathrock\ntestdood the Human Tank - Temple Square - Wrathrock\n",
@@ -275,17 +275,34 @@ otherdood is here.
 
 func testKnife() *object.Instance {
 	d := object.NewDefinition(
-		"knife", "knife", "start", object.Weapon, []string{},
-		"knife", "A knife is on the ground.", slot.Wield)
-	d.RoleWeights = map[string]int{"striker": 2}
+		"knife",
+		"knife",
+		"start",
+		object.Weapon,
+		[]string{},
+		"knife",
+		"A knife is on the ground.",
+		rules.SlotWield,
+		"cloth", // TODO
+	)
+	//d.RoleWeights = map[string]int{"striker": 2}
 	return object.NewInstance(uuid.New(), d)
 }
 
 func testHelmet() *object.Instance {
 	d := object.NewDefinition(
-		"helmet", "helmet", "start", object.Armor, []string{"helm"},
-		"iron helmet", "an iron helmet is on the ground", slot.Head)
-	d.RoleWeights = map[string]int{"tank": 2}
+		"helmet",
+		"helmet",
+		"start",
+		object.Armor,
+		[]string{"helm"},
+		"iron helmet",
+
+		"an iron helmet is on the ground",
+		rules.SlotHead,
+		"cloth", // TODO
+	)
+	//d.RoleWeights = map[string]int{"tank": 2}
 	return object.NewInstance(uuid.New(), d)
 }
 

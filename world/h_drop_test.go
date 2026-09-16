@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/command"
 	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 )
 
 type HandleDropSuite struct {
@@ -84,7 +84,7 @@ func (s *HandleDropSuite) TestInUse() {
 	s.get("knife")
 
 	// now wield the knife
-	equip := command.Equip{Target: "knife", Slot: slot.Wield}
+	equip := command.Equip{Target: "knife", Slot: rules.SlotWield}
 	s.w.handleEquip(s.handlerParameter(equip), equip)
 
 	s.drop("knife")

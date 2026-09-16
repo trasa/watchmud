@@ -2,6 +2,8 @@ package object
 
 import "fmt"
 
+// TODO replace with error
+
 type InstanceNotFoundError struct {
 	Id string
 }

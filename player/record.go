@@ -7,7 +7,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/rules"
-	"github.com/trasa/watchmud/slot"
 )
 
 type Record struct {
@@ -16,12 +15,12 @@ type Record struct {
 	CurHealth, MaxHealth   int64
 	LineageId              string // cosmetic; there is no ClassId beside it any more
 	LastZoneId, LastRoomId string
-	Slots                  []SlotRecord
+	Equipment              []EquipmentRecord
 	Inventory              []InventoryRecord
 }
 
-type SlotRecord struct {
-	Location   slot.Location
+type EquipmentRecord struct {
+	Slot       string
 	InstanceId uuid.UUID
 }
 
@@ -54,7 +53,7 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 		out:       out,
 		Lineage:   lineage,
 		inventory: NewInventory(),
-		slots:     NewSlots(),
+		equipment: object.NewEquipment(),
 		curHealth: rec.CurHealth,
 		maxHealth: rec.MaxHealth,
 		location:  NewLocation(rec.LastZoneId, rec.LastRoomId),
@@ -72,15 +71,21 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 		p.inventory.Add(i)
 	}
 
-	for _, s := range rec.Slots {
+	for _, s := range rec.Equipment {
 		item, exists := p.inventory.ByInstanceId(s.InstanceId)
 		if !exists {
 			// the item didn't survive a content edit; leave the slot empty
 			// rather than filling it with a nil that reads as occupied.
-			log.Warn().Str("player", rec.Name).Msgf("instance %s not found for slot %s", s.InstanceId, s.Location)
+			log.Warn().Str("player", rec.Name).Msgf("instance %s not found for slot %s", s.InstanceId, s.Slot)
 			continue
 		}
-		p.Slots().Set(s.Location, item)
+		if slot, err := rules.ParseEquipmentSlot(s.Slot); err != nil {
+			// the item has a slot that no longer exists, leave it empty and warn.
+			log.Warn().Str("player", rec.Name).Msgf("slot %s no longer exists, dropping item %s", s.Slot, item.Id)
+			continue
+		} else {
+			p.equipment.Equip(slot, item)
+		}
 	}
 	return p, nil
 }
@@ -94,7 +99,7 @@ func (p *Player) Record() *Record {
 		LineageId:  p.Lineage.Id,
 		LastZoneId: p.location.ZoneId,
 		LastRoomId: p.location.RoomId,
-		Slots:      p.slots.Record(),
+		Equipment:  EquipmentToRecord(p.equipment),
 		Inventory:  p.inventory.Record(),
 	}
 }
@@ -112,14 +117,14 @@ func (i *Inventory) Record() []InventoryRecord {
 	return records
 }
 
-func (s *Slots) Record() []SlotRecord {
-	var records []SlotRecord
-	for loc, item := range s.slotMap {
+func EquipmentToRecord(eq *object.Equipment) []EquipmentRecord {
+	var records []EquipmentRecord
+	for slot, item := range eq.All() {
 		if item == nil {
 			continue
 		}
-		records = append(records, SlotRecord{
-			Location:   loc,
+		records = append(records, EquipmentRecord{
+			Slot:       string(slot),
 			InstanceId: item.Id,
 		})
 	}

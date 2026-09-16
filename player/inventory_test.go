@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 )
 
 type inventorySuite struct {
@@ -22,7 +22,17 @@ func TestInventorySuite(t *testing.T) {
 
 func (s *inventorySuite) SetupTest() {
 	s.inv = NewInventory()
-	s.definition = object.NewDefinition("defn", "defnName", "zone", object.Armor, []string{"alias"}, "desc", "descground", slot.Arms)
+	s.definition = object.NewDefinition(
+		"defn",
+		"defnName",
+		"zone",
+		object.Armor,
+		[]string{"alias"},
+		"desc",
+		"descground",
+		rules.SlotArms,
+		"cloth", // TODO
+	)
 	s.instance = object.NewInstance(uuid.New(), s.definition)
 	s.inv.Add(s.instance)
 }

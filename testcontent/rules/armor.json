@@ -1,0 +1,23 @@
+{
+  "cloth": {
+    "chest": 1,
+    "legs": 1,
+    "head": 0,
+    "hands": 0,
+    "feet": 0
+  },
+  "leather": {
+    "chest": 2,
+    "legs": 1,
+    "head": 1,
+    "hands": 1,
+    "feet": 1
+  },
+  "plate": {
+    "chest": 4,
+    "legs": 2,
+    "head": 1,
+    "hands": 1,
+    "feet": 1
+  }
+}

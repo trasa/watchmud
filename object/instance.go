@@ -20,6 +20,10 @@ func (i *Instance) IsGettable() bool {
 	return i.Definition.Gettable()
 }
 
+func (i *Instance) Matches(target string) bool {
+	return i.Definition.Matches(target)
+}
+
 func NewInstance(id uuid.UUID, d *Definition) *Instance {
 	return &Instance{
 		Id:         id,

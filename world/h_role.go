@@ -1,7 +1,6 @@
 package world
 
 import (
-	"fmt"
 	"maps"
 	"slices"
 
@@ -15,7 +14,7 @@ import (
 // role -- wearing different gear is the command.
 func (w *World) handleRole(msg *gameserver.HandlerParameter, cmd command.Role) {
 	p := msg.Player
-	equipped := p.Slots().GetAll()
+	equipped := p.Equipment().All()
 
 	// Slot order, because GetAll hands back a map and a player should not see
 	// their own gear listed in a different order every time they ask.
@@ -25,13 +24,15 @@ func (w *World) handleRole(msg *gameserver.HandlerParameter, cmd command.Role) {
 		if inst == nil {
 			continue // a slot whose item didn't survive a content edit
 		}
-		for roleId, weight := range inst.Definition.RoleWeights {
-			if weight == 0 {
-				continue
-			}
-			sources[roleId] = append(sources[roleId],
-				fmt.Sprintf("%s %d", inst.Definition.ShortDescription, weight))
-		}
+		// TODO reimplement with the new AC/armor_type/roles definitions ...
+		/*
+			for roleId, weight := range inst.Definition.RoleWeights {
+				if weight == 0 {
+					continue
+				}
+				sources[roleId] = append(sources[roleId],
+					fmt.Sprintf("%s %d", inst.Definition.ShortDescription, weight))
+			}*/
 	}
 
 	weights := p.RoleWeights()

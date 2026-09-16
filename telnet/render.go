@@ -171,7 +171,7 @@ func renderEquipment(equipment []event.EquippedItem) string {
 	b.WriteString("You are using:\n")
 	for _, eq := range equipment {
 		// include instance id just for testing, for now...
-		b.WriteString(eq.Slot.String() + "\t" + eq.ShortDescription + "\t(" + eq.Id + ")\n")
+		b.WriteString(string(eq.Slot) + "\t" + eq.ShortDescription + "\t(" + eq.Id + ")\n")
 	}
 	b.WriteString("\n")
 	return b.String()

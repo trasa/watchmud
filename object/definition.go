@@ -2,9 +2,10 @@ package object
 
 import (
 	"slices"
+	"strings"
 
 	"github.com/trasa/watchmud/behavior"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 )
 
 // Definition of what it means to be an "object"
@@ -18,22 +19,11 @@ type Definition struct {
 	Aliases             []string
 	Categories          CategorySet
 	Name                string
-	ShortDescription    string // description of the object when being used: "a long, green stick" -> "The Beastly Fido picks up the long, green stick."
-	DescriptionOnGround string // description of the object when lying on the ground: "A shiny sword is lying here."
-	WearLocation        slot.Location
+	ShortDescription    string              // description of the object when being used: "a long, green stick" -> "The Beastly Fido picks up the long, green stick."
+	DescriptionOnGround string              // description of the object when lying on the ground: "A shiny sword is lying here."
+	WearLocation        rules.EquipmentSlot // TODO rename to EquipmentSlot
 	Behaviors           behavior.BehaviorSet
-
-	// RoleWeights is what this object contributes to each role (by
-	// rules.Role.Id) while it is equipped: {"tank": 3} is solidly tanky gear,
-	// {"healer": 2, "tank": 1} is a healer's kit with some heft to it. The
-	// weights of everything a character has equipped are summed and the
-	// highest total is their role -- so this field, across a few objects, is
-	// the entire replacement for character classes.
-	//
-	// Set by the loader after construction, like Behaviors, and validated
-	// against the catalog there: an unknown role id is a content error.
-	// Nil for anything that isn't equipment, which is most objects.
-	RoleWeights map[string]int
+	ArmorType           string
 }
 
 func NewDefinition(
@@ -44,16 +34,18 @@ func NewDefinition(
 	aliases []string,
 	shortDescription string,
 	descriptionOnGround string,
-	wearLocation slot.Location) *Definition {
+	wearLocation rules.EquipmentSlot,
+	armorType string) *Definition {
 	d := &Definition{
 		ObjectId:            NewObjectId(id, zoneId),
-		Name:                name,
+		Name:                strings.ToLower(name),
 		ShortDescription:    shortDescription,
 		DescriptionOnGround: descriptionOnGround,
 		Categories:          make(CategorySet),
 		Aliases:             aliases,
 		WearLocation:        wearLocation,
 		Behaviors:           behavior.NewBehaviorSet(),
+		ArmorType:           armorType,
 	}
 	d.Categories.Add(category)
 	return d
@@ -72,9 +64,17 @@ func (d *Definition) Gettable() bool {
 }
 
 func (d *Definition) Wearable() bool {
-	return d.WearLocation != slot.None
+	return d.WearLocation != rules.SlotNone
 }
 
 func (d *Definition) HasAlias(target string) bool {
 	return slices.Contains(d.Aliases, target)
+}
+
+func (d *Definition) Matches(target string) bool {
+	target = strings.ToLower(target)
+	if d.Name == target || d.HasAlias(target) {
+		return true
+	}
+	return false
 }

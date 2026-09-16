@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 )
 
 type PlayerSuite struct {
@@ -27,8 +27,17 @@ func (s *PlayerSuite) SetupTest() {
 func (s *PlayerSuite) TestAddInventory_New() {
 	// old test, do not trust it
 
-	defnPtr := object.NewDefinition("defnid", "name", "zone",
-		object.Food, []string{}, "short desc", "in room", slot.None)
+	defnPtr := object.NewDefinition(
+		"defnid",
+		"name",
+		"zone",
+		object.Food,
+		[]string{},
+		"short desc",
+		"in room",
+		rules.SlotNone,
+		"plate", // TODO makes no sense for food...
+	)
 	instPtr := &object.Instance{
 		Id:         uuid.New(),
 		Definition: defnPtr,

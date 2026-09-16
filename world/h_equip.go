@@ -5,11 +5,11 @@ import (
 	"github.com/trasa/watchmud/command"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 )
 
 func (w *World) handleEquip(msg *gameserver.HandlerParameter, cmd command.Equip) {
-	if cmd.Slot <= slot.None {
+	if cmd.Slot <= rules.SlotNone {
 		msg.Fail(event.NoSlotGiven)
 		return
 	}
@@ -39,7 +39,7 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter, cmd command.Equip)
 	objectToEquip := objectsToEquip[0]
 
 	// do you already have something equipped in that location?
-	if msg.Player.Slots().Get(cmd.Slot) != nil {
+	if msg.Player.Equipment().Equipped(cmd.Slot) {
 		msg.Fail(event.LocationInUse)
 		return
 	}
@@ -50,6 +50,6 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter, cmd command.Equip)
 		return
 	}
 	// success
-	msg.Player.Slots().Set(cmd.Slot, objectToEquip)
+	msg.Player.Equipment().Equip(cmd.Slot, objectToEquip)
 	msg.Player.Send(event.Equipped{})
 }

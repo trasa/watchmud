@@ -2,6 +2,7 @@ package object
 
 import "fmt"
 
+// TODO replace with error
 type InstanceNotWeaponError struct {
 	Id string
 }

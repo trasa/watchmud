@@ -8,7 +8,7 @@ import (
 	"github.com/trasa/watchmud/command"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 )
 
 type RemoveTestSuite struct {
@@ -20,9 +20,18 @@ func TestRemoveTestSuite(t *testing.T) {
 }
 
 func (s *RemoveTestSuite) helmet() *object.Instance {
-	d := object.NewDefinition("iron_helmet", "iron helmet", "start", object.Armor,
-		[]string{"helm"}, "iron helmet", "an iron helmet is here.", slot.Head)
-	d.RoleWeights = map[string]int{"tank": 2}
+	d := object.NewDefinition(
+		"iron_helmet",
+		"iron helmet",
+		"start",
+		object.Armor,
+		[]string{"helm"},
+		"iron helmet",
+		"an iron helmet is here.",
+		rules.SlotHead,
+		"plate") // TODO change to type
+
+	// TODO reimplement me	//d.RoleWeights = map[string]int{"tank": 2}
 	return object.NewInstance(uuid.New(), d)
 }
 
@@ -47,32 +56,32 @@ func (s *RemoveTestSuite) TestCarryingIsNotUsing() {
 }
 
 func (s *RemoveTestSuite) TestRemoveByAlias() {
-	s.p.Slots().Set(slot.Head, s.helmet())
+	s.p.Equipment().Equip(rules.SlotHead, s.helmet())
 	cmd := command.Remove{Target: "helm"}
 	s.w.handleRemove(s.handlerParameter(cmd), cmd)
 	s.Assert().Equal("iron helmet", sent[event.Removed](s.T(), s.r, 0).Item)
-	s.Assert().Nil(s.p.Slots().Get(slot.Head))
+	s.Assert().Nil(s.p.Equipment().At(rules.SlotHead))
 }
 
 // The slot has to be genuinely free afterwards, not holding a nil that still
 // reads as occupied -- otherwise you could take a helmet off once and never
 // wear anything on your head again.
 func (s *RemoveTestSuite) TestTheSlotIsUsableAgain() {
-	s.p.Slots().Set(slot.Head, s.helmet())
+	s.p.Equipment().Equip(rules.SlotHead, s.helmet())
 	cmd := command.Remove{Target: "iron helmet"}
 	s.w.handleRemove(s.handlerParameter(cmd), cmd)
-	s.Require().False(s.p.Slots().IsSlotInUse(slot.Head))
+	s.Require().False(s.p.Equipment().Equipped(rules.SlotHead))
 
 	wear := command.Wear{Target: "helm"}
 	s.p.Inventory().Add(s.helmet())
 	s.w.handleWear(s.handlerParameter(wear), wear)
 	sent[event.Worn](s.T(), s.r, 1)
-	s.Assert().True(s.p.Slots().IsSlotInUse(slot.Head))
+	s.Assert().True(s.p.Equipment().Equipped(rules.SlotHead))
 }
 
 // Removing the gear removes the role: this is the whole reason remove exists.
 func (s *RemoveTestSuite) TestRemovingTheGearRemovesTheRole() {
-	s.p.Slots().Set(slot.Head, s.helmet())
+	s.p.Equipment().Equip(rules.SlotHead, s.helmet())
 	s.Assert().Equal("Tank", s.w.roleName(s.p.RoleWeights()))
 
 	cmd := command.Remove{Target: "iron helmet"}
@@ -82,7 +91,7 @@ func (s *RemoveTestSuite) TestRemovingTheGearRemovesTheRole() {
 
 // And the equipment listing doesn't trip over the emptied slot.
 func (s *RemoveTestSuite) TestEquipmentListingAfterRemove() {
-	s.p.Slots().Set(slot.Head, s.helmet())
+	s.p.Equipment().Equip(rules.SlotHead, s.helmet())
 	cmd := command.Remove{Target: "iron helmet"}
 	s.w.handleRemove(s.handlerParameter(cmd), cmd)
 

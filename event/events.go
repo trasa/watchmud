@@ -2,7 +2,7 @@ package event
 
 import (
 	"github.com/trasa/watchmud/direction"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 )
 
 // ---- session ---------------------------------------------------------------
@@ -112,7 +112,7 @@ type Equipment struct {
 }
 
 type EquippedItem struct {
-	Slot             slot.Location
+	Slot             rules.EquipmentSlot
 	Id               string
 	ShortDescription string
 }

@@ -18,12 +18,12 @@ func (w *World) handleRemove(msg *gameserver.HandlerParameter, cmd command.Remov
 		return
 	}
 
-	loc, inst, found := msg.Player.Slots().FindByNameOrAlias(cmd.Target)
+	loc, inst, found := msg.Player.Equipment().Find(cmd.Target)
 	if !found {
 		msg.Fail(event.TargetNotFound)
 		return
 	}
 
-	msg.Player.Slots().Clear(loc)
+	msg.Player.Equipment().Unequip(loc)
 	msg.Player.Send(event.Removed{Item: inst.Definition.ShortDescription})
 }

@@ -2,7 +2,7 @@ package command
 
 import (
 	"github.com/trasa/watchmud/direction"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 )
 
 // ---- session ---------------------------------------------------------------
@@ -95,7 +95,7 @@ func (Wear) Verb() string { return "wear" }
 
 type Equip struct {
 	Target string
-	Slot   slot.Location
+	Slot   rules.EquipmentSlot
 }
 
 func (Equip) Verb() string { return "equip" }

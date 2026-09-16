@@ -45,7 +45,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter, cmd command.Drop) {
 	// TODO cursed
 
 	// is the object being held or otherwise in use?
-	if msg.Player.Slots().IsItemInUse(objectToDrop) {
+	if msg.Player.Equipment().ItemEquipped(objectToDrop) {
 		msg.Fail(event.TargetInUse)
 		return
 	}

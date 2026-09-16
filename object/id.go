@@ -2,6 +2,10 @@ package object
 
 import "fmt"
 
+// This work was started so that an object or mob from one zone could be referred to
+// in the definition files of a different zone. But that's a bigger amount of work
+// than we're ready for; alternatively it might be a bad idea and need some re-thinking.
+
 type Id struct {
 	DefinitionId string
 	ZoneId       string

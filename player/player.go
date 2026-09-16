@@ -6,6 +6,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/combat"
+	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/rules"
 )
 
@@ -19,7 +20,7 @@ type Player struct {
 	// the equipped slots every time it is asked for, never stored.
 	Lineage   *rules.Lineage
 	inventory *Inventory
-	slots     *Slots
+	equipment *object.Equipment
 	curHealth int64
 	maxHealth int64
 	location  Location
@@ -36,7 +37,7 @@ func New(id uuid.UUID,
 		out:       out,
 		Lineage:   lineage,
 		inventory: NewInventory(),
-		slots:     NewSlots(),
+		equipment: object.NewEquipment(),
 		curHealth: 100, // TODO need a default here,
 		maxHealth: 100,
 	}
@@ -52,21 +53,18 @@ func (p *Player) Name() string {
 
 // Inventory returns the inventory
 func (p *Player) Inventory() *Inventory {
-	// TODO is needing this call indicating a problem?
 	return p.inventory
 }
 
-// Slots returns the inventory
-func (p *Player) Slots() *Slots {
-	// TODO is needing this call indicating a problem?
-	return p.slots
+func (p *Player) Equipment() *object.Equipment {
+	return p.equipment
 }
 
 // RoleWeights totals what the player's equipped gear contributes to each
 // role. Resolving that to a rules.Role is the caller's job -- see
 // rules.Catalog.RoleFor.
 func (p *Player) RoleWeights() map[string]int {
-	return p.slots.RoleWeights()
+	return p.equipment.RoleWeights()
 }
 
 // LineageName is the player's lineage for display. Cosmetic, and empty if
@@ -99,7 +97,7 @@ func (p *Player) Dead() bool {
 }
 
 func (p *Player) ArmorClass() int {
-	return p.slots.ArmorClass()
+	return p.equipment.ArmorClass()
 }
 
 func (p *Player) CalculateMeleeRollModifiers() int {

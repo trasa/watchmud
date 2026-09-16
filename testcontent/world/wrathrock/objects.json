@@ -14,7 +14,7 @@
     "category": "WEAPON",
     "short_description": "knife",
     "description_on_ground": "A knife is on the ground.",
-    "wear_location": "Wield",
+    "wear_location": "wield",
     "roles": { "striker": 2 }
   },
   {

@@ -8,7 +8,7 @@ import (
 
 func (w *World) handleShowEquipment(msg *gameserver.HandlerParameter, cmd command.ShowEquipment) {
 	var items []event.EquippedItem
-	for loc, inst := range msg.Player.Slots().GetAll() {
+	for loc, inst := range msg.Player.Equipment().All() {
 		if inst == nil {
 			continue
 		}

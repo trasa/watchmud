@@ -9,7 +9,7 @@ import (
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 )
 
 type HandleEquipSuite struct {
@@ -47,7 +47,7 @@ func (s *HandleEquipSuite) TestNoSlot() {
 }
 
 func (s *HandleEquipSuite) TestNoTarget() {
-	s.equip(command.Equip{Slot: slot.Wield})
+	s.equip(command.Equip{Slot: rules.SlotWield})
 
 	s.Assert().Equal(1, len(s.r.Sent))
 	failed := s.r.Sent[0].(event.Failed)

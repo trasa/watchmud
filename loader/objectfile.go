@@ -8,8 +8,9 @@ type objectEntry struct {
 	Aliases             []string `json:"aliases"`
 	ShortDescription    string   `json:"short_description"`
 	DescriptionOnGround string   `json:"description_on_ground"`
-	WearLocation        string   `json:"wear_location"`
+	WearLocation        string   `json:"wear_location"` // TODO bad name
 	Behaviors           []string `json:"behaviors"`
+	ArmorType           string   `json:"armor_type"`
 
 	// Roles is what this object contributes to each role while equipped,
 	// keyed on rules.Role.Id: {"tank": 3}. Optional, and meaningless on

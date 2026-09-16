@@ -29,13 +29,12 @@ func (w *World) handleWear(msg *gameserver.HandlerParameter, cmd command.Wear) {
 	loc := objectToWear.Definition.WearLocation
 
 	// is something else already in the location?
-	if msg.Player.Slots().IsSlotInUse(loc) {
+	if msg.Player.Equipment().Equipped(loc) {
 		msg.Fail(event.InUse)
 		return
 	}
 
 	// otherwise add the item to the location
-	// TODO fix this so that Set() only takes one thing?
-	msg.Player.Slots().Set(loc, objectToWear)
+	msg.Player.Equipment().Equip(loc, objectToWear)
 	msg.Player.Send(event.Worn{})
 }

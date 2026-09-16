@@ -10,7 +10,7 @@ import (
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 )
 
 type handleInventorySuite struct {
@@ -45,7 +45,8 @@ func (s *handleInventorySuite) TestInventory_Success() {
 		[]string{},
 		"short desc",
 		"in room",
-		slot.None,
+		rules.SlotNone,
+		"plate", // TODO!
 	)
 	instPtr := &object.Instance{
 		Id:         uuid.New(),

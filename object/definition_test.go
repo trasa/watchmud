@@ -1,9 +1,10 @@
 package object
 
 import (
-	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/slot"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
+	"github.com/trasa/watchmud/rules"
 )
 
 type DefinitionSuite struct {
@@ -16,8 +17,17 @@ func TestDefinitionSuite(t *testing.T) {
 }
 
 func (suite *DefinitionSuite) SetupTest() {
-	suite.helmet = NewDefinition("definitionId", "helmet", "zoneId",
-		Armor, []string{"iron", "helm"}, "desc", "desc on ground", slot.Head)
+	suite.helmet = NewDefinition(
+		"definitionId",
+		"helmet",
+		"zoneId",
+		Armor,
+		[]string{"iron", "helm"},
+		"desc",
+		"desc on ground",
+		rules.SlotHead,
+		"plate", // TODO
+	)
 }
 
 func (suite *DefinitionSuite) TestHasAlias() {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/trasa/watchmud/command"
 	"github.com/trasa/watchmud/direction"
-	"github.com/trasa/watchmud/slot"
+	"github.com/trasa/watchmud/rules"
 )
 
 // parseCommand turns a line the player typed into a command.
@@ -61,7 +61,7 @@ func parseCommand(tokens []string) (command.Command, error) {
 		return command.Wear{Target: rest}, nil
 
 	case "wield":
-		return command.Equip{Target: rest, Slot: slot.Wield}, nil
+		return command.Equip{Target: rest, Slot: rules.SlotWield}, nil
 
 	case "inv", "inventory", "i":
 		return command.Inventory{}, nil

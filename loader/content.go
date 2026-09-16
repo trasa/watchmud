@@ -13,7 +13,6 @@ import (
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/rules"
-	"github.com/trasa/watchmud/slot"
 	"github.com/trasa/watchmud/spaces"
 	"github.com/trasa/watchmud/wandering"
 	"github.com/trasa/watchmud/zonereset"
@@ -221,9 +220,9 @@ func (c *Content) loadObjectDefinitions(fsys fs.FS) error {
 				return fmt.Errorf("object %s/%s: bad category: %w", zonename, obj.Id, err)
 			}
 
-			wearLoc, err := slot.StringToLocation(obj.WearLocation)
+			eqSlot, err := rules.ParseEquipmentSlot(obj.WearLocation)
 			if err != nil {
-				return fmt.Errorf("object %s/%s: bad wear location: %w", zonename, obj.Id, err)
+				return fmt.Errorf("object %s/%s: bad equipment slot name: %w", zonename, obj.Id, err)
 			}
 
 			d := object.NewDefinition(
@@ -234,7 +233,8 @@ func (c *Content) loadObjectDefinitions(fsys fs.FS) error {
 				obj.Aliases,
 				obj.ShortDescription,
 				obj.DescriptionOnGround,
-				wearLoc,
+				eqSlot,
+				obj.ArmorType,
 			)
 
 			for _, bstr := range obj.Behaviors {
@@ -253,7 +253,10 @@ func (c *Content) loadObjectDefinitions(fsys fs.FS) error {
 					return fmt.Errorf("object %s/%s: unknown role %q", zonename, obj.Id, roleId)
 				}
 			}
-			d.RoleWeights = obj.Roles
+			// this field is "going away" in favor of ArmorType,
+			// however we haven't quite gotten rid of it in the json
+			// because need to figure out what to do with weapons / other items.
+			//d.RoleWeights = obj.Roles
 
 			c.Zones[zonename].AddObjectDefinition(d)
 		}
