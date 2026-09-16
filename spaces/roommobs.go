@@ -3,54 +3,44 @@ package spaces
 import (
 	"fmt"
 	"iter"
-	"slices"
 	"uuid"
 
 	"github.com/trasa/watchmud/mobile"
+	"github.com/trasa/watchmud/ordered"
 )
 
+// RoomMobs is the mobs standing in a room, in the order they arrived.
 type RoomMobs struct {
-	byId  map[uuid.UUID]*mobile.Instance
-	order []*mobile.Instance
+	mobs *ordered.List[uuid.UUID, *mobile.Instance]
 }
 
 func NewRoomMobs() *RoomMobs {
 	return &RoomMobs{
-		byId: make(map[uuid.UUID]*mobile.Instance),
+		mobs: ordered.NewList[uuid.UUID]((*mobile.Instance).Id),
 	}
 }
 
+// All the mobs in the room, in the order they arrived.
 func (rm *RoomMobs) All() iter.Seq[*mobile.Instance] {
-	return slices.Values(rm.order)
+	return rm.mobs.All()
 }
 
+// Find the mob this target names -- the longest-standing one, if the room
+// holds more than one of them.
 func (rm *RoomMobs) Find(target string) (*mobile.Instance, bool) {
-	for _, inst := range rm.order {
-		if inst.Matches(target) {
-			return inst, true
-		}
-	}
-	return nil, false
+	return ordered.Find(rm.mobs, target)
 }
 
-func (rm *RoomMobs) Remove(instance *mobile.Instance) error {
-	if _, exists := rm.byId[instance.Id()]; !exists {
-		return fmt.Errorf("remove: mob instance %s named %s does not exist in room", instance.Id(), instance.Name())
-	}
-	delete(rm.byId, instance.Id())
-	if i := slices.IndexFunc(rm.order, func(m *mobile.Instance) bool {
-		return m.Id() == instance.Id()
-	}); i >= 0 {
-		rm.order = slices.Delete(rm.order, i, i+1)
+func (rm *RoomMobs) Remove(inst *mobile.Instance) error {
+	if err := rm.mobs.Remove(inst); err != nil {
+		return fmt.Errorf("remove mob %s named %s: %w", inst.Id(), inst.Name(), err)
 	}
 	return nil
 }
 
 func (rm *RoomMobs) Add(inst *mobile.Instance) error {
-	if _, exists := rm.byId[inst.Id()]; exists {
-		return fmt.Errorf("add: mob instance %s named %s is already in the room", inst.Id(), inst.Name())
+	if err := rm.mobs.Add(inst); err != nil {
+		return fmt.Errorf("add mob %s named %s: %w", inst.Id(), inst.Name(), err)
 	}
-	rm.byId[inst.Id()] = inst
-	rm.order = append(rm.order, inst)
 	return nil
 }
