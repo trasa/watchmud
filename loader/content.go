@@ -248,6 +248,7 @@ func (c *Content) loadObjectDefinitions(fsys fs.FS) error {
 					return fmt.Errorf("object %s/%s: unknown role %q", zonename, obj.Id, roleId)
 				}
 			}
+			d.RoleWeights = obj.Roles
 
 			c.Zones[zonename].AddObjectDefinition(d)
 		}

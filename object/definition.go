@@ -24,6 +24,15 @@ type Definition struct {
 	EquipmentSlot       rules.EquipmentSlot
 	Behaviors           behavior.BehaviorSet
 	ArmorType           rules.ArmorType
+
+	// RoleWeights is what this object contributes to each role while
+	// equipped, keyed on rules.Role.Id: {"striker": 2}. Hand-authored in
+	// objects.json, and on its way out for armor, which can say "plate" and
+	// let rules.Catalog.Armor do the arithmetic -- but a knife or a censer
+	// has no armor type to derive anything from, so this is still how a
+	// weapon argues for a role. Assigned by the loader rather than passed to
+	// NewDefinition, which has enough positional arguments already.
+	RoleWeights map[string]int
 }
 
 func NewDefinition(

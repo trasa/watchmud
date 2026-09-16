@@ -120,9 +120,6 @@ func (i *Inventory) Record() []InventoryRecord {
 func EquipmentToRecord(eq *object.Equipment) []EquipmentRecord {
 	var records []EquipmentRecord
 	for slot, item := range eq.All() {
-		if item == nil {
-			continue
-		}
 		records = append(records, EquipmentRecord{
 			Slot:       string(slot),
 			InstanceId: item.Id,

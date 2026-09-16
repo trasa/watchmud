@@ -8,10 +8,8 @@ import (
 
 func (w *World) handleShowEquipment(msg *gameserver.HandlerParameter, cmd command.ShowEquipment) {
 	var items []event.EquippedItem
+	// Equipment.All yields in slot order: the listing is the same every time.
 	for loc, inst := range msg.Player.Equipment().All() {
-		if inst == nil {
-			continue
-		}
 		items = append(items, event.EquippedItem{
 			Id:               inst.Id.String(),
 			ShortDescription: inst.Definition.ShortDescription,

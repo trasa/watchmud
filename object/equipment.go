@@ -1,6 +1,7 @@
 package object
 
 import (
+	"iter"
 	"maps"
 	"slices"
 
@@ -17,8 +18,26 @@ func NewEquipment() *Equipment {
 	}
 }
 
-func (eq *Equipment) All() map[rules.EquipmentSlot]*Instance {
-	return maps.Clone(eq.eqMap)
+// All the equipped items, slot and instance, in the order a player expects to
+// read them -- see rules.CompareSlots. Empty slots are skipped, so nobody has
+// to remember the nil check.
+func (eq *Equipment) All() iter.Seq2[rules.EquipmentSlot, *Instance] {
+	return func(yield func(rules.EquipmentSlot, *Instance) bool) {
+		for _, slot := range eq.slots() {
+			if inst := eq.eqMap[slot]; inst != nil {
+				if !yield(slot, inst) {
+					return
+				}
+			}
+		}
+	}
+}
+
+// slots that currently hold something, in canonical order.
+func (eq *Equipment) slots() []rules.EquipmentSlot {
+	slots := slices.Collect(maps.Keys(eq.eqMap))
+	slices.SortFunc(slots, rules.CompareSlots)
+	return slots
 }
 
 func (eq *Equipment) At(slot rules.EquipmentSlot) *Instance {
@@ -34,13 +53,9 @@ func (eq *Equipment) Unequip(slot rules.EquipmentSlot) {
 }
 
 func (eq *Equipment) Find(target string) (rules.EquipmentSlot, *Instance, bool) {
-	for _, l := range slices.Sorted(maps.Keys(eq.eqMap)) {
-		inst := eq.eqMap[l]
-		if inst == nil {
-			continue
-		}
+	for slot, inst := range eq.All() {
 		if inst.Matches(target) {
-			return l, inst, true
+			return slot, inst, true
 		}
 	}
 	return rules.SlotNone, nil, false
@@ -83,15 +98,10 @@ func (eq *Equipment) ArmorClass() int {
 // rules.Catalog.RoleFor with this.
 func (eq *Equipment) RoleWeights() map[string]int {
 	totals := make(map[string]int)
-	for _, inst := range eq.eqMap {
-		if inst == nil {
-			continue // a slot whose item didn't survive a content edit
+	for _, inst := range eq.All() {
+		for roleId, weight := range inst.Definition.RoleWeights {
+			totals[roleId] += weight
 		}
-		// TODO work in progress
-		/*
-			for roleId, weight := range inst.Definition.RoleWeights {
-				totals[roleId] += weight
-			}*/
 	}
 	return totals
 }

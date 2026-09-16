@@ -1,8 +1,7 @@
 package world
 
 import (
-	"maps"
-	"slices"
+	"fmt"
 
 	"github.com/trasa/watchmud/command"
 	"github.com/trasa/watchmud/event"
@@ -14,25 +13,18 @@ import (
 // role -- wearing different gear is the command.
 func (w *World) handleRole(msg *gameserver.HandlerParameter, cmd command.Role) {
 	p := msg.Player
-	equipped := p.Equipment().All()
 
-	// Slot order, because GetAll hands back a map and a player should not see
+	// Equipment.All yields in slot order, because a player should not see
 	// their own gear listed in a different order every time they ask.
 	sources := make(map[string][]string)
-	for _, loc := range slices.Sorted(maps.Keys(equipped)) {
-		inst := equipped[loc]
-		if inst == nil {
-			continue // a slot whose item didn't survive a content edit
+	for _, inst := range p.Equipment().All() {
+		for roleId, weight := range inst.Definition.RoleWeights {
+			if weight == 0 {
+				continue
+			}
+			sources[roleId] = append(sources[roleId],
+				fmt.Sprintf("%s %d", inst.Definition.ShortDescription, weight))
 		}
-		// TODO reimplement with the new AC/armor_type/roles definitions ...
-		/*
-			for roleId, weight := range inst.Definition.RoleWeights {
-				if weight == 0 {
-					continue
-				}
-				sources[roleId] = append(sources[roleId],
-					fmt.Sprintf("%s %d", inst.Definition.ShortDescription, weight))
-			}*/
 	}
 
 	weights := p.RoleWeights()

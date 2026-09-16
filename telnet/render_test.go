@@ -287,7 +287,7 @@ func testKnife() *object.Instance {
 		rules.SlotWield,
 		"cloth", // TODO
 	)
-	//d.RoleWeights = map[string]int{"striker": 2}
+	d.RoleWeights = map[string]int{"striker": 2}
 	return object.NewInstance(uuid.New(), d)
 }
 
@@ -304,7 +304,7 @@ func testHelmet() *object.Instance {
 		rules.SlotHead,
 		"cloth", // TODO
 	)
-	//d.RoleWeights = map[string]int{"tank": 2}
+	d.RoleWeights = map[string]int{"tank": 2}
 	return object.NewInstance(uuid.New(), d)
 }
 

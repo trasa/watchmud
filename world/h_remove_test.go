@@ -31,7 +31,7 @@ func (s *RemoveTestSuite) helmet() *object.Instance {
 		rules.SlotHead,
 		"plate") // TODO change to type
 
-	// TODO reimplement me	//d.RoleWeights = map[string]int{"tank": 2}
+	d.RoleWeights = map[string]int{"tank": 2}
 	return object.NewInstance(uuid.New(), d)
 }
 
