@@ -72,3 +72,14 @@ func (suite *RoomInventorySuite) TestRoomInventory_Remove() {
 	suite.Assert().False(exists)
 	suite.Assert().Nil(ret)
 }
+
+// The same guarantee RoomMobs makes: taking something off the floor doesn't
+// disturb the order of what's left, or of what lands there afterwards.
+func (suite *RoomInventorySuite) TestRoomInventory_RemoveKeepsOrder() {
+	instThree := object.NewInstance(uuid.New(), suite.defn)
+
+	suite.Require().NoError(suite.roomInventory.Remove(suite.inst))
+	suite.Require().NoError(suite.roomInventory.Add(instThree))
+
+	suite.Assert().Equal([]*object.Instance{suite.instTwo, instThree}, suite.roomInventory.GetAll())
+}

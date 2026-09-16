@@ -2,6 +2,7 @@ package spaces
 
 import (
 	"fmt"
+	"slices"
 	"uuid"
 
 	"github.com/trasa/watchmud/object"
@@ -70,11 +71,12 @@ func (ri *RoomInventory) Remove(inst *object.Instance) error {
 	}
 	delete(ri.byInstanceId, inst.Id)
 
-	for i, o := range ri.insertionOrder {
-		if o.Id == inst.Id {
-			ri.insertionOrder = append(ri.insertionOrder[:i], ri.insertionOrder[i+1:]...)
-			break
-		}
+	// slices.Delete rather than append(order[:i], order[i+1:]...): it zeroes
+	// the tail, so the removed instance isn't kept alive by the backing array.
+	if i := slices.IndexFunc(ri.insertionOrder, func(o *object.Instance) bool {
+		return o.Id == inst.Id
+	}); i >= 0 {
+		ri.insertionOrder = slices.Delete(ri.insertionOrder, i, i+1)
 	}
 	return nil
 }
