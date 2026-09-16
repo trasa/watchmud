@@ -307,6 +307,9 @@ What actually happened, where it differed from the plan above:
 - **Two latent world bugs surfaced during manual testing.** `World.RemovePlayer` never
   removed the player from the `Room`'s own list, so quitting left a ghost; and
   `RoomInventory.GetAll` iterated a map, so a room's contents shuffled on every `look`.
+  (The second one turned out to have four more instances -- a room's mobs, the players in
+  a room, a player's inventory and the `equipment` listing. All of them are `ordered.List`
+  now; see CLAUDE.md "Definition vs Instance".)
 
 Combat was repaired here rather than deferred, since `kill` is in the exit criteria:
 `Combatant` split into `Attacker` and `Defender` (the roles in a single swing, which swap
@@ -494,13 +497,14 @@ Named so they don't get rediscovered as surprises:
   admitting it has no index for "who is attacking X"; an `EndAllFightsWith(id)` is the fix.
 - **`Fight` snapshots `ZoneId`/`RoomId`** at the moment it starts, so a fight that somehow
   outlives its room notifies the wrong one. Same family as the location bookkeeping above.
-- **`RoleWeights` is a hand-authored number with no mechanical meaning.** A builder writing
-  `"roles": {"tank": 3}` is tuning an axis that has to stay consistent with any real stats
-  added later, by hand, forever. The intended fix is to derive it instead of authoring it:
-  chest-slot armor class (plate / leather / cloth) is how Albion effectively assigns a role,
-  and it means nobody types a weight at all. Not scheduled, but don't invest in the
-  hand-authored numbers as though they're permanent -- and if you add armor values, derive
-  from those rather than adding a third axis.
+- **`RoleWeights` is hand-authored for everything that isn't armor.** ~~A builder writing
+  `"roles": {"tank": 3}`~~ -- fixed for armor. A role declaring `"from_armor": true` in
+  `roles.json` (Tank) is fed by `armor.json`'s armor-type-by-slot table, the same number
+  that `Equipment.ArmorClass` adds to AC, so armor is tuned once and nobody types a weight.
+  It remains true for weapons and everything else: a knife's `"roles": {"striker": 2}` is
+  still a number somebody picked, and when weapons grow real damage stats it will be the
+  same inconsistency in the same shape. Derive it from the weapon then; don't add a third
+  axis.
 - **`Catalog.RoleFor` is an argmax, so it has cliffs.** Plate plus a censer is Tank or
   Healer depending on a tiebreak, with nothing in between, and one point of weight flips
   it. This is fine -- genuinely fine, not tolerated -- while a role is a label a player
