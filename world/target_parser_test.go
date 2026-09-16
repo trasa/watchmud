@@ -1,8 +1,14 @@
 package world
 
 import (
-	"github.com/stretchr/testify/suite"
+	"iter"
+	"slices"
 	"testing"
+	"uuid"
+
+	"github.com/stretchr/testify/suite"
+	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/rules"
 )
 
 type TargetParserSuite struct {
@@ -82,4 +88,54 @@ func (suite *TargetParserSuite) TestParseTooManyParts() {
 func (suite *TargetParserSuite) TestParseTooManyDots() {
 	_, err := parseTarget("50 5.bar.baz")
 	suite.Assert().Error(err)
+}
+
+// what the grammar picks out of a container, in the order things arrived
+func (suite *TargetParserSuite) TestTargetsIn() {
+	knifeDef := object.NewDefinition("knife", "knife", "zone", object.Weapon,
+		[]string{"blade"}, "knife", "A knife is here.", rules.SlotWield, rules.ArmorTypeNone)
+	helmDef := object.NewDefinition("helm", "helmet", "zone", object.Armor,
+		nil, "helmet", "A helmet is here.", rules.SlotHead, rules.ArmorTypePlate)
+
+	first := object.NewInstance(uuid.New(), knifeDef)
+	helm := object.NewInstance(uuid.New(), helmDef)
+	second := object.NewInstance(uuid.New(), knifeDef)
+	contents := func() iter.Seq[*object.Instance] {
+		return slices.Values([]*object.Instance{first, helm, second})
+	}
+
+	cases := []struct {
+		target string
+		want   []*object.Instance
+	}{
+		{"knife", []*object.Instance{first}},    // the first one
+		{"1.knife", []*object.Instance{first}},  // same thing said explicitly
+		{"2.knife", []*object.Instance{second}}, // the second one
+		{"3.knife", nil},                        // there is no third
+		{"blade", []*object.Instance{first}},    // aliases count
+		{"all.knife", []*object.Instance{first, second}},
+		{"all", []*object.Instance{first, helm, second}}, // everything, in arrival order
+		{"sword", nil}, // nothing by that name
+		{"all.sword", nil},
+		{"2.helmet", nil}, // only one of those
+	}
+	for _, tc := range cases {
+		suite.Run(tc.target, func() {
+			target, err := parseTarget(tc.target)
+			suite.Require().NoError(err)
+			suite.Assert().Equal(tc.want, targetsIn(target, contents()))
+		})
+	}
+}
+
+func (suite *TargetParserSuite) TestTargetsIn_EmptyContainer() {
+	empty := func(yield func(*object.Instance) bool) {}
+
+	target, err := parseTarget("all")
+	suite.Require().NoError(err)
+	suite.Assert().Empty(targetsIn(target, empty))
+
+	target, err = parseTarget("knife")
+	suite.Require().NoError(err)
+	suite.Assert().Empty(targetsIn(target, empty))
 }

@@ -2,8 +2,11 @@ package world
 
 import (
 	"errors"
+	"iter"
 	"strconv"
 	"strings"
+
+	"github.com/trasa/watchmud/object"
 )
 
 type Target struct {
@@ -75,4 +78,36 @@ func parseTarget(target string) (result Target, err error) {
 		err = errors.New("TOO_MANY_DOTS")
 	}
 	return
+}
+
+// targetsIn picks the instances a parsed Target names out of a container's
+// contents, which arrive in the order they were put there:
+//
+//	knife      the first one
+//	2.knife    the second one
+//	all.knife  every one of them
+//	all        everything in there
+//
+// An index past the end selects nothing, the same as a name nothing matches:
+// "you don't see that here" is the right answer to both.
+func targetsIn(t Target, contents iter.Seq[*object.Instance]) []*object.Instance {
+	var matches []*object.Instance
+	for inst := range contents {
+		// an empty name is bare "all", which names everything
+		if t.Name == "" || inst.Matches(t.Name) {
+			matches = append(matches, inst)
+		}
+	}
+	if t.All {
+		return matches
+	}
+	// "knife" is "1.knife"
+	n := t.Identifier
+	if n == 0 {
+		n = 1
+	}
+	if n > len(matches) {
+		return nil
+	}
+	return matches[n-1 : n]
 }

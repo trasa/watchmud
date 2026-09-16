@@ -53,6 +53,41 @@ var commandCases = []commandCase{
 		wantOther: "testdood gets knife.\n",
 	},
 	{
+		// the target grammar reaches get, not just drop: "all", "all.knife"
+		// and "2.knife" are world.parseTarget's job either way
+		name:      "get all",
+		input:     "get all",
+		want:      "Taken.\nTaken.\n",
+		wantOther: "testdood gets knife.\ntestdood gets iron helmet.\n",
+	},
+	{
+		name:      "get all of one name",
+		input:     "get all.knife",
+		want:      "Taken.\n",
+		wantOther: "testdood gets knife.\n",
+	},
+	{
+		name:  "get the second one when there is only one",
+		input: "get 2.knife",
+		want:  "You don't see that here.\n",
+	},
+	{
+		name: "drop all",
+		setup: func(_ *world.World, p *player.Player, o *player.Player) {
+			p.Inventory().Add(testKnife())
+			p.Inventory().Add(testHelmet())
+		},
+		input:     "drop all",
+		want:      "Dropped.\nDropped.\n",
+		wantOther: "testdood drops knife.\ntestdood drops iron helmet.\n",
+	},
+	{
+		// the parse error is ours; the player gets one failure message
+		name:  "a target the grammar can't read",
+		input: "get x.knife",
+		want:  "You'll have to phrase that differently.\n",
+	},
+	{
 		// the verb override in resultcode.go: TARGET_NOT_FOUND means
 		// something different to drop than it does to get
 		name:  "drop something you aren't carrying",
