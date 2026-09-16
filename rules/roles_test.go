@@ -51,15 +51,15 @@ func (s *RolesTestSuite) Test_UnknownRoleIdsAreIgnored() {
 }
 
 func (s *RolesTestSuite) Test_DuplicateRoleIdIsAnError() {
-	_, err := NewCatalog(NewTestSpecies(), []*Role{
+	_, err := NewCatalog(newTestSpecies(), []*Role{
 		{Id: "tank", Name: "Tank"},
 		{Id: "tank", Name: "Also Tank"},
-	})
+	}, NewTestArmor())
 	s.Assert().ErrorContains(err, "duplicate role id")
 }
 
 func (s *RolesTestSuite) Test_MissingRoleIdIsAnError() {
-	_, err := NewCatalog(NewTestSpecies(), []*Role{{Name: "Nameless"}})
+	_, err := NewCatalog(newTestSpecies(), []*Role{{Name: "Nameless"}}, NewTestArmor())
 	s.Assert().ErrorContains(err, "missing id")
 }
 

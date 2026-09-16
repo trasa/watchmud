@@ -17,6 +17,11 @@ func LoadCatalog(rulesFS fs.FS) (*rules.Catalog, error) {
 		return nil, err
 	}
 
-	c, err := rules.NewCatalog(species, roles)
+	armor, err := readJSONFile[rules.ArmorTypeContent](rulesFS, "armor.json")
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := rules.NewCatalog(species, roles, armor)
 	return c, err
 }

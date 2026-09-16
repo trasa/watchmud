@@ -1,9 +1,10 @@
 package object
 
 import (
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCategorySet_Add(t *testing.T) {
@@ -48,11 +49,11 @@ func TestCategorySet_Contains(t *testing.T) {
 
 func TestStringToCategory(t *testing.T) {
 	runTest := func(c Category) {
-		result, err := StringToCategory(c.String())
+		result, err := ParseCategory(c.String())
 		assert.NoError(t, err)
 		assert.Equal(t, c, result)
 
-		result, err = StringToCategory(strings.ToUpper(c.String()))
+		result, err = ParseCategory(strings.ToUpper(c.String()))
 		assert.NoError(t, err)
 		assert.Equal(t, c, result)
 	}
@@ -66,10 +67,10 @@ func TestStringToCategory(t *testing.T) {
 	runTest(Food)
 	runTest(Other)
 
-	c, err := StringToCategory("")
+	c, err := ParseCategory("")
 	assert.Equal(t, c, None)
 	assert.NoError(t, err)
 
-	_, err = StringToCategory("asdflkjas")
+	_, err = ParseCategory("asdflkjas")
 	assert.Error(t, err)
 }

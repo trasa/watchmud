@@ -248,10 +248,6 @@ func (c *Content) loadObjectDefinitions(fsys fs.FS) error {
 					return fmt.Errorf("object %s/%s: unknown role %q", zonename, obj.Id, roleId)
 				}
 			}
-			// this field is "going away" in favor of ArmorType,
-			// however we haven't quite gotten rid of it in the json
-			// because need to figure out what to do with weapons / other items.
-			//d.RoleWeights = obj.Roles
 
 			c.Zones[zonename].AddObjectDefinition(d)
 		}

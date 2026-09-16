@@ -1,6 +1,6 @@
 package rules
 
-func NewTestSpecies() []*Species {
+func newTestSpecies() []*Species {
 	l := Lineage{
 		Id:   "human",
 		Name: "human",
@@ -24,6 +24,10 @@ func NewTestRoles() []*Role {
 	}
 }
 
+func NewTestArmor() ArmorTypeContent {
+	return make(ArmorTypeContent)
+}
+
 func NewTestCatalog() (*Catalog, error) {
-	return NewCatalog(NewTestSpecies(), NewTestRoles())
+	return NewCatalog(newTestSpecies(), NewTestRoles(), NewTestArmor())
 }

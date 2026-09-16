@@ -65,6 +65,11 @@ func (eq *Equipment) ItemEquipped(item *Instance) bool {
 // ArmorClass is determined by summing what's equipped,
 // using the ArmorType to choose the bonuses.
 func (eq *Equipment) ArmorClass() int {
+	//ac := 10
+	//for slot, inst := range eq.eqMap {
+	//	switch inst.Definition.ArmorType {
+	//	}
+	//}
 	// TODO
 	return 10
 }

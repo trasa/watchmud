@@ -6,6 +6,8 @@ import (
 	"slices"
 )
 
+type ArmorTypeContent map[ArmorType]map[EquipmentSlot]int
+
 type ArmorType string
 
 const (

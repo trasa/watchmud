@@ -268,8 +268,8 @@ const startRoomBlock = `Temple Square
 [ Exits: East, South ]
 A knife is on the ground.
 A plain iron helmet lies here.
-Target Drone buzzes around.
 Little Drone buzzes around.
+Target Drone buzzes around.
 otherdood is here.
 `
 

@@ -8,6 +8,7 @@ type Catalog struct {
 	Species  map[string]*Species
 	Lineages map[string]*Lineage
 	Roles    map[string]*Role
+	Armor    ArmorTypeContent
 
 	// declaration order, preserved from the content files: the creation menu
 	// reads speciesOrder, and roleOrder breaks ties in RoleFor. Iterating the
@@ -16,7 +17,11 @@ type Catalog struct {
 	roleOrder    []*Role
 }
 
-func NewCatalog(species []*Species, roles []*Role) (*Catalog, error) {
+func NewCatalog(
+	species []*Species,
+	roles []*Role,
+	armor ArmorTypeContent,
+) (*Catalog, error) {
 	speciesMap, lineageMap, err := indexSpecies(species)
 	if err != nil {
 		return nil, err
@@ -31,6 +36,7 @@ func NewCatalog(species []*Species, roles []*Role) (*Catalog, error) {
 		Species:      speciesMap,
 		Lineages:     lineageMap,
 		Roles:        roleMap,
+		Armor:        armor,
 		speciesOrder: species,
 		roleOrder:    roleOrder,
 	}, nil
