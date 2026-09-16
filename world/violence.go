@@ -5,6 +5,7 @@ import (
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/mudtime"
+	"github.com/trasa/watchmud/spaces"
 )
 
 // DoViolence walks through all the combat going on and
@@ -45,15 +46,25 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 			}
 
 			if isDead {
-				w.becomeCorpse(fight.Fightee)
+				w.combatantDied(fight.Fightee, room, found)
 				// TODO award points or other reward
-				w.fightLedger.EndAllFightsWith(fight.Fighter.Id())
-				if found {
-					room.Notify(event.Died{
-						Target: fight.Fightee.Name(),
-					})
-				}
 			}
 		}
+	}
+}
+
+// combatantDied cleans up after the one who died and tells the room.
+//
+// Only the dead one leaves the ledger. This used to end every fight the
+// *winner* was in as well, which meant killing one of two attackers quietly
+// took you out of the fight with the other one -- combat with more than one
+// attacker could never happen. becomeCorpse already ends the dead one's
+// fights, in both directions, which is the whole of what should end here.
+func (w *World) combatantDied(dead combat.Combatant, room *spaces.Room, roomFound bool) {
+	w.becomeCorpse(dead)
+	if roomFound {
+		room.Notify(event.Died{
+			Target: dead.Name(),
+		})
 	}
 }
