@@ -2,81 +2,59 @@ package spaces
 
 import (
 	"fmt"
-	"slices"
+	"iter"
 	"uuid"
 
 	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/ordered"
 )
 
+// RoomInventory is what is lying on the floor of a room, in the order it
+// landed there.
 type RoomInventory struct {
-	byInstanceId   map[uuid.UUID]*object.Instance
-	insertionOrder []*object.Instance
+	objects *ordered.List[uuid.UUID, *object.Instance]
 }
 
 func NewRoomInventory() *RoomInventory {
 	return &RoomInventory{
-		byInstanceId: make(map[uuid.UUID]*object.Instance),
+		objects: ordered.NewList(func(o *object.Instance) uuid.UUID { return o.Id }),
 	}
 }
 
-// GetAll instances in the room sorted by their insertion order
-func (ri *RoomInventory) GetAll() []*object.Instance {
-	return ri.insertionOrder
+// All the instances in the room, in the order they were dropped.
+func (ri *RoomInventory) All() iter.Seq[*object.Instance] {
+	return ri.objects.All()
+}
+
+// Len is the number of instances in the room.
+func (ri *RoomInventory) Len() int {
+	return ri.objects.Len()
 }
 
 // InstanceId finds the instance with this id in the room
 func (ri *RoomInventory) InstanceId(id uuid.UUID) (*object.Instance, bool) {
-	if o, ok := ri.byInstanceId[id]; ok {
-		return o, true
-	}
-	return nil, false
+	return ri.objects.Get(id)
 }
 
-// Name finds the instances with this name in the room.
+// NameOrAlias finds the instances this target names, in the order they were
+// dropped.
 // TODO this needs to become much more sophisticated...
 // Note that there is much left undone by this implementation
 // (stacks of items, aliases...)
-func (ri *RoomInventory) Name(name string) []*object.Instance {
-	var result []*object.Instance
-	for _, inst := range ri.GetAll() {
-		if inst.Definition.Name == name {
-			result = append(result, inst)
-		}
-	}
-	return result
-}
-
 func (ri *RoomInventory) NameOrAlias(target string) []*object.Instance {
-	var result []*object.Instance
-	for _, inst := range ri.GetAll() {
-		if inst.Definition.Name == target || inst.Definition.HasAlias(target) {
-			result = append(result, inst)
-		}
-	}
-	return result
+	return ordered.FindAll(ri.objects, target)
 }
 
 func (ri *RoomInventory) Add(inst *object.Instance) error {
-	if _, exists := ri.InstanceId(inst.Id); exists {
-		return fmt.Errorf("instance id %s already exists in room inventory", inst.Id)
+	if err := ri.objects.Add(inst); err != nil {
+		return fmt.Errorf("add object %s to room inventory: %w", inst.Id, err)
 	}
-	ri.byInstanceId[inst.Id] = inst
-	ri.insertionOrder = append(ri.insertionOrder, inst)
 	return nil
 }
 
 func (ri *RoomInventory) Remove(inst *object.Instance) error {
-	if _, exists := ri.InstanceId(inst.Id); !exists {
-		return fmt.Errorf("instance id %s does not exist in room inventory", inst.Id)
-	}
-	delete(ri.byInstanceId, inst.Id)
-
-	// slices.Delete rather than append(order[:i], order[i+1:]...): it zeroes
-	// the tail, so the removed instance isn't kept alive by the backing array.
-	if i := slices.IndexFunc(ri.insertionOrder, func(o *object.Instance) bool {
-		return o.Id == inst.Id
-	}); i >= 0 {
-		ri.insertionOrder = slices.Delete(ri.insertionOrder, i, i+1)
+	if err := ri.objects.Remove(inst); err != nil {
+		return fmt.Errorf("remove object %s from room inventory: %w", inst.Id, err)
 	}
 	return nil
 }

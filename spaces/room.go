@@ -180,7 +180,7 @@ func (r *Room) DescriptionExcept(exclude *player.Player) event.RoomDescription {
 		desc.Players = append(desc.Players, p.Name())
 	}
 
-	for _, o := range r.Inventory.GetAll() {
+	for o := range r.Inventory.All() {
 		desc.Objects = append(desc.Objects, o.Definition.DescriptionOnGround)
 	}
 	for mob := range r.mobs.All() {

@@ -43,7 +43,7 @@ func createPlayerInfo(room *spaces.Room) (result []event.RoomStatusPlayer) {
 }
 
 func createInventoryInfo(room *spaces.Room) (result []event.RoomStatusItem) {
-	for _, i := range room.Inventory.GetAll() {
+	for i := range room.Inventory.All() {
 		result = append(result,
 			event.RoomStatusItem{
 				Id:                  i.Id.String(),

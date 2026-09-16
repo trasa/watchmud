@@ -22,7 +22,7 @@ func (s *HandleGetSuite) SetupTest() {
 
 func (s *HandleGetSuite) TestSuccess() {
 	// start off with two items in the room and zero in the player
-	s.Assert().Equal(2, len(s.w.StartRoom.Inventory.GetAll()))
+	s.Assert().Equal(2, s.w.StartRoom.Inventory.Len())
 	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
 
 	cmd := command.Get{Target: "knife"}
@@ -39,7 +39,7 @@ func (s *HandleGetSuite) TestSuccess() {
 	s.Assert().Equal("knife", found[0].Definition.Name)
 
 	// there's one other item in the room now
-	s.Assert().Equal(1, len(s.w.StartRoom.Inventory.GetAll()))
+	s.Assert().Equal(1, s.w.StartRoom.Inventory.Len())
 }
 
 func (s *HandleGetSuite) TestAliasTarget() {
@@ -53,7 +53,7 @@ func (s *HandleGetSuite) TestAliasTarget() {
 	found := s.p.Inventory().GetByNameOrAlias("helmet")
 	s.Assert().True(len(found) > 0)
 	s.Assert().Equal("iron helmet", found[0].Definition.Name)
-	s.Assert().Equal(1, len(s.w.StartRoom.Inventory.GetAll()))
+	s.Assert().Equal(1, s.w.StartRoom.Inventory.Len())
 }
 
 func (s *HandleGetSuite) TestTargetNotInRoom() {
@@ -69,7 +69,7 @@ func (s *HandleGetSuite) TestTargetNotInRoom() {
 	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
 
 	// still two items in start room
-	s.Assert().Equal(2, len(s.w.StartRoom.Inventory.GetAll()))
+	s.Assert().Equal(2, s.w.StartRoom.Inventory.Len())
 }
 
 func (s *HandleGetSuite) TestNoTarget() {
@@ -82,5 +82,5 @@ func (s *HandleGetSuite) TestNoTarget() {
 
 	// player has zero items, start room still has 2
 	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
-	s.Assert().Equal(2, len(s.w.StartRoom.Inventory.GetAll()))
+	s.Assert().Equal(2, s.w.StartRoom.Inventory.Len())
 }

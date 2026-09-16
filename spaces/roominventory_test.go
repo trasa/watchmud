@@ -1,6 +1,7 @@
 package spaces
 
 import (
+	"slices"
 	"testing"
 	"uuid"
 
@@ -43,11 +44,10 @@ func (suite *RoomInventorySuite) SetupTest() {
 
 func (suite *RoomInventorySuite) TestRoomInventory_AddMany() {
 
-	instances := suite.roomInventory.Name("name")
+	instances := suite.roomInventory.NameOrAlias("name")
 	suite.Assert().NotEmpty(instances)
 
-	all := suite.roomInventory.GetAll()
-	suite.Assert().Equal(2, len(all))
+	suite.Assert().Equal(2, suite.roomInventory.Len())
 
 	retone, exists := suite.roomInventory.InstanceId(suite.inst.Id)
 	suite.Assert().True(exists)
@@ -66,7 +66,7 @@ func (suite *RoomInventorySuite) TestRoomInventory_Remove() {
 
 	suite.Assert().NoError(suite.roomInventory.Remove(suite.inst))
 
-	suite.Assert().Equal(1, len(suite.roomInventory.GetAll()))
+	suite.Assert().Equal(1, suite.roomInventory.Len())
 
 	ret, exists := suite.roomInventory.InstanceId(suite.inst.Id)
 	suite.Assert().False(exists)
@@ -81,5 +81,5 @@ func (suite *RoomInventorySuite) TestRoomInventory_RemoveKeepsOrder() {
 	suite.Require().NoError(suite.roomInventory.Remove(suite.inst))
 	suite.Require().NoError(suite.roomInventory.Add(instThree))
 
-	suite.Assert().Equal([]*object.Instance{suite.instTwo, instThree}, suite.roomInventory.GetAll())
+	suite.Assert().Equal([]*object.Instance{suite.instTwo, instThree}, slices.Collect(suite.roomInventory.All()))
 }

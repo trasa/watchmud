@@ -45,7 +45,7 @@ func (s *HandleDropSuite) TestSuccess() {
 
 	// player now has zero items, room has its starting two
 	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
-	s.Assert().Equal(2, len(s.w.StartRoom.Inventory.GetAll()))
+	s.Assert().Equal(2, s.w.StartRoom.Inventory.Len())
 }
 
 func (s *HandleDropSuite) TestAlias() {
@@ -57,7 +57,7 @@ func (s *HandleDropSuite) TestAlias() {
 
 	// player now has zero items, room has its starting two
 	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
-	s.Assert().Equal(2, len(s.w.StartRoom.Inventory.GetAll()))
+	s.Assert().Equal(2, s.w.StartRoom.Inventory.Len())
 }
 
 func (s *HandleDropSuite) TestNoTarget() {
