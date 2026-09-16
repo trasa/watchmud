@@ -1,6 +1,7 @@
 package player
 
 import (
+	"slices"
 	"testing"
 	"uuid"
 
@@ -45,7 +46,7 @@ func (s *PlayerSuite) TestAddInventory_New() {
 
 	s.p.inventory.Add(instPtr)
 
-	invs := s.p.inventory.GetAll()
+	invs := slices.Collect(s.p.inventory.All())
 	s.Assert().Equal(1, len(invs))
 	obj := invs[0]
 	s.Assert().Equal(instPtr.Id, obj.Id)

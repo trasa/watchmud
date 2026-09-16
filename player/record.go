@@ -106,7 +106,7 @@ func (p *Player) Record() *Record {
 
 func (i *Inventory) Record() []InventoryRecord {
 	var records []InventoryRecord
-	for _, item := range i.GetAll() {
+	for item := range i.All() {
 		r := InventoryRecord{
 			InstanceId:   item.Id,
 			ZoneId:       item.Definition.ObjectId.ZoneId,

@@ -1,61 +1,56 @@
 package player
 
 import (
-	"maps"
-	"slices"
+	"iter"
 	"uuid"
 
+	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/ordered"
 )
 
+// Inventory is what a player is carrying, in the order they picked it up.
 type Inventory struct {
-	byId map[uuid.UUID]*object.Instance // instance_id -> instance obj
+	objects *ordered.List[uuid.UUID, *object.Instance]
 }
 
 func NewInventory() *Inventory {
 	return &Inventory{
-		byId: make(map[uuid.UUID]*object.Instance),
+		objects: ordered.NewList(func(o *object.Instance) uuid.UUID { return o.Id }),
 	}
 }
 
-func (pi *Inventory) GetAll() []*object.Instance {
-	v := slices.Collect(maps.Values(pi.byId))
-	// v.sort() // TODO
-	return v
+// All the items being carried, in the order they were picked up.
+func (pi *Inventory) All() iter.Seq[*object.Instance] {
+	return pi.objects.All()
 }
 
-/*
-func (pi *Inventory) sort() {
-	sort.SliceStable(pi.sorted, func(i, j int) bool {
-		return pi.sorted[i].InstanceId.String() < pi.sorted[j].InstanceId.String()
-	})
+// Len is the number of items being carried.
+func (pi *Inventory) Len() int {
+	return pi.objects.Len()
 }
-*/
 
 func (pi *Inventory) ByInstanceId(id uuid.UUID) (*object.Instance, bool) {
-	inst, exists := pi.byId[id]
-	return inst, exists
+	return pi.objects.Get(id)
 }
 
-// GetByNameOrAlias the items that match this string
-func (pi *Inventory) GetByNameOrAlias(target string) (objects []*object.Instance) {
-	// TODO handle case where target is "2.knife" (return the 2nd knife)
-	// TODO handle all the other target cases
-	objects = []*object.Instance{}
-	for _, obj := range pi.GetAll() {
-		if obj.Definition.Name == target || obj.Definition.HasAlias(target) {
-			objects = append(objects, obj)
-		}
-	}
-	return objects
+// GetByNameOrAlias the items that match this string, oldest first
+// TODO handle case where target is "2.knife" (return the 2nd knife)
+// TODO handle all the other target cases
+func (pi *Inventory) GetByNameOrAlias(target string) []*object.Instance {
+	return ordered.FindAll(pi.objects, target)
 }
 
 // Add an object into the inventory
 func (pi *Inventory) Add(inst *object.Instance) {
-	pi.byId[inst.Id] = inst
+	if err := pi.objects.Add(inst); err != nil {
+		log.Warn().Err(err).Str("instance", inst.IdStr()).Msg("Inventory.Add")
+	}
 }
 
 // Remove an object from the inventory
 func (pi *Inventory) Remove(inst *object.Instance) {
-	delete(pi.byId, inst.Id)
+	if err := pi.objects.Remove(inst); err != nil {
+		log.Warn().Err(err).Str("instance", inst.IdStr()).Msg("Inventory.Remove")
+	}
 }

@@ -23,7 +23,7 @@ func (s *HandleGetSuite) SetupTest() {
 func (s *HandleGetSuite) TestSuccess() {
 	// start off with two items in the room and zero in the player
 	s.Assert().Equal(2, s.w.StartRoom.Inventory.Len())
-	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
+	s.Assert().Equal(0, s.p.Inventory().Len())
 
 	cmd := command.Get{Target: "knife"}
 	s.w.handleGet(s.handlerParameter(cmd), cmd)
@@ -33,7 +33,7 @@ func (s *HandleGetSuite) TestSuccess() {
 	s.Assert().Equal("testdood", got.Actor)
 
 	// player has one item
-	s.Assert().Equal(1, len(s.p.Inventory().GetAll()))
+	s.Assert().Equal(1, s.p.Inventory().Len())
 	found := s.p.Inventory().GetByNameOrAlias("knife")
 	s.Assert().True(len(found) > 0)
 	s.Assert().Equal("knife", found[0].Definition.Name)
@@ -48,7 +48,7 @@ func (s *HandleGetSuite) TestAliasTarget() {
 
 	s.Assert().Equal(1, len(s.r.Sent))
 	sent[event.Got](s.T(), s.r, 0)
-	s.Assert().Equal(1, len(s.p.Inventory().GetAll()))
+	s.Assert().Equal(1, s.p.Inventory().Len())
 
 	found := s.p.Inventory().GetByNameOrAlias("helmet")
 	s.Assert().True(len(found) > 0)
@@ -66,7 +66,7 @@ func (s *HandleGetSuite) TestTargetNotInRoom() {
 	s.Assert().Equal(event.TargetNotFound, failed.Code)
 
 	// player has zero items still
-	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
+	s.Assert().Equal(0, s.p.Inventory().Len())
 
 	// still two items in start room
 	s.Assert().Equal(2, s.w.StartRoom.Inventory.Len())
@@ -81,6 +81,6 @@ func (s *HandleGetSuite) TestNoTarget() {
 	s.Assert().Equal(event.NoTarget, failed.Code)
 
 	// player has zero items, start room still has 2
-	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
+	s.Assert().Equal(0, s.p.Inventory().Len())
 	s.Assert().Equal(2, s.w.StartRoom.Inventory.Len())
 }

@@ -44,7 +44,7 @@ func (s *HandleDropSuite) TestSuccess() {
 	s.Assert().Equal("knife", dropped.Item)
 
 	// player now has zero items, room has its starting two
-	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
+	s.Assert().Equal(0, s.p.Inventory().Len())
 	s.Assert().Equal(2, s.w.StartRoom.Inventory.Len())
 }
 
@@ -56,7 +56,7 @@ func (s *HandleDropSuite) TestAlias() {
 	sent[event.Dropped](s.T(), s.r, 1)
 
 	// player now has zero items, room has its starting two
-	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
+	s.Assert().Equal(0, s.p.Inventory().Len())
 	s.Assert().Equal(2, s.w.StartRoom.Inventory.Len())
 }
 
@@ -77,7 +77,7 @@ func (s *HandleDropSuite) TestNotFound() {
 	failed := sent[event.Failed](s.T(), s.r, 0)
 	s.Assert().Equal("drop", failed.Verb)
 	s.Assert().Equal(event.TargetNotFound, failed.Code)
-	s.Assert().Equal(0, len(s.p.Inventory().GetAll()))
+	s.Assert().Equal(0, s.p.Inventory().Len())
 }
 
 func (s *HandleDropSuite) TestInUse() {
@@ -91,7 +91,7 @@ func (s *HandleDropSuite) TestInUse() {
 
 	failed := sent[event.Failed](s.T(), s.r, 2)
 	s.Assert().Equal(event.TargetInUse, failed.Code)
-	s.Assert().Equal(1, len(s.p.Inventory().GetAll()))
+	s.Assert().Equal(1, s.p.Inventory().Len())
 }
 
 func (s *HandleDropSuite) TestInUseMultipleItems() {
