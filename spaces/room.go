@@ -105,11 +105,7 @@ func (r *Room) RemovePlayer(p *player.Player) {
 }
 
 func (r *Room) Players() []*player.Player {
-	return r.playerList.GetAll()
-}
-
-func (r *Room) playersExcept(exclude *player.Player) []*player.Player {
-	return r.playerList.GetExcept(exclude)
+	return r.playerList.Slice()
 }
 
 // PlayerEnters a room, telling other room entities about it.
@@ -143,18 +139,16 @@ func (r *Room) Mobs() iter.Seq[*mobile.Instance] {
 
 // Send to every player in the room.
 func (r *Room) Send(msg any) {
-	r.playerList.Iter(func(p *player.Player) {
+	for p := range r.playerList.All() {
 		p.Send(msg)
-	})
+	}
 }
 
 // SendExcept to one player
 func (r *Room) SendExcept(exception *player.Player, msg any) {
-	r.playerList.Iter(func(p *player.Player) {
-		if exception != p {
-			p.Send(msg)
-		}
-	})
+	for p := range r.playerList.AllExcept(exception) {
+		p.Send(msg)
+	}
 }
 
 // Notify mobs and players in a room about something
@@ -176,7 +170,7 @@ func (r *Room) DescriptionExcept(exclude *player.Player) event.RoomDescription {
 		Exits:       r.ExitString(),
 	}
 
-	for _, p := range r.playerList.GetExcept(exclude) {
+	for p := range r.playerList.AllExcept(exclude) {
 		desc.Players = append(desc.Players, p.Name())
 	}
 

@@ -1,61 +1,66 @@
 package player
 
-// List of players
-// TODO replace with generic
+import (
+	"iter"
+
+	"github.com/trasa/watchmud/ordered"
+)
+
+// List of players, in the order they joined, keyed by name.
+//
+// Add and Remove don't report the duplicate/missing cases the underlying
+// ordered.List distinguishes: no caller could do anything about a player who
+// is somehow in the room twice, and every one of them is a void method deep
+// in a move. They log instead.
 type List struct {
-	players map[*Player]*Player
-	byName  map[string]*Player
+	players *ordered.List[string, *Player]
 }
 
 func NewList() *List {
 	return &List{
-		players: make(map[*Player]*Player),
-		byName:  make(map[string]*Player),
+		players: ordered.NewList((*Player).Name),
 	}
 }
 
 func (l *List) Add(p *Player) {
-	l.players[p] = p
-	l.byName[p.name] = p
+	if err := l.players.Add(p); err != nil {
+		p.Log().Warn().Err(err).Msg("player.List.Add")
+	}
 }
 
 func (l *List) Remove(p *Player) {
-	delete(l.players, p)
-	delete(l.byName, p.name)
+	if err := l.players.Remove(p); err != nil {
+		p.Log().Warn().Err(err).Msg("player.List.Remove")
+	}
 }
 
-func (l *List) GetAll() []*Player {
-	// copy the keys into a new slice
-	// and return that slice
-	var keys []*Player
-	for p := range l.players {
-		keys = append(keys, p)
-	}
-	return keys
+// All the players, in the order they joined.
+func (l *List) All() iter.Seq[*Player] {
+	return l.players.All()
 }
 
-func (l *List) GetExcept(exclude *Player) []*Player {
-	var result []*Player
-	for p := range l.players {
-		if exclude != p {
-			result = append(result, p)
-		}
+// AllExcept every player but this one, in the order they joined. A nil
+// exclusion excludes nobody, which is how an unattributed room description
+// asks for the whole room.
+func (l *List) AllExcept(exclude *Player) iter.Seq[*Player] {
+	if exclude == nil {
+		return l.All()
 	}
-	return result
+	return l.players.AllExcept(exclude.Name())
 }
 
-func (l *List) Iter(routine func(*Player)) {
-	for p := range l.players {
-		routine(p)
-	}
+// Slice of the players, in the order they joined. Prefer All; this is for
+// callers that index or hold on to the result.
+func (l *List) Slice() []*Player {
+	return l.players.Slice()
 }
 
 func (l *List) FindByName(name string) *Player {
 	// TODO what happens if name is not found?
-	return l.byName[name]
+	p, _ := l.players.Get(name)
+	return p
 }
 
 func (l *List) Count() int {
-	// TODO replace with support for len
-	return len(l.players)
+	return l.players.Len()
 }

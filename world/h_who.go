@@ -6,7 +6,6 @@ import (
 	"github.com/trasa/watchmud/command"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/player"
 )
 
 func (w *World) handleWho(msg *gameserver.HandlerParameter, cmd command.Who) {
@@ -18,7 +17,7 @@ func (w *World) handleWho(msg *gameserver.HandlerParameter, cmd command.Who) {
 	// zoneName, roomName. The role is read off their gear as the list is
 	// built, so it is current as of this moment and not a moment earlier.
 	entries := []event.WhoEntry{}
-	w.playerList.Iter(func(p *player.Player) {
+	for p := range w.playerList.All() {
 		r := w.getRoomContainingPlayer(p)
 		var zoneName, roomName string
 		if r != nil {
@@ -32,7 +31,7 @@ func (w *World) handleWho(msg *gameserver.HandlerParameter, cmd command.Who) {
 			ZoneName:   zoneName,
 			RoomName:   roomName,
 		})
-	})
+	}
 
 	// sort results by name
 	sort.Slice(entries, func(i, j int) bool {

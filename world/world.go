@@ -182,18 +182,15 @@ func (w *World) findPlayerByName(name string) *player.Player {
 
 // Send a message to all players in the world.
 func (w *World) SendToAllPlayers(message interface{}) {
-	w.playerList.Iter(func(p *player.Player) {
-		// TODO handle error
+	for p := range w.playerList.All() {
 		p.Send(message)
-	})
+	}
 }
 
 func (w *World) SendToAllPlayersExcept(exception *player.Player, message interface{}) {
-	w.playerList.Iter(func(p *player.Player) {
-		if exception != p {
-			p.Send(message) // TODO error handling
-		}
-	})
+	for p := range w.playerList.AllExcept(exception) {
+		p.Send(message)
+	}
 }
 
 func (w *World) Zones() iter.Seq[*spaces.Zone] {
