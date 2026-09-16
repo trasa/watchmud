@@ -10,11 +10,18 @@ import (
 
 type Equipment struct {
 	eqMap map[rules.EquipmentSlot]*Instance
+
+	// What gear is worth -- the armor table and which roles armor argues for
+	// -- lives in the catalog, so equipment has to be able to ask. This is
+	// not the same as holding a role: nothing here is stored, every answer is
+	// recomputed from what is in the slots right now.
+	cat *rules.Catalog
 }
 
-func NewEquipment() *Equipment {
+func NewEquipment(cat *rules.Catalog) *Equipment {
 	return &Equipment{
 		eqMap: make(map[rules.EquipmentSlot]*Instance),
+		cat:   cat,
 	}
 }
 
@@ -77,16 +84,17 @@ func (eq *Equipment) ItemEquipped(item *Instance) bool {
 	return false
 }
 
-// ArmorClass is determined by summing what's equipped,
-// using the ArmorType to choose the bonuses.
+// BaseArmorClass is what you are worth wearing nothing at all.
+const BaseArmorClass = 10
+
+// ArmorClass sums what's equipped, asking the armor table what each piece is
+// worth in the slot it's in. Anything that isn't armor adds nothing.
 func (eq *Equipment) ArmorClass() int {
-	//ac := 10
-	//for slot, inst := range eq.eqMap {
-	//	switch inst.Definition.ArmorType {
-	//	}
-	//}
-	// TODO
-	return 10
+	ac := BaseArmorClass
+	for slot, inst := range eq.All() {
+		ac += eq.cat.ArmorWeight(inst.Definition.ArmorType, slot)
+	}
+	return ac
 }
 
 // RoleWeights totals what everything equipped contributes to each role,
@@ -98,10 +106,48 @@ func (eq *Equipment) ArmorClass() int {
 // rules.Catalog.RoleFor with this.
 func (eq *Equipment) RoleWeights() map[string]int {
 	totals := make(map[string]int)
-	for _, inst := range eq.All() {
-		for roleId, weight := range inst.Definition.RoleWeights {
-			totals[roleId] += weight
-		}
+	for _, c := range eq.RoleContributions() {
+		totals[c.RoleId] += c.Weight
 	}
 	return totals
+}
+
+// A RoleContribution is one equipped item's argument for one role: what it is,
+// which role it speaks for and how loudly.
+type RoleContribution struct {
+	Slot     rules.EquipmentSlot
+	Instance *Instance
+	RoleId   string
+	Weight   int
+}
+
+// RoleContributions is every such argument, in slot order, and within one item
+// in the catalog's role order. The totals and the "why" a player is shown come
+// from this one list, so the reasons always add up to the number beside them.
+//
+// Two sources: what an object declares by hand, and what its armor type is
+// worth in the slot it's worn in. A piece of armor that also declares weights
+// gets both, which is how a magic helmet argues for something armor alone
+// wouldn't.
+func (eq *Equipment) RoleContributions() []RoleContribution {
+	var contributions []RoleContribution
+	for slot, inst := range eq.All() {
+		for _, roleId := range slices.Sorted(maps.Keys(inst.Definition.RoleWeights)) {
+			if weight := inst.Definition.RoleWeights[roleId]; weight != 0 {
+				contributions = append(contributions, RoleContribution{
+					Slot: slot, Instance: inst, RoleId: roleId, Weight: weight,
+				})
+			}
+		}
+		armor := eq.cat.ArmorWeight(inst.Definition.ArmorType, slot)
+		if armor == 0 {
+			continue
+		}
+		for _, r := range eq.cat.ArmorRoles() {
+			contributions = append(contributions, RoleContribution{
+				Slot: slot, Instance: inst, RoleId: r.Id, Weight: armor,
+			})
+		}
+	}
+	return contributions
 }

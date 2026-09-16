@@ -2,6 +2,7 @@
   {
     "id": "tank",
     "name": "Tank",
+    "from_armor": true,
     "description": "Armored to the teeth and standing between the fight and everyone else."
   },
   {

@@ -14,17 +14,13 @@ import (
 func (w *World) handleRole(msg *gameserver.HandlerParameter, cmd command.Role) {
 	p := msg.Player
 
-	// Equipment.All yields in slot order, because a player should not see
-	// their own gear listed in a different order every time they ask.
+	// The reasons and the totals come off the same list, so a player can add
+	// up what they are shown and get the number beside it. In slot order,
+	// because their own gear should not reshuffle between asks.
 	sources := make(map[string][]string)
-	for _, inst := range p.Equipment().All() {
-		for roleId, weight := range inst.Definition.RoleWeights {
-			if weight == 0 {
-				continue
-			}
-			sources[roleId] = append(sources[roleId],
-				fmt.Sprintf("%s %d", inst.Definition.ShortDescription, weight))
-		}
+	for _, c := range p.Equipment().RoleContributions() {
+		sources[c.RoleId] = append(sources[c.RoleId],
+			fmt.Sprintf("%s %d", c.Instance.Definition.ShortDescription, c.Weight))
 	}
 
 	weights := p.RoleWeights()

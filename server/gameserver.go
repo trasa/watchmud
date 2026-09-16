@@ -188,6 +188,7 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter, cmd c
 		playerName,
 		msg.Client,
 		lineage,
+		gs.catalog,
 	)
 
 	// TODO need to set the location first (AddPlayer always puts the player in the start room, for now)

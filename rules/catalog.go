@@ -15,6 +15,9 @@ type Catalog struct {
 	// maps instead would shuffle both from run to run.
 	speciesOrder []*Species
 	roleOrder    []*Role
+
+	// the roles armor feeds, in declaration order
+	armorRoles []*Role
 }
 
 func NewCatalog(
@@ -32,6 +35,13 @@ func NewCatalog(
 		return nil, err
 	}
 
+	var armorRoles []*Role
+	for _, r := range roleOrder {
+		if r.FromArmor {
+			armorRoles = append(armorRoles, r)
+		}
+	}
+
 	return &Catalog{
 		Species:      speciesMap,
 		Lineages:     lineageMap,
@@ -39,6 +49,7 @@ func NewCatalog(
 		Armor:        armor,
 		speciesOrder: species,
 		roleOrder:    roleOrder,
+		armorRoles:   armorRoles,
 	}, nil
 }
 
@@ -98,6 +109,31 @@ func (c *Catalog) DefaultLineage() *Lineage {
 		}
 	}
 	return nil
+}
+
+// ArmorRoles are the roles that armor argues for by itself, declared with
+// "from_armor" in roles.json. Usually exactly one; more than one is allowed
+// and each gets the full weight, since nothing about the idea says a suit of
+// plate can only make you one thing.
+func (c *Catalog) ArmorRoles() []*Role {
+	if c == nil {
+		return nil
+	}
+	return c.armorRoles
+}
+
+// ArmorWeight is what armor of this type is worth in this slot, from
+// armor.json: plate on a body is worth more than plate on a hand. Armor with
+// no type, or a slot the table doesn't mention, is worth nothing rather than
+// an error -- a censer is not bad armor, it is not armor.
+//
+// The same number is both the AC it adds and what it contributes to the roles
+// armor feeds, on purpose: the protection is the argument.
+func (c *Catalog) ArmorWeight(t ArmorType, slot EquipmentSlot) int {
+	if c == nil || t == ArmorTypeNone {
+		return 0
+	}
+	return c.Armor[t][slot]
 }
 
 // RoleFor picks the role a set of equipment adds up to: the highest total

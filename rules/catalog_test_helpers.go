@@ -18,12 +18,15 @@ func newTestSpecies() []*Species {
 // a fixed declaration order, since that order is what breaks ties.
 func NewTestRoles() []*Role {
 	return []*Role{
-		{Id: "tank", Name: "Tank"},
+		{Id: "tank", Name: "Tank", FromArmor: true},
 		{Id: "healer", Name: "Healer"},
 		{Id: "striker", Name: "Striker"},
 	}
 }
 
+// NewTestArmor is deliberately empty: most tests are about what gear declares
+// by hand, and a table here would quietly add weight to every one of them.
+// Tests about armor build their own.
 func NewTestArmor() ArmorTypeContent {
 	return make(ArmorTypeContent)
 }

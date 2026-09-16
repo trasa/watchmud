@@ -17,7 +17,9 @@ func TestEquipmentSuite(t *testing.T) {
 }
 
 func (s *EquipmentSuite) SetupTest() {
-	s.eq = NewEquipment()
+	cat, err := rules.NewTestCatalog()
+	s.Require().NoError(err)
+	s.eq = NewEquipment(cat)
 }
 
 func (s *EquipmentSuite) TestSlotEquipped() {

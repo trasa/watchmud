@@ -53,7 +53,7 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 		out:       out,
 		Lineage:   lineage,
 		inventory: NewInventory(),
-		equipment: object.NewEquipment(),
+		equipment: object.NewEquipment(cat),
 		curHealth: rec.CurHealth,
 		maxHealth: rec.MaxHealth,
 		location:  NewLocation(rec.LastZoneId, rec.LastRoomId),

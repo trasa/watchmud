@@ -26,10 +26,14 @@ type Player struct {
 	location  Location
 }
 
+// New player. The catalog goes to the equipment, which needs it to say what
+// gear is worth; the player itself holds neither it nor anything derived from
+// it.
 func New(id uuid.UUID,
 	name string,
 	out Sender,
 	lineage *rules.Lineage,
+	cat *rules.Catalog,
 ) *Player {
 	return &Player{
 		id:        id,
@@ -37,7 +41,7 @@ func New(id uuid.UUID,
 		out:       out,
 		Lineage:   lineage,
 		inventory: NewInventory(),
-		equipment: object.NewEquipment(),
+		equipment: object.NewEquipment(cat),
 		curHealth: 100, // TODO need a default here,
 		maxHealth: 100,
 	}

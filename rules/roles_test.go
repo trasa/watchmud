@@ -3,6 +3,7 @@ package rules
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -67,4 +68,38 @@ func (s *RolesTestSuite) Test_DefaultLineage() {
 	l := s.cat.DefaultLineage()
 	s.Require().NotNil(l)
 	s.Assert().Equal("human", l.Id)
+}
+
+// A role marked from_armor is the one armor argues for; the rest say what
+// they're worth by hand.
+func TestArmorRoles(t *testing.T) {
+	c, err := NewCatalog(newTestSpecies(), NewTestRoles(), NewTestArmor())
+	require.NoError(t, err)
+
+	armorRoles := c.ArmorRoles()
+	require.Len(t, armorRoles, 1)
+	assert.Equal(t, "tank", armorRoles[0].Id)
+}
+
+func TestArmorRoles_NoneDeclared(t *testing.T) {
+	c, err := NewCatalog(newTestSpecies(),
+		[]*Role{{Id: "tank", Name: "Tank"}}, NewTestArmor())
+	require.NoError(t, err)
+
+	assert.Empty(t, c.ArmorRoles())
+}
+
+func TestArmorWeight(t *testing.T) {
+	c, err := NewCatalog(newTestSpecies(), NewTestRoles(), ArmorTypeContent{
+		ArmorTypePlate: {SlotHead: 1, SlotBody: 4},
+	})
+	require.NoError(t, err)
+
+	assert.Equal(t, 4, c.ArmorWeight(ArmorTypePlate, SlotBody))
+	assert.Equal(t, 1, c.ArmorWeight(ArmorTypePlate, SlotHead))
+	// a slot the table doesn't mention, a type it doesn't mention, and gear
+	// that isn't armor at all
+	assert.Equal(t, 0, c.ArmorWeight(ArmorTypePlate, SlotFeet))
+	assert.Equal(t, 0, c.ArmorWeight(ArmorTypeLeather, SlotBody))
+	assert.Equal(t, 0, c.ArmorWeight(ArmorTypeNone, SlotBody))
 }

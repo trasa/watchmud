@@ -19,6 +19,16 @@ type Role struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
+
+	// FromArmor marks the role that armor argues for on its own. A helmet
+	// says "plate" and the armor table says what plate on a head is worth;
+	// nobody types "tank": 2 on every piece of armor in the game and then
+	// keeps it consistent with the armor's real protection. Declared in
+	// roles.json so the role id stays content's business, not the code's.
+	//
+	// Anything without an armor type -- a knife, a censer -- has nothing to
+	// derive from and still declares its weights by hand.
+	FromArmor bool `json:"from_armor"`
 }
 
 // indexRoles builds the lookup map, failing on duplicate or missing ids. The
