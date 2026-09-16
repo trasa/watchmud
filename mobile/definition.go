@@ -1,6 +1,8 @@
 package mobile
 
 import (
+	"strings"
+
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/wandering"
 )
@@ -95,5 +97,13 @@ func (d *Definition) HasResistanceTo(damageType combat.DamageType) bool {
 
 func (d *Definition) IsVulnerableTo(damageType combat.DamageType) bool {
 	// TODO vulnerability
+	return false
+}
+
+func (d *Definition) Matches(target string) bool {
+	target = strings.ToLower(target)
+	if d.Name == target || d.HasAlias(target) {
+		return true
+	}
 	return false
 }

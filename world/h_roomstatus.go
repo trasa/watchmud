@@ -61,7 +61,7 @@ func createInventoryInfo(room *spaces.Room) (result []event.RoomStatusItem) {
 }
 
 func createMobInfo(room *spaces.Room) (result []event.RoomStatusMob) {
-	for _, m := range room.Mobs() {
+	for m := range room.Mobs() {
 		result = append(result,
 			event.RoomStatusMob{
 				Id:                m.IdStr(),

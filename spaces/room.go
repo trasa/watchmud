@@ -2,6 +2,7 @@ package spaces
 
 import (
 	"fmt"
+	"iter"
 	"math/rand"
 	"sort"
 	"time"
@@ -136,8 +137,8 @@ func (r *Room) RemoveMobile(inst *mobile.Instance) error {
 	return r.mobs.Remove(inst)
 }
 
-func (r *Room) Mobs() []*mobile.Instance {
-	return r.mobs.GetAll()
+func (r *Room) Mobs() iter.Seq[*mobile.Instance] {
+	return r.mobs.All()
 }
 
 // Send to every player in the room.
@@ -159,7 +160,7 @@ func (r *Room) SendExcept(exception *player.Player, msg any) {
 // Notify mobs and players in a room about something
 func (r *Room) Notify(msg any) {
 	// mobs
-	for _, m := range r.mobs.GetAll() {
+	for m := range r.mobs.All() {
 		m.Send(msg)
 	}
 	// players
@@ -182,7 +183,7 @@ func (r *Room) DescriptionExcept(exclude *player.Player) event.RoomDescription {
 	for _, o := range r.Inventory.GetAll() {
 		desc.Objects = append(desc.Objects, o.Definition.DescriptionOnGround)
 	}
-	for _, mob := range r.mobs.GetAll() {
+	for mob := range r.mobs.All() {
 		desc.Mobs = append(desc.Mobs, mob.Definition.DescriptionInRoom)
 	}
 	return desc

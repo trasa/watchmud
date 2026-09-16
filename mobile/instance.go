@@ -138,6 +138,10 @@ func (mob *Instance) Send(msg any) {
 	// TODO do something with this notification
 }
 
+func (mob *Instance) Matches(target string) bool {
+	return mob.Definition.Matches(target)
+}
+
 // Restore mob's health, mana, movement
 func (mob *Instance) Restore() {
 	mob.CurHealth = mob.Definition.MaxHealth

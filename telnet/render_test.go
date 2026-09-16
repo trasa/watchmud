@@ -262,14 +262,16 @@ func TestCommandRendering(t *testing.T) {
 	}
 }
 
-// what NewTestWorld's start room looks like
+// what NewTestWorld's start room looks like. Objects and mobs are listed in
+// the order they were added to the room, which for a freshly reset zone is the
+// order instructions.json creates them in.
 const startRoomBlock = `Temple Square
  The main square of the town. People come and go. East is a donation room, south is the marketplace.
 [ Exits: East, South ]
 A knife is on the ground.
 A plain iron helmet lies here.
-Little Drone buzzes around.
 Target Drone buzzes around.
+Little Drone buzzes around.
 otherdood is here.
 `
 
