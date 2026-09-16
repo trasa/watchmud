@@ -60,14 +60,14 @@ func CategoriesToString(cats []Category) string {
 	}
 }
 
-func StringToCategory(categoryName string) (Category, error) {
-	if categoryName == "" {
+func ParseCategory(c string) (Category, error) {
+	if c == "" {
 		return None, nil
 	}
-	categoryName = strings.ToUpper(categoryName)
-	stridx := strings.Index(strings.ToUpper(_Category_name), categoryName)
+	c = strings.ToUpper(c)
+	stridx := strings.Index(strings.ToUpper(_Category_name), c)
 	if stridx < 0 {
-		return None, fmt.Errorf("category '%s' not found", categoryName)
+		return None, fmt.Errorf("category '%s' not found", c)
 	}
 
 	for pos, catidx := range _Category_index {
@@ -76,5 +76,5 @@ func StringToCategory(categoryName string) (Category, error) {
 		}
 	}
 	// shouldn't happen?
-	return None, fmt.Errorf("could not find index %d for category '%s'", stridx, categoryName)
+	return None, fmt.Errorf("could not find index %d for category '%s'", stridx, c)
 }

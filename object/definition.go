@@ -19,11 +19,11 @@ type Definition struct {
 	Aliases             []string
 	Categories          CategorySet
 	Name                string
-	ShortDescription    string              // description of the object when being used: "a long, green stick" -> "The Beastly Fido picks up the long, green stick."
-	DescriptionOnGround string              // description of the object when lying on the ground: "A shiny sword is lying here."
-	WearLocation        rules.EquipmentSlot // TODO rename to EquipmentSlot
+	ShortDescription    string // description of the object when being used: "a long, green stick" -> "The Beastly Fido picks up the long, green stick."
+	DescriptionOnGround string // description of the object when lying on the ground: "A shiny sword is lying here."
+	EquipmentSlot       rules.EquipmentSlot
 	Behaviors           behavior.BehaviorSet
-	ArmorType           string
+	ArmorType           rules.ArmorType
 }
 
 func NewDefinition(
@@ -34,8 +34,8 @@ func NewDefinition(
 	aliases []string,
 	shortDescription string,
 	descriptionOnGround string,
-	wearLocation rules.EquipmentSlot,
-	armorType string) *Definition {
+	equipmentSlot rules.EquipmentSlot,
+	armorType rules.ArmorType) *Definition {
 	d := &Definition{
 		ObjectId:            NewObjectId(id, zoneId),
 		Name:                strings.ToLower(name),
@@ -43,7 +43,7 @@ func NewDefinition(
 		DescriptionOnGround: descriptionOnGround,
 		Categories:          make(CategorySet),
 		Aliases:             aliases,
-		WearLocation:        wearLocation,
+		EquipmentSlot:       equipmentSlot,
 		Behaviors:           behavior.NewBehaviorSet(),
 		ArmorType:           armorType,
 	}
@@ -64,7 +64,7 @@ func (d *Definition) Gettable() bool {
 }
 
 func (d *Definition) Wearable() bool {
-	return d.WearLocation != rules.SlotNone
+	return d.EquipmentSlot != rules.SlotNone
 }
 
 func (d *Definition) HasAlias(target string) bool {

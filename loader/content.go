@@ -215,14 +215,9 @@ func (c *Content) loadObjectDefinitions(fsys fs.FS) error {
 			return err
 		}
 		for _, obj := range objEntries {
-			cat, err := object.StringToCategory(obj.Category)
+			cat, err := object.ParseCategory(obj.Category)
 			if err != nil {
 				return fmt.Errorf("object %s/%s: bad category: %w", zonename, obj.Id, err)
-			}
-
-			eqSlot, err := rules.ParseEquipmentSlot(obj.WearLocation)
-			if err != nil {
-				return fmt.Errorf("object %s/%s: bad equipment slot name: %w", zonename, obj.Id, err)
 			}
 
 			d := object.NewDefinition(
@@ -233,7 +228,7 @@ func (c *Content) loadObjectDefinitions(fsys fs.FS) error {
 				obj.Aliases,
 				obj.ShortDescription,
 				obj.DescriptionOnGround,
-				eqSlot,
+				obj.EquipmentSlot,
 				obj.ArmorType,
 			)
 

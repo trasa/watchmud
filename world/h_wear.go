@@ -26,7 +26,7 @@ func (w *World) handleWear(msg *gameserver.HandlerParameter, cmd command.Wear) {
 	// figure out what the wear location is:
 	//		was one provided? (for now, instances can only be worn in one place)
 	// 		so we ignore the given location
-	loc := objectToWear.Definition.WearLocation
+	loc := objectToWear.Definition.EquipmentSlot
 
 	// is something else already in the location?
 	if msg.Player.Equipment().Equipped(loc) {

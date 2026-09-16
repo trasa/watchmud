@@ -45,7 +45,7 @@ func (w *World) handleEquip(msg *gameserver.HandlerParameter, cmd command.Equip)
 	}
 
 	// can this object be equiped there?
-	if cmd.Slot != objectToEquip.Definition.WearLocation {
+	if cmd.Slot != objectToEquip.Definition.EquipmentSlot {
 		msg.Fail(event.CantWearThere)
 		return
 	}
