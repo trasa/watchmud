@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/wandering"
+	"github.com/trasa/watchmud/rules"
 )
 
 type DefinitionSuite struct {
@@ -24,7 +24,7 @@ func (suite *DefinitionSuite) SetupTest() {
 		"short desc",
 		"descr",
 		25,
-		wandering.Definition{CanWander: false},
+		rules.WanderDefinition{CanWander: false},
 		10,
 		false)
 }

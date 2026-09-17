@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/trasa/watchmud/direction"
+	"github.com/trasa/watchmud/rules"
 )
 
 func TestRoomExits_none(t *testing.T) {
@@ -15,12 +15,12 @@ func TestRoomExits_none(t *testing.T) {
 
 func TestRoomExits_all(t *testing.T) {
 	r := NewTestRoom("testing")
-	r.Connect(direction.North, r)
-	r.Connect(direction.South, r)
-	r.Connect(direction.East, r)
-	r.Connect(direction.West, r)
-	r.Connect(direction.Up, r)
-	r.Connect(direction.Down, r)
+	r.Connect(rules.DirectionNorth, r)
+	r.Connect(rules.DirectionSouth, r)
+	r.Connect(rules.DirectionEast, r)
+	r.Connect(rules.DirectionWest, r)
+	r.Connect(rules.DirectionUp, r)
+	r.Connect(rules.DirectionDown, r)
 
 	exits := r.ExitString()
 	assert.Equal(t, "North, East, South, West, Up, Down", exits)
@@ -28,9 +28,9 @@ func TestRoomExits_all(t *testing.T) {
 
 func TestRoomExits_some(t *testing.T) {
 	r := NewTestRoom("test")
-	r.Connect(direction.North, r)
-	r.Connect(direction.East, r)
-	r.Connect(direction.Up, r)
+	r.Connect(rules.DirectionNorth, r)
+	r.Connect(rules.DirectionEast, r)
+	r.Connect(rules.DirectionUp, r)
 
 	exits := r.ExitString()
 	assert.Equal(t, "North, East, Up", exits)
@@ -41,37 +41,37 @@ func TestRoom_GetExitInfo(t *testing.T) {
 	n := NewTestRoom("n")
 	s := NewTestRoom("s")
 
-	center.Connect(direction.North, n)
-	n.Connect(direction.South, center)
+	center.Connect(rules.DirectionNorth, n)
+	n.Connect(rules.DirectionSouth, center)
 
-	center.Connect(direction.South, s)
-	s.Connect(direction.North, center)
+	center.Connect(rules.DirectionSouth, s)
+	s.Connect(rules.DirectionNorth, center)
 
 	exitInfo := center.Exits(false)
 
 	assert.Equal(t, 2, len(exitInfo))
-	assert.Equal(t, direction.North, exitInfo[0].Direction)
-	assert.Equal(t, direction.South, exitInfo[1].Direction)
+	assert.Equal(t, rules.DirectionNorth, exitInfo[0].Direction)
+	assert.Equal(t, rules.DirectionSouth, exitInfo[1].Direction)
 }
 
 func TestRoom_PickRandomDirection(t *testing.T) {
 	center := NewTestRoom("center")
 	// no rooms out
 	dir := center.PickRandomDirection(false)
-	assert.Equal(t, direction.None, dir)
+	assert.Equal(t, rules.DirectionNone, dir)
 
 	n := NewTestRoom("n")
-	center.Connect(direction.North, n)
+	center.Connect(rules.DirectionNorth, n)
 	// one choice
 	dir = center.PickRandomDirection(false)
-	assert.Equal(t, direction.North, dir)
+	assert.Equal(t, rules.DirectionNorth, dir)
 
 	// two choices
 	s := NewTestRoom("s")
-	center.Connect(direction.South, s)
+	center.Connect(rules.DirectionSouth, s)
 
 	dir = center.PickRandomDirection(false)
-	if !(dir == direction.North || dir == direction.South) {
+	if !(dir == rules.DirectionNorth || dir == rules.DirectionSouth) {
 		t.Errorf("expected NORTH or SOUTH but found %d", dir)
 	}
 }
@@ -87,13 +87,13 @@ func TestRoom_LimitToZone(t *testing.T) {
 	s := NewTestRoom("s")
 	s.Zone = zone2
 
-	center.Connect(direction.North, n)
-	n.Connect(direction.South, center)
+	center.Connect(rules.DirectionNorth, n)
+	n.Connect(rules.DirectionSouth, center)
 
-	center.Connect(direction.South, s)
-	s.Connect(direction.North, center)
+	center.Connect(rules.DirectionSouth, s)
+	s.Connect(rules.DirectionNorth, center)
 
 	result := center.Exits(true)
 	assert.Equal(t, 1, len(result))
-	assert.Equal(t, direction.North, result[0].Direction)
+	assert.Equal(t, rules.DirectionNorth, result[0].Direction)
 }

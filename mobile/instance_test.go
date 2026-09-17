@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/wandering"
+	"github.com/trasa/watchmud/rules"
 )
 
 type instanceSuite struct {
@@ -24,7 +24,7 @@ func TestInstanceSuite(t *testing.T) {
 func (s *instanceSuite) SetupTest() {
 	s.noWalkMob = NewInstance(NewDefinition("nowalk", "nowalk", "zone", []string{}, "", "",
 		25,
-		wandering.Definition{
+		rules.WanderDefinition{
 			CanWander: false,
 		},
 		10,
@@ -33,9 +33,9 @@ func (s *instanceSuite) SetupTest() {
 
 	s.walkerMob = NewInstance(NewDefinition("walker", "walker", "zone", []string{}, "", "",
 		25,
-		wandering.Definition{
+		rules.WanderDefinition{
 			CanWander:       true,
-			Style:           wandering.Random,
+			Style:           rules.WanderRandom,
 			CheckFrequency:  time.Minute * 1,
 			CheckPercentage: 1.0, // 100 %
 		},
@@ -45,9 +45,9 @@ func (s *instanceSuite) SetupTest() {
 
 	s.noChanceMob = NewInstance(NewDefinition("nochance", "nochance", "zone", []string{}, "", "",
 		25,
-		wandering.Definition{
+		rules.WanderDefinition{
 			CanWander:       true,
-			Style:           wandering.Random,
+			Style:           rules.WanderRandom,
 			CheckFrequency:  time.Minute * 1,
 			CheckPercentage: 0.0, // <-- 0% chance
 		}, 10,
@@ -56,11 +56,11 @@ func (s *instanceSuite) SetupTest() {
 
 	s.pathMob = NewInstance(NewDefinition("path", "path", "zone", []string{}, "desc", "room desc",
 		25,
-		wandering.Definition{
+		rules.WanderDefinition{
 			CanWander:       true,
 			CheckFrequency:  time.Minute * 1,
 			CheckPercentage: 1.0,
-			Style:           wandering.FollowPath,
+			Style:           rules.WanderFollowPath,
 			Path:            []string{"a", "b"},
 		},
 		10,

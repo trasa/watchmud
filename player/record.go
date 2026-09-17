@@ -56,7 +56,6 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 		equipment: object.NewEquipment(cat),
 		curHealth: rec.CurHealth,
 		maxHealth: rec.MaxHealth,
-		location:  NewLocation(rec.LastZoneId, rec.LastRoomId),
 	}
 
 	for _, ir := range rec.Inventory {
@@ -92,15 +91,13 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 
 func (p *Player) Record() *Record {
 	return &Record{
-		Id:         p.Id(),
-		Name:       p.Name(),
-		CurHealth:  p.curHealth,
-		MaxHealth:  p.maxHealth,
-		LineageId:  p.Lineage.Id,
-		LastZoneId: p.location.ZoneId,
-		LastRoomId: p.location.RoomId,
-		Equipment:  EquipmentToRecord(p.equipment),
-		Inventory:  p.inventory.Record(),
+		Id:        p.Id(),
+		Name:      p.Name(),
+		CurHealth: p.curHealth,
+		MaxHealth: p.maxHealth,
+		LineageId: p.Lineage.Id,
+		Equipment: EquipmentToRecord(p.equipment),
+		Inventory: p.inventory.Record(),
 	}
 }
 

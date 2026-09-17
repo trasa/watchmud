@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/mobile"
-	"github.com/trasa/watchmud/wandering"
+	"github.com/trasa/watchmud/rules"
 )
 
 type RoomMobsSuite struct {
@@ -35,7 +35,7 @@ func newMobDefinition(name string, aliases []string) *mobile.Definition {
 		"shortdesc",
 		"roomdesc",
 		25,
-		wandering.Definition{},
+		rules.WanderDefinition{},
 		10,
 		false,
 	)

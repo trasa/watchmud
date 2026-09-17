@@ -18,21 +18,15 @@ func (w *World) handleWho(msg *gameserver.HandlerParameter, cmd command.Who) {
 	// built, so it is current as of this moment and not a moment earlier.
 	entries := []event.WhoEntry{}
 	for p := range w.playerList.All() {
-		r := w.getRoomContainingPlayer(p)
-		var zoneName, roomName string
-		if r != nil {
-			zoneName = r.Zone.Name
-			roomName = r.Name
-		}
+		r := w.getPlayerRoom(p)
 		entries = append(entries, event.WhoEntry{
 			PlayerName: p.Name(),
 			Lineage:    p.LineageName(),
 			Role:       w.roleName(p.RoleWeights()),
-			ZoneName:   zoneName,
-			RoomName:   roomName,
+			ZoneName:   r.Zone.Name,
+			RoomName:   r.Name,
 		})
 	}
-
 	// sort results by name
 	sort.Slice(entries, func(i, j int) bool {
 		return entries[i].PlayerName < entries[j].PlayerName

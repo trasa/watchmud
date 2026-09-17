@@ -7,10 +7,7 @@ import (
 )
 
 func (w *World) handleExits(msg *gameserver.HandlerParameter, cmd command.Exits) {
-	r := w.getRoomContainingPlayer(msg.Player)
-	if r == nil {
-		r = w.VoidRoom
-	}
+	r := w.getPlayerRoom(msg.Player)
 	exits := []event.Exit{}
 	for _, rexit := range r.Exits(false) {
 		exits = append(exits, event.Exit{

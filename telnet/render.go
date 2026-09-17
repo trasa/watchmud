@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/rules"
 )
 
 // Render turns anything sent to a connection into the text a telnet client
@@ -49,7 +49,7 @@ func render(msg any, self string) string {
 
 	case event.Left:
 		// recall and other magical moves leave in no direction at all
-		if m.Direction == direction.None {
+		if m.Direction == rules.DirectionNone {
 			return m.Who + " leaves.\n"
 		}
 		return m.Who + " leaves " + strings.ToLower(m.Direction.String()) + ".\n"

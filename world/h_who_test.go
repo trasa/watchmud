@@ -32,16 +32,6 @@ func (s *WhoSuite) TestSuccess() {
 	s.Assert().NotEqual("", resp.Players[0].RoomName)
 }
 
-func (s *WhoSuite) TestNotInRoom() {
-	s.w.playerRooms.Remove(s.p)
-
-	s.w.handleWho(s.handlerParameter(command.Who{}), command.Who{})
-
-	resp := sent[event.Who](s.T(), s.r, 0)
-	s.Assert().Equal("", resp.Players[0].ZoneName)
-	s.Assert().Equal("", resp.Players[0].RoomName)
-}
-
 func (s *WhoSuite) TestSort() {
 	rec := &player.Recorder{}
 	otherPlayer := player.NewTestPlayer(uuid.New(), "other", rec)

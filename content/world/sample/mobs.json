@@ -9,7 +9,7 @@
       "can_wander": true,
       "check_frequency_seconds": 30,
       "check_percentage": 50,
-      "wander_style": 1
+      "wander_style": "random"
     },
     "ac": 10
   },
@@ -23,7 +23,7 @@
       "can_wander": true,
       "check_frequency_seconds": 10,
       "check_percentage": 100,
-      "wander_style": 2,
+      "wander_style": "followPath",
       "path": [ "start", "northRoom", "northeastRoom", "eastRoom" ]
     },
     "flags": ["nofight"],

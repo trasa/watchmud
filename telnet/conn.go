@@ -350,8 +350,8 @@ func (c *conn) write(msg any) error {
 func (c *conn) readPump() {
 	defer c.Close()
 	c.scanner = bufio.NewScanner(&iacFilter{src: bufio.NewReader(c.netConn)})
-	if c.login() {
-		c.commandLoop()
+	if c.login() && c.commandLoop() {
+		return // logout already emitted
 	}
 	cause := "client disconnected"
 	if err := c.scanner.Err(); err != nil {
@@ -361,11 +361,11 @@ func (c *conn) readPump() {
 	c.gs.Logout(c, cause)
 }
 
-func (c *conn) commandLoop() {
+func (c *conn) commandLoop() (quit bool) {
 	for {
 		line, ok := c.readLine()
 		if !ok {
-			return
+			return false
 		}
 		if line == "" {
 			continue // bare Enter: ignore. Note this is the opposite of prompt(), which re-asks. Different context, different policy.
@@ -378,7 +378,7 @@ func (c *conn) commandLoop() {
 		c.emit(cmd)
 		if _, quitting := cmd.(command.Logout); quitting {
 			c.Send("Goodbye.\r\n")
-			return
+			return true
 		}
 	}
 }

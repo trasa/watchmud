@@ -13,7 +13,7 @@ func (w *World) handleMove(msg *gameserver.HandlerParameter, cmd command.Move) {
 		return
 	}
 
-	playerRoom := w.getRoomContainingPlayer(msg.Player)
+	playerRoom := w.getPlayerRoom(msg.Player)
 	dir := cmd.Direction
 
 	msg.Player.Log().Trace().Msgf("player wants to move %s", dir.String())

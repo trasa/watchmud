@@ -24,7 +24,7 @@ func (w *World) handleDrop(msg *gameserver.HandlerParameter, cmd command.Drop) {
 
 	// TODO handle "coins" (target.Quantity)
 
-	room := w.getRoomContainingPlayer(msg.Player)
+	room := w.getPlayerRoom(msg.Player)
 	objectsToDrop := targetsIn(target, msg.Player.Inventory().All())
 	if len(objectsToDrop) == 0 {
 		msg.Fail(event.TargetNotFound)

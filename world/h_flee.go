@@ -3,9 +3,9 @@ package world
 import (
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/command"
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
+	"github.com/trasa/watchmud/rules"
 )
 
 const fleeAttempts = 6
@@ -19,22 +19,21 @@ func (w *World) handleFlee(msg *gameserver.HandlerParameter, cmd command.Flee) {
 	}
 
 	// TODO stunned, disabled, other status effects
-	room := w.getRoomContainingPlayer(msg.Player)
+	room := w.getPlayerRoom(msg.Player)
 
 	for range fleeAttempts {
 		room.Send(event.Fleeing{Who: msg.Player.Name()})
 
 		// pick a direction at random out of all possible
-		i, err := w.roller.IntN(len(direction.All))
+		// where direction.All is ([North, East, South, West, Up, Down])
+		// we're asking for [0, 6)
+		i, err := w.roller.IntN(len(rules.AllUsableDirections))
 		if err != nil {
 			log.Error().Err(err).Msg("flee: failed to generate random direction")
 			msg.Fail(event.CantFlee)
 			return
 		}
-		i--
-		// is there an exit?
-		// TODO need to check other things like if the door is locked, etc.
-		dir := direction.All[i]
+		dir := rules.AllUsableDirections[i]
 		if room.HasExit(dir) {
 			// success!
 			room.Send(event.Fled{Who: msg.Player.Name()})

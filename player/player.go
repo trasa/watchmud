@@ -23,7 +23,6 @@ type Player struct {
 	equipment *object.Equipment
 	curHealth int
 	maxHealth int
-	location  Location
 }
 
 // New player. The catalog goes to the equipment, which needs it to say what

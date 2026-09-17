@@ -6,10 +6,9 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
+	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/spaces"
-	"github.com/trasa/watchmud/wandering"
 )
 
 // DoMobileActivity and walk through all the mob instances that are
@@ -48,12 +47,12 @@ func (w *World) doMobAggro(mob *mobile.Instance) {
 
 func (w *World) doMobWander(mob *mobile.Instance) {
 	switch mob.Definition.Wandering.Style {
-	case wandering.Random:
+	case rules.WanderRandom:
 		// do random wander within the zone
 		if err := w.doMobRandomWander(mob); err != nil {
 			log.Warn().Msgf("World.DoMobileActivity: %s error randomly wandering: %s", mob.Definition.Id, err)
 		}
-	case wandering.FollowPath:
+	case rules.WanderFollowPath:
 		if err := w.doMobFollowPathWander(mob); err != nil {
 			log.Warn().Msgf("World.DoMobileActivity: %s error following path: %s", mob.Definition.Id, err)
 		}
@@ -72,7 +71,7 @@ func (w *World) doMobRandomWander(mob *mobile.Instance) error {
 	// test wandering percentage
 	if mob.CheckWanderChance() {
 		dir := mobRoom.PickRandomDirection(true)
-		if dir == direction.None {
+		if dir == rules.DirectionNone {
 			return errors.New(fmt.Sprintf("Mobile ID '%s' is in a room without exit and can't wander out of it.", mob.Definition.Id))
 		}
 		w.moveMobile(mob, dir, mobRoom, mobRoom.DestinationRoom(dir))
@@ -92,7 +91,7 @@ func (w *World) doMobFollowPathWander(mob *mobile.Instance) error {
 		if err != nil {
 			return err
 		}
-		if dir == direction.None {
+		if dir == rules.DirectionNone {
 			return errors.New(fmt.Sprintf("doMobFollowPathWander: mobile ID '%s' can't figure out next place to go to (current '%s', path '%s')",
 				mob.Definition.Id, mobRoom.Id, mob.Definition.Wandering.Path))
 		}
@@ -106,20 +105,20 @@ func (w *World) doMobFollowPathWander(mob *mobile.Instance) error {
 }
 
 // Determine what direction this mob should travel next to stay on its path.
-// Takes mob.WanderingForward into account and will reverse index at the path bounaries,
+// Takes mob.WanderingForward into account and will reverse index at the path boundaries,
 // returning changeDirection=true in that case, but WILL NOT update the state or
 // modify the mob or room instances in any way.
-func getNextDirectionOnPath(mob *mobile.Instance, mobRoom *spaces.Room) (dir direction.Direction, changeDirection bool, err error) {
+func getNextDirectionOnPath(mob *mobile.Instance, mobRoom *spaces.Room) (dir rules.Direction, changeDirection bool, err error) {
 	currentIndex, err := mob.GetIndexOnPath(mobRoom.Id)
 	if err != nil {
-		return direction.None, false, err
+		return rules.DirectionNone, false, err
 	}
 	nextIndex := -1
 
 	if currentIndex < 0 {
 		// note: this might be OK (if the mob was pulled off the path for some reason?)
 		// TODO should it change to a random walk? or just wait here, or?
-		return direction.None, false, errors.New(fmt.Sprintf("Couldn't find current room %s in wander path %s", mobRoom.Id, mob.Definition.Wandering.Path))
+		return rules.DirectionNone, false, errors.New(fmt.Sprintf("Couldn't find current room %s in wander path %s", mobRoom.Id, mob.Definition.Wandering.Path))
 	}
 	if mob.WanderingForward {
 		nextIndex = currentIndex + 1
@@ -145,8 +144,8 @@ func getNextDirectionOnPath(mob *mobile.Instance, mobRoom *spaces.Room) (dir dir
 			break
 		}
 	}
-	if dir == direction.None {
-		return direction.None, false, errors.New(fmt.Sprintf("Couldn't find destination room %s from current room exits %v", roomToFind, mobRoom.Exits(false)))
+	if dir == rules.DirectionNone {
+		return rules.DirectionNone, false, errors.New(fmt.Sprintf("Couldn't find destination room %s from current room exits %v", roomToFind, mobRoom.Exits(false)))
 	}
 	return
 }

@@ -9,7 +9,6 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/combat"
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
@@ -27,9 +26,8 @@ type World struct {
 	roller rules.Roller
 	store  player.Store
 
-	// TODO merge playerList and playerRooms similar to MobileRoomMap merges mobList and mobRooms
-	playerList  *player.List   // list of players
-	playerRooms *PlayerRoomMap // player -> room; room -> players
+	playerList   *player.List   // list of players in world
+	playerToRoom *playerRoomMap // map of player to the room they are in. rooms own their player list.
 
 	mobileRooms *spaces.MobileRoomMap // mobile -> room; room -> mobiles
 
@@ -39,13 +37,13 @@ type World struct {
 // New creates a brand-new World based on this content
 func New(c *loader.Content, s player.Store, roller rules.Roller) (w *World, err error) {
 	w = &World{
-		content:     c,
-		playerList:  player.NewList(),
-		playerRooms: NewPlayerRoomMap(),
-		mobileRooms: spaces.NewMobileRoomMap(),
-		fightLedger: combat.NewFightLedger(),
-		roller:      roller,
-		store:       s,
+		content:      c,
+		playerList:   player.NewList(),
+		playerToRoom: newPlayerRoomMap(),
+		mobileRooms:  spaces.NewMobileRoomMap(),
+		fightLedger:  combat.NewFightLedger(),
+		roller:       roller,
+		store:        s,
 	}
 	if err := w.initialLoad(); err != nil {
 		return nil, fmt.Errorf("building world: %w", err)
@@ -76,54 +74,52 @@ func (w *World) initialLoad() (err error) {
 
 // AddPlayer or players to the world putting them in the correct room they were
 // in last time, or the start room if we can't figure that out.
-// Don't send room notifications.
 func (w *World) AddPlayer(players ...*player.Player) {
 	for _, p := range players {
-		log.Debug().Str("playerName", p.Name()).Str("playerId", p.Id().String()).Msgf("Adding player to world")
+		p.Log().Debug().Msg("Adding player to world")
+		// list of known players
+		w.playerList.Add(p)
 
 		// TODO need support for location
-		// player (probably?) won't know their previous location, if we need
-		// to persist that information (and we probably do) we'll reconcile it
-		// elsewhere.
 		// so for now, this *always* adds to the start room.
 		r := w.StartRoom
-		w.playerList.Add(p)
-		w.playerRooms.Add(p, r)
 		r.AddPlayer(p)
+		w.playerToRoom.Update(p, r)
 	}
 }
 
 func (w *World) RemovePlayer(players ...*player.Player) {
 	for _, p := range players {
-		p.Log().Debug().Msg("Removing Player")
-		if r := w.getRoomContainingPlayer(p); r != nil {
+		p.Log().Debug().Msg("Removing player")
+		w.fightLedger.EndAllFightsWith(p.Id())
+		// in a room? remove it.
+		r := w.playerToRoom.Get(p)
+		if r != nil {
 			r.RemovePlayer(p)
 		}
-		w.fightLedger.EndAllFightsWith(p.Id())
 		w.playerList.Remove(p)
-		w.playerRooms.Remove(p)
+		w.playerToRoom.Remove(p)
 	}
 }
 
 // Player is moving from src room to dest room.
-func (w *World) movePlayer(p *player.Player, dir direction.Direction, src *spaces.Room, dest *spaces.Room) {
+func (w *World) movePlayer(p *player.Player, dir rules.Direction, src *spaces.Room, dest *spaces.Room) {
 	src.PlayerLeaves(p, dir)
 	dest.PlayerEnters(p)
-	w.playerRooms.Remove(p)
-	w.playerRooms.Add(p, dest)
-	// TODO reimplement
-	//p.Location().RoomId = dest.Id
-	//p.Location().ZoneId = dest.Zone.Id
+	w.playerToRoom.Update(p, dest)
 }
 
 // Player is jumping from the room they are currently in to the destination.
 func (w *World) movePlayerMagically(p *player.Player, dest *spaces.Room) {
-	src := w.getRoomContainingPlayer(p)
-	w.movePlayer(p, direction.None, src, dest)
+	src := w.playerToRoom.Get(p)
+	if src == nil {
+		src = w.VoidRoom
+	}
+	w.movePlayer(p, rules.DirectionNone, src, dest)
 }
 
 // Mobile is moving from src room to dest room.
-func (w *World) moveMobile(mob *mobile.Instance, dir direction.Direction, src *spaces.Room, dest *spaces.Room) {
+func (w *World) moveMobile(mob *mobile.Instance, dir rules.Direction, src *spaces.Room, dest *spaces.Room) {
 	src.MobileLeaves(mob, dir)
 	dest.MobileEnters(mob)
 	w.mobileRooms.Remove(mob)
@@ -151,8 +147,15 @@ func (w *World) roleName(weights map[string]int) string {
 	return ""
 }
 
-func (w *World) getRoomContainingPlayer(p *player.Player) *spaces.Room {
-	return w.playerRooms.Get(p)
+// getPlayerRoom returns the room a player is in, or VoidRoom if we can't figure that out.
+// Does not return nil.
+func (w *World) getPlayerRoom(p *player.Player) *spaces.Room {
+	r := w.playerToRoom.Get(p)
+	if r == nil {
+		p.Log().Warn().Msg("player not in a room!")
+		return w.VoidRoom
+	}
+	return r
 }
 
 func (w *World) getRoomContainingMobile(mob *mobile.Instance) *spaces.Room {
@@ -180,13 +183,14 @@ func (w *World) findPlayerByName(name string) *player.Player {
 	return w.playerList.FindByName(name)
 }
 
-// Send a message to all players in the world.
+// SendToAllPlayers send a message to all players in the world.
 func (w *World) SendToAllPlayers(message interface{}) {
 	for p := range w.playerList.All() {
 		p.Send(message)
 	}
 }
 
+// SendToAllPlayersExcept send a message to all players in the world except the exception player.
 func (w *World) SendToAllPlayersExcept(exception *player.Player, message interface{}) {
 	for p := range w.playerList.AllExcept(exception) {
 		p.Send(message)

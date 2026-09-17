@@ -1,5 +1,7 @@
 package loader
 
+import "github.com/trasa/watchmud/rules"
+
 // mob file might not exist, they are optional
 type mobEntry struct {
 	Id                  string         `json:"id"`
@@ -15,9 +17,9 @@ type mobEntry struct {
 }
 
 type WanderingEntry struct {
-	CanWander             bool     `json:"can_wander"`
-	CheckFrequencySeconds int      `json:"check_frequency_seconds"`
-	CheckPercentage       int      `json:"check_percentage"`
-	WanderStyle           int      `json:"wander_style"`
-	Path                  []string `json:"path"`
+	CanWander             bool              `json:"can_wander"`
+	CheckFrequencySeconds int               `json:"check_frequency_seconds"`
+	CheckPercentage       int               `json:"check_percentage"`
+	WanderStyle           rules.WanderStyle `json:"wander_style"`
+	Path                  []string          `json:"path"`
 }

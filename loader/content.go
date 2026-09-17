@@ -9,12 +9,10 @@ import (
 	"time"
 
 	"github.com/trasa/watchmud/behavior"
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/spaces"
-	"github.com/trasa/watchmud/wandering"
 	"github.com/trasa/watchmud/zonereset"
 )
 
@@ -173,7 +171,7 @@ func (c *Content) loadRooms(fsys fs.FS) error {
 	return nil
 }
 
-func (c *Content) connectRooms(sourceZoneId string, sourceRoomId string, dir direction.Direction, destZoneId string, destRoomId string) error {
+func (c *Content) connectRooms(sourceZoneId string, sourceRoomId string, dir rules.Direction, destZoneId string, destRoomId string) error {
 	sourceZone := c.Zones[sourceZoneId]
 	if sourceZone == nil {
 		return fmt.Errorf("connect rooms: source zone %q not found", sourceZoneId)
@@ -271,11 +269,11 @@ func (c *Content) loadMobileDefinitions(fsys fs.FS) error {
 				mob.ShortDescription,
 				mob.DescriptionInRoom,
 				mob.MaxHealth,
-				wandering.Definition{
+				rules.WanderDefinition{
 					CanWander:       mob.WanderingDefinition.CanWander,
 					CheckFrequency:  time.Second * time.Duration(mob.WanderingDefinition.CheckFrequencySeconds),
 					CheckPercentage: float32(mob.WanderingDefinition.CheckPercentage) / 100.0,
-					Style:           wandering.Style(mob.WanderingDefinition.WanderStyle),
+					Style:           mob.WanderingDefinition.WanderStyle,
 					Path:            mob.WanderingDefinition.Path,
 				},
 				mob.AC,

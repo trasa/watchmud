@@ -21,7 +21,7 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter, cmd command.Kill) {
 
 	// figure out if the target of your fight is valid
 	//	are they in the room (still)
-	room := w.getRoomContainingPlayer(msg.Player)
+	room := w.getPlayerRoom(msg.Player)
 	mobileInstance, exists := room.FindMobile(cmd.Target)
 	if !exists {
 		msg.Fail(event.TargetNotFound)

@@ -1,7 +1,6 @@
 package event
 
 import (
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/rules"
 )
 
@@ -58,7 +57,7 @@ type Entered struct {
 
 type Left struct {
 	Who       string
-	Direction direction.Direction
+	Direction rules.Direction
 }
 
 type Exits struct {
@@ -66,7 +65,7 @@ type Exits struct {
 }
 
 type Exit struct {
-	Direction direction.Direction
+	Direction rules.Direction
 	RoomName  string
 }
 
@@ -272,7 +271,7 @@ type RoomStatusMob struct {
 }
 
 type RoomStatusExit struct {
-	Direction direction.Direction
+	Direction rules.Direction
 	RoomId    string
 	ZoneId    string
 	Flags     []string

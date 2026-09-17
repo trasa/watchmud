@@ -13,11 +13,7 @@ import (
 
 func (w *World) handleLoad(msg *gameserver.HandlerParameter, cmd command.Load) {
 	// TODO figure out the level of the user and if they are allowed to run this wizcommand!
-	targetRoom := w.getRoomContainingPlayer(msg.Player)
-	if targetRoom == nil {
-		msg.Fail(event.YouAreNotInARoom)
-		return
-	}
+	targetRoom := w.getPlayerRoom(msg.Player)
 
 	if cmd.Zone == "" {
 		cmd.Zone = targetRoom.Zone.Id

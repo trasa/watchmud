@@ -1,7 +1,6 @@
 package command
 
 import (
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/rules"
 )
 
@@ -48,7 +47,7 @@ type Look struct {
 func (Look) Verb() string { return "look" }
 
 type Move struct {
-	Direction direction.Direction
+	Direction rules.Direction
 }
 
 func (Move) Verb() string { return "move" }

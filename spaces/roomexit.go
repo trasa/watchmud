@@ -1,12 +1,12 @@
 package spaces
 
 import (
-	"github.com/trasa/watchmud/direction"
+	"github.com/trasa/watchmud/rules"
 )
 
 // RoomExit is a direction to another room.
 type RoomExit struct {
-	Direction direction.Direction
+	Direction rules.Direction
 	Room      *Room
 }
 

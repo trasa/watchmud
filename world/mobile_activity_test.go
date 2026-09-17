@@ -5,10 +5,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/mobile"
+	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/spaces"
-	"github.com/trasa/watchmud/wandering"
 )
 
 type MobileActivityTestSuite struct {
@@ -22,13 +21,22 @@ func TestMobileActivityTestSuite(t *testing.T) {
 }
 
 func (s *MobileActivityTestSuite) SetupTest() {
-	s.definition = mobile.NewDefinition("id", "name", "", []string{}, "desc", "room desc", 25, wandering.Definition{
-		CanWander:       true,
-		CheckFrequency:  time.Minute * 1,
-		CheckPercentage: 1.0,
-		Style:           wandering.FollowPath,
-		Path:            []string{"a", "b"},
-	},
+	s.definition = mobile.NewDefinition(
+
+		"id",
+		"name",
+		"",
+		[]string{},
+		"desc",
+		"room desc",
+		25,
+		rules.WanderDefinition{
+			CanWander:       true,
+			CheckFrequency:  time.Minute * 1,
+			CheckPercentage: 1.0,
+			Style:           rules.WanderFollowPath,
+			Path:            []string{"a", "b"},
+		},
 		10,
 		false,
 	)
@@ -37,19 +45,19 @@ func (s *MobileActivityTestSuite) SetupTest() {
 
 func (s *MobileActivityTestSuite) Test_getNextDirectionOnPath_Simple() {
 	r := spaces.NewTestRoom("a")
-	r.Connect(direction.Up, spaces.NewTestRoom("b"))
-	r.DestinationRoom(direction.Up).Connect(direction.Down, r)
+	r.Connect(rules.DirectionUp, spaces.NewTestRoom("b"))
+	r.DestinationRoom(rules.DirectionUp).Connect(rules.DirectionDown, r)
 
 	// a -> b
 	dir, changeDirection, err := getNextDirectionOnPath(s.mobileInstance, r)
 	s.Assert().NoError(err)
-	s.Assert().Equal(direction.Up, dir)
+	s.Assert().Equal(rules.DirectionUp, dir)
 	s.Assert().False(changeDirection)
 
 	// b -> a
-	dir, changeDirection, err = getNextDirectionOnPath(s.mobileInstance, r.DestinationRoom(direction.Up))
+	dir, changeDirection, err = getNextDirectionOnPath(s.mobileInstance, r.DestinationRoom(rules.DirectionUp))
 	s.Assert().NoError(err)
-	s.Assert().Equal(direction.Down, dir)
+	s.Assert().Equal(rules.DirectionDown, dir)
 	s.Assert().True(changeDirection)
 }
 
@@ -59,27 +67,27 @@ func (s *MobileActivityTestSuite) Test_getNextDirectionOnPath_FullPath() {
 	a := spaces.NewTestRoom("a")
 	b := spaces.NewTestRoom("b")
 	c := spaces.NewTestRoom("c")
-	a.Connect(direction.East, b)
-	b.Connect(direction.West, a)
-	b.Connect(direction.East, c)
-	c.Connect(direction.West, b)
+	a.Connect(rules.DirectionEast, b)
+	b.Connect(rules.DirectionWest, a)
+	b.Connect(rules.DirectionEast, c)
+	c.Connect(rules.DirectionWest, b)
 
 	// a -> b
 	dir, changeDirection, err := getNextDirectionOnPath(s.mobileInstance, a)
 	s.Assert().NoError(err)
-	s.Assert().Equal(direction.East, dir)
+	s.Assert().Equal(rules.DirectionEast, dir)
 	s.Assert().False(changeDirection)
 
 	// b -> c
 	dir, changeDirection, err = getNextDirectionOnPath(s.mobileInstance, b)
 	s.Assert().NoError(err)
-	s.Assert().Equal(direction.East, dir)
+	s.Assert().Equal(rules.DirectionEast, dir)
 	s.Assert().False(changeDirection)
 
 	// c -> b
 	dir, changeDirection, err = getNextDirectionOnPath(s.mobileInstance, c)
 	s.Assert().NoError(err)
-	s.Assert().Equal(direction.West, dir)
+	s.Assert().Equal(rules.DirectionWest, dir)
 	s.Assert().True(changeDirection)
 
 	// b -> a
@@ -87,6 +95,6 @@ func (s *MobileActivityTestSuite) Test_getNextDirectionOnPath_FullPath() {
 	s.mobileInstance.WanderingForward = false
 	dir, changeDirection, err = getNextDirectionOnPath(s.mobileInstance, b)
 	s.Assert().NoError(err)
-	s.Assert().Equal(direction.West, dir)
+	s.Assert().Equal(rules.DirectionWest, dir)
 	s.Assert().False(changeDirection) // since we're already walking backwards
 }

@@ -6,10 +6,10 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/command"
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/rules"
 )
 
 type HandleMoveSuite struct {
@@ -24,14 +24,14 @@ func (s *HandleMoveSuite) SetupTest() {
 	s.worldTestSuite.SetupTest()
 }
 
-func (s *HandleMoveSuite) move(dir direction.Direction) {
+func (s *HandleMoveSuite) move(dir rules.Direction) {
 	s.T().Helper()
 	cmd := command.Move{Direction: dir}
 	s.w.handleMove(gameserver.NewHandlerParameter(s.c, cmd), cmd)
 }
 
 func (s *HandleMoveSuite) TestMove_butYouCant() {
-	s.move(direction.North)
+	s.move(rules.DirectionNorth)
 
 	s.Assert().Equal(1, len(s.r.Sent))
 
@@ -46,7 +46,7 @@ func (s *HandleMoveSuite) TestMoveWhileFighting() {
 	s.w.AddPlayer(other)
 
 	s.Assert().NoError(s.w.fightLedger.Fight(s.p, other, s.w.StartRoom.Zone.Id, s.w.StartRoom.Id))
-	s.move(direction.North)
+	s.move(rules.DirectionNorth)
 
 	failed := s.r.Sent[0].(event.Failed)
 	s.Assert().Equal(event.InAFight, failed.Code)

@@ -1,6 +1,8 @@
 package loader
 
-import "github.com/trasa/watchmud/direction"
+import (
+	"github.com/trasa/watchmud/rules"
+)
 
 type roomFileEntry struct {
 	Id          string   `json:"id"`
@@ -11,7 +13,7 @@ type roomFileEntry struct {
 }
 
 type exit struct {
-	Direction         direction.Direction `json:"direction"`
-	DestinationZoneId string              `json:"dest_zone"`
-	DestinationRoomId string              `json:"dest_room"`
+	Direction         rules.Direction `json:"direction"`
+	DestinationZoneId string          `json:"dest_zone"`
+	DestinationRoomId string          `json:"dest_room"`
 }

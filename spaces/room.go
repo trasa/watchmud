@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/rules"
 )
 
 type Room struct {
@@ -22,7 +22,7 @@ type Room struct {
 	playerList  *player.List
 	Inventory   *RoomInventory
 	mobs        *RoomMobs
-	directions  map[direction.Direction]*Room
+	directions  map[rules.Direction]*Room
 	flags       map[string]bool
 }
 
@@ -37,7 +37,7 @@ func NewRoom(zone *Zone, id string, name string, description string) *Room {
 		playerList:  player.NewList(),
 		Inventory:   NewRoomInventory(),
 		mobs:        NewRoomMobs(),
-		directions:  make(map[direction.Direction]*Room),
+		directions:  make(map[rules.Direction]*Room),
 		flags:       make(map[string]bool),
 	}
 }
@@ -81,12 +81,12 @@ func (r *Room) Flags() (result []string) {
 }
 
 // PlayerLeaves a room. Tells other room residents about it.
-func (r *Room) PlayerLeaves(p *player.Player, dir direction.Direction) {
+func (r *Room) PlayerLeaves(p *player.Player, dir rules.Direction) {
 	r.playerList.Remove(p)
 	r.Send(event.Left{Who: p.Name(), Direction: dir})
 }
 
-func (r *Room) MobileLeaves(mob *mobile.Instance, dir direction.Direction) {
+func (r *Room) MobileLeaves(mob *mobile.Instance, dir rules.Direction) {
 	if err := r.mobs.Remove(mob); err != nil {
 		log.Error().Err(err).Str("room", r.Location().String()).Msg("mobileLeaves: failed to leave room")
 		return
@@ -198,17 +198,17 @@ func (r *Room) FindPlayer(target string) (*player.Player, bool) {
 // ExitString returns all the valid exits from this room as a string.
 func (r *Room) ExitString() string {
 	// TODO: exits can be locked and/or closed, this doesn't handle that.
-	var exits []direction.Direction
+	var exits []rules.Direction
 	for _, exit := range r.Exits(false) {
 		exits = append(exits, exit.Direction)
 	}
-	return direction.Format(exits)
+	return rules.FormatDirection(exits)
 }
 
 // HasExit determines if there is a valid exit in this direction
 // usable for 'standard, normal' sorts of movement (not magical,
 // can't run through closed doors or walls, etc.)
-func (r *Room) HasExit(dir direction.Direction) bool {
+func (r *Room) HasExit(dir rules.Direction) bool {
 	// TODO what about exits that are locked or closed?
 	// this should also consider that.
 	_, ok := r.directions[dir]
@@ -216,7 +216,7 @@ func (r *Room) HasExit(dir direction.Direction) bool {
 }
 
 // DestinationRoom returns the room in this direction or nil if there isn't one.
-func (r *Room) DestinationRoom(dir direction.Direction) (dest *Room) {
+func (r *Room) DestinationRoom(dir rules.Direction) (dest *Room) {
 	// TODO what about exits that are locked or closed?
 	return r.directions[dir]
 }
@@ -224,17 +224,17 @@ func (r *Room) DestinationRoom(dir direction.Direction) (dest *Room) {
 // Connect this room to the destination room in this direction.
 // Loader use only: room topology is immutable once content is loaded.
 // See ROADMAP "Known Problems": room conflates definition and instance.
-func (r *Room) Connect(dir direction.Direction, destRoom *Room) {
+func (r *Room) Connect(dir rules.Direction, destRoom *Room) {
 	r.directions[dir] = destRoom
 }
 
 // PickRandomDirection from here to travel, from directions that are available.
 // If there aren't any, return direction.None.
-func (r *Room) PickRandomDirection(limitToZone bool) direction.Direction {
+func (r *Room) PickRandomDirection(limitToZone bool) rules.Direction {
 	// TODO should this return a room and not a direction?
 	exits := r.Exits(limitToZone)
 	if len(exits) == 0 {
-		return direction.None
+		return rules.DirectionNone
 	} else {
 		desired := rand.New(rand.NewSource(time.Now().Unix())).Int31n(int32(len(exits)))
 		// iterate to the ith member of exits
@@ -247,7 +247,7 @@ func (r *Room) PickRandomDirection(limitToZone bool) direction.Direction {
 		}
 		// inconceivable!
 		log.Warn().Msgf("Room.PickRandomDirection: Bizarre RandomDirection picked. len=%d, desired=%d", len(exits), desired)
-		return direction.None
+		return rules.DirectionNone
 	}
 }
 

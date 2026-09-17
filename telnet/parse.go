@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/trasa/watchmud/command"
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/rules"
 )
 
@@ -36,7 +35,7 @@ func parseCommand(tokens []string) (command.Command, error) {
 		return command.Look{Target: rest}, nil
 
 	case "n", "north", "s", "south", "e", "east", "w", "west", "u", "up", "d", "down":
-		dir, err := direction.Parse(verb)
+		dir, err := rules.ParseDirection(verb)
 		if err != nil {
 			return nil, errors.New("You can't go that way.")
 		}

@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/trasa/watchmud/combat"
-	"github.com/trasa/watchmud/wandering"
+	"github.com/trasa/watchmud/rules"
 )
 
 // Definition defines what it means to be a mob.
@@ -16,7 +16,7 @@ type Definition struct {
 	ShortDescription  string
 	DescriptionInRoom string // description when in a room "A giant lizard is here."
 	ZoneId            string
-	Wandering         wandering.Definition
+	Wandering         rules.WanderDefinition
 	MaxHealth         int
 	flags             map[Flag]bool
 	AC                int
@@ -29,7 +29,7 @@ func NewDefinition(definitionId string,
 	shortDescription,
 	descriptionInRoom string,
 	maxHealth int,
-	wandering wandering.Definition,
+	wandering rules.WanderDefinition,
 	AC int,
 	aggressive bool) *Definition {
 	d := &Definition{

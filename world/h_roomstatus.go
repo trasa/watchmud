@@ -11,11 +11,7 @@ func (w *World) handleRoomStatus(msg *gameserver.HandlerParameter, cmd command.R
 	// TODO security: must have admin privs (or, something) to use this command
 	// TODO allow user to specify room and zone to get status of
 
-	room := w.getRoomContainingPlayer(msg.Player)
-	if room == nil {
-		msg.Fail(event.NotInRoom)
-		return
-	}
+	room := w.getPlayerRoom(msg.Player)
 
 	msg.Player.Send(event.RoomStatus{
 		Id:          room.Id,

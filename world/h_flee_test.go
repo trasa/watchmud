@@ -6,10 +6,10 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/command"
-	"github.com/trasa/watchmud/direction"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/testdice"
 )
 
@@ -56,7 +56,8 @@ func (s *handleFleeSuite) TestNotFighting() {
 }
 
 func (s *handleFleeSuite) TestSuccess() {
-	s.roller.Add(int(direction.South))
+
+	s.roller.Add(rules.DirectionSouth.Index())
 	s.kill("target")
 	s.flee()
 
@@ -75,16 +76,17 @@ func (s *handleFleeSuite) TestSuccess() {
 	// what did the other see?
 	s.Assert().Equal(s.p.Name(), s.otherRec.Sent[0].(event.Fleeing).Who)
 	s.Assert().Equal(s.p.Name(), s.otherRec.Sent[1].(event.Fled).Who)
-	s.Assert().Equal(direction.South, s.otherRec.Sent[2].(event.Left).Direction)
+	s.Assert().Equal(rules.DirectionSouth, s.otherRec.Sent[2].(event.Left).Direction)
 }
 
 func (s *handleFleeSuite) TestNoEscape() {
-	rolls := []int{int(direction.North),
-		int(direction.North),
-		int(direction.North),
-		int(direction.North),
-		int(direction.North),
-		int(direction.North),
+	index := rules.DirectionNorth.Index()
+	rolls := []int{index,
+		index,
+		index,
+		index,
+		index,
+		index,
 	}
 	s.roller.Load(rolls)
 

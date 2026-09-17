@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/mobile"
-	"github.com/trasa/watchmud/wandering"
+	"github.com/trasa/watchmud/rules"
 )
 
 type mobileRoomMapSuite struct {
@@ -28,7 +28,7 @@ func (s *mobileRoomMapSuite) SetupTest() {
 		[]string{},
 		"shortdesc",
 		"roomdesc",
-		25, wandering.Definition{},
+		25, rules.WanderDefinition{},
 		10,
 		false,
 	)
