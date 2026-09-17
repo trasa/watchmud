@@ -10,11 +10,12 @@ import (
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/testdice"
 )
 
 type handleFleeSuite struct {
 	worldTestSuite
-	roller   *loadedDice
+	roller   *testdice.LoadedDice
 	other    *player.Player
 	otherRec *player.Recorder
 }
@@ -25,7 +26,7 @@ func TestHandleFleeSuite(t *testing.T) {
 
 func (s *handleFleeSuite) SetupTest() {
 	s.worldTestSuite.SetupTest()
-	s.roller = newLoadedDice()
+	s.roller = testdice.New()
 	s.w.roller = s.roller
 	s.otherRec = &player.Recorder{}
 	s.other = player.NewTestPlayer(uuid.New(), "other", s.otherRec)

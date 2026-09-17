@@ -12,6 +12,7 @@ import (
 	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/memstore"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/testdice"
 )
 
 type worldTestSuite struct {
@@ -55,7 +56,7 @@ func NewTestWorld() (*World, error) {
 	}
 
 	store := memstore.New()
-	roller := newLoadedDice()
+	roller := testdice.New()
 
 	return New(content, store, roller)
 }

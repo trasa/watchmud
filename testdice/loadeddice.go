@@ -1,29 +1,30 @@
-package world
+package testdice
 
 import "fmt"
 
-type loadedDice struct {
+type LoadedDice struct {
 	vals []int
 	i    int
 }
 
-func newLoadedDice() *loadedDice {
-	return &loadedDice{}
+func New() *LoadedDice {
+	return &LoadedDice{}
 }
-func (l *loadedDice) Add(i int) {
+
+func (l *LoadedDice) Add(i int) {
 	l.vals = append(l.vals, i)
 }
 
-func (l *loadedDice) Load(vals []int) {
+func (l *LoadedDice) Load(vals []int) {
 	l.vals = vals
 	l.i = 0
 }
 
-func (l *loadedDice) Reset() {
+func (l *LoadedDice) Reset() {
 	l.i = 0
 }
 
-func (l *loadedDice) Roll(notation string) (int, error) {
+func (l *LoadedDice) Roll(notation string) (int, error) {
 	if l.i >= len(l.vals) {
 		return 0, fmt.Errorf("loaded dice ran out of values")
 	}
@@ -31,7 +32,7 @@ func (l *loadedDice) Roll(notation string) (int, error) {
 	return l.vals[l.i-1], nil
 }
 
-func (l *loadedDice) IntN(n int) (int, error) {
+func (l *LoadedDice) IntN(n int) (int, error) {
 	if l.i >= len(l.vals) {
 		return 0, fmt.Errorf("loaded dice ran out of values")
 	}

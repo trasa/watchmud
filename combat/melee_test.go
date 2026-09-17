@@ -1,40 +1,45 @@
 package combat
 
 import (
-	"github.com/justinian/dice"
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
+	"github.com/trasa/watchmud/testdice"
 )
 
 type MeleeSuite struct {
 	suite.Suite
 	fighter Combatant
 	victim  Combatant
+	roller  *testdice.LoadedDice
 }
 
 func TestMeleeSuite(t *testing.T) {
 	suite.Run(t, new(MeleeSuite))
 }
 
-func (suite *MeleeSuite) SetupTest() {
-	suite.fighter = NewTestCombatant("fighter", 10, []DamageType{}, []DamageType{})
-	suite.victim = NewTestCombatant("victim", 10, []DamageType{}, []DamageType{})
+func (s *MeleeSuite) SetupTest() {
+	s.fighter = NewTestCombatant("fighter", 10, []DamageType{}, []DamageType{})
+	s.victim = NewTestCombatant("victim", 10, []DamageType{}, []DamageType{})
+	s.roller = testdice.New()
 }
 
-func (suite *MeleeSuite) TestHitFailed() {
-	rollResult := dice.StdResult{Total: 2}
+func (s *MeleeSuite) TestHitFailed() {
+	s.roller.Add(2)
 
-	noChance := meleeAttack(suite.fighter, suite.victim, rollResult)
-	suite.Assert().False(noChance.WasHit)
-	suite.Assert().Equal(int64(0), noChance.Damage)
+	noChance, err := AttemptMeleeAttack(s.roller, s.fighter, s.victim)
+
+	s.Assert().NoError(err)
+	s.Assert().False(noChance.WasHit)
+	s.Assert().Equal(0, noChance.Damage)
 }
 
-func (suite *MeleeSuite) TestHitSuccess() {
-	rollResult := dice.StdResult{Total: 16}
-
-	noChance := meleeAttack(suite.fighter, suite.victim, rollResult)
-	suite.Assert().True(noChance.WasHit)
-	// TODO calculate damage
+func (s *MeleeSuite) TestHitSuccess() {
+	s.roller.Load([]int{19, 3})
+	result, err := AttemptMeleeAttack(s.roller, s.fighter, s.victim)
+	s.Assert().NoError(err)
+	s.Assert().True(result.WasHit)
+	s.Assert().Equal(3, result.Damage)
 }
 
 // TODO critical success

@@ -9,7 +9,7 @@ type mobEntry struct {
 	DescriptionInRoom   string         `json:"description_in_room"`
 	WanderingDefinition WanderingEntry `json:"wandering_definition"`
 	Flags               []string       `json:"flags"`
-	MaxHealth           int64          `json:"max_health"`
+	MaxHealth           int            `json:"max_health"`
 	AC                  int            `json:"ac"`
 	Aggressive          bool           `json:"aggressive"`
 }

@@ -17,7 +17,7 @@ type Definition struct {
 	DescriptionInRoom string // description when in a room "A giant lizard is here."
 	ZoneId            string
 	Wandering         wandering.Definition
-	MaxHealth         int64
+	MaxHealth         int
 	flags             map[Flag]bool
 	AC                int
 }
@@ -28,7 +28,7 @@ func NewDefinition(definitionId string,
 	aliases []string,
 	shortDescription,
 	descriptionInRoom string,
-	maxHealth int64,
+	maxHealth int,
 	wandering wandering.Definition,
 	AC int,
 	aggressive bool) *Definition {

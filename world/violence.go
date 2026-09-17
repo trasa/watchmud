@@ -27,9 +27,11 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 		// headache to tune these settings.
 		if fight.CanDoViolence(pulse) {
 			fight.LastPulse = pulse
-			fightResult := combat.CalculateMeleeAttack(fight.Fighter, fight.Fightee)
-			log.Debug().Msgf("fight result: %s", fightResult)
-
+			fightResult, err := combat.AttemptMeleeAttack(w.roller, fight.Fighter, fight.Fightee)
+			if err != nil {
+				log.Error().Err(err).Msg("failed to attempt melee attack")
+				continue
+			}
 			var isDead = false
 			if fightResult.WasHit {
 				isDead = fight.Fightee.TakeMeleeDamage(fightResult.Damage)

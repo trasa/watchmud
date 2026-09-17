@@ -34,7 +34,7 @@ func (s *InstanceMeleeDamageSuite) TestMeleeDamage() {
 	isDead := s.instance.TakeMeleeDamage(5)
 
 	s.Assert().False(isDead)
-	s.Assert().Equal(startingHealth-int64(5), s.instance.CurHealth)
+	s.Assert().Equal(startingHealth-5, s.instance.CurHealth)
 }
 
 func (s *InstanceMeleeDamageSuite) TestFatalMeleeDamage() {
@@ -42,7 +42,7 @@ func (s *InstanceMeleeDamageSuite) TestFatalMeleeDamage() {
 	isDead := s.instance.TakeMeleeDamage(s.instance.CurHealth)
 
 	s.Assert().True(isDead)
-	s.Assert().Equal(int64(0), s.instance.CurHealth)
+	s.Assert().Equal(0, s.instance.CurHealth)
 }
 
 func (s *InstanceMeleeDamageSuite) TestOverwhelmingFatalMeleeDamage() {

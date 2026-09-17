@@ -5,7 +5,7 @@ import "uuid"
 type TestCombatant struct {
 	id            uuid.UUID
 	name          string
-	curHealth     int64
+	curHealth     int
 	dead          bool
 	ac            int
 	resistance    map[DamageType]bool
@@ -38,7 +38,7 @@ func (t *TestCombatant) Name() string {
 	return t.name
 }
 
-func (t *TestCombatant) TakeMeleeDamage(damage int64) (isDead bool) {
+func (t *TestCombatant) TakeMeleeDamage(damage int) (isDead bool) {
 	t.curHealth = t.curHealth - damage
 	return t.curHealth <= 0
 }

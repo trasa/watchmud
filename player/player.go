@@ -21,8 +21,8 @@ type Player struct {
 	Lineage   *rules.Lineage
 	inventory *Inventory
 	equipment *object.Equipment
-	curHealth int64
-	maxHealth int64
+	curHealth int
+	maxHealth int
 	location  Location
 }
 
@@ -80,11 +80,11 @@ func (p *Player) LineageName() string {
 	return p.Lineage.Name
 }
 
-func (p *Player) CurrentHealth() int64 {
+func (p *Player) CurrentHealth() int {
 	return p.curHealth
 }
 
-func (p *Player) MaxHealth() int64 {
+func (p *Player) MaxHealth() int {
 	return p.maxHealth
 }
 
@@ -92,7 +92,7 @@ func (p *Player) Send(msg any) {
 	p.out.Send(msg)
 }
 
-func (p *Player) RestoreHealth(amount int64) {
+func (p *Player) RestoreHealth(amount int) {
 	p.curHealth = min(p.curHealth+amount, p.maxHealth)
 }
 
@@ -113,7 +113,7 @@ func (p *Player) HasResistanceTo(damageType combat.DamageType) bool {
 	return false
 }
 
-func (p *Player) TakeMeleeDamage(damage int64) bool {
+func (p *Player) TakeMeleeDamage(damage int) bool {
 	p.curHealth -= damage
 	if p.curHealth <= 0 {
 		return true

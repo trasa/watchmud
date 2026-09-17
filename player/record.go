@@ -12,7 +12,7 @@ import (
 type Record struct {
 	Id                     uuid.UUID
 	Name                   string
-	CurHealth, MaxHealth   int64
+	CurHealth, MaxHealth   int
 	LineageId              string // cosmetic; there is no ClassId beside it any more
 	LastZoneId, LastRoomId string
 	Equipment              []EquipmentRecord

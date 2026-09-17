@@ -72,7 +72,7 @@ func (s *PlayerSuite) TestFatalMeleeDamage() {
 	isDead := s.p.TakeMeleeDamage(startingHealth)
 
 	s.Assert().True(isDead)
-	s.Assert().Equal(int64(0), s.p.curHealth)
+	s.Assert().Equal(0, s.p.curHealth)
 }
 
 func (s *PlayerSuite) TestOverwhelminglyFatalMeleeDamage() {

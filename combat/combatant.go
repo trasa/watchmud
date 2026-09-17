@@ -25,7 +25,7 @@ type Combatant interface {
 	Attacker
 	Defender
 	Id() uuid.UUID
-	TakeMeleeDamage(damager int64) bool
+	TakeMeleeDamage(damage int) bool
 	Dead() bool
 }
 

@@ -3,13 +3,13 @@ package combat
 import (
 	"fmt"
 
-	"github.com/justinian/dice"
 	"github.com/rs/zerolog/log"
+	"github.com/trasa/watchmud/rules"
 )
 
 type MeleeAttackResult struct {
 	WasHit     bool
-	Damage     int64
+	Damage     int
 	DamageType string // TODO should be enum
 	// TODO other status affects: staggering, and so on
 }
@@ -17,60 +17,63 @@ type MeleeAttackResult struct {
 func (result MeleeAttackResult) String() string {
 	if result.WasHit {
 		return fmt.Sprintf("Hit! %d damage!", result.Damage)
-	} else {
-		return fmt.Sprintf("Missed.")
 	}
+	return fmt.Sprintf("Missed.")
 }
 
-func CalculateMeleeAttack(fighter Combatant, victim Combatant) MeleeAttackResult {
-	// roll d20, apply appropriate modifiers (ability modifier, proficiency bonus, others ...)
-	// if value > victim's AC, that's a hit.
-	// TODO: advantage, disadvantage
-	roll, _, _ := dice.Roll("1d20")
-	log.Debug().Msgf("%s melee attacks %s, rolls a %d", fighter.Name(), victim.Name(), roll.Int())
-	return meleeAttack(fighter, victim, roll)
+// AttemptMeleeAttack calculates the result of a melee attack.
+// Rolls d20, apply appropriate modifiers, if value > victim's AC, then that's a hit,
+// calculate the correct damage.
+func AttemptMeleeAttack(roller rules.Roller, fighter Combatant, victim Combatant) (MeleeAttackResult, error) {
+	roll, err := roller.Roll("1d20")
+	if err != nil {
+		return MeleeAttackResult{}, err
+	}
+	log.Trace().Msgf("%s attacks %s, rolls a %d", fighter.Name(), victim.Name(), roll)
+	// TODO need impl for critical failure and critical success
+	//	criticalFailure := roll == 1
+	//	criticalSuccess := roll == 20
+
+	modifiedRoll := roll + fighter.CalculateMeleeRollModifiers()
+	wasHit := modifiedRoll >= victim.ArmorClass()
+	wasHitStr := "missed."
+	damage := 0
+	if wasHit {
+		wasHitStr = "hit!"
+		damage, err = calculateDamage(roller, fighter, victim)
+		if err != nil {
+			return MeleeAttackResult{}, err
+		}
+	}
+	log.Trace().
+		Msgf("%s attacks %s with modified roll of %d vs ac of %d, %s With %d damage.",
+			fighter.Name(),
+			victim.Name(),
+			modifiedRoll,
+			victim.ArmorClass(),
+			wasHitStr,
+			damage)
+	return MeleeAttackResult{
+		WasHit:     wasHit,
+		Damage:     damage,
+		DamageType: "TODO",
+	}, nil
 }
 
-func meleeAttack(fighter Combatant, victim Combatant, roll dice.RollResult) (result MeleeAttackResult) {
-	if roll.Int() == 1 {
-		// critical failure!
-		// TODO what to do about critical failure?
-		log.Debug().Msgf("%s attacks %s but CRITICALLY FAILS!", fighter.Name(), victim.Name())
-		result.WasHit = false
-		return
+func calculateDamage(roller rules.Roller, fighter Combatant, victim Combatant) (int, error) {
+	damage, err := roller.Roll(fighter.WeaponDamageRoll())
+	if err != nil {
+		return 0, err
 	}
-	if roll.Int() == 20 {
-		// critical success!
-		// TODO what to do about critical success?
-		log.Debug().Msgf("%s attacks %s and CRITICALLY SUCCEEDS!", fighter.Name(), victim.Name())
-		result.WasHit = true
-		result.Damage = calculateDamage(fighter, victim)
-		return
-	}
-	modifiedRoll := roll.Int() + fighter.CalculateMeleeRollModifiers()
-	if modifiedRoll >= victim.ArmorClass() {
-		// hit!
-		log.Debug().Msgf("%s attacks %s with modified roll of %d vs ac of %d, success", fighter.Name(), victim.Name(), modifiedRoll, victim.ArmorClass())
-		result.WasHit = true
-		result.Damage = calculateDamage(fighter, victim)
-	} else {
-		// miss
-		log.Debug().Msgf("%s attacks %s with modified roll of %d vs ac of %d, misses!", fighter.Name(), victim.Name(), modifiedRoll, victim.ArmorClass())
-		result.WasHit = false
-	}
-	return result
-}
+	modifier := ""
 
-func calculateDamage(fighter Combatant, victim Combatant) int64 {
-	damRoll, _, _ := dice.Roll(fighter.WeaponDamageRoll())
-	damage := damRoll.Int()
-	log.Debug().Msgf("(raw) %s does %d damage to %s", fighter.Name(), damage, victim.Name())
 	if victim.HasResistanceTo(fighter.WeaponDamageType()) {
+		modifier = " (resistance)"
 		damage = damage / 2
-		log.Debug().Msgf(" %s does %d damage to %s (resistance)", fighter.Name(), damage, victim.Name())
 	} else if victim.IsVulnerableTo(fighter.WeaponDamageType()) {
+		modifier = " (vulnerability)"
 		damage = damage * 2
-		log.Debug().Msgf(" %s does %d damage to %s (vulnerability)", fighter.Name(), damage, victim.Name())
 	}
-	return int64(damage)
+	log.Trace().Msgf(" %s does %d damage to %s%s", fighter.Name(), damage, victim.Name(), modifier)
+	return damage, nil
 }
