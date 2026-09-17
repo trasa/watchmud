@@ -19,7 +19,7 @@ type Room struct {
 	Name        string
 	Description string
 	Zone        *Zone
-	playerList  *player.List // map of players by name
+	playerList  *player.List
 	Inventory   *RoomInventory
 	mobs        *RoomMobs
 	directions  map[direction.Direction]*Room
