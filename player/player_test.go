@@ -32,7 +32,7 @@ func (s *PlayerSuite) TestAddInventory_New() {
 		"defnid",
 		"name",
 		"zone",
-		object.Food,
+		rules.ObjectCategoryFood,
 		[]string{},
 		"short desc",
 		"in room",

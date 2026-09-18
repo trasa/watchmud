@@ -26,7 +26,7 @@ func (s *RoleTestSuite) equip(loc rules.EquipmentSlot, name string, weights map[
 		name,
 		name,
 		"wrathrock",
-		object.Armor,
+		rules.ObjectCategoryArmor,
 		nil,
 		name,
 		name+" is here.",

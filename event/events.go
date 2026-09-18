@@ -103,7 +103,7 @@ type Inventory struct {
 type InventoryItem struct {
 	Id               string
 	ShortDescription string
-	Categories       []string
+	Category         rules.ObjectCategory
 }
 
 type Equipment struct {
@@ -253,7 +253,7 @@ type RoomStatusItem struct {
 	ShortDescription    string
 	DescriptionOnGround string
 	Aliases             []string
-	Categories          []string
+	Category            rules.ObjectCategory
 	Behaviors           []string
 }
 

@@ -13,7 +13,7 @@ func (w *World) handleInventory(msg *gameserver.HandlerParameter, cmd command.In
 			items = append(items, event.InventoryItem{
 				Id:               instPtr.Id.String(),
 				ShortDescription: instPtr.Definition.ShortDescription,
-				Categories:       instPtr.Definition.Categories.ToStringList(),
+				Category:         instPtr.Definition.ObjectCategory,
 			})
 		}
 	}

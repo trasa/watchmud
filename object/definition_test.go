@@ -21,7 +21,7 @@ func (suite *DefinitionSuite) SetupTest() {
 		"definitionId",
 		"helmet",
 		"zoneId",
-		Armor,
+		rules.ObjectCategoryArmor,
 		[]string{"iron", "helm"},
 		"desc",
 		"desc on ground",

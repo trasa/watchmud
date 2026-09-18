@@ -315,7 +315,7 @@ func testKnife() *object.Instance {
 		"knife",
 		"knife",
 		"start",
-		object.Weapon,
+		rules.ObjectCategoryWeapon,
 		[]string{},
 		"knife",
 		"A knife is on the ground.",
@@ -331,7 +331,7 @@ func testHelmet() *object.Instance {
 		"helmet",
 		"helmet",
 		"start",
-		object.Armor,
+		rules.ObjectCategoryArmor,
 		[]string{"helm"},
 		"iron helmet",
 

@@ -41,7 +41,7 @@ func (s *handleInventorySuite) TestInventory_Success() {
 		"defnid",
 		"name",
 		"zone",
-		object.Treasure,
+		rules.ObjectCategoryTreasure,
 		[]string{},
 		"short desc",
 		"in room",

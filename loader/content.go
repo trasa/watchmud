@@ -213,16 +213,11 @@ func (c *Content) loadObjectDefinitions(fsys fs.FS) error {
 			return err
 		}
 		for _, obj := range objEntries {
-			cat, err := object.ParseCategory(obj.Category)
-			if err != nil {
-				return fmt.Errorf("object %s/%s: bad category: %w", zonename, obj.Id, err)
-			}
-
 			d := object.NewDefinition(
 				obj.Id,
 				obj.Name,
 				zonename,
-				cat,
+				obj.Category,
 				obj.Aliases,
 				obj.ShortDescription,
 				obj.DescriptionOnGround,

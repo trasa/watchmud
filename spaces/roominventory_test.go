@@ -28,7 +28,7 @@ func (suite *RoomInventorySuite) SetupTest() {
 		"id",
 		"name",
 		"zoneid",
-		object.Other,
+		rules.ObjectCategoryOther,
 		[]string{},
 		"short desc",
 		"on ground",

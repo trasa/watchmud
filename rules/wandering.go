@@ -18,7 +18,7 @@ type WanderDefinition struct {
 
 type WanderStyle string
 
-var ErrUnknownWanderStyle = errors.New("unknown armor type")
+var ErrUnknownWanderStyle = errors.New("unknown wander style")
 
 const (
 	WanderNone       WanderStyle = ""           // you don't wander

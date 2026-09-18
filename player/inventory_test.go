@@ -26,7 +26,7 @@ func (s *inventorySuite) SetupTest() {
 		"defn",
 		"defnName",
 		"zone",
-		object.Armor,
+		rules.ObjectCategoryArmor,
 		[]string{"alias"},
 		"desc",
 		"descground",

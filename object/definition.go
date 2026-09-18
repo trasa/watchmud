@@ -17,7 +17,7 @@ import (
 type Definition struct {
 	ObjectId            Id
 	Aliases             []string
-	Categories          CategorySet
+	ObjectCategory      rules.ObjectCategory
 	Name                string
 	ShortDescription    string // description of the object when being used: "a long, green stick" -> "The Beastly Fido picks up the long, green stick."
 	DescriptionOnGround string // description of the object when lying on the ground: "A shiny sword is lying here."
@@ -39,7 +39,7 @@ func NewDefinition(
 	id string,
 	name string,
 	zoneId string,
-	category Category,
+	category rules.ObjectCategory,
 	aliases []string,
 	shortDescription string,
 	descriptionOnGround string,
@@ -50,18 +50,17 @@ func NewDefinition(
 		Name:                strings.ToLower(name),
 		ShortDescription:    shortDescription,
 		DescriptionOnGround: descriptionOnGround,
-		Categories:          make(CategorySet),
+		ObjectCategory:      category,
 		Aliases:             aliases,
 		EquipmentSlot:       equipmentSlot,
 		Behaviors:           behavior.NewBehaviorSet(),
 		ArmorType:           armorType,
 	}
-	d.Categories.Add(category)
 	return d
 }
 
 func (d *Definition) IsWeapon() bool {
-	return d.Categories.Contains(Weapon)
+	return d.ObjectCategory == rules.ObjectCategoryWeapon
 }
 
 func (d *Definition) NoTake() bool {

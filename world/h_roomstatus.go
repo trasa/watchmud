@@ -45,7 +45,7 @@ func createInventoryInfo(room *spaces.Room) (result []event.RoomStatusItem) {
 				Id:                  i.Id.String(),
 				DefinitionId:        i.Definition.ObjectId.DefinitionId,
 				Aliases:             i.Definition.Aliases,
-				Categories:          i.Definition.Categories.ToStringList(),
+				Category:            i.Definition.ObjectCategory,
 				Name:                i.Definition.Name,
 				ShortDescription:    i.Definition.ShortDescription,
 				DescriptionOnGround: i.Definition.DescriptionOnGround,

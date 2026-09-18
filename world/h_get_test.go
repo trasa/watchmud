@@ -94,8 +94,16 @@ func (s *HandleGetSuite) TestNoTarget() {
 // disagree about
 func (s *HandleGetSuite) addKnife() *object.Instance {
 	s.T().Helper()
-	d := object.NewDefinition("knife", "knife", "wrathrock", object.Weapon,
-		nil, "second knife", "Another knife is here.", rules.SlotWield, rules.ArmorTypeNone)
+	d := object.NewDefinition(
+		"knife",
+		"knife",
+		"wrathrock",
+		rules.ObjectCategoryWeapon,
+		nil,
+		"second knife",
+		"Another knife is here.",
+		rules.SlotWield,
+		rules.ArmorTypeNone)
 	inst := object.NewInstance(uuid.New(), d)
 	s.Require().NoError(s.w.StartRoom.Inventory.Add(inst))
 	return inst
@@ -104,8 +112,17 @@ func (s *HandleGetSuite) addKnife() *object.Instance {
 // something bolted down
 func (s *HandleGetSuite) addFountain() *object.Instance {
 	s.T().Helper()
-	d := object.NewDefinition("fountain", "fountain", "wrathrock", object.Other,
-		nil, "fountain", "A fountain bubbles here.", rules.SlotNone, rules.ArmorTypeNone)
+	d := object.NewDefinition(
+		"fountain",
+		"fountain",
+		"wrathrock",
+		rules.ObjectCategoryOther,
+		nil,
+		"fountain",
+		"A fountain bubbles here.",
+		rules.SlotNone,
+		rules.ArmorTypeNone,
+	)
 	d.Behaviors.Add(behavior.NoTake)
 	inst := object.NewInstance(uuid.New(), d)
 	s.Require().NoError(s.w.StartRoom.Inventory.Add(inst))

@@ -24,7 +24,7 @@ func (s *RemoveTestSuite) helmet() *object.Instance {
 		"iron_helmet",
 		"iron helmet",
 		"start",
-		object.Armor,
+		rules.ObjectCategoryArmor,
 		[]string{"helm"},
 		"iron helmet",
 		"an iron helmet is here.",

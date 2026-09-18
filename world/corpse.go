@@ -36,7 +36,7 @@ func (w *World) becomeMobileCorpse(m *mobile.Instance) {
 	d := object.NewDefinition("",
 		corpseName,
 		"",
-		object.Corpse,
+		rules.ObjectCategoryCorpse,
 		m.Definition.Aliases,
 		corpseName,
 		fmt.Sprintf("The corpse of %s is lying here.", m.Definition.Name),

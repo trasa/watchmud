@@ -92,10 +92,27 @@ func (suite *TargetParserSuite) TestParseTooManyDots() {
 
 // what the grammar picks out of a container, in the order things arrived
 func (suite *TargetParserSuite) TestTargetsIn() {
-	knifeDef := object.NewDefinition("knife", "knife", "zone", object.Weapon,
-		[]string{"blade"}, "knife", "A knife is here.", rules.SlotWield, rules.ArmorTypeNone)
-	helmDef := object.NewDefinition("helm", "helmet", "zone", object.Armor,
-		nil, "helmet", "A helmet is here.", rules.SlotHead, rules.ArmorTypePlate)
+	knifeDef := object.NewDefinition(
+		"knife",
+		"knife",
+		"zone",
+		rules.ObjectCategoryWeapon,
+		[]string{"blade"},
+		"knife",
+		"A knife is here.",
+		rules.SlotWield,
+		rules.ArmorTypeNone)
+	helmDef := object.NewDefinition(
+		"helm",
+		"helmet",
+		"zone",
+		rules.ObjectCategoryArmor,
+		nil,
+		"helmet",
+		"A helmet is here.",
+		rules.SlotHead,
+		rules.ArmorTypePlate,
+	)
 
 	first := object.NewInstance(uuid.New(), knifeDef)
 	helm := object.NewInstance(uuid.New(), helmDef)
