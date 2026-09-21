@@ -8,7 +8,7 @@
     "wandering_definition": {
       "can_wander": false
     },
-    "ac": 1,
+    "ac": 10,
     "aggressive": true
   },
   {
@@ -30,7 +30,6 @@
     "aliases": [ "little", "drone"  ],
     "max_health": 25,
     "wandering_definition": { "can_wander": false },
-    "ac": 10,
     "aggressive": false
   }
 ]

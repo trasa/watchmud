@@ -54,7 +54,7 @@ func TestLoadContent_mobArmorClass(t *testing.T) {
 
 	mobs := c.Zones["wrathrock"].MobileDefinitions
 	assert.Equal(t, 10, mobs["targetDrone"].ArmorClass(), `"ac": 10 is unarmored`)
-	assert.Equal(t, 1, mobs["rabbit"].ArmorClass(), `"ac": 1 is as written`)
+	assert.Equal(t, rules.BaseArmorClass, mobs["littleDrone"].ArmorClass(), "a mob with no ac gets the baseline")
 
 	// sample's walker declares one too; nothing in content should be sitting
 	// at zero by accident.

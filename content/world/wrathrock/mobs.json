@@ -8,7 +8,7 @@
     "wandering_definition": {
       "can_wander": false
     },
-    "ac": 1,
+    "ac": 10,
     "aggressive": true
   }
 ]
