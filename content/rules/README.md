@@ -9,6 +9,12 @@ piece contributes to any role marked `from_armor` in roles.json. Armor that prot
 you more is armor that argues harder that you're the one standing in front, so there
 is nothing to keep in sync.
 
+AC starts at 10 (`rules.BaseArmorClass`) and a hit is a d20 that *meets or beats* it,
+so 10 is unarmored and hit 55% of the time. A mob's `"ac"` in mobs.json is on that same
+absolute scale -- 10 is an unarmored creature, not a bonus on top of one -- and a mob
+that doesn't name one gets 10. Writing `"ac": 0` means a creature that cannot be missed,
+since a d20 never rolls below 1.
+
 ## Roles
 
 This is the replacement for classes: your role is determined by what gear you're wearing.

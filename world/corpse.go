@@ -41,7 +41,11 @@ func (w *World) becomeMobileCorpse(m *mobile.Instance) {
 		corpseName,
 		fmt.Sprintf("The corpse of %s is lying here.", m.Definition.Name),
 		rules.SlotNone,
-		"cloth") // TODO this doesn't make sense ... this probably should be defined somewhere else for all corpses
+		// A corpse is not armor. It used to claim to be cloth, which was
+		// worth nothing only because the armor table has no row for the slot
+		// it can't be worn in anyway -- two accidents holding hands. Saying
+		// none means it stays worth nothing if either of those changes.
+		rules.ArmorTypeNone)
 
 	corpse := object.NewInstance(uuid.New(), d)
 	// TODO transfer m's possessions over to the corpse

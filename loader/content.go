@@ -261,6 +261,10 @@ func (c *Content) loadMobileDefinitions(fsys fs.FS) error {
 			return err
 		}
 		for _, mob := range mobEntries {
+			ac, err := mobArmorClass(zonename, mob)
+			if err != nil {
+				return err
+			}
 			defn := mobile.NewDefinition(
 				mob.Id,
 				mob.Name,
@@ -276,7 +280,7 @@ func (c *Content) loadMobileDefinitions(fsys fs.FS) error {
 					Style:           mob.WanderingDefinition.WanderStyle,
 					Path:            mob.WanderingDefinition.Path,
 				},
-				mob.AC,
+				ac,
 				mob.Aggressive,
 			)
 			flags := mobile.ConvertFlags(mob.Flags)
@@ -317,4 +321,22 @@ func (c *Content) loadZoneInstructions(fsys fs.FS) error {
 		}
 	}
 	return nil
+}
+
+// mobArmorClass is what the mob file said, or the unarmored baseline if it
+// said nothing.
+//
+// Mob armor class is absolute, not a bonus: it is the number a d20 is
+// compared against, exactly as a player's is, so "ac": 10 is an unarmored
+// creature and "ac": 14 is one in the equivalent of plate. Defaulting an
+// absent key to zero -- which is what an int field did -- made every mob
+// whose file forgot it impossible to miss.
+func mobArmorClass(zoneName string, mob mobEntry) (int, error) {
+	if mob.AC == nil {
+		return rules.BaseArmorClass, nil
+	}
+	if *mob.AC < 0 {
+		return 0, fmt.Errorf("mob %s/%s: negative ac %d", zoneName, mob.Id, *mob.AC)
+	}
+	return *mob.AC, nil
 }

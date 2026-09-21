@@ -84,13 +84,11 @@ func (eq *Equipment) ItemEquipped(item *Instance) bool {
 	return false
 }
 
-// BaseArmorClass is what you are worth wearing nothing at all.
-const BaseArmorClass = 10
-
 // ArmorClass sums what's equipped, asking the armor table what each piece is
-// worth in the slot it's in. Anything that isn't armor adds nothing.
+// worth in the slot it's in, starting from rules.BaseArmorClass. Anything
+// that isn't armor adds nothing.
 func (eq *Equipment) ArmorClass() int {
-	ac := BaseArmorClass
+	ac := rules.BaseArmorClass
 	for slot, inst := range eq.All() {
 		ac += eq.cat.ArmorWeight(inst.Definition.ArmorType, slot)
 	}

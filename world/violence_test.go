@@ -7,10 +7,10 @@ import (
 	"github.com/trasa/watchmud/event"
 )
 
-// What happens to everyone else's fights when one combatant dies. The melee
-// roll goes through package-level dice rather than w.roller, so DoViolence
-// can't be driven to a kill deterministically; these drive the death handling
-// directly, which is where the bookkeeping lives.
+// What happens to everyone else's fights when one combatant dies. These drive
+// the death handling directly, since that is where the bookkeeping lives --
+// DoViolence itself rolls through w.roller and can be driven a swing at a
+// time, which violence_armorclass_test.go does.
 type violenceSuite struct {
 	worldTestSuite
 }

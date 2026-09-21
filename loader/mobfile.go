@@ -12,8 +12,19 @@ type mobEntry struct {
 	WanderingDefinition WanderingEntry `json:"wandering_definition"`
 	Flags               []string       `json:"flags"`
 	MaxHealth           int            `json:"max_health"`
-	AC                  int            `json:"ac"`
-	Aggressive          bool           `json:"aggressive"`
+
+	// AC is the mob's armor class on the same absolute scale a player's is
+	// on: rules.BaseArmorClass is unarmored, higher is harder to hit, and
+	// combat compares a d20 to it directly.
+	//
+	// A pointer so that "no ac in the file" is distinguishable from
+	// "ac": 0. They are wildly different things -- a missing one means the
+	// builder didn't think about it and wants an ordinary target, while a
+	// zero means a thing that literally cannot be missed, since a d20 cannot
+	// roll below 1. Before this was a pointer every mob that forgot the key
+	// silently became the second kind.
+	AC         *int `json:"ac"`
+	Aggressive bool `json:"aggressive"`
 }
 
 type WanderingEntry struct {

@@ -42,6 +42,55 @@ func (s *MeleeSuite) TestHitSuccess() {
 	s.Assert().Equal(3, result.Damage)
 }
 
+// The boundary, in both directions. A hit is the roll *meeting* armor class,
+// so AC 10 is hit by a 10 and missed by a 9 -- the one-off that a doc comment
+// reading "> victim's AC" would talk somebody into "fixing".
+func (s *MeleeSuite) TestRollEqualToArmorClassHits() {
+	s.roller.Load([]int{10, 4}) // victim is AC 10
+	result, err := AttemptMeleeAttack(s.roller, s.fighter, s.victim)
+	s.Require().NoError(err)
+	s.Assert().True(result.WasHit)
+	s.Assert().Equal(4, result.Damage)
+}
+
+func (s *MeleeSuite) TestRollOneUnderArmorClassMisses() {
+	s.roller.Load([]int{9})
+	result, err := AttemptMeleeAttack(s.roller, s.fighter, s.victim)
+	s.Require().NoError(err)
+	s.Assert().False(result.WasHit)
+	s.Assert().Equal(0, result.Damage)
+}
+
+// Armor class is the whole of the defense: the same roll that lands on an
+// unarmored victim misses an armored one.
+func (s *MeleeSuite) TestArmorClassIsWhatDecidesIt() {
+	armored := NewTestCombatant("armored", 15, []DamageType{}, []DamageType{})
+
+	s.roller.Load([]int{14, 4})
+	onUnarmored, err := AttemptMeleeAttack(s.roller, s.fighter, s.victim)
+	s.Require().NoError(err)
+
+	s.roller.Load([]int{14, 4})
+	onArmored, err := AttemptMeleeAttack(s.roller, s.fighter, armored)
+	s.Require().NoError(err)
+
+	s.Assert().True(onUnarmored.WasHit, "14 beats AC 10")
+	s.Assert().False(onArmored.WasHit, "14 does not reach AC 15")
+}
+
+// A defender with no armor class at all cannot be missed, since a d20 has no
+// roll below 1. Nothing should be able to reach combat in that state -- the
+// loader defaults a mob without an "ac" to rules.BaseArmorClass for exactly
+// this reason -- but the arithmetic is worth pinning down.
+func (s *MeleeSuite) TestArmorClassZeroCannotBeMissed() {
+	unmissable := NewTestCombatant("unmissable", 0, []DamageType{}, []DamageType{})
+
+	s.roller.Load([]int{1, 2})
+	result, err := AttemptMeleeAttack(s.roller, s.fighter, unmissable)
+	s.Require().NoError(err)
+	s.Assert().True(result.WasHit)
+}
+
 // TODO critical success
 // TODO critical fail
 // TODO resistance

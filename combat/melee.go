@@ -21,9 +21,16 @@ func (result MeleeAttackResult) String() string {
 	return fmt.Sprintf("Missed.")
 }
 
-// AttemptMeleeAttack calculates the result of a melee attack.
-// Rolls d20, apply appropriate modifiers, if value > victim's AC, then that's a hit,
-// calculate the correct damage.
+// AttemptMeleeAttack calculates the result of a melee attack: roll d20, apply
+// the attacker's modifiers, and hit when the result *meets or beats* the
+// victim's armor class. Meeting it is a hit -- AC is the number you need, not
+// the number you have to exceed -- so AC 10 is hit by a 10.
+//
+// Both sides of that comparison are absolute and start from
+// rules.BaseArmorClass: a player is that plus what they are wearing, a mob is
+// whatever its definition says, defaulting to the same baseline. Anything
+// that starts measuring armor class from somewhere else is comparing two
+// different scales through one operator.
 func AttemptMeleeAttack(roller rules.Roller, fighter Combatant, victim Combatant) (MeleeAttackResult, error) {
 	roll, err := roller.Roll("1d20")
 	if err != nil {

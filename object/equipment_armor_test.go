@@ -39,25 +39,25 @@ func (s *EquipmentArmorSuite) wear(slot rules.EquipmentSlot, name string, t rule
 }
 
 func (s *EquipmentArmorSuite) TestNoArmorIsBaseArmorClass() {
-	s.Assert().Equal(BaseArmorClass, s.eq.ArmorClass())
+	s.Assert().Equal(rules.BaseArmorClass, s.eq.ArmorClass())
 }
 
 func (s *EquipmentArmorSuite) TestArmorClassSumsWhatIsWorn() {
 	s.wear(rules.SlotHead, "iron helmet", rules.ArmorTypePlate)
 	s.wear(rules.SlotBody, "plate mail", rules.ArmorTypePlate)
 
-	s.Assert().Equal(BaseArmorClass+1+4, s.eq.ArmorClass())
+	s.Assert().Equal(rules.BaseArmorClass+1+4, s.eq.ArmorClass())
 }
 
 // The slot decides the number, not just the material: plate on a head is
 // worth less than plate on a chest.
 func (s *EquipmentArmorSuite) TestSlotDecidesTheWeight() {
 	s.wear(rules.SlotBody, "plate mail", rules.ArmorTypePlate)
-	s.Assert().Equal(BaseArmorClass+4, s.eq.ArmorClass())
+	s.Assert().Equal(rules.BaseArmorClass+4, s.eq.ArmorClass())
 
 	s.eq.Unequip(rules.SlotBody)
 	s.wear(rules.SlotHead, "iron helmet", rules.ArmorTypePlate)
-	s.Assert().Equal(BaseArmorClass+1, s.eq.ArmorClass())
+	s.Assert().Equal(rules.BaseArmorClass+1, s.eq.ArmorClass())
 }
 
 // A slot the table doesn't mention, and gear that isn't armor at all, are
@@ -66,7 +66,7 @@ func (s *EquipmentArmorSuite) TestUntabledSlotAndNonArmorAreWorthNothing() {
 	s.wear(rules.SlotFeet, "plate boots", rules.ArmorTypePlate) // no feet row
 	s.wear(rules.SlotWield, "knife", rules.ArmorTypeNone)
 
-	s.Assert().Equal(BaseArmorClass, s.eq.ArmorClass())
+	s.Assert().Equal(rules.BaseArmorClass, s.eq.ArmorClass())
 	s.Assert().Empty(s.eq.RoleWeights())
 }
 
@@ -131,6 +131,6 @@ func (s *EquipmentArmorSuite) TestNoArmorRoleMeansNoDerivedWeight() {
 
 	s.wear(rules.SlotBody, "plate mail", rules.ArmorTypePlate)
 
-	s.Assert().Equal(BaseArmorClass+4, s.eq.ArmorClass())
+	s.Assert().Equal(rules.BaseArmorClass+4, s.eq.ArmorClass())
 	s.Assert().Empty(s.eq.RoleWeights())
 }
