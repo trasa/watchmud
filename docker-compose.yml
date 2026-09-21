@@ -1,0 +1,30 @@
+# Local persistence for development: one mongo, one volume, no auth.
+#
+#   make db-up      # start it
+#   make db-down    # stop it, keeping the data
+#   make db-reset   # stop it and throw the data away
+#
+# There is no auth on purpose. This listens on localhost and holds nothing but
+# test characters; a deployment that matters brings its own mongo and its own
+# credentials, and points app.yaml's mongo.uri at it.
+services:
+  mongo:
+    image: mongo:8
+    container_name: watchmud-mongo
+    restart: unless-stopped
+    # 27018 on the host on purpose: a machine with mongo already installed is
+    # listening on 27017, and "localhost:27017" would quietly reach that one
+    # instead of this container. Inside the container it is the normal port.
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  mongo-data:

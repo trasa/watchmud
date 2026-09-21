@@ -9,12 +9,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/dice"
 	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/logging"
 	"github.com/trasa/watchmud/memstore"
+	"github.com/trasa/watchmud/mongostore"
+	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/server"
 	"github.com/trasa/watchmud/serverconfig"
 	"github.com/trasa/watchmud/telnet"
@@ -74,7 +77,11 @@ func run() error {
 	}
 
 	// persistence
-	store := memstore.New()
+	store, closeStore, err := openStore(ctx, cfg)
+	if err != nil {
+		return fmt.Errorf("persistence: %w", err)
+	}
+	defer closeStore()
 
 	// randomness
 	var seed [32]byte
@@ -101,4 +108,35 @@ func run() error {
 		return fmt.Errorf("game server: %w", runErr)
 	}
 	return nil
+}
+
+// openStore picks where characters are kept, and returns the cleanup to run on
+// the way out.
+//
+// A configured mongo that can't be reached is a hard startup failure rather
+// than a fallback to memory: a server that comes up anyway looks healthy right
+// until it has quietly thrown away an evening of play. No uri at all is a
+// different thing -- that is someone who asked for a throwaway server, and
+// they get one, loudly.
+func openStore(ctx context.Context, cfg *serverconfig.Config) (player.Store, func(), error) {
+	if cfg.Mongo.Uri == "" {
+		log.Warn().Msg("no mongo.uri configured: using the in-memory store, nothing will survive a restart")
+		return memstore.New(), func() {}, nil
+	}
+
+	store, err := mongostore.New(ctx, cfg.Mongo.Uri, cfg.Mongo.Database)
+	if err != nil {
+		return nil, nil, err
+	}
+	log.Info().Str("uri", cfg.Mongo.Uri).Str("database", cfg.Mongo.Database).Msg("persistence: mongo")
+
+	return store, func() {
+		// ctx is cancelled by the signal that got us here, so the disconnect
+		// needs a deadline of its own or it has none at all.
+		closeCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		if err := store.Close(closeCtx); err != nil {
+			log.Error().Err(err).Msg("closing the player store")
+		}
+	}, nil
 }

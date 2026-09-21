@@ -1,5 +1,13 @@
 [
   {
+    "id": "rope",
+    "name": "rope",
+    "category": "OTHER",
+    "aliases": [ "coil" ],
+    "short_description": "a coil of rope",
+    "description_on_ground": "A coil of rope is here."
+  },
+  {
     "id": "fountain",
     "name": "fountain",
     "category": "OTHER",

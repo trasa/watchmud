@@ -1,0 +1,93 @@
+package mongostore
+
+import (
+	"testing"
+	"time"
+	"uuid"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/trasa/watchmud/player"
+)
+
+func testRecord() *player.Record {
+	knifeId := uuid.New()
+	return &player.Record{
+		Id:         uuid.New(),
+		Name:       "newbie",
+		CurHealth:  93,
+		MaxHealth:  100,
+		LineageId:  "hill_dwarf",
+		LastZoneId: "wrathrock",
+		LastRoomId: "temple_square",
+		Equipment: []player.EquipmentRecord{
+			{Slot: "wield", InstanceId: knifeId},
+		},
+		Inventory: []player.InventoryRecord{
+			{InstanceId: knifeId, ZoneId: "wrathrock", DefinitionId: "training_dagger"},
+			{InstanceId: uuid.New(), ZoneId: "wrathrock", DefinitionId: "waterskin"},
+		},
+	}
+}
+
+// What goes in comes back out: the equipped instance id has to still match the
+// inventory one, or FromRecord leaves the slot empty and the character logs in
+// undressed.
+func TestPlayerDoc_roundTrip(t *testing.T) {
+	rec := testRecord()
+
+	doc := newPlayerDoc(rec, time.Now())
+	got, err := doc.record()
+	require.NoError(t, err)
+
+	assert.Equal(t, rec, got)
+	assert.Equal(t, got.Inventory[0].InstanceId, got.Equipment[0].InstanceId)
+}
+
+// A character with nothing is a real character, not an empty document.
+func TestPlayerDoc_roundTripEmptyGear(t *testing.T) {
+	rec := &player.Record{
+		Id:        uuid.New(),
+		Name:      "naked",
+		CurHealth: 100,
+		MaxHealth: 100,
+		LineageId: "human",
+	}
+
+	got, err := newPlayerDoc(rec, time.Now()).record()
+	require.NoError(t, err)
+	assert.Equal(t, rec, got)
+}
+
+// ids are written as strings so the collection is readable
+func TestNewPlayerDoc_idsAreStrings(t *testing.T) {
+	rec := testRecord()
+	doc := newPlayerDoc(rec, time.Now())
+
+	assert.Equal(t, rec.Id.String(), doc.Id)
+	assert.Equal(t, rec.Equipment[0].InstanceId.String(), doc.Equipment[0].InstanceId)
+	assert.Equal(t, rec.Inventory[0].InstanceId.String(), doc.Inventory[0].InstanceId)
+}
+
+func TestNewPlayerDoc_updatedAtIsUTC(t *testing.T) {
+	doc := newPlayerDoc(testRecord(), time.Date(2026, 9, 21, 12, 0, 0, 0, time.Local))
+	assert.Equal(t, time.UTC, doc.UpdatedAt.Location())
+}
+
+// a document somebody edited by hand shouldn't come back as a character with
+// renumbered gear.
+func TestPlayerDoc_badIdIsAnError(t *testing.T) {
+	doc := newPlayerDoc(testRecord(), time.Now())
+	doc.Id = "not-a-uuid"
+
+	_, err := doc.record()
+	assert.ErrorContains(t, err, "bad _id")
+}
+
+func TestPlayerDoc_badInstanceIdIsAnError(t *testing.T) {
+	doc := newPlayerDoc(testRecord(), time.Now())
+	doc.Inventory[1].InstanceId = "nope"
+
+	_, err := doc.record()
+	assert.ErrorContains(t, err, "bad instance id")
+}

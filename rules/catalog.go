@@ -10,6 +10,13 @@ type Catalog struct {
 	Roles    map[string]*Role
 	Armor    ArmorTypeContent
 
+	// StartingGear is what a new character is created holding. Assigned by
+	// the loader rather than passed to NewCatalog, for the same reason
+	// object.Definition.RoleWeights is: it is content that has to be checked
+	// against the zones, and the zones aren't loaded yet when the catalog is
+	// built. A catalog with none is a game that hands out nothing.
+	StartingGear StartingGear
+
 	// declaration order, preserved from the content files: the creation menu
 	// reads speciesOrder, and roleOrder breaks ties in RoleFor. Iterating the
 	// maps instead would shuffle both from run to run.

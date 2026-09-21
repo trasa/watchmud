@@ -191,6 +191,11 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter, cmd c
 		gs.catalog,
 	)
 
+	// The kit goes on before the save, so the first thing written for this
+	// character already has it: a crash between here and the first command
+	// leaves them dressed rather than naked.
+	player.GiveStartingGear(p, gs.catalog.StartingGear, gs.world)
+
 	// TODO need to set the location first (AddPlayer always puts the player in the start room, for now)
 
 	if err := gs.store.Save(p.Record()); err != nil {

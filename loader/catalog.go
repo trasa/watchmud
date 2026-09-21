@@ -23,5 +23,19 @@ func LoadCatalog(rulesFS fs.FS) (*rules.Catalog, error) {
 	}
 
 	c, err := rules.NewCatalog(species, roles, armor)
-	return c, err
+	if err != nil {
+		return nil, err
+	}
+
+	// Optional: a content set with no starting_gear.json hands new characters
+	// nothing, which is a game you can play. What it can't be is wrong, so
+	// every item in it is checked against the zones once they are loaded --
+	// see Content.checkStartingGear.
+	gear, err := readOptionalJSONFile[rules.StartingGear](rulesFS, "starting_gear.json")
+	if err != nil {
+		return nil, err
+	}
+	c.StartingGear = gear
+
+	return c, nil
 }

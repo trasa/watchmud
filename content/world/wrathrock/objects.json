@@ -1,0 +1,40 @@
+[
+  {
+    "id": "training_dagger",
+    "name": "training dagger",
+    "category": "WEAPON",
+    "aliases": [ "dagger", "training", "blade" ],
+    "short_description": "a training dagger",
+    "description_on_ground": "A training dagger, more nicked than sharp, lies here.",
+    "equipment_slot": "wield",
+    "roles": { "striker": 2 }
+  },
+  {
+    "id": "novice_tunic",
+    "name": "wool tunic",
+    "category": "ARMOR",
+    "aliases": [ "tunic", "wool" ],
+    "short_description": "a coarse wool tunic",
+    "description_on_ground": "A coarse wool tunic has been left in a heap here.",
+    "equipment_slot": "body",
+    "armor_type": "cloth"
+  },
+  {
+    "id": "travelers_cloak",
+    "name": "travelers cloak",
+    "category": "ARMOR",
+    "aliases": [ "cloak", "travelers", "traveler" ],
+    "short_description": "a travelers cloak",
+    "description_on_ground": "A travelers cloak, road-stained and patched, is spread out here.",
+    "equipment_slot": "about_body",
+    "armor_type": "cloth"
+  },
+  {
+    "id": "waterskin",
+    "name": "waterskin",
+    "category": "OTHER",
+    "aliases": [ "skin", "water" ],
+    "short_description": "a waterskin",
+    "description_on_ground": "A waterskin lies here, most of the way full."
+  }
+]

@@ -23,3 +23,26 @@ table above -- that's Tank. Everything else says what it's worth by hand, with a
 This is the definition of species and lineage, which replaces 'Race' and 'Class' and
 is now mostly cosmetic. Your choice of lineage doesn't dictate any stats, just how
 you feel like role-playing.
+
+## Starting Gear
+
+What a brand-new character is created holding: `starting_gear.json`, a list of object
+definitions named by the zone that defines them, in the order they should arrive.
+
+```json
+{ "zone": "wrathrock", "object": "training_dagger", "equip": true }
+```
+
+`"equip": true` means the character starts with it worn; leave it off and the item is
+only carried. There is no slot here on purpose -- the object definition already names
+the one slot it goes in, and a second copy of that would only be something to keep in
+step. An item marked `equip` that isn't wearable, two items claiming the same slot, or
+an object or zone that doesn't exist, all fail startup rather than quietly handing out
+less than the file says.
+
+The file is optional: no `starting_gear.json` means new characters start with nothing.
+
+Nothing in here says what role the kit adds up to, because nothing can -- a role is read
+off the equipment at the moment it's asked for. The wrathrock kit (a training dagger, a
+wool tunic and a cloak, plus a waterskin) makes a level 1 character a Striker with AC 11,
+and stops mattering the moment they wear something else.

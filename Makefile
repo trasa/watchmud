@@ -2,6 +2,9 @@ GO      ?= go
 BIN_DIR := bin
 BINARY  := watchmud
 
+# where `make test-db` looks for the mongo from docker-compose.yml
+TEST_MONGO_URI ?= mongodb://localhost:27018
+
 .DEFAULT_GOAL := build
 
 ## build: compile server into bin/watchmud
@@ -51,6 +54,31 @@ check: fmt-check vet test
 ## all: the full local workflow
 .PHONY: all
 all: check build
+
+## db-up: start the local mongo in docker
+.PHONY: db-up
+db-up:
+	docker compose up -d mongo
+
+## db-down: stop the local mongo, keeping its data
+.PHONY: db-down
+db-down:
+	docker compose down
+
+## db-reset: stop the local mongo and delete every character in it
+.PHONY: db-reset
+db-reset:
+	docker compose down -v
+
+## db-shell: open a mongosh against the local mongo
+.PHONY: db-shell
+db-shell:
+	docker compose exec mongo mongosh watchmud
+
+## test-db: run the tests that need a real mongo (make db-up first)
+.PHONY: test-db
+test-db:
+	WATCHMUD_TEST_MONGO_URI=$(TEST_MONGO_URI) $(GO) test ./mongostore/ -count=1 -v
 
 ## run: build and start the server with example config
 .PHONY: run

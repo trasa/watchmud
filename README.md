@@ -15,9 +15,10 @@ description of what's done and what isn't. The short version:
 
 - **Telnet is the transport.** The old gRPC listener, the static web page, and the
   separate console client are deleted.
-- **Persistence is an interface with an in-memory implementation.** Characters do not
-  survive a restart yet. Postgres is gone; its replacement gets chosen later, against a
-  server that actually runs.
+- **Persistence is an interface with two implementations.** Postgres is gone; mongo
+  replaced it. Characters are one document each and survive a restart, as long as
+  `mongo.uri` is configured -- leave it empty and you get the in-memory store, where
+  they don't.
 - **Protobuf is still the internal vocabulary**, but it is on notice. Nothing serializes
   these messages any more -- the telnet layer reads their fields directly -- so the next
   decision is whether the `GameMessage` wrapper still earns its place.
@@ -77,6 +78,28 @@ destination.
     $ ./bin/watchmud -content /path/to/content   # override just the content path
 
 Ctrl-C to terminate the server.
+
+### Persistence
+
+Characters are stored in mongo, one document per character, in the `players` collection.
+[docker-compose.yml](docker-compose.yml) has one for local development:
+
+    $ make db-up      # start it (host port 27018)
+    $ make db-shell   # poke at it: db.players.find()
+    $ make db-down    # stop it, keeping the data
+    $ make db-reset   # stop it and throw the data away
+
+It listens on **27018** rather than the usual 27017, so it can't be confused with a mongo
+you already have installed -- `mongo.uri` in app.local.yaml points at it.
+
+Empty out `mongo.uri` and the server runs on the in-memory store instead, which is fine
+for a throwaway session and loses everything on exit. A uri that is set and unreachable
+fails startup on purpose: a server that comes up anyway looks healthy right until it has
+silently discarded an evening of play.
+
+The tests that need a real mongo skip themselves unless you point them at one:
+
+    $ make db-up && make test-db
 
 The world is loaded from `content/`: `content/rules/` holds species and classes,
 `content/world/` holds the zones (`wrathrock`, `sample`, `void`) plus the settings and

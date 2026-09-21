@@ -76,6 +76,11 @@ func LoadContent(fsys fs.FS) (*Content, error) {
 	if err := c.loadZoneInstructions(worldFS); err != nil {
 		return nil, err
 	}
+	// last: the kit names object definitions, so the zones have to be loaded
+	// before anything can say whether it is valid.
+	if err := c.checkStartingGear(); err != nil {
+		return nil, err
+	}
 	return c, nil
 }
 

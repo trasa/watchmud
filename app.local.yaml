@@ -15,3 +15,12 @@ serverPort: 10000
 webPort: 8888
 # Telnet listener
 telnetPort: 4000
+
+# Persistence. Characters are stored one document per character in mongo.
+# `make db-up` starts the one in docker-compose.yml -- on port 27018, so it
+# doesn't collide with a mongo already installed on this machine. Comment the uri out (or
+# leave it empty) to run with the in-memory store instead, where nothing
+# survives a restart.
+mongo:
+  uri: mongodb://localhost:27018
+  database: watchmud
