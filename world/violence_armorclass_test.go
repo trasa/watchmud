@@ -60,12 +60,23 @@ func (s *violenceArmorClassSuite) wear(slot rules.EquipmentSlot, name string, t 
 	s.p.Equipment().Equip(slot, object.NewInstance(uuid.New(), d))
 }
 
+// oneWayFight leaves exactly one swing to take.
+//
+// FightLedger.Fight writes both directions, and DoViolence walks them in map
+// order, so a two-sided fight is two swings in an unpredictable order --
+// which loaded dice cannot be aimed at. Ending the other side leaves one.
+func (s *violenceArmorClassSuite) oneWayFight(attacker, defender combat.Combatant) {
+	s.T().Helper()
+	s.w.fightLedger = combat.NewFightLedger()
+	s.Require().NoError(s.w.fightLedger.Fight(attacker, defender, "wrathrock", "temple_square"))
+	s.w.fightLedger.EndFight(defender)
+}
+
 // swing: the drone attacks the player with this d20, and this damage roll if
 // it lands. Returns whether the room saw a hit.
 func (s *violenceArmorClassSuite) swing(d20 int) bool {
 	s.dice.Load([]int{d20, 3})
-	s.w.fightLedger = combat.NewFightLedger()
-	s.Require().NoError(s.w.fightLedger.Fight(s.drone, s.p, "wrathrock", "temple_square"))
+	s.oneWayFight(s.drone, s.p)
 	s.r.Sent = nil
 
 	// pulse 5: CanDoViolence wants three seconds since PulseCountNever
@@ -118,8 +129,7 @@ func (s *violenceArmorClassSuite) TestMobArmorClassIsOnTheSameScale() {
 
 	attack := func(d20 int) bool {
 		s.dice.Load([]int{d20, 3})
-		s.w.fightLedger = combat.NewFightLedger()
-		s.Require().NoError(s.w.fightLedger.Fight(s.p, s.drone, "wrathrock", "temple_square"))
+		s.oneWayFight(s.p, s.drone)
 		s.r.Sent = nil
 		s.w.DoViolence(5)
 		for _, msg := range s.r.Sent {

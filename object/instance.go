@@ -10,6 +10,10 @@ import "uuid"
 type Instance struct {
 	Id         uuid.UUID
 	Definition *Definition
+
+	// Durability is what this particular one has left, counting down from
+	// Definition.MaxDurability. See durability.go.
+	Durability int
 }
 
 // IdStr from the Thing interface
@@ -24,9 +28,12 @@ func (i *Instance) Matches(target string) bool {
 	return i.Definition.Matches(target)
 }
 
+// NewInstance of a definition, brand new: full durability. Anything restoring
+// one that has already been used -- a save file -- sets Durability afterwards.
 func NewInstance(id uuid.UUID, d *Definition) *Instance {
 	return &Instance{
 		Id:         id,
 		Definition: d,
+		Durability: d.MaxDurability,
 	}
 }

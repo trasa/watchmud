@@ -247,6 +247,10 @@ func (c *Content) loadObjectDefinitions(fsys fs.FS) error {
 				}
 			}
 			d.RoleWeights = obj.Roles
+			d.MaxDurability, err = objectDurability(zonename, obj, c.Catalog.Durability)
+			if err != nil {
+				return err
+			}
 
 			c.Zones[zonename].AddObjectDefinition(d)
 		}

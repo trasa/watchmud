@@ -86,13 +86,47 @@ func (eq *Equipment) ItemEquipped(item *Instance) bool {
 
 // ArmorClass sums what's equipped, asking the armor table what each piece is
 // worth in the slot it's in, starting from rules.BaseArmorClass. Anything
-// that isn't armor adds nothing.
+// that isn't armor adds nothing, and neither does anything broken.
 func (eq *Equipment) ArmorClass() int {
 	ac := rules.BaseArmorClass
 	for slot, inst := range eq.All() {
+		if inst.Broken() {
+			continue
+		}
 		ac += eq.cat.ArmorWeight(inst.Definition.ArmorType, slot)
 	}
 	return ac
+}
+
+// DamageableGear is everything worn that could still take wear: it has
+// durability, and it hasn't already given out. In slot order.
+//
+// This is what dying costs you -- all of it, weapon included, since the whole
+// kit was there when it happened.
+func (eq *Equipment) DamageableGear() []*Instance {
+	var pieces []*Instance
+	for _, inst := range eq.All() {
+		if !inst.WearsOut() || inst.Broken() {
+			continue
+		}
+		pieces = append(pieces, inst)
+	}
+	return pieces
+}
+
+// DamageableArmor is the same list narrowed to what stops a blow: armor, by
+// virtue of having an armor type. A censer is not what a sword lands on.
+// Picking one out of this is reproducible given the same roll, because the
+// order is the slot order.
+func (eq *Equipment) DamageableArmor() []*Instance {
+	var pieces []*Instance
+	for _, inst := range eq.DamageableGear() {
+		if inst.Definition.ArmorType == rules.ArmorTypeNone {
+			continue
+		}
+		pieces = append(pieces, inst)
+	}
+	return pieces
 }
 
 // RoleWeights totals what everything equipped contributes to each role,
@@ -130,6 +164,13 @@ type RoleContribution struct {
 func (eq *Equipment) RoleContributions() []RoleContribution {
 	var contributions []RoleContribution
 	for slot, inst := range eq.All() {
+		// Broken gear argues for nothing. It is still on you, and a player
+		// whose breastplate gave out is a player who has stopped being a
+		// Tank -- which is the point: the gear is the truth, and broken gear
+		// tells the truth about what it is doing for you.
+		if inst.Broken() {
+			continue
+		}
 		for _, roleId := range slices.Sorted(maps.Keys(inst.Definition.RoleWeights)) {
 			if weight := inst.Definition.RoleWeights[roleId]; weight != 0 {
 				contributions = append(contributions, RoleContribution{

@@ -122,6 +122,18 @@ func render(msg any, self string) string {
 	case event.Attacking:
 		return "Ok.\n"
 
+	case event.GearDamaged:
+		if m.Items == 1 {
+			return "Dying has taken its toll on your equipment.\n"
+		}
+		return fmt.Sprintf("Dying has taken its toll on your equipment (%d pieces).\n", m.Items)
+
+	case event.Broke:
+		if m.Actor == self {
+			return fmt.Sprintf("Your %s gives out, ruined.\n", m.Item)
+		}
+		return fmt.Sprintf("%s's %s gives out, ruined.\n", m.Actor, m.Item)
+
 	case event.Struck:
 		return renderViolence(self, m)
 
@@ -171,10 +183,24 @@ func renderEquipment(equipment []event.EquippedItem) string {
 	b.WriteString("You are using:\n")
 	for _, eq := range equipment {
 		// include instance id just for testing, for now...
-		b.WriteString(string(eq.Slot) + "\t" + eq.ShortDescription + "\t(" + eq.Id + ")\n")
+		b.WriteString(string(eq.Slot) + "\t" + eq.ShortDescription + "\t" + condition(eq) + "(" + eq.Id + ")\n")
 	}
 	b.WriteString("\n")
 	return b.String()
+}
+
+// condition is what shape a piece of equipment is in, for the listing. Gear
+// that never wears out says nothing at all, so a game with no durability.json
+// reads exactly as it did before there was one.
+func condition(eq event.EquippedItem) string {
+	switch {
+	case eq.Broken:
+		return "(broken) "
+	case eq.MaxDurability > 0:
+		return fmt.Sprintf("(%d/%d) ", eq.Durability, eq.MaxDurability)
+	default:
+		return ""
+	}
 }
 
 func renderExits(exits []event.Exit) string {

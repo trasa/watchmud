@@ -25,6 +25,16 @@ type Definition struct {
 	Behaviors           behavior.BehaviorSet
 	ArmorType           rules.ArmorType
 
+	// MaxDurability is what one of these starts out able to take, and what a
+	// repair would restore it to. rules.Indestructible (zero) means it never
+	// wears out, which is what everything is until content says otherwise.
+	//
+	// Assigned by the loader, like RoleWeights and for the same two reasons:
+	// NewDefinition has enough positional arguments, and the number is
+	// usually derived from the durability table rather than written on the
+	// object.
+	MaxDurability int
+
 	// RoleWeights is what this object contributes to each role while
 	// equipped, keyed on rules.Role.Id: {"striker": 2}. Hand-authored in
 	// objects.json, and on its way out for armor, which can say "plate" and

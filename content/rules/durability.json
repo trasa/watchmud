@@ -1,0 +1,9 @@
+{
+  "default": 40,
+  "on_death_percent": 10,
+  "armor": {
+    "cloth": 20,
+    "leather": 40,
+    "plate": 80
+  }
+}

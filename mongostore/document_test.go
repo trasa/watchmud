@@ -10,6 +10,8 @@ import (
 	"github.com/trasa/watchmud/player"
 )
 
+func intp(i int) *int { return &i }
+
 func testRecord() *player.Record {
 	knifeId := uuid.New()
 	return &player.Record{
@@ -24,7 +26,7 @@ func testRecord() *player.Record {
 			{Slot: "wield", InstanceId: knifeId},
 		},
 		Inventory: []player.InventoryRecord{
-			{InstanceId: knifeId, ZoneId: "wrathrock", DefinitionId: "training_dagger"},
+			{InstanceId: knifeId, ZoneId: "wrathrock", DefinitionId: "training_dagger", Durability: intp(17)},
 			{InstanceId: uuid.New(), ZoneId: "wrathrock", DefinitionId: "waterskin"},
 		},
 	}
@@ -90,4 +92,30 @@ func TestPlayerDoc_badInstanceIdIsAnError(t *testing.T) {
 
 	_, err := doc.record()
 	assert.ErrorContains(t, err, "bad instance id")
+}
+
+// Durability rides along with the item it belongs to, and gear that doesn't
+// wear out writes no number rather than a zero -- zero is broken.
+func TestPlayerDoc_durability(t *testing.T) {
+	rec := testRecord()
+	doc := newPlayerDoc(rec, time.Now())
+
+	require.NotNil(t, doc.Inventory[0].Durability)
+	assert.Equal(t, 17, *doc.Inventory[0].Durability)
+	assert.Nil(t, doc.Inventory[1].Durability)
+
+	got, err := doc.record()
+	require.NoError(t, err)
+	assert.Equal(t, rec, got)
+}
+
+// A document written before durability existed has no durability key, which
+// has to come back as nil and not as a broken item.
+func TestPlayerDoc_documentWithoutDurability(t *testing.T) {
+	doc := newPlayerDoc(testRecord(), time.Now())
+	doc.Inventory[0].Durability = nil
+
+	got, err := doc.record()
+	require.NoError(t, err)
+	assert.Nil(t, got.Inventory[0].Durability)
 }

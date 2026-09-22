@@ -10,6 +10,11 @@ type Catalog struct {
 	Roles    map[string]*Role
 	Armor    ArmorTypeContent
 
+	// Durability is what gear starts out able to take. Like StartingGear it
+	// is assigned by the loader; unlike it, an empty table is not an empty
+	// feature -- it means nothing in the game wears out.
+	Durability DurabilityTable
+
 	// StartingGear is what a new character is created holding. Assigned by
 	// the loader rather than passed to NewCatalog, for the same reason
 	// object.Definition.RoleWeights is: it is content that has to be checked

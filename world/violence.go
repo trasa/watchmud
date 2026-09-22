@@ -5,6 +5,7 @@ import (
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/mudtime"
+	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/spaces"
 )
 
@@ -47,6 +48,19 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 				})
 			}
 
+			if fightResult.WasHit {
+				// A landed blow costs the gear on both ends of it. After the
+				// damage, so a killing blow still wears the armor it went
+				// through, and after the room has been told about the blow,
+				// so "your tunic gives out" follows the hit that finished it
+				// instead of preceding it.
+				var scene *spaces.Room
+				if found {
+					scene = room
+				}
+				w.wearFromBlow(fight.Fighter, fight.Fightee, scene)
+			}
+
 			if isDead {
 				w.combatantDied(fight.Fightee, room, found)
 				// TODO award points or other reward
@@ -68,5 +82,16 @@ func (w *World) combatantDied(dead combat.Combatant, room *spaces.Room, roomFoun
 		room.Notify(event.Died{
 			Target: dead.Name(),
 		})
+	}
+
+	// Dying is hard on your kit. After the room has been told, so the toll
+	// reads as a consequence of the death rather than as something that
+	// happened on the way to it. Mobs have no equipment to lose.
+	if p, isPlayer := dead.(*player.Player); isPlayer {
+		var scene *spaces.Room
+		if roomFound {
+			scene = room
+		}
+		w.wearFromDeath(p, scene)
 	}
 }

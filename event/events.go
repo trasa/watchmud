@@ -114,6 +114,14 @@ type EquippedItem struct {
 	Slot             rules.EquipmentSlot
 	Id               string
 	ShortDescription string
+
+	// Durability and MaxDurability are what the piece has left and what it
+	// started with. Both zero means gear that doesn't wear out, which the
+	// renderer says nothing about; Broken is called out on its own because it
+	// is the state that changes what the piece is doing for you.
+	Durability    int
+	MaxDurability int
+	Broken        bool
 }
 
 // ---- talking ---------------------------------------------------------------
@@ -199,6 +207,25 @@ type Struck struct {
 	Target   string
 	Hit      bool
 	Damage   int
+}
+
+// Broke is a piece of equipment giving out, seen by the room the way a blow
+// is: the renderer tells the owner it was theirs. Broken gear stays worn and
+// stays carried -- what it stops doing is counting for anything.
+//
+// Item is the object's Name rather than its ShortDescription, because this is
+// the one message that reads possessively and "your a chain shirt" is not a
+// sentence.
+type Broke struct {
+	Actor string
+	Item  string
+}
+
+// GearDamaged is the toll dying takes on everything you were wearing. It goes
+// to the player alone -- what the room sees is the dying, and anything that
+// actually broke says so itself.
+type GearDamaged struct {
+	Items int
 }
 
 type Died struct {

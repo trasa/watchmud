@@ -48,6 +48,11 @@ type inventoryDoc struct {
 	InstanceId   string `bson:"instance_id"`
 	ZoneId       string `bson:"zone_id"`
 	DefinitionId string `bson:"definition_id"`
+
+	// Durability is omitted for gear that doesn't wear out, and missing from
+	// every document written before durability existed. Both mean the same
+	// thing on the way back in: as new. It is not zero, which is broken.
+	Durability *int `bson:"durability,omitempty"`
 }
 
 // newPlayerDoc converts a record on its way to the database.
@@ -73,6 +78,7 @@ func newPlayerDoc(r *player.Record, now time.Time) playerDoc {
 			InstanceId:   i.InstanceId.String(),
 			ZoneId:       i.ZoneId,
 			DefinitionId: i.DefinitionId,
+			Durability:   i.Durability,
 		})
 	}
 	return doc
@@ -118,6 +124,7 @@ func (d playerDoc) record() (*player.Record, error) {
 			InstanceId:   instanceId,
 			ZoneId:       i.ZoneId,
 			DefinitionId: i.DefinitionId,
+			Durability:   i.Durability,
 		})
 	}
 	return r, nil

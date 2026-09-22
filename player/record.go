@@ -28,6 +28,12 @@ type InventoryRecord struct {
 	InstanceId   uuid.UUID
 	ZoneId       string
 	DefinitionId string
+
+	// Durability is what this particular item has left. A pointer because a
+	// record written before durability existed has nothing to say about it,
+	// and a missing number has to mean "as new" rather than zero -- zero is
+	// broken, and a content edit should not break every item everybody owns.
+	Durability *int
 }
 
 type DefinitionSource interface {
@@ -67,6 +73,12 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 			continue
 		}
 		i := object.NewInstance(ir.InstanceId, d)
+		if ir.Durability != nil {
+			// what it had left when it was saved. Clamped to the current max,
+			// so lowering a durability table in content doesn't leave items
+			// in the world tougher than anything you can get now.
+			i.Durability = min(*ir.Durability, d.MaxDurability)
+		}
 		p.inventory.Add(i)
 	}
 
@@ -108,6 +120,10 @@ func (i *Inventory) Record() []InventoryRecord {
 			InstanceId:   item.Id,
 			ZoneId:       item.Definition.ObjectId.ZoneId,
 			DefinitionId: item.Definition.ObjectId.DefinitionId,
+		}
+		if item.WearsOut() {
+			durability := item.Durability
+			r.Durability = &durability
 		}
 		records = append(records, r)
 	}

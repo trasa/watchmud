@@ -14,6 +14,12 @@ type objectEntry struct {
 	Behaviors           []string             `json:"behaviors"`
 	ArmorType           rules.ArmorType      `json:"armor_type"`
 
+	// Durability overrides what the durability table would give this object,
+	// for the one blade in the game that deserves it. A pointer so that
+	// "says nothing" (take the table's number) is distinguishable from
+	// "durability": 0, which is a thing that never wears out.
+	Durability *int `json:"durability"`
+
 	// Roles is what this object contributes to each role while equipped,
 	// keyed on rules.Role.Id: {"tank": 3}. Optional, and meaningless on
 	// anything without a wear_location.

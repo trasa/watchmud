@@ -30,6 +30,34 @@ This is the definition of species and lineage, which replaces 'Race' and 'Class'
 is now mostly cosmetic. Your choice of lineage doesn't dictate any stats, just how
 you feel like role-playing.
 
+## Durability
+
+`durability.json` says what gear starts out able to take. Plate outlasts leather outlasts
+cloth; anything with no armor type -- a knife, a censer -- takes `default`.
+
+```json
+{
+  "default": 40,
+  "on_death_percent": 10,
+  "armor": { "cloth": 20, "leather": 40, "plate": 80 }
+}
+```
+
+An object can override it with its own `"durability"` in objects.json, for the one blade
+that deserves to be special. `"durability": 0` means a thing that never wears out, which
+is also what every object gets if there is no durability.json at all -- an absent file is
+durability switched off, not a world full of gear that starts out broken.
+
+Two things wear gear out. A landed blow in combat costs one point off one piece of the
+defender's armor, chosen at random, and one point off the attacker's weapon; a miss costs
+nothing. **Dying** costs `on_death_percent` of what *every* piece you died in started at,
+so dying in plate and dying in a wool tunic cost the same number of deaths rather than the
+same number of points. Always at least one point, so cheap gear isn't immortal. Zero, or
+saying nothing, makes dying free. At zero a piece is
+**broken**: still worn, still carried, and worth nothing -- no AC, no argument for any
+role -- so the breastplate that gives out mid-fight is a player watching their armor class
+drop and, if it was carrying them, their role change with it. Nothing repairs gear yet.
+
 ## Starting Gear
 
 What a brand-new character is created holding: `starting_gear.json`, a list of object
