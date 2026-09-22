@@ -21,6 +21,7 @@ import (
 type World struct {
 	StartRoom *spaces.Room
 	VoidRoom  *spaces.Room
+	DeathRoom *spaces.Room // where a player who dies wakes up
 	content   *loader.Content
 
 	roller rules.Roller
@@ -54,11 +55,15 @@ func New(c *loader.Content, s player.Store, roller rules.Roller) (w *World, err 
 
 func (w *World) initialLoad() (err error) {
 	content := w.content
-	if w.StartRoom, err = content.Room(content.Settings.StartZone, content.Settings.StartRoom); err != nil {
+	settings := content.Settings
+	if w.StartRoom, err = content.Room(settings.Start.ZoneId, settings.Start.RoomId); err != nil {
 		return fmt.Errorf("start room: %w", err)
 	}
-	if w.VoidRoom, err = content.Room(content.Settings.VoidZone, content.Settings.VoidRoom); err != nil {
+	if w.VoidRoom, err = content.Room(settings.Void.ZoneId, settings.Void.RoomId); err != nil {
 		return fmt.Errorf("void room: %w", err)
+	}
+	if w.DeathRoom, err = content.Room(settings.PlayerDeath.ZoneId, settings.PlayerDeath.RoomId); err != nil {
+		return fmt.Errorf("player-death room: %w", err)
 	}
 
 	// Process the zone commands that say which

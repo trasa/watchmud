@@ -209,7 +209,16 @@ func (s *durabilitySuite) dies() {
 	s.oneWayFight(s.drone, s.p)
 	s.r.Sent = nil
 	s.w.DoViolence(5)
-	s.Require().True(s.p.Dead())
+	s.Require().True(s.died(), "the player died")
+}
+
+func (s *durabilitySuite) died() bool {
+	for _, msg := range s.r.Sent {
+		if d, ok := msg.(event.Died); ok && d.Target == s.p.Name() {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *durabilitySuite) gearDamaged() (event.GearDamaged, bool) {
@@ -299,16 +308,17 @@ func (s *durabilitySuite) TestDyingIsFreeWhenContentSaysNothing() {
 	s.Assert().False(told)
 }
 
-// The order a player reads it in: the blow, the death, then what the death
-// cost.
+// The order a player reads it in: the blow, the death, what the death cost,
+// and then where they woke up.
 func (s *durabilitySuite) TestTheTollFollowsTheDeath() {
 	s.deathTable(10)
 	s.wear(rules.SlotBody, "plate mail", rules.ArmorTypePlate, 80)
 
 	s.dies()
 
-	s.Require().Len(s.r.Sent, 3)
+	s.Require().Len(s.r.Sent, 4)
 	s.Assert().IsType(event.Struck{}, s.r.Sent[0])
 	s.Assert().IsType(event.Died{}, s.r.Sent[1])
 	s.Assert().IsType(event.GearDamaged{}, s.r.Sent[2])
+	s.Assert().IsType(event.RoomDescription{}, s.r.Sent[3])
 }

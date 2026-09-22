@@ -138,6 +138,9 @@ func render(msg any, self string) string {
 		return renderViolence(self, m)
 
 	case event.Died:
+		if m.IsPlayer && m.Target == self {
+			return "You are dead!\n"
+		}
 		return m.Target + " is dead!\n"
 
 	case event.Fleeing:

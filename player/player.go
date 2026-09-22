@@ -95,6 +95,12 @@ func (p *Player) RestoreHealth(amount int) {
 	p.curHealth = min(p.curHealth+amount, p.maxHealth)
 }
 
+// Revive brings a dead player back with a single point of health. Getting
+// the rest back is up to them.
+func (p *Player) Revive() {
+	p.curHealth = 1
+}
+
 func (p *Player) Dead() bool {
 	return p.curHealth <= 0
 }

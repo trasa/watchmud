@@ -21,9 +21,8 @@ func (w *World) becomeCorpse(deadCombatant combat.Combatant) {
 	switch c := deadCombatant.(type) {
 	case *mobile.Instance:
 		w.becomeMobileCorpse(c)
-		//case *player.Player:
-		//	TODO!
-		// default - nothing happens
+		// A player leaves no corpse: combatantDied moves them to the death
+		// room instead.
 	}
 }
 

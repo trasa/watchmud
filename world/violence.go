@@ -79,8 +79,10 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 func (w *World) combatantDied(dead combat.Combatant, room *spaces.Room, roomFound bool) {
 	w.becomeCorpse(dead)
 	if roomFound {
+		_, isPlayer := dead.(*player.Player)
 		room.Notify(event.Died{
-			Target: dead.Name(),
+			Target:   dead.Name(),
+			IsPlayer: isPlayer,
 		})
 	}
 
@@ -93,5 +95,15 @@ func (w *World) combatantDied(dead combat.Combatant, room *spaces.Room, roomFoun
 			scene = room
 		}
 		w.wearFromDeath(p, scene)
+		w.playerRevives(p)
 	}
+}
+
+// playerRevives is the rest of a player's death: there is no corpse, the
+// player wakes up in the death room with one hit point. Last, so the death
+// and its toll are read in the room it happened in.
+func (w *World) playerRevives(p *player.Player) {
+	p.Revive()
+	w.movePlayerMagically(p, w.DeathRoom)
+	p.Send(w.DeathRoom.DescriptionExcept(p))
 }
