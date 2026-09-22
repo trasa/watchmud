@@ -188,6 +188,11 @@ func (w *World) findPlayerByName(name string) *player.Player {
 	return w.playerList.FindByName(name)
 }
 
+// Players is everyone in the world.
+func (w *World) Players() iter.Seq[*player.Player] {
+	return w.playerList.All()
+}
+
 // SendToAllPlayers send a message to all players in the world.
 func (w *World) SendToAllPlayers(message interface{}) {
 	for p := range w.playerList.All() {

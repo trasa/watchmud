@@ -20,8 +20,11 @@ import (
 // there is no separate notification type for them.
 func render(msg any, self string) string {
 	switch m := msg.(type) {
-	case string: // raw transport text, greetings, prompts, goodbyes ...
+	case string: // raw transport text, greetings, login questions, goodbyes ...
 		return m
+
+	case event.Prompt:
+		return fmt.Sprintf("<%d/%dhp> ", m.CurrentHealth, m.MaxHealth)
 
 	case event.Failed:
 		return failureText(m.Verb, string(m.Code))

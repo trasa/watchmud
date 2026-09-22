@@ -32,7 +32,27 @@ type conn struct {
 
 	mu     sync.Mutex // guards the player
 	player *player.Player
+
+	// atPrompt is true while the last thing written was the prompt and the
+	// player hasn't answered it. lastPrompt is the most recent one the server
+	// sent, for repromptIn to repeat. Both owned by writePump; nothing else
+	// touches them.
+	atPrompt   bool
+	lastPrompt *event.Prompt
 }
+
+// inputReceived goes through the send queue when readPump reads a line, so
+// writePump knows the prompt it wrote has been answered: the client's echo
+// took the cursor to a new line, and the next thing written needs a new
+// prompt after it. Through the queue rather than a field so it lands in
+// order, ahead of whatever the world says in reply.
+type inputReceived struct{}
+
+// reprompt asks writePump for the prompt again, for the input the world
+// never hears about. The connection can't build one itself: what the prompt
+// shows is world state, and this side of the seam doesn't read that. So it
+// repeats the last one the server sent.
+type reprompt struct{}
 
 func newConn(c net.Conn, gs gameserver.Instance, cat *rules.Catalog) *conn {
 	const sendQueueSize = 256
@@ -333,11 +353,10 @@ func (c *conn) writePump() {
 }
 
 func (c *conn) write(msg any) error {
-	name := ""
-	if c.Player() != nil {
-		name = c.Player().Name()
+	text := c.frame(msg)
+	if text == "" {
+		return nil
 	}
-	text := render(msg, name)
 	text = strings.ReplaceAll(text, "\r\n", "\n") // normalize
 	text = strings.ReplaceAll(text, "\n", "\r\n") // replace with \r\n
 	if err := c.netConn.SetWriteDeadline(time.Now().Add(writeTimeout)); err != nil {
@@ -345,6 +364,49 @@ func (c *conn) write(msg any) error {
 	}
 	_, err := io.WriteString(c.netConn, text)
 	return err
+}
+
+// frame renders msg and decides where the prompt goes around it. Empty means
+// nothing to write.
+//
+// A prompt is written only when something has been said since the last one,
+// since the server sends one after every command and every pulse whether or
+// not this player heard anything; and not before login, when the login
+// conversation asks its own questions. Anything that arrives while the prompt
+// is sitting there unanswered -- a combat round, somebody's shout -- starts on
+// a line of its own instead of after the "> ".
+func (c *conn) frame(msg any) string {
+	switch m := msg.(type) {
+	case inputReceived:
+		c.atPrompt = false
+		return ""
+	case reprompt:
+		if c.lastPrompt == nil {
+			return ""
+		}
+		return c.frame(*c.lastPrompt)
+	case event.Prompt:
+		c.lastPrompt = &m
+		if c.atPrompt || c.Player() == nil {
+			return ""
+		}
+		c.atPrompt = true
+		return render(m, "")
+	}
+
+	name := ""
+	if p := c.Player(); p != nil {
+		name = p.Name()
+	}
+	text := render(msg, name)
+	if text == "" {
+		return ""
+	}
+	if c.atPrompt {
+		text = "\n" + text
+	}
+	c.atPrompt = false
+	return text
 }
 
 func (c *conn) readPump() {
@@ -367,12 +429,17 @@ func (c *conn) commandLoop() (quit bool) {
 		if !ok {
 			return false
 		}
+		c.Send(inputReceived{})
 		if line == "" {
-			continue // bare Enter: ignore. Note this is the opposite of prompt(), which re-asks. Different context, different policy.
+			// bare Enter: nothing to do but ask again. The world never hears
+			// about it, so the prompt has to come from here.
+			c.Send(reprompt{})
+			continue
 		}
 		cmd, err := parseCommand(strings.Fields(line))
 		if err != nil {
 			c.Send(err.Error() + "\r\n")
+			c.Send(reprompt{}) // likewise, the world never saw it
 			continue
 		}
 		c.emit(cmd)

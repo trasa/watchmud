@@ -80,3 +80,29 @@ func TestCreatePlayer_startingGear(t *testing.T) {
 	require.NotNil(t, restored.Equipment().At(rules.SlotWield))
 	require.NotNil(t, restored.Equipment().At(rules.SlotHead))
 }
+
+// Once a character is in the world, the prompt reaches them -- which is what
+// puts the first "> " on the screen after login.
+func TestPrompt_reachesPlayersInTheWorld(t *testing.T) {
+	gs, _ := newTestGameServer(t)
+	c := &testConn{}
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.CreatePlayer{Name: "newbie"})))
+
+	c.Player().TakeMeleeDamage(30)
+	gs.prompt()
+
+	assert.Equal(t, event.Prompt{CurrentHealth: 70, MaxHealth: 100}, c.sent[len(c.sent)-1])
+}
+
+// A failed login never joined the world, so the login conversation isn't
+// interrupted by a prompt it didn't ask for.
+func TestPrompt_skipsAFailedLogin(t *testing.T) {
+	gs, _ := newTestGameServer(t)
+	c := &testConn{}
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.Login{Name: "nobody"})))
+
+	gs.prompt()
+
+	require.Len(t, c.sent, 1)
+	assert.IsType(t, event.LoginFailed{}, c.sent[0])
+}

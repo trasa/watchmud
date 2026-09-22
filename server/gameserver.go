@@ -53,13 +53,29 @@ func (gs *GameServer) Run(ctx context.Context) error {
 				// don't return error, we're not halting the server
 				log.Error().Err(err).Msg("error dispatching message")
 			}
+			gs.prompt()
 		case <-ticker.C:
 			now := time.Now()
 			delta := now.Sub(last)
 			last = now
 			pulse++
 			gs.heartbeat(pulse, delta) // zone/mob/violence pulses
+			gs.prompt()
 		}
+	}
+}
+
+// prompt tells every player the game is waiting on them again. Everyone, not
+// just whoever sent the command: a say or a combat round lands on bystanders
+// too, and they need their prompt back as much as the speaker does. The
+// transport drops the prompts that nothing was said in front of, so this
+// costs a channel send per player and prints nothing new to the rest.
+//
+// A player who has just logged in is in the list by now, so this is also
+// their first prompt; one whose login failed is not, and gets none.
+func (gs *GameServer) prompt() {
+	for p := range gs.world.Players() {
+		p.Send(event.Prompt{CurrentHealth: p.CurrentHealth(), MaxHealth: p.MaxHealth()})
 	}
 }
 

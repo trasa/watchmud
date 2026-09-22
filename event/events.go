@@ -34,6 +34,15 @@ type LoggedOut struct {
 	Actor string
 }
 
+// Prompt says the game is waiting on the player's input, and carries what
+// the prompt shows. The server sends it to everyone after every command and
+// every pulse; it is the transport's job to print it only when something was
+// said since the last one.
+type Prompt struct {
+	CurrentHealth int
+	MaxHealth     int
+}
+
 type Pong struct {
 	Target string
 }
