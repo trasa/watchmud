@@ -170,10 +170,11 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter, cmd command.
 	msg.Player = p
 	msg.Client.SetPlayer(p)
 
-	// add player to world
-	gs.world.AddPlayer(p)
+	// back where they left off
+	gs.world.ReturnPlayer(p, rec.LastZoneId, rec.LastRoomId)
 
 	p.Send(event.LoggedIn{Name: p.Name()})
+	gs.world.Arrive(p)
 	return nil
 }
 
@@ -224,5 +225,6 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter, cmd c
 	gs.world.AddPlayer(p)
 
 	p.Send(event.PlayerCreated{Name: p.Name()})
+	gs.world.Arrive(p)
 	return nil
 }

@@ -82,5 +82,11 @@ func (w *World) save(msg *gameserver.HandlerParameter) error {
 	if msg.Player == nil {
 		return nil
 	}
-	return w.store.Save(msg.Player.Record())
+	if w.playerToRoom.Get(msg.Player) == nil {
+		// Not in the world: they just logged out, and handleLogout already
+		// saved them while it still knew which room they were in. Saving
+		// again now would write that room over with nothing.
+		return nil
+	}
+	return w.store.Save(w.record(msg.Player))
 }

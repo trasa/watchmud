@@ -16,12 +16,14 @@ func (w *World) handleLogout(msg *gameserver.HandlerParameter, cmd command.Logou
 	if room == nil {
 		return // already logged out or not in the world
 	}
+	// taken while they are still in the room, so it knows where they were
+	rec := w.record(msg.Player)
 	w.RemovePlayer(msg.Player)
 
 	// the player is already out of the room, so this reaches everyone else
 	room.Send(event.LoggedOut{Actor: msg.Player.Name()})
 
-	if err := w.store.Save(msg.Player.Record()); err != nil {
+	if err := w.store.Save(rec); err != nil {
 		msg.Player.Log().Err(err).Msg("Error saving player on logout")
 	}
 }

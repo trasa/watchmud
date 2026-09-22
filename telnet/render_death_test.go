@@ -14,6 +14,10 @@ func TestRenderDied(t *testing.T) {
 	assert.Equal(t, "testdood is dead!\n", render(died, "otherdood"))
 }
 
+func TestRenderEnteredGame(t *testing.T) {
+	assert.Equal(t, "testdood has entered the game.\n", render(event.EnteredGame{Actor: "testdood"}, "otherdood"))
+}
+
 // A mob that happens to share your name is not you.
 func TestRenderDied_mob(t *testing.T) {
 	assert.Equal(t, "testdood is dead!\n", render(event.Died{Target: "testdood"}, "testdood"))

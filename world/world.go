@@ -9,6 +9,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/combat"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/loader"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
@@ -77,20 +78,47 @@ func (w *World) initialLoad() (err error) {
 	return nil
 }
 
-// AddPlayer or players to the world putting them in the correct room they were
-// in last time, or the start room if we can't figure that out.
+// AddPlayer or players to the world, in the start room. New characters come
+// in this way; returning ones go through ReturnPlayer.
 func (w *World) AddPlayer(players ...*player.Player) {
 	for _, p := range players {
-		p.Log().Debug().Msg("Adding player to world")
-		// list of known players
-		w.playerList.Add(p)
-
-		// TODO need support for location
-		// so for now, this *always* adds to the start room.
-		r := w.StartRoom
-		r.AddPlayer(p)
-		w.playerToRoom.Update(p, r)
+		w.addPlayerTo(p, w.StartRoom)
 	}
+}
+
+// ReturnPlayer puts a returning player back in the room their record says
+// they were last in, or the start room if it doesn't say or that room no
+// longer exists. A content edit that removes a room must not strand anybody,
+// the same as the missing object definitions player.FromRecord forgives.
+func (w *World) ReturnPlayer(p *player.Player, zoneId, roomId string) {
+	r, found := w.findRoomById(zoneId, roomId)
+	if !found {
+		if zoneId != "" || roomId != "" {
+			p.Log().Warn().Msgf("last room %s.%s not found, using the start room", zoneId, roomId)
+		}
+		r = w.StartRoom
+	}
+	w.addPlayerTo(p, r)
+}
+
+// Arrive finishes a login: the room hears who just appeared in it, and the
+// player is shown where they are -- which, now that a returning player comes
+// back to wherever they left, isn't necessarily where they expect.
+//
+// Separate from AddPlayer and ReturnPlayer so the transport's login events go
+// out first; the player's own description has to land after the login
+// conversation has ended, not in the middle of it.
+func (w *World) Arrive(p *player.Player) {
+	r := w.getPlayerRoom(p)
+	r.SendExcept(p, event.EnteredGame{Actor: p.Name()})
+	p.Send(r.DescriptionExcept(p))
+}
+
+func (w *World) addPlayerTo(p *player.Player, r *spaces.Room) {
+	p.Log().Debug().Str("room", r.Location().String()).Msg("Adding player to world")
+	w.playerList.Add(p)
+	r.AddPlayer(p)
+	w.playerToRoom.Update(p, r)
 }
 
 func (w *World) RemovePlayer(players ...*player.Player) {
@@ -150,6 +178,18 @@ func (w *World) roleName(weights map[string]int) string {
 		return r.Name
 	}
 	return ""
+}
+
+// record is the player's record plus where they are standing. The player
+// can't fill that in themselves: location lives in playerToRoom, not on the
+// player. Every save goes through here, or the room is forgotten.
+func (w *World) record(p *player.Player) *player.Record {
+	rec := p.Record()
+	if r := w.playerToRoom.Get(p); r != nil {
+		rec.LastZoneId = r.Zone.Id
+		rec.LastRoomId = r.Id
+	}
+	return rec
 }
 
 // getPlayerRoom returns the room a player is in, or VoidRoom if we can't figure that out.

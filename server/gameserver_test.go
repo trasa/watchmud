@@ -57,7 +57,11 @@ func TestCreatePlayer_startingGear(t *testing.T) {
 
 	p := c.Player()
 	require.NotNil(t, p)
-	assert.IsType(t, event.PlayerCreated{}, c.sent[len(c.sent)-1])
+	// created, then shown where they are -- in that order, so the telnet login
+	// conversation is over before the description arrives
+	require.Len(t, c.sent, 2)
+	assert.IsType(t, event.PlayerCreated{}, c.sent[0])
+	assert.IsType(t, event.RoomDescription{}, c.sent[1])
 
 	// testcontent's kit: a knife, a helmet, and a rope that is only carried.
 	assert.Equal(t, 3, p.Inventory().Len())
@@ -105,4 +109,31 @@ func TestPrompt_skipsAFailedLogin(t *testing.T) {
 
 	require.Len(t, c.sent, 1)
 	assert.IsType(t, event.LoginFailed{}, c.sent[0])
+}
+
+// A returning player comes back where they left off.
+func TestLogin_returnsToTheLastRoom(t *testing.T) {
+	gs, store := newTestGameServer(t)
+	c := &testConn{}
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.CreatePlayer{Name: "wanderer"})))
+	rec, _, err := store.Load("wanderer")
+	require.NoError(t, err)
+	gs.world.RemovePlayer(c.Player())
+
+	rec.LastZoneId, rec.LastRoomId = "wrathrock", "market_square"
+	require.NoError(t, store.Save(rec))
+
+	back := &testConn{}
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(back, command.Login{Name: "wanderer"})))
+
+	require.NotNil(t, back.Player())
+	require.Len(t, back.sent, 2)
+	assert.IsType(t, event.LoggedIn{}, back.sent[0])
+	assert.Equal(t, "Market Square", back.sent[1].(event.RoomDescription).Name, "shown where they came back to")
+
+	// a look is saved like any other command, and the save says where they are
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(back, command.Look{})))
+	rec, _, err = store.Load("wanderer")
+	require.NoError(t, err)
+	assert.Equal(t, "market_square", rec.LastRoomId)
 }

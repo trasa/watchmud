@@ -50,3 +50,18 @@ func (s *durabilitySuite) TestTheRoomIsToldAPlayerDied() {
 	s.Assert().Equal("victim", d.Target)
 	s.Assert().True(d.IsPlayer)
 }
+
+// Death happens on a pulse, with no command after it to save the player, so
+// it saves them itself: a crash straight after must not undo it.
+func (s *durabilitySuite) TestDyingIsSaved() {
+	s.w.DeathRoom = s.w.VoidRoom
+
+	s.dies()
+
+	rec, found, err := s.w.store.Load(s.p.Name())
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Assert().Equal(1, rec.CurHealth)
+	s.Assert().Equal(s.w.VoidRoom.Zone.Id, rec.LastZoneId)
+	s.Assert().Equal(s.w.VoidRoom.Id, rec.LastRoomId)
+}

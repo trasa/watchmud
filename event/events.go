@@ -43,6 +43,13 @@ type Prompt struct {
 	MaxHealth     int
 }
 
+// EnteredGame tells a room that a player just logged in there. Not LoggedIn,
+// which the arriving player's own connection consumes to end its login
+// conversation -- a bystander's connection would do the same with it.
+type EnteredGame struct {
+	Actor string
+}
+
 type Pong struct {
 	Target string
 }

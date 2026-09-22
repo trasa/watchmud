@@ -39,6 +39,9 @@ func render(msg any, self string) string {
 	case event.LoggedOut:
 		return m.Actor + " has logged out.\n"
 
+	case event.EnteredGame:
+		return m.Actor + " has entered the game.\n"
+
 	case event.Pong:
 		return "Pong " + m.Target + ".\n"
 

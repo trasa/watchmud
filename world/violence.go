@@ -106,4 +106,11 @@ func (w *World) playerRevives(p *player.Player) {
 	p.Revive()
 	w.movePlayerMagically(p, w.DeathRoom)
 	p.Send(w.DeathRoom.DescriptionExcept(p))
+
+	// This happens on a pulse, not a command, so no save follows it. Without
+	// this, a crash before their next command brings them back at full health,
+	// in the room they died in, with their gear as it was.
+	if err := w.store.Save(w.record(p)); err != nil {
+		p.Log().Err(err).Msg("saving player after death")
+	}
 }
