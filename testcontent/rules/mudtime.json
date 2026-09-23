@@ -2,5 +2,6 @@
   "mobile": "10s",
   "violence": "1s",
   "zone": "1m",
-  "playerSave": "1m"
+  "playerSave": "1m",
+  "regen": "5s"
 }

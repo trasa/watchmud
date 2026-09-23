@@ -18,6 +18,9 @@ type MudTime struct {
 
 	// PlayerSave is how long between we queue up save operations
 	PlayerSave time.Duration `json:"playerSave"`
+
+	// Regen is how often anyone not fighting gets some health back
+	Regen time.Duration `json:"regen"`
 }
 
 func (m *MudTime) UnmarshalJSON(data []byte) error {
@@ -26,6 +29,7 @@ func (m *MudTime) UnmarshalJSON(data []byte) error {
 		Violence   string `json:"violence"`
 		Zone       string `json:"zone"`
 		PlayerSave string `json:"playerSave"`
+		Regen      string `json:"regen"`
 	}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
@@ -41,6 +45,9 @@ func (m *MudTime) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if m.PlayerSave, err = parseInterval("playerSave", raw.PlayerSave); err != nil {
+		return err
+	}
+	if m.Regen, err = parseInterval("regen", raw.Regen); err != nil {
 		return err
 	}
 	return nil

@@ -107,8 +107,11 @@ func (gs *GameServer) heartbeat(pulse rules.PulseCount, delta time.Duration) {
 		gs.world.DoViolence(pulse)
 	}
 
-	// mud-hour ("player tick")
-	// affect weather, regen ..
+	// anyone not fighting gets some health back
+	regenPulse := gs.catalog.MudTime.Regen
+	if pulse.CheckInterval(regenPulse) {
+		gs.world.Regenerate()
+	}
 
 	// saving player data
 	savePulse := gs.catalog.MudTime.PlayerSave
