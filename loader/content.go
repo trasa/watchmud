@@ -252,6 +252,11 @@ func (c *Content) loadObjectDefinitions(fsys fs.FS) error {
 				return err
 			}
 
+			d.Damage, err = objectDamage(zonename, obj)
+			if err != nil {
+				return err
+			}
+
 			c.Zones[zonename].AddObjectDefinition(d)
 		}
 	}
@@ -266,6 +271,10 @@ func (c *Content) loadMobileDefinitions(fsys fs.FS) error {
 		}
 		for _, mob := range mobEntries {
 			ac, err := mobArmorClass(zonename, mob)
+			if err != nil {
+				return err
+			}
+			damage, err := mobDamage(zonename, mob)
 			if err != nil {
 				return err
 			}
@@ -289,6 +298,7 @@ func (c *Content) loadMobileDefinitions(fsys fs.FS) error {
 			)
 			flags := mobile.ConvertFlags(mob.Flags)
 			defn.SetFlags(flags)
+			defn.Damage = damage
 			c.Zones[zonename].AddMobileDefinition(defn)
 		}
 	}

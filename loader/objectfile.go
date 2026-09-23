@@ -20,6 +20,10 @@ type objectEntry struct {
 	// "durability": 0, which is a thing that never wears out.
 	Durability *int `json:"durability"`
 
+	// Damage is dice notation, "1d6". Required on anything with
+	// "equipment_slot": "wield", refused on anything else.
+	Damage string `json:"damage"`
+
 	// Roles is what this object contributes to each role while equipped,
 	// keyed on rules.Role.Id: {"tank": 3}. Optional, and meaningless on
 	// anything without a wear_location.

@@ -35,6 +35,11 @@ type Definition struct {
 	// object.
 	MaxDurability int
 
+	// Damage is what this hits with when wielded. Empty for anything that
+	// isn't wielded; the loader refuses a wielded object without it. Assigned
+	// by the loader, like MaxDurability.
+	Damage rules.DamageRoll
+
 	// RoleWeights is what this object contributes to each role while
 	// equipped, keyed on rules.Role.Id: {"striker": 2}. Hand-authored in
 	// objects.json, and on its way out for armor, which can say "plate" and

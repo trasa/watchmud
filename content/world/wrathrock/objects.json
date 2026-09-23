@@ -8,6 +8,7 @@
     "description_on_ground": "A training dagger, more nicked than sharp, lies here.",
     "equipment_slot": "wield",
     "durability": 25,
+    "damage": "1d4",
     "roles": { "striker": 2 }
   },
   {

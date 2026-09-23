@@ -131,9 +131,13 @@ func (p *Player) IsVulnerableTo(damageType combat.DamageType) bool {
 	return false
 }
 
+// WeaponDamageRoll is the dice for whatever is wielded, or bare hands. A
+// broken weapon is bare hands too: broken gear stays worn, and stops counting.
 func (p *Player) WeaponDamageRoll() string {
-	// TODO
-	return "1d6"
+	if w := p.equipment.At(rules.SlotWield); w != nil && !w.Broken() {
+		return string(w.Definition.Damage)
+	}
+	return string(rules.BareHands)
 }
 
 func (p *Player) WeaponDamageType() combat.DamageType {

@@ -20,6 +20,9 @@ type Definition struct {
 	MaxHealth         int
 	flags             map[Flag]bool
 	AC                int
+	// Damage is what this mob hits with. The loader always sets it, bare
+	// hands when the file says nothing.
+	Damage rules.DamageRoll
 }
 
 func NewDefinition(definitionId string,

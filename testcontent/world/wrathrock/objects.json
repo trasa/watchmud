@@ -23,6 +23,7 @@
     "short_description": "knife",
     "description_on_ground": "A knife is on the ground.",
     "equipment_slot": "wield",
+    "damage": "1d4",
     "roles": { "striker": 2 }
   },
   {

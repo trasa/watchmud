@@ -124,8 +124,7 @@ func (mob *Instance) IsVulnerableTo(damageType combat.DamageType) bool {
 
 // Combatant
 func (mob *Instance) WeaponDamageRoll() string {
-	// TODO mobs cant carry anything yet?
-	return "1d6"
+	return string(mob.Definition.Damage)
 }
 
 // Combatant

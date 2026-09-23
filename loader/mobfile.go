@@ -25,6 +25,8 @@ type mobEntry struct {
 	// silently became the second kind.
 	AC         *int `json:"ac"`
 	Aggressive bool `json:"aggressive"`
+	// Damage is dice notation, "1d4". Absent means bare hands.
+	Damage string `json:"damage"`
 }
 
 type WanderingEntry struct {

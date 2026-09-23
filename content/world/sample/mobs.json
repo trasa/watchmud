@@ -11,6 +11,7 @@
       "check_percentage": 50,
       "wander_style": "random"
     },
+    "damage": "1d6",
     "ac": 10
   },
   {
@@ -38,6 +39,7 @@
     "wandering_definition": {
       "can_wander": false
     },
+    "damage": "1d8",
     "ac": 10
   }
 ]

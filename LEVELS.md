@@ -48,6 +48,7 @@ move is one change.
 |---|---|---|
 | Regen interval | 5s (`mudtime.json`) | how long a grind stalls between fights |
 | Regen amount | 5% of max health, at least 1 | same |
+| Bare hands damage | 1d2 (`rules.BareHands`) | also a mob with no `"damage"` |
 | Power delta clamp | ±10 | how far out of your league anything can be |
 | To-hit per point of delta | +½ | whether a higher mob can be hit at all |
 | Damage per point of delta | ±5% | how long fights above your power take |
@@ -65,6 +66,10 @@ Each one leaves `make check` green and is playable on its own.
 - **Weapon damage from the weapon.** `Player.WeaponDamageRoll` is a hardcoded `1d6`.
   Give `object.Definition` a damage roll from objects.json and read it from whatever
   is in `SlotWield`, bare hands otherwise.
+
+Damage *type* waits. `HasResistanceTo` and `IsVulnerableTo` both return false for
+everything, so a weapon's type would change nothing yet, and `combat.DamageType`
+has no parser to read it from JSON. It belongs with the first resistance.
 
 *Done when:* a hurt player heals back while idle, and swapping weapons changes the
 damage.
