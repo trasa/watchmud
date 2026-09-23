@@ -155,3 +155,27 @@ func (s *Store) Save(r *player.Record) error {
 	}
 	return nil
 }
+
+// SaveAll writes many characters in one round trip. Unordered, so one
+// bad document doesn't stop the rest.
+func (s *Store) SaveAll(recs []*player.Record) error {
+	if len(recs) == 0 {
+		return nil
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
+	defer cancel()
+
+	now := time.Now()
+	models := make([]mongo.WriteModel, 0, len(recs))
+	for _, r := range recs {
+		doc := newPlayerDoc(r, now)
+		models = append(models, mongo.NewReplaceOneModel().
+			SetFilter(bson.D{{Key: "_id", Value: doc.Id}}).
+			SetReplacement(doc).
+			SetUpsert(true))
+	}
+	if _, err := s.players.BulkWrite(ctx, models, options.BulkWrite().SetOrdered(false)); err != nil {
+		return fmt.Errorf("mongostore: save %d players: %w", len(recs), err)
+	}
+	return nil
+}

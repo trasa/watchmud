@@ -16,7 +16,8 @@ build:
 ## test: run all tests
 .PHONY: test
 test:
-	$(GO) test ./...
+	$(GO) test  ./...
+	$(GO) test -race ./writebehind
 
 ## vet: run static analysis
 .PHONY: vet

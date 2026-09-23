@@ -47,6 +47,7 @@ func (gs *GameServer) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
+			gs.world.QueuePlayerRecords()
 			return ctx.Err()
 		case msg := <-gs.incomingBuffer:
 			if err := gs.dispatch(msg); err != nil {
@@ -59,7 +60,7 @@ func (gs *GameServer) Run(ctx context.Context) error {
 			delta := now.Sub(last)
 			last = now
 			pulse++
-			gs.heartbeat(pulse, delta) // zone/mob/violence pulses
+			gs.heartbeat(pulse, delta)
 			gs.prompt()
 		}
 	}
@@ -83,6 +84,7 @@ func (gs *GameServer) prompt() {
 // between things (ex. reset zones every 15 minutes...)
 // delta is the amount of time since the last heartbeat was run.
 func (gs *GameServer) heartbeat(pulse rules.PulseCount, delta time.Duration) {
+	log.Debug().Msgf("pulse %d hb %d", pulse, delta)
 	//log.Printf("pulse %d hb %d", pulse, delta)
 	// mobs, scripts, ...
 
@@ -111,7 +113,10 @@ func (gs *GameServer) heartbeat(pulse rules.PulseCount, delta time.Duration) {
 	// affect weather, regen ..
 
 	// saving player data
-	// if pulse.CheckInterval(mudtime.)
+	savePulse := gs.catalog.MudTime.PlayerSave
+	if pulse.CheckInterval(savePulse) {
+		gs.world.QueuePlayerRecords()
+	}
 }
 
 // dispatch a message to its handler.

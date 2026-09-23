@@ -159,12 +159,12 @@ func (w *World) moveMobile(mob *mobile.Instance, dir rules.Direction, src *space
 	w.mobileRooms.Add(mob, dest)
 }
 
-// add a mobile instance to the world
+// AddMobile adds a mobile instance to a room in the world.
 func (w *World) AddMobile(mob *mobile.Instance, targetRoom *spaces.Room) {
 	w.mobileRooms.Add(mob, targetRoom)
 }
 
-// remove the mobile instance from the world entirely
+// RemoveMobile removes a mobile instance from the world.
 func (w *World) removeMobile(mob *mobile.Instance) {
 	w.mobileRooms.Remove(mob)
 }
@@ -178,18 +178,6 @@ func (w *World) roleName(weights map[string]int) string {
 		return r.Name
 	}
 	return ""
-}
-
-// record is the player's record plus where they are standing. The player
-// can't fill that in themselves: location lives in playerToRoom, not on the
-// player. Every save goes through here, or the room is forgotten.
-func (w *World) record(p *player.Player) *player.Record {
-	rec := p.Record()
-	if r := w.playerToRoom.Get(p); r != nil {
-		rec.LastZoneId = r.Zone.Id
-		rec.LastRoomId = r.Id
-	}
-	return rec
 }
 
 // getPlayerRoom returns the room a player is in, or VoidRoom if we can't figure that out.
@@ -250,6 +238,7 @@ func (w *World) SendToAllPlayersExcept(exception *player.Player, message interfa
 func (w *World) Zones() iter.Seq[*spaces.Zone] {
 	return maps.Values(w.content.Zones)
 }
+
 func (w *World) Zone(zoneId string) *spaces.Zone {
 	return w.content.Zones[zoneId]
 }

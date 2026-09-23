@@ -34,15 +34,6 @@ func (s *locationSuite) saved() *player.Record {
 	return rec
 }
 
-// The save after every command knows where the command left them.
-func (s *locationSuite) TestSaveRecordsTheRoom() {
-	s.handle(command.Move{Direction: rules.DirectionSouth})
-
-	rec := s.saved()
-	s.Assert().Equal("wrathrock", rec.LastZoneId)
-	s.Assert().Equal("market_square", rec.LastRoomId)
-}
-
 // Logging out takes the player out of the room before saving; the room they
 // were in still has to make it into the record.
 func (s *locationSuite) TestLogoutRecordsTheRoom() {

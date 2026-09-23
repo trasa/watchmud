@@ -24,5 +24,8 @@ func DurationBetween(start PulseCount, end PulseCount) time.Duration {
 }
 
 func (pc PulseCount) CheckInterval(i time.Duration) bool {
+	if i == 0 {
+		return false
+	}
 	return pc.ToDuration()%i == 0
 }

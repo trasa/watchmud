@@ -1,6 +1,10 @@
 package rules
 
-import "time"
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+)
 
 type MudTime struct {
 	// Mobiles determine their activity at this duration
@@ -11,4 +15,44 @@ type MudTime struct {
 
 	// Zone reset times are evaluated at this duration
 	Zone time.Duration `json:"zone"`
+
+	// PlayerSave is how long between we queue up save operations
+	PlayerSave time.Duration `json:"playerSave"`
+}
+
+func (m *MudTime) UnmarshalJSON(data []byte) error {
+	var raw struct {
+		Mobile     string `json:"mobile"`
+		Violence   string `json:"violence"`
+		Zone       string `json:"zone"`
+		PlayerSave string `json:"playerSave"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	var err error
+	if m.Mobile, err = parseInterval("mobile", raw.Mobile); err != nil {
+		return err
+	}
+	if m.Violence, err = parseInterval("violence", raw.Violence); err != nil {
+		return err
+	}
+	if m.Zone, err = parseInterval("zone", raw.Zone); err != nil {
+		return err
+	}
+	if m.PlayerSave, err = parseInterval("playerSave", raw.PlayerSave); err != nil {
+		return err
+	}
+	return nil
+}
+
+func parseInterval(name, s string) (time.Duration, error) {
+	d, err := time.ParseDuration(s)
+	if err != nil {
+		return 0, fmt.Errorf("mudtime.json %s: %w", name, err)
+	}
+	if d <= 0 || d%PulseInterval != 0 {
+		return 0, fmt.Errorf("mudtime.json %s: %s is not a whole number of pulses (%s each)", name, d, PulseInterval)
+	}
+	return d, nil
 }

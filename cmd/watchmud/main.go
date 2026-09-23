@@ -22,6 +22,7 @@ import (
 	"github.com/trasa/watchmud/serverconfig"
 	"github.com/trasa/watchmud/telnet"
 	"github.com/trasa/watchmud/world"
+	"github.com/trasa/watchmud/writebehind"
 )
 
 func main() {
@@ -82,6 +83,14 @@ func run() error {
 		return fmt.Errorf("persistence: %w", err)
 	}
 	defer closeStore()
+	saver := writebehind.New(store)
+	defer func() {
+		closeCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+		defer cancel()
+		if err := saver.Close(closeCtx); err != nil {
+			log.Error().Err(err).Msg("flushing player saves")
+		}
+	}()
 
 	// randomness
 	var seed [32]byte
@@ -90,11 +99,11 @@ func run() error {
 	}
 	roller := dice.New(seed)
 
-	w, err := world.New(content, store, roller)
+	w, err := world.New(content, saver, roller)
 	if err != nil {
 		return fmt.Errorf("loading world: %w", err)
 	}
-	gameServer := server.New(w, content.Catalog, store)
+	gameServer := server.New(w, content.Catalog, saver)
 
 	// launch telnet listener as goroutine
 	go func() {

@@ -23,6 +23,9 @@ func LoadCatalog(rulesFS fs.FS) (*rules.Catalog, error) {
 	}
 
 	mudTime, err := readJSONFile[rules.MudTime](rulesFS, "mudtime.json")
+	if err != nil {
+		return nil, err
+	}
 
 	c, err := rules.NewCatalog(mudTime, species, roles, armor)
 	if err != nil {
