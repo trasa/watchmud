@@ -17,11 +17,16 @@ func TestDurabilitySuite(t *testing.T) {
 	suite.Run(t, new(DurabilitySuite))
 }
 
-func (s *DurabilitySuite) SetupTest() {
+func (s *DurabilitySuite) newCatalog() (*rules.Catalog, error) {
 	armor := rules.ArmorTypeContent{
 		rules.ArmorTypePlate: {rules.SlotHead: 1, rules.SlotBody: 4},
 	}
-	cat, err := rules.NewCatalog(nil, rules.NewTestRoles(), armor)
+
+	return rules.NewCatalog(rules.MudTime{}, nil, rules.NewTestRoles(), armor)
+}
+
+func (s *DurabilitySuite) SetupTest() {
+	cat, err := s.newCatalog()
 	s.Require().NoError(err)
 	s.eq = NewEquipment(cat)
 }

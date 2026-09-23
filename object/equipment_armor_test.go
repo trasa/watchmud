@@ -25,7 +25,7 @@ func (s *EquipmentArmorSuite) SetupTest() {
 		rules.ArmorTypeCloth: {rules.SlotHead: 0, rules.SlotBody: 1},
 		rules.ArmorTypePlate: {rules.SlotHead: 1, rules.SlotBody: 4},
 	}
-	cat, err := rules.NewCatalog(nil, rules.NewTestRoles(), armor)
+	cat, err := rules.NewCatalog(rules.MudTime{}, nil, rules.NewTestRoles(), armor)
 	s.Require().NoError(err)
 	s.eq = NewEquipment(cat)
 }
@@ -123,7 +123,8 @@ func (s *EquipmentArmorSuite) TestContributionsAreInSlotOrderAndAddUp() {
 
 // No role is marked from_armor: armor protects you and argues for nothing.
 func (s *EquipmentArmorSuite) TestNoArmorRoleMeansNoDerivedWeight() {
-	cat, err := rules.NewCatalog(nil,
+	cat, err := rules.NewCatalog(rules.MudTime{},
+		nil,
 		[]*rules.Role{{Id: "tank", Name: "Tank"}},
 		rules.ArmorTypeContent{rules.ArmorTypePlate: {rules.SlotBody: 4}})
 	s.Require().NoError(err)

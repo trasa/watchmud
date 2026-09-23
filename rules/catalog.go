@@ -10,6 +10,9 @@ type Catalog struct {
 	Roles    map[string]*Role
 	Armor    ArmorTypeContent
 
+	// MudTime holds the constants used to derive PulseCount values.
+	MudTime MudTime
+
 	// Durability is what gear starts out able to take. Like StartingGear it
 	// is assigned by the loader; unlike it, an empty table is not an empty
 	// feature -- it means nothing in the game wears out.
@@ -33,6 +36,7 @@ type Catalog struct {
 }
 
 func NewCatalog(
+	mudTime MudTime,
 	species []*Species,
 	roles []*Role,
 	armor ArmorTypeContent,
@@ -55,6 +59,7 @@ func NewCatalog(
 	}
 
 	return &Catalog{
+		MudTime:      mudTime,
 		Species:      speciesMap,
 		Lineages:     lineageMap,
 		Roles:        roleMap,

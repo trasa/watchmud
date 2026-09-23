@@ -1,5 +1,15 @@
 package rules
 
+import "time"
+
+func newMudTime() MudTime {
+	return MudTime{
+		Mobile:   time.Second * 10,
+		Violence: time.Second,
+		Zone:     time.Minute,
+	}
+}
+
 func newTestSpecies() []*Species {
 	l := Lineage{
 		Id:   "human",
@@ -32,5 +42,10 @@ func NewTestArmor() ArmorTypeContent {
 }
 
 func NewTestCatalog() (*Catalog, error) {
-	return NewCatalog(newTestSpecies(), NewTestRoles(), NewTestArmor())
+	return NewCatalog(
+		newMudTime(),
+		newTestSpecies(),
+		NewTestRoles(),
+		NewTestArmor(),
+	)
 }

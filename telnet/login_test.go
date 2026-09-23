@@ -21,7 +21,7 @@ func testLineageCatalog(t *testing.T) *rules.Catalog {
 	elf := &rules.Species{Id: "elf", Name: "Elf", Lineages: []*rules.Lineage{
 		{Id: "high_elf", Name: "High Elf"},
 	}}
-	cat, err := rules.NewCatalog([]*rules.Species{dwarf, elf}, rules.NewTestRoles(), rules.NewTestArmor())
+	cat, err := rules.NewCatalog(rules.MudTime{}, []*rules.Species{dwarf, elf}, rules.NewTestRoles(), rules.NewTestArmor())
 	require.NoError(t, err)
 	return cat
 }

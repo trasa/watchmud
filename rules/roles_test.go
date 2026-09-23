@@ -23,6 +23,15 @@ func (s *RolesTestSuite) SetupTest() {
 	s.cat = cat
 }
 
+func (s *RolesTestSuite) newCatalog(roles []*Role, armorTypeContent ArmorTypeContent) (*Catalog, error) {
+	return NewCatalog(
+		newMudTime(),
+		newTestSpecies(),
+		roles,
+		armorTypeContent,
+	)
+}
+
 func (s *RolesTestSuite) Test_NoGearIsNoRole() {
 	s.Assert().Nil(s.cat.RoleFor(nil))
 	s.Assert().Nil(s.cat.RoleFor(map[string]int{}))
@@ -52,15 +61,18 @@ func (s *RolesTestSuite) Test_UnknownRoleIdsAreIgnored() {
 }
 
 func (s *RolesTestSuite) Test_DuplicateRoleIdIsAnError() {
-	_, err := NewCatalog(newTestSpecies(), []*Role{
-		{Id: "tank", Name: "Tank"},
-		{Id: "tank", Name: "Also Tank"},
-	}, NewTestArmor())
+	_, err := s.newCatalog(
+		[]*Role{{Id: "tank", Name: "Tank"}, {Id: "tank", Name: "Also Tank"}},
+		NewTestArmor(),
+	)
 	s.Assert().ErrorContains(err, "duplicate role id")
 }
 
 func (s *RolesTestSuite) Test_MissingRoleIdIsAnError() {
-	_, err := NewCatalog(newTestSpecies(), []*Role{{Name: "Nameless"}}, NewTestArmor())
+	_, err := s.newCatalog(
+		[]*Role{{Name: "Nameless"}},
+		NewTestArmor(),
+	)
 	s.Assert().ErrorContains(err, "missing id")
 }
 
@@ -73,7 +85,7 @@ func (s *RolesTestSuite) Test_DefaultLineage() {
 // A role marked from_armor is the one armor argues for; the rest say what
 // they're worth by hand.
 func TestArmorRoles(t *testing.T) {
-	c, err := NewCatalog(newTestSpecies(), NewTestRoles(), NewTestArmor())
+	c, err := NewCatalog(newMudTime(), newTestSpecies(), NewTestRoles(), NewTestArmor())
 	require.NoError(t, err)
 
 	armorRoles := c.ArmorRoles()
@@ -81,25 +93,27 @@ func TestArmorRoles(t *testing.T) {
 	assert.Equal(t, "tank", armorRoles[0].Id)
 }
 
-func TestArmorRoles_NoneDeclared(t *testing.T) {
-	c, err := NewCatalog(newTestSpecies(),
-		[]*Role{{Id: "tank", Name: "Tank"}}, NewTestArmor())
-	require.NoError(t, err)
+func (s *RolesTestSuite) TestArmorRoles_NoneDeclared() {
+	c, err := s.newCatalog(
+		[]*Role{{Id: "tank", Name: "Tank"}},
+		NewTestArmor(),
+	)
 
-	assert.Empty(t, c.ArmorRoles())
+	s.Require().NoError(err)
+	s.Assert().Empty(c.ArmorRoles())
 }
 
-func TestArmorWeight(t *testing.T) {
-	c, err := NewCatalog(newTestSpecies(), NewTestRoles(), ArmorTypeContent{
+func (s *RolesTestSuite) TestArmorWeight() {
+	c, err := s.newCatalog(NewTestRoles(), ArmorTypeContent{
 		ArmorTypePlate: {SlotHead: 1, SlotBody: 4},
 	})
-	require.NoError(t, err)
+	s.Require().NoError(err)
 
-	assert.Equal(t, 4, c.ArmorWeight(ArmorTypePlate, SlotBody))
-	assert.Equal(t, 1, c.ArmorWeight(ArmorTypePlate, SlotHead))
+	s.Assert().Equal(4, c.ArmorWeight(ArmorTypePlate, SlotBody))
+	s.Assert().Equal(1, c.ArmorWeight(ArmorTypePlate, SlotHead))
 	// a slot the table doesn't mention, a type it doesn't mention, and gear
 	// that isn't armor at all
-	assert.Equal(t, 0, c.ArmorWeight(ArmorTypePlate, SlotFeet))
-	assert.Equal(t, 0, c.ArmorWeight(ArmorTypeLeather, SlotBody))
-	assert.Equal(t, 0, c.ArmorWeight(ArmorTypeNone, SlotBody))
+	s.Assert().Equal(0, c.ArmorWeight(ArmorTypePlate, SlotFeet))
+	s.Assert().Equal(0, c.ArmorWeight(ArmorTypeLeather, SlotBody))
+	s.Assert().Equal(0, c.ArmorWeight(ArmorTypeNone, SlotBody))
 }

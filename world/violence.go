@@ -4,8 +4,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/player"
+	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/spaces"
 )
 
@@ -13,7 +13,7 @@ import (
 // makes the combat happen. For each fight, determine if
 // it is "time" to do something, and if so determine what to do.
 // Update the state, and continue.
-func (w *World) DoViolence(pulse mudtime.PulseCount) {
+func (w *World) DoViolence(pulse rules.PulseCount) {
 
 	for _, fight := range w.fightLedger.GetFights() {
 		if fight.Fighter.Dead() || fight.Fightee.Dead() {
@@ -26,7 +26,7 @@ func (w *World) DoViolence(pulse mudtime.PulseCount) {
 		// I don't want to have the details of pulse count or real-world
 		// clocks being part of mob definitions as that will make it a
 		// headache to tune these settings.
-		if fight.CanDoViolence(pulse) {
+		if fight.CanDoViolence(w.content.Catalog.MudTime.Violence, pulse) {
 			fight.LastPulse = pulse
 			fightResult, err := combat.AttemptMeleeAttack(w.roller, fight.Fighter, fight.Fightee)
 			if err != nil {

@@ -11,7 +11,6 @@ import (
 	"github.com/trasa/watchmud/command"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/mudtime"
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/world"
@@ -38,11 +37,12 @@ func New(w *world.World, c *rules.Catalog, s player.Store) *GameServer {
 // Run the game server, obviously.
 func (gs *GameServer) Run(ctx context.Context) error {
 	log.Info().Msg("starting game server Run loop")
-	ticker := time.NewTicker(mudtime.PulseInterval)
+
+	ticker := time.NewTicker(rules.PulseInterval)
 	defer ticker.Stop()
 
 	last := time.Now()
-	var pulse mudtime.PulseCount
+	var pulse rules.PulseCount
 
 	for {
 		select {
@@ -79,33 +79,39 @@ func (gs *GameServer) prompt() {
 	}
 }
 
-// runs the heartbeat of the game. Use pulse to determine intervals
+// Heartbeat runner of the game. Use pulse to determine intervals
 // between things (ex. reset zones every 15 minutes...)
 // delta is the amount of time since the last heartbeat was run.
-func (gs *GameServer) heartbeat(pulse mudtime.PulseCount, delta time.Duration) {
+func (gs *GameServer) heartbeat(pulse rules.PulseCount, delta time.Duration) {
 	//log.Printf("pulse %d hb %d", pulse, delta)
 	// mobs, scripts, ...
 
 	// pulse zone
 	// (zone reset ...)
-	if pulse.CheckInterval(mudtime.PulseZone) {
+	zonePulse := gs.catalog.MudTime.Zone
+	if pulse.CheckInterval(zonePulse) {
 		gs.world.DoZoneActivity()
 	}
 
 	// pulse mobs
 	// (mobs walk around, initiate attack?)
-	if pulse.CheckInterval(mudtime.PulseMobile) {
+	mobPulse := gs.catalog.MudTime.Mobile
+	if pulse.CheckInterval(mobPulse) {
 		gs.world.DoMobileActivity()
 	}
 
 	// perform violence
 	// do the attacking (players and mobs and everybody)
-	if pulse.CheckInterval(mudtime.PulseViolence) {
+	violencePulse := gs.catalog.MudTime.Violence
+	if pulse.CheckInterval(violencePulse) {
 		gs.world.DoViolence(pulse)
 	}
 
 	// mud-hour ("player tick")
 	// affect weather, regen ..
+
+	// saving player data
+	// if pulse.CheckInterval(mudtime.)
 }
 
 // dispatch a message to its handler.

@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/trasa/watchmud/mudtime"
+	"github.com/trasa/watchmud/rules"
 )
 
 type Fight struct {
 	Fighter Combatant
 	// TODO fighter speed - slow, fast, medium, whatever...
 	Fightee   Combatant
-	LastPulse mudtime.PulseCount
+	LastPulse rules.PulseCount
 	ZoneId    string
 	RoomId    string
 }
@@ -20,7 +20,7 @@ func newFight(fighter Combatant, fightee Combatant, zoneId string, roomId string
 	return &Fight{
 		fighter,
 		fightee,
-		mudtime.PulseCountNever,
+		rules.PulseNever,
 		zoneId,
 		roomId,
 	}
@@ -30,8 +30,7 @@ func (f *Fight) String() string {
 	return fmt.Sprintf("%s fighting %s", f.Fighter.Name(), f.Fightee.Name())
 }
 
-func (f *Fight) CanDoViolence(now mudtime.PulseCount) bool {
-	// for now. lets say that clientplayer fight speed is "normal"
-	// and that means they fight every 3 seconds.
-	return mudtime.DurationBetween(f.LastPulse, now) >= time.Duration(time.Second*3)
+func (f *Fight) CanDoViolence(normalViolenceDuration time.Duration, now rules.PulseCount) bool {
+	// TODO mob speeds
+	return rules.DurationBetween(f.LastPulse, now) >= normalViolenceDuration
 }

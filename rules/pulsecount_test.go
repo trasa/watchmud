@@ -1,4 +1,4 @@
-package mudtime
+package rules
 
 import (
 	"testing"
@@ -39,19 +39,4 @@ func (suite *PulseCountSuite) TestPulseCount_checkInterval() {
 	suite.Assert().False(pulse.CheckInterval(PulseInterval * 99))
 	suite.Assert().True(pulse.CheckInterval(PulseInterval * 100))
 	suite.Assert().False(pulse.CheckInterval(PulseInterval * 101))
-}
-
-func (suite *PulseCountSuite) TestDurationToPulseCount() {
-	p := PulseCount(int64(1/PulseInterval.Hours()) * 10)
-
-	suite.Assert().Equal(p, TimeDurationToPulseCount(time.Hour*10))
-	suite.Assert().Equal(PulseCount(0), TimeDurationToPulseCount(0))
-	suite.Assert().Equal(PulseCount(1), TimeDurationToPulseCount(PulseInterval))
-}
-
-func (suite *PulseCountSuite) TestPulseDurations() {
-	start := TimeDurationToPulseCount(time.Hour * 3)
-	end := TimeDurationToPulseCount(time.Hour * 4)
-
-	suite.Assert().Equal(time.Hour*1, DurationBetween(start, end))
 }
