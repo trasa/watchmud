@@ -26,8 +26,13 @@ type Store struct {
 }
 
 // batchSaver is an inner store that can write many records in one go.
+//
+// failed lists the index in recs of every record that was not written, and
+// err says why; everything not in failed was written. A batch that failed
+// outright lists every index. One bad record must not count against the rest
+// of the batch, or it gets rewritten on every flush forever.
 type batchSaver interface {
-	SaveAll(recs []*player.Record) error
+	SaveAll(recs []*player.Record) (failed []int, err error)
 }
 
 func New(inner player.Store) *Store {
@@ -75,11 +80,18 @@ func (s *Store) flush() {
 		changed = append(changed, r)
 	}
 	if bs, ok := s.inner.(batchSaver); ok {
-		if err := bs.SaveAll(changed); err != nil {
-			log.Error().Err(err).Int("records", len(changed)).Msg("writebehind: batch save failed")
-			return // all stay pending
+		failed, err := bs.SaveAll(changed)
+		unwritten := make(map[int]bool, len(failed))
+		for _, i := range failed {
+			unwritten[i] = true
 		}
-		for _, r := range changed {
+		if err != nil {
+			log.Error().Err(err).Int("failed", len(failed)).Int("records", len(changed)).Msg("writebehind: batch save failed")
+		}
+		for i, r := range changed {
+			if unwritten[i] {
+				continue // stays pending; next wake tries again
+			}
 			s.written[r.Id] = r
 			s.forget(r)
 		}

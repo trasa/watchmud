@@ -133,3 +133,42 @@ func TestStore_emptyGear(t *testing.T) {
 	require.True(t, found)
 	assert.Equal(t, rec, got)
 }
+
+func TestStore_saveAll(t *testing.T) {
+	s := newTestStore(t)
+	a, b := testRecord(), testRecord()
+	a.Id, a.Name = uuid.New(), "alpha"
+	b.Id, b.Name = uuid.New(), "beta"
+
+	failed, err := s.SaveAll([]*player.Record{a, b})
+	require.NoError(t, err)
+	assert.Empty(t, failed)
+
+	for _, name := range []string{"alpha", "beta"} {
+		_, found, err := s.Load(name)
+		require.NoError(t, err)
+		assert.True(t, found, name)
+	}
+}
+
+// A document the server refuses -- here, a second character with a name
+// already taken -- is reported by its index, and the rest of the batch is
+// written anyway.
+func TestStore_saveAllReportsWhichFailed(t *testing.T) {
+	s := newTestStore(t)
+	first := testRecord()
+	first.Id, first.Name = uuid.New(), "taken"
+	require.NoError(t, s.Save(first))
+
+	dup, other := testRecord(), testRecord()
+	dup.Id, dup.Name = uuid.New(), "taken"
+	other.Id, other.Name = uuid.New(), "other"
+
+	failed, err := s.SaveAll([]*player.Record{dup, other})
+	require.Error(t, err)
+	assert.Equal(t, []int{0}, failed)
+
+	_, found, err := s.Load("other")
+	require.NoError(t, err)
+	assert.True(t, found, "the good one was written")
+}

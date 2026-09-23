@@ -158,9 +158,12 @@ func (s *Store) Save(r *player.Record) error {
 
 // SaveAll writes many characters in one round trip. Unordered, so one
 // bad document doesn't stop the rest.
-func (s *Store) SaveAll(recs []*player.Record) error {
+//
+// failed is the index in recs of every record that was not written: the ones
+// the server rejected, or all of them if the batch never got that far.
+func (s *Store) SaveAll(recs []*player.Record) ([]int, error) {
 	if len(recs) == 0 {
-		return nil
+		return nil, nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
 	defer cancel()
@@ -174,8 +177,27 @@ func (s *Store) SaveAll(recs []*player.Record) error {
 			SetReplacement(doc).
 			SetUpsert(true))
 	}
-	if _, err := s.players.BulkWrite(ctx, models, options.BulkWrite().SetOrdered(false)); err != nil {
-		return fmt.Errorf("mongostore: save %d players: %w", len(recs), err)
+	_, err := s.players.BulkWrite(ctx, models, options.BulkWrite().SetOrdered(false))
+	if err == nil {
+		return nil, nil
 	}
-	return nil
+	err = fmt.Errorf("mongostore: save %d players: %w", len(recs), err)
+
+	// Unordered, so the server carried on past each failure and says which
+	// ones they were -- unless the write concern failed too, in which case
+	// nothing is known to have landed. Rewriting a record that did land is
+	// harmless (it is a whole-document upsert), so when in doubt, all of them.
+	var bwe mongo.BulkWriteException
+	if errors.As(err, &bwe) && bwe.WriteConcernError == nil && len(bwe.WriteErrors) > 0 {
+		failed := make([]int, 0, len(bwe.WriteErrors))
+		for _, we := range bwe.WriteErrors {
+			failed = append(failed, we.Index)
+		}
+		return failed, err
+	}
+	failed := make([]int, len(recs))
+	for i := range failed {
+		failed[i] = i
+	}
+	return failed, err
 }

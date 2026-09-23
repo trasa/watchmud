@@ -84,9 +84,7 @@ func (gs *GameServer) prompt() {
 // between things (ex. reset zones every 15 minutes...)
 // delta is the amount of time since the last heartbeat was run.
 func (gs *GameServer) heartbeat(pulse rules.PulseCount, delta time.Duration) {
-	log.Debug().Msgf("pulse %d hb %d", pulse, delta)
-	//log.Printf("pulse %d hb %d", pulse, delta)
-	// mobs, scripts, ...
+	//log.Debug().Msgf("pulse %d hb %d", pulse, delta)
 
 	// pulse zone
 	// (zone reset ...)
@@ -151,16 +149,17 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter, cmd command.
 		return errors.New("player already attached to client")
 	}
 
-	// what if player is logged in on a different client?
-	/*
-		if p := FindPlayerByClient(message.Client); p != nil {
-			// TODO: kick the old user and proceed with the new
-			// for now, fail the login
-			return errors.New("player already logged in")
-		}*/
-
 	// TODO authentication and stuff...
 	playerName := cmd.Name
+
+	// One character, one session. A second one would load its own copy of
+	// the character, and the two would take turns saving over each other --
+	// drop a sword in one and the other still has it to save back. Taking
+	// over the old session is the friendlier answer; refusing is the safe one.
+	if gs.world.IsPlaying(playerName) {
+		msg.Client.Send(event.LoginFailed{Reason: event.AlreadyPlaying})
+		return nil
+	}
 	rec, found, err := gs.store.Load(playerName)
 	if err != nil {
 		// store error - problem with the store, return an error
@@ -196,6 +195,18 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter, cmd c
 		return fmt.Errorf("player %s already attached to client", msg.Client.Player().Name())
 	}
 	playerName := cmd.Name
+
+	// The name has to be checked here. It used to be the database's unique
+	// index that refused a duplicate, but saves are queued now and that error
+	// only reaches the writer goroutine, long after both characters are
+	// playing. Load sees the queue as well as the database, and dispatch is
+	// one command at a time, so this cannot race another creation.
+	if _, taken, err := gs.store.Load(playerName); err != nil {
+		return fmt.Errorf("handleCreatePlayer %s: %w", playerName, err)
+	} else if taken {
+		msg.Client.Send(event.CreateFailed{Reason: event.NameTaken})
+		return nil
+	}
 
 	// The lineage is the only choice creation makes, and it is cosmetic. An
 	// id the catalog doesn't know means the transport offered something stale

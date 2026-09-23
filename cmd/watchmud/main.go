@@ -67,7 +67,7 @@ func run() error {
 
 	// canceled on SIGINT or SIGTERM. A second signal kills the process
 	//outright, which is what you want if shutdown hangs.
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGKILL)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	// load the content: rules and world files

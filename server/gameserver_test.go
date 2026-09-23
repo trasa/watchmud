@@ -137,3 +137,37 @@ func TestLogin_returnsToTheLastRoom(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "market_square", rec.LastRoomId)
 }
+
+// The store no longer refuses a duplicate name itself (saves are queued), so
+// creation has to.
+func TestCreatePlayer_nameTaken(t *testing.T) {
+	gs, _ := newTestGameServer(t)
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(&testConn{}, command.CreatePlayer{Name: "bob"})))
+
+	second := &testConn{}
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(second, command.CreatePlayer{Name: "bob"})))
+
+	assert.Nil(t, second.Player(), "no second bob")
+	require.Len(t, second.sent, 1)
+	assert.Equal(t, event.CreateFailed{Reason: event.NameTaken}, second.sent[0])
+}
+
+// One character, one session: a second login is refused while the first is
+// playing, and allowed once they have left.
+func TestLogin_alreadyPlaying(t *testing.T) {
+	gs, _ := newTestGameServer(t)
+	first := &testConn{}
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(first, command.CreatePlayer{Name: "bob"})))
+
+	second := &testConn{}
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(second, command.Login{Name: "bob"})))
+	assert.Nil(t, second.Player())
+	require.Len(t, second.sent, 1)
+	assert.Equal(t, event.LoginFailed{Reason: event.AlreadyPlaying}, second.sent[0])
+
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(first, command.Logout{})))
+
+	third := &testConn{}
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(third, command.Login{Name: "bob"})))
+	assert.NotNil(t, third.Player(), "back in once the first session is gone")
+}

@@ -28,7 +28,7 @@ type conn struct {
 	sendQueue  chan any // NOT *message.GameMessage - see below.
 	quit       chan struct{}
 	closeOnce  sync.Once
-	authResult chan bool // buffered 1; carries LoginResponse/CreatePlayerResponse success
+	authResult chan event.ResultCode // buffered 1; how login/create ended: "" is success, anything else is why not
 
 	mu     sync.Mutex // guards the player
 	player *player.Player
@@ -62,7 +62,7 @@ func newConn(c net.Conn, gs gameserver.Instance, cat *rules.Catalog) *conn {
 		netConn:    c,
 		sendQueue:  make(chan any, sendQueueSize),
 		quit:       make(chan struct{}),
-		authResult: make(chan bool, 1),
+		authResult: make(chan event.ResultCode, 1),
 	}
 }
 
@@ -121,12 +121,15 @@ func (c *conn) Send(msg any) {
 // Hooks into the login state signaling completion of login/create.
 func (c *conn) send(msg any) error {
 	// the login conversation, below, is waiting on these four.
-	switch msg.(type) {
+	switch m := msg.(type) {
 	case event.LoggedIn, event.PlayerCreated:
-		c.signalAuth(true)
+		c.signalAuth("")
 		return nil
-	case event.LoginFailed, event.CreateFailed:
-		c.signalAuth(false)
+	case event.LoginFailed:
+		c.signalAuth(m.Reason)
+		return nil
+	case event.CreateFailed:
+		c.signalAuth(m.Reason)
 		return nil
 	}
 	select {
@@ -139,19 +142,21 @@ func (c *conn) send(msg any) error {
 	}
 }
 
-func (c *conn) signalAuth(ok bool) {
+func (c *conn) signalAuth(why event.ResultCode) {
 	select {
-	case c.authResult <- ok:
+	case c.authResult <- why:
 	default: // don't block if the authResult channel is full
 	}
 }
 
-func (c *conn) awaitAuth() bool {
+// awaitAuth waits for the server's answer to a login or a creation: whether
+// it worked, and if not, why. A closed connection is a failure with no reason.
+func (c *conn) awaitAuth() (ok bool, why event.ResultCode) {
 	select {
-	case ok := <-c.authResult:
-		return ok
+	case why := <-c.authResult:
+		return why == "", why
 	case <-c.quit:
-		return false
+		return false, ""
 	}
 }
 
@@ -162,8 +167,13 @@ func (c *conn) login() bool {
 			return false // disconnected
 		}
 		c.emit(command.Login{Name: name})
-		if c.awaitAuth() {
+		ok, why := c.awaitAuth()
+		if ok {
 			return true
+		}
+		if why == event.AlreadyPlaying {
+			c.Send(fmt.Sprintf("%s is already playing.\r\n", name))
+			continue
 		}
 		// PLAYER_LOGIN_FAILED: no such player
 		yn, ok := c.prompt(fmt.Sprintf("No one by the name of %s. Create them? (yn) ", name))
@@ -176,10 +186,15 @@ func (c *conn) login() bool {
 				return false
 			}
 			c.emit(command.CreatePlayer{Name: name, Lineage: lineage})
-			if c.awaitAuth() {
+			ok, why := c.awaitAuth()
+			if ok {
 				return true
 			}
-			c.Send("Something went wrong creating that character.\r\n")
+			if why == event.NameTaken {
+				c.Send(fmt.Sprintf("Someone else has just taken the name %s.\r\n", name))
+			} else {
+				c.Send("Something went wrong creating that character.\r\n")
+			}
 		}
 
 	}

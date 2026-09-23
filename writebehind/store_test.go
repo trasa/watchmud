@@ -2,6 +2,7 @@ package writebehind
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"uuid"
 
@@ -77,4 +78,50 @@ func TestSavesBehindASlowWriteCollapse(t *testing.T) {
 	got, _, _ := inner.Load("dood")
 	assert.Equal(t, 10, got.CurHealth, "newest one wins")
 	assert.LessOrEqual(t, inner.saves, 2, "not ten writes")
+}
+
+// batchStore takes records in batches and refuses the ones named in reject,
+// the way mongo's unordered bulk write carries on past a bad document.
+type batchStore struct {
+	*memstore.Store
+	reject  map[string]bool
+	batches int
+}
+
+func (b *batchStore) SaveAll(recs []*player.Record) ([]int, error) {
+	b.batches++
+	var failed []int
+	for i, r := range recs {
+		if b.reject[r.Name] {
+			failed = append(failed, i)
+			continue
+		}
+		_ = b.Store.Save(r)
+	}
+	if len(failed) > 0 {
+		return failed, errors.New("some were refused")
+	}
+	return nil, nil
+}
+
+// One record the store refuses doesn't hold the rest of the batch hostage:
+// they are written and leave the queue, and only the bad one is left.
+func TestBatch_oneBadRecordOnlyFailsItself(t *testing.T) {
+	inner := &batchStore{Store: memstore.New(), reject: map[string]bool{"bad": true}}
+	s := New(inner)
+
+	require.NoError(t, s.Save(&player.Record{Id: uuid.New(), Name: "good"}))
+	require.NoError(t, s.Save(&player.Record{Id: uuid.New(), Name: "bad"}))
+	require.NoError(t, s.Save(&player.Record{Id: uuid.New(), Name: "fine"}))
+
+	err := s.Close(context.Background())
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "1 records were never written")
+
+	for _, name := range []string{"good", "fine"} {
+		_, found, _ := inner.Store.Load(name)
+		assert.True(t, found, name)
+	}
+	_, found, _ := inner.Store.Load("bad")
+	assert.False(t, found)
 }

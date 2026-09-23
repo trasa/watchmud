@@ -70,6 +70,14 @@ const (
 	// login. This reaches telnet/conn.go's login(), not the renderer: it is
 	// what drives the "No one by that name. Create them?" prompt.
 	NoSuchPlayer ResultCode = "PLAYER_LOGIN_FAILED"
+	// AlreadyPlaying: that character is in the world on another connection.
+	// Two sessions of one character each save over the other, which is how
+	// items get duplicated.
+	AlreadyPlaying ResultCode = "ALREADY_PLAYING"
+	// NameTaken: creation lost a race for the name, or was asked for one that
+	// exists. The store no longer says so itself -- saves are queued, and the
+	// database's unique index is only heard from on the writer goroutine.
+	NameTaken ResultCode = "NAME_TAKEN"
 )
 
 // Failed is what a command produces when it cannot be carried out.

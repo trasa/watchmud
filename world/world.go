@@ -212,6 +212,11 @@ func (w *World) findRoomByLocation(loc *player.Location) (*spaces.Room, bool) {
 	return w.findRoomById(loc.ZoneId, loc.RoomId)
 }
 
+// IsPlaying says whether a character by that name is in the world right now.
+func (w *World) IsPlaying(name string) bool {
+	return w.findPlayerByName(name) != nil
+}
+
 func (w *World) findPlayerByName(name string) *player.Player {
 	return w.playerList.FindByName(name)
 }
