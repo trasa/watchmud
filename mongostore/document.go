@@ -53,6 +53,10 @@ type inventoryDoc struct {
 	// every document written before durability existed. Both mean the same
 	// thing on the way back in: as new. It is not zero, which is broken.
 	Durability *int `bson:"durability,omitempty"`
+
+	// Power is omitted at zero, and missing from every document written
+	// before power existed. Both come back as power 0.
+	Power *int `bson:"power,omitempty"`
 }
 
 // newPlayerDoc converts a record on its way to the database.
@@ -79,6 +83,7 @@ func newPlayerDoc(r *player.Record, now time.Time) playerDoc {
 			ZoneId:       i.ZoneId,
 			DefinitionId: i.DefinitionId,
 			Durability:   i.Durability,
+			Power:        i.Power,
 		})
 	}
 	return doc
@@ -125,6 +130,7 @@ func (d playerDoc) record() (*player.Record, error) {
 			ZoneId:       i.ZoneId,
 			DefinitionId: i.DefinitionId,
 			Durability:   i.Durability,
+			Power:        i.Power,
 		})
 	}
 	return r, nil

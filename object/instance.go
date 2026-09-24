@@ -14,6 +14,12 @@ type Instance struct {
 	// Durability is what this particular one has left, counting down from
 	// Definition.MaxDurability. See durability.go.
 	Durability int
+
+	// Power is how strong this particular one is, and it belongs to the
+	// instance rather than the definition so one rusty sword can serve every
+	// tier: power 5 off a goblin, power 15 off an ogre. Zero is the bottom.
+	// Whatever makes the instance sets it; see LEVELS.md.
+	Power int
 }
 
 // IdStr from the Thing interface

@@ -34,6 +34,11 @@ type InventoryRecord struct {
 	// and a missing number has to mean "as new" rather than zero -- zero is
 	// broken, and a content edit should not break every item everybody owns.
 	Durability *int
+
+	// Power is what this particular item is worth. A pointer for the same
+	// reason as Durability, though here a missing number and zero agree:
+	// before power existed everything was power 0.
+	Power *int
 }
 
 type DefinitionSource interface {
@@ -78,6 +83,11 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 			// so lowering a durability table in content doesn't leave items
 			// in the world tougher than anything you can get now.
 			i.Durability = min(*ir.Durability, d.MaxDurability)
+		}
+		if ir.Power != nil {
+			// nothing makes negative power; a record claiming it is damaged,
+			// and shouldn't drag the average of what the player wears down.
+			i.Power = max(*ir.Power, 0)
 		}
 		p.inventory.Add(i)
 	}
@@ -124,6 +134,10 @@ func (i *Inventory) Record() []InventoryRecord {
 		if item.WearsOut() {
 			durability := item.Durability
 			r.Durability = &durability
+		}
+		if item.Power > 0 {
+			power := item.Power
+			r.Power = &power
 		}
 		records = append(records, r)
 	}

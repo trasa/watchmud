@@ -26,7 +26,7 @@ func testRecord() *player.Record {
 			{Slot: "wield", InstanceId: knifeId},
 		},
 		Inventory: []player.InventoryRecord{
-			{InstanceId: knifeId, ZoneId: "wrathrock", DefinitionId: "training_dagger", Durability: intp(17)},
+			{InstanceId: knifeId, ZoneId: "wrathrock", DefinitionId: "training_dagger", Durability: intp(17), Power: intp(5)},
 			{InstanceId: uuid.New(), ZoneId: "wrathrock", DefinitionId: "waterskin"},
 		},
 	}
@@ -118,4 +118,20 @@ func TestPlayerDoc_documentWithoutDurability(t *testing.T) {
 	got, err := doc.record()
 	require.NoError(t, err)
 	assert.Nil(t, got.Inventory[0].Durability)
+}
+
+// Power rides along the same way, and a document without it -- written before
+// power existed, or for power 0 -- comes back as nil, which FromRecord reads
+// as 0.
+func TestPlayerDoc_power(t *testing.T) {
+	rec := testRecord()
+	doc := newPlayerDoc(rec, time.Now())
+
+	require.NotNil(t, doc.Inventory[0].Power)
+	assert.Equal(t, 5, *doc.Inventory[0].Power)
+	assert.Nil(t, doc.Inventory[1].Power)
+
+	got, err := doc.record()
+	require.NoError(t, err)
+	assert.Equal(t, rec, got)
 }
