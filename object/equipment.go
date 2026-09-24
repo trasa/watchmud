@@ -98,6 +98,25 @@ func (eq *Equipment) ArmorClass() int {
 	return ac
 }
 
+// Power is the average power of what's equipped, rounded down, and it is the
+// whole of a player's level -- see LEVELS.md. Empty slots don't count, and
+// broken gear doesn't either: not as a zero, which would make wearing it worse
+// than wearing nothing, but not at all. Nothing on is power 0.
+func (eq *Equipment) Power() int {
+	total, count := 0, 0
+	for _, inst := range eq.All() {
+		if inst.Broken() {
+			continue
+		}
+		total += inst.Power
+		count++
+	}
+	if count == 0 {
+		return 0
+	}
+	return total / count
+}
+
 // DamageableGear is everything worn that could still take wear: it has
 // durability, and it hasn't already given out. In slot order.
 //
