@@ -495,7 +495,8 @@ Named so they don't get rediscovered as surprises:
   feature and every mechanic -- combat, power, loot, abilities, threat, doors and locks
   -- is written in Go. Lua (gopher-lua) is for small, local behaviour that composes
   actions the engine already has: *a mob picks up an item it finds*, *a mob locks a door
-  that's unlocked*, the Barrow-King saying something and summoning skeletons at half
+  that's unlocked*, *a mob taunts the player it's fighting* ("Hah! You cannot defeat
+  me!"), the Barrow-King saying something and summoning skeletons at half
   health, the hedge-witch answering `say heal`. A script decides *when*, never *how the
   math works*; if a script needs an action the engine doesn't have, that's a Go feature
   first.
@@ -506,9 +507,11 @@ Named so they don't get rediscovered as surprises:
   Scripts live in `content/world/<zone>/scripts/`, named from mobs.json/rooms.json and
   resolved at startup. The real work is the hooks (entered room, died, health crossed a
   line, heard something, pulse) and a small action API over them.
-  Not yet: both of the examples above need Go features that don't exist -- mobs have no
-  inventory, and there are no doors or locks. First case when it comes: the King's
-  half-health script, three hooks and about four actions.
+  The first two examples need Go features that don't exist yet -- mobs have no inventory,
+  and there are no doors or locks. Taunts need nothing new: `event.Said` already takes a
+  speaker name and renders to the room. So taunts are the first case -- a fight-started
+  and a fight-pulse hook, and one action, `say` -- and the King's half-health script is
+  the second.
 - **`Fight` snapshots `ZoneId`/`RoomId`** at the moment it starts, so a fight that somehow
   outlives its room notifies the wrong one. Same family as the location bookkeeping above.
 - **`RoleWeights` is hand-authored for everything that isn't armor.** ~~A builder writing
