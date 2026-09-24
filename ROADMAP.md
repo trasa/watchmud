@@ -35,6 +35,24 @@ because today anyone can log in as anyone and anyone can spawn mobs.
    rotates. SIGTERM already flushes the write-behind store; make sure the platform
    sends SIGTERM, not SIGKILL.
 
+   **And a TLS port** beside the plain one, so a password doesn't have to cross the
+   internet in the clear. Telnet has no encryption and no MUD protocol adds any (MCCP
+   is compression; GMCP/MSDP/MTTS are data channels; telnet START_TLS, option 46, has
+   almost no client support), so what the better-run games do is a second port that
+   speaks TLS. Mudlet has a "Secure" checkbox, TinTin++ has `#ssl`, and anything else
+   can use `openssl s_client -connect host:port`. Two ways to do it:
+   - In Go: `telnet.Listen` has one `net.Listen` (`telnet/conn.go`); wrap it in
+     `tls.NewListener` for the second port. Everything above the socket -- `iacFilter`,
+     login, the pumps -- works on a `net.Conn` and doesn't change. Needs the cert and
+     key paths in config (both in `serverconfig`, it's `UnmarshalStrict`), and a
+     renewal story: certbot on the box, reload on renew.
+   - Or terminate TLS in a proxy (Caddy's layer-4 module, haproxy, stunnel) that
+     forwards plaintext to 4000 on localhost. No Go at all, one more moving part.
+
+   Keep plain telnet: stock `telnet` can't speak TLS, and locking those players out
+   costs more than it protects. Say at the login banner that the secure port exists.
+   Needs the domain, so it belongs here with deploy rather than with passwords.
+
 **First week, once people are in:**
 
 - A welcome line after login pointing new characters south to the Hollowfields.
