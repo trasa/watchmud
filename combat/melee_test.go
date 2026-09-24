@@ -95,3 +95,36 @@ func (s *MeleeSuite) TestArmorClassZeroCannotBeMissed() {
 // TODO critical fail
 // TODO resistance
 // TODO vulnerability
+
+// Power: the attacker ten above gets +5 to hit and half again the damage.
+// A 5 wouldn't hit AC 10 on its own.
+func (s *MeleeSuite) TestPowerAboveHelpsYouHitAndHurt() {
+	s.fighter.(*TestCombatant).SetPower(10)
+	s.roller.Load([]int{5, 4})
+
+	result, err := AttemptMeleeAttack(s.roller, s.fighter, s.victim)
+	s.Require().NoError(err)
+	s.Assert().True(result.WasHit)
+	s.Assert().Equal(6, result.Damage)
+}
+
+// Ten below: a 14 is a 9 against AC 10, a miss.
+func (s *MeleeSuite) TestPowerBelowMakesYouMiss() {
+	s.victim.(*TestCombatant).SetPower(10)
+	s.roller.Load([]int{14})
+
+	result, err := AttemptMeleeAttack(s.roller, s.fighter, s.victim)
+	s.Require().NoError(err)
+	s.Assert().False(result.WasHit)
+}
+
+// And when you do land one, it does half.
+func (s *MeleeSuite) TestPowerBelowHalvesYourDamage() {
+	s.victim.(*TestCombatant).SetPower(10)
+	s.roller.Load([]int{15, 4})
+
+	result, err := AttemptMeleeAttack(s.roller, s.fighter, s.victim)
+	s.Require().NoError(err)
+	s.Assert().True(result.WasHit)
+	s.Assert().Equal(2, result.Damage)
+}

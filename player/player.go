@@ -109,6 +109,12 @@ func (p *Player) ArmorClass() int {
 	return p.equipment.ArmorClass()
 }
 
+// Power is the average of what's worn, recomputed on every read -- see
+// object.Equipment.Power. There is no stored level to disagree with it.
+func (p *Player) Power() int {
+	return p.equipment.Power()
+}
+
 func (p *Player) CalculateMeleeRollModifiers() int {
 	return 0
 }

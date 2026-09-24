@@ -54,7 +54,7 @@ move is one change.
 | Averaging worn power | rounds down | how soon one upgrade shows in your number |
 | Power delta clamp | ±10 | how far out of your league anything can be |
 | To-hit per point of delta | +½ | whether a higher mob can be hit at all |
-| Damage per point of delta | ±5% | how long fights above your power take |
+| Damage per point of delta | ±5%, rounded, a hit does at least 1 | how long fights above your power take |
 | Loot power bump | 10% chance of +1, 2% of +2 | **the pace of the whole game** |
 
 ## Phases
@@ -153,6 +153,13 @@ Targets to check him against once power modifiers, heals and threat all exist:
 - tank, healer, damage: they win, and the healer is busy the whole fight
 
 Until then he is unbeatable, and that's fine: he's the reason heals get built.
+
+**With power in combat, AC 16 may be too much.** Five or more below him is -5 to hit,
+so anyone at power 5 or under can never land a blow (20 - 5 < 16), and a group at the
+barrow's top end, power 10, needs an 18 -- 15% a swing, for 75% damage. Out-of-league
+is the point, but that may be past "needs a group" and into "needs nothing below 12".
+Decide when there's a group to try it: lower his AC to 13 or 14, or accept that the
+barrow's band is the gear you farm *before* you try him.
 
 Needed for that fight, and not yet anywhere else on this page:
 

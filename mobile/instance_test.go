@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/rules"
 )
@@ -117,4 +118,12 @@ func (s *instanceSuite) TestInstance_GetIndexOnPath_NoPath() {
 	idx, err := m.GetIndexOnPath("foo")
 	s.Assert().Error(err)
 	s.Assert().Equal(-1, idx)
+}
+
+// A mob's power is its definition's: mobs wear nothing, so there is nothing
+// to derive it from.
+func TestInstance_powerIsTheDefinitions(t *testing.T) {
+	d := NewDefinition("king", "king", "barrow", nil, "", "", 180, rules.WanderDefinition{}, 16, true)
+	d.Power = 15
+	assert.Equal(t, 15, NewInstance(d).Power())
 }

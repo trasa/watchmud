@@ -72,3 +72,20 @@ func TestRecord_negativePowerIsClampedToZero(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 0, back.Equipment().At(rules.SlotWield).Power)
 }
+
+// A player's power is what they're wearing, read fresh every time: put on
+// something better and the next swing knows.
+func TestPlayer_powerIsTheirGear(t *testing.T) {
+	defs := newDurabilityDefs(rules.Indestructible)
+	p := NewTestPlayer(uuid.New(), "geared", nil)
+	assert.Equal(t, 0, p.Power(), "nothing on")
+
+	knife := object.NewInstance(uuid.New(), defs.knife)
+	knife.Power = 9
+	p.Inventory().Add(knife)
+	p.Equipment().Equip(rules.SlotWield, knife)
+	assert.Equal(t, 9, p.Power())
+
+	p.Equipment().Unequip(rules.SlotWield)
+	assert.Equal(t, 0, p.Power())
+}

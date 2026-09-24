@@ -5,8 +5,11 @@ import "uuid"
 // Attacker and Defender ae roles in a single attack sequence.
 // They swap every round, so nothing durable about an entity
 // belongs here.
+//
+// Both carry Power, since combat reads the difference between the two.
 type Attacker interface {
 	Name() string
+	Power() int
 	CalculateMeleeRollModifiers() int
 	WeaponDamageRoll() string
 	WeaponDamageType() DamageType
@@ -14,6 +17,7 @@ type Attacker interface {
 
 type Defender interface {
 	Name() string
+	Power() int
 	ArmorClass() int
 	HasResistanceTo(damageType DamageType) bool
 	IsVulnerableTo(damageType DamageType) bool

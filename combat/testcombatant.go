@@ -8,6 +8,7 @@ type TestCombatant struct {
 	curHealth     int
 	dead          bool
 	ac            int
+	power         int
 	resistance    map[DamageType]bool
 	vulnerability map[DamageType]bool
 }
@@ -50,6 +51,14 @@ func (t *TestCombatant) Dead() bool {
 func (t *TestCombatant) CalculateMeleeRollModifiers() int {
 	// no modifiers yet
 	return 0
+}
+
+func (t *TestCombatant) Power() int {
+	return t.power
+}
+
+func (t *TestCombatant) SetPower(power int) {
+	t.power = power
 }
 
 func (t *TestCombatant) ArmorClass() int {

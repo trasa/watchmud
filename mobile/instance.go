@@ -95,6 +95,11 @@ func (mob *Instance) Dead() bool {
 	return mob.CurHealth <= 0
 }
 
+// Combatant. Mobs wear nothing, so a mob's power is its definition's.
+func (mob *Instance) Power() int {
+	return mob.Definition.Power
+}
+
 // Combatant
 func (mob *Instance) CalculateMeleeRollModifiers() int {
 	// TODO mob melee modifiers come from definition and ...?

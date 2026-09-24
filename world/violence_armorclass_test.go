@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/event"
+	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/rules"
@@ -47,6 +48,10 @@ func (s *violenceArmorClassSuite) SetupTest() {
 
 	drone, exists := s.w.StartRoom.FindMobile("target")
 	s.Require().True(exists)
+	// Level with the unequipped player, so these measure armor class and
+	// nothing else; the power difference has its own tests. NewTestWorld
+	// loads content fresh each time, so this doesn't leak between tests.
+	drone.Definition.Power = 0
 	s.drone = drone
 
 	s.dice = testdice.New()
@@ -143,4 +148,13 @@ func (s *violenceArmorClassSuite) TestMobArmorClassIsOnTheSameScale() {
 
 	s.Assert().True(attack(10))
 	s.Assert().False(attack(9))
+}
+
+// Power reaches a real fight. The drone ten above the player gets +5, so a 5
+// lands on an unarmored player that only a 10 could hit on level terms.
+func (s *violenceArmorClassSuite) TestPowerReachesTheFight() {
+	s.drone.(*mobile.Instance).Definition.Power = 10
+
+	s.Assert().True(s.swing(5), "5 + 5 meets AC 10")
+	s.Assert().False(s.swing(4), "4 + 5 does not")
 }

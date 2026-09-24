@@ -6,3 +6,42 @@ type PowerBand struct {
 	Min int `json:"min"`
 	Max int `json:"max"`
 }
+
+// Tuning placeholders, all of them -- see the table in LEVELS.md, and move
+// them into a rules/*.json together once there is something to tune against.
+const (
+	// PowerDeltaClamp is how far out of your league anything can be: past
+	// this, more difference changes nothing.
+	PowerDeltaClamp = 10
+	// PowerHitPointsPerTwo is the to-hit bonus for every two points of power
+	// difference -- half a point each.
+	PowerHitPointsPerTwo = 1
+	// PowerDamagePercent is how much each point of power difference moves
+	// damage, up or down.
+	PowerDamagePercent = 5
+)
+
+// PowerDelta is the attacker's power less the defender's, clamped to
+// PowerDeltaClamp either way. Combat reads the difference, never the level:
+// d20 against AC has to stay bounded, or by power 30 nothing would connect.
+func PowerDelta(attacker, defender int) int {
+	return max(-PowerDeltaClamp, min(PowerDeltaClamp, attacker-defender))
+}
+
+// PowerHitModifier is what the power difference adds to a d20 attack roll.
+// Truncated toward zero, so it's symmetric: three above is worth exactly what
+// three below costs.
+func PowerHitModifier(attacker, defender int) int {
+	return PowerDelta(attacker, defender) * PowerHitPointsPerTwo / 2
+}
+
+// PowerDamage scales a blow's damage by the power difference, rounded to the
+// nearest point. A blow that did anything still does at least one: being
+// outclassed makes you weak, not harmless.
+func PowerDamage(damage, attacker, defender int) int {
+	if damage <= 0 {
+		return damage
+	}
+	percent := 100 + PowerDelta(attacker, defender)*PowerDamagePercent
+	return max(1, (damage*percent+50)/100)
+}

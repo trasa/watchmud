@@ -41,7 +41,10 @@ func AttemptMeleeAttack(roller rules.Roller, fighter Combatant, victim Combatant
 	//	criticalFailure := roll == 1
 	//	criticalSuccess := roll == 20
 
-	modifiedRoll := roll + fighter.CalculateMeleeRollModifiers()
+	// Power adds on top of the d20, rather than growing AC, so the roll
+	// stays bounded however high power climbs. See rules.PowerDelta.
+	modifiedRoll := roll + fighter.CalculateMeleeRollModifiers() +
+		rules.PowerHitModifier(fighter.Power(), victim.Power())
 	wasHit := modifiedRoll >= victim.ArmorClass()
 	wasHitStr := "missed."
 	damage := 0
@@ -72,6 +75,7 @@ func calculateDamage(roller rules.Roller, fighter Combatant, victim Combatant) (
 	if err != nil {
 		return 0, err
 	}
+	damage = rules.PowerDamage(damage, fighter.Power(), victim.Power())
 	modifier := ""
 
 	if victim.HasResistanceTo(fighter.WeaponDamageType()) {
