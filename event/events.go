@@ -99,6 +99,20 @@ type Dropped struct {
 type Got struct {
 	Actor string
 	Item  string
+	// From is the container it came out of, empty for the floor.
+	From string
+}
+
+// ContainerContents answers "look in": what a container holds, in the order
+// it was put there.
+type ContainerContents struct {
+	Container string
+	Items     []ContainedItem
+}
+
+type ContainedItem struct {
+	ShortDescription string
+	Power            int
 }
 
 // Equipped and Worn have no bystander text today, so they carry no Actor.

@@ -74,10 +74,18 @@ func render(msg any, self string) string {
 		return m.Actor + " drops " + m.Item + ".\n"
 
 	case event.Got:
-		if m.Actor == self {
+		switch {
+		case m.From != "" && m.Actor == self:
+			return "You get " + m.Item + " from " + m.From + ".\n"
+		case m.From != "":
+			return m.Actor + " gets " + m.Item + " from " + m.From + ".\n"
+		case m.Actor == self:
 			return "Taken.\n"
 		}
 		return m.Actor + " gets " + m.Item + ".\n"
+
+	case event.ContainerContents:
+		return renderContainerContents(m)
 
 	case event.Equipped:
 		return "Equipped.\n"
@@ -430,4 +438,16 @@ func capitalize(s string) string {
 	}
 	r, size := utf8.DecodeRuneInString(s)
 	return string(unicode.ToUpper(r)) + s[size:]
+}
+
+func renderContainerContents(c event.ContainerContents) string {
+	if len(c.Items) == 0 {
+		return capitalize(c.Container) + " is empty.\n"
+	}
+	var b strings.Builder
+	b.WriteString(capitalize(c.Container) + " holds:\n")
+	for _, item := range c.Items {
+		b.WriteString(fmt.Sprintf("  %s [power %d]\n", item.ShortDescription, item.Power))
+	}
+	return b.String()
 }

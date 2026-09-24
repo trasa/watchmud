@@ -42,6 +42,8 @@ func (Ping) Verb() string { return "ping" }
 type Look struct {
 	// Target is what the player wants to look at. Empty means the room.
 	Target string
+	// In is "look in <target>": what's inside a container.
+	In bool
 }
 
 func (Look) Verb() string { return "look" }
@@ -67,6 +69,9 @@ func (Recall) Verb() string { return "recall" }
 
 type Get struct {
 	Target string
+	// From is the container to get it out of: "get knife from corpse".
+	// Empty means the floor.
+	From string
 }
 
 func (Get) Verb() string { return "get" }

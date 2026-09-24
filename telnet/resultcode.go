@@ -45,6 +45,7 @@ var failureByVerb = map[string]string{
 	"remove/TARGET_NOT_FOUND": "You aren't using that.",
 	"remove/NO_TARGET":        "Remove what?",
 	"consider/NO_TARGET":      "Consider what?",
+	"look/NO_TARGET":          "Look in what?",
 	"drop/NO_TARGET":          "Drop what?",
 	"get/NO_TARGET":           "Get what?",
 	"wear/NO_TARGET":          "Wear what?",
@@ -62,6 +63,11 @@ var failureByCode = map[string]string{
 	"TARGET_NOT_FOUND":    "You don't see that here.",
 	"TARGET_NOT_GETTABLE": "You can't pick that up.",
 	"NO_TARGET":           "You'll have to be more specific.",
+
+	// containers
+	"NOT_A_CONTAINER":  "That's not a container.",
+	"NOT_IN_CONTAINER": "You don't see that in there.",
+	"CONTAINER_EMPTY":  "There's nothing in there.",
 
 	// carrying and wearing
 	"TARGET_IN_USE":   "You'll have to remove it first.",

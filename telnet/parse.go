@@ -32,6 +32,9 @@ func parseCommand(tokens []string) (command.Command, error) {
 		return command.Logout{Cause: "quit"}, nil
 
 	case "look", "l":
+		if rest == "in" || strings.HasPrefix(rest, "in ") {
+			return command.Look{Target: strings.TrimSpace(rest[len("in"):]), In: true}, nil
+		}
 		return command.Look{Target: rest}, nil
 
 	case "n", "north", "s", "south", "e", "east", "w", "west", "u", "up", "d", "down":
@@ -48,6 +51,14 @@ func parseCommand(tokens []string) (command.Command, error) {
 		return command.Recall{}, nil
 
 	case "get":
+		// "get knife from corpse", and "get from corpse" with nothing named,
+		// which the handler answers the way it answers a bare "get".
+		if from, ok := strings.CutPrefix(rest, "from "); ok {
+			return command.Get{From: strings.TrimSpace(from)}, nil
+		}
+		if target, from, ok := strings.Cut(rest, " from "); ok {
+			return command.Get{Target: strings.TrimSpace(target), From: strings.TrimSpace(from)}, nil
+		}
 		return command.Get{Target: rest}, nil
 
 	case "drop":

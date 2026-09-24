@@ -24,6 +24,11 @@ const (
 	TargetNotGettable ResultCode = "TARGET_NOT_GETTABLE"
 	NoTarget          ResultCode = "NO_TARGET"
 
+	// containers
+	NotAContainer  ResultCode = "NOT_A_CONTAINER"
+	NotInContainer ResultCode = "NOT_IN_CONTAINER"
+	ContainerEmpty ResultCode = "CONTAINER_EMPTY"
+
 	// carrying and wearing
 	TargetInUse   ResultCode = "TARGET_IN_USE"
 	InUse         ResultCode = "IN_USE"

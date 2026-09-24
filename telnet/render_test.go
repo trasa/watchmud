@@ -1,6 +1,7 @@
 package telnet
 
 import (
+	"slices"
 	"strings"
 	"testing"
 	"uuid"
@@ -285,7 +286,7 @@ var commandCases = []commandCase{
 }
 
 func TestCommandRendering(t *testing.T) {
-	for _, tc := range commandCases {
+	for _, tc := range slices.Concat(commandCases, lootCases) {
 		t.Run(tc.name, func(t *testing.T) {
 			w, err := world.NewTestWorld()
 			require.NoError(t, err)

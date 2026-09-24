@@ -12,6 +12,10 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter, cmd command.Get) {
 		msg.Fail(event.NoTarget)
 		return
 	}
+	if cmd.From != "" {
+		w.getFrom(msg, cmd)
+		return
+	}
 
 	target, err := parseTarget(cmd.Target)
 	if err != nil {
