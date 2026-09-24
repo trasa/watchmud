@@ -507,12 +507,61 @@ Additive once the byte loop exists:
 
 Named so they don't get rediscovered as surprises:
 
-- **Dual location bookkeeping.** A player's room is recorded in *both* `world.PlayerRoomMap`
-  and the `Room`'s own `playerList` (plus `p.Location()`), and `World.movePlayer` must update
-  all of them in step. Same pattern for `spaces.MobileRoomMap`. Any missed update silently
-  desyncs the world. Worth collapsing to a single source of truth. This is not theoretical:
-  `World.RemovePlayer` was missing the `Room.RemovePlayer` half, so quitting left a ghost in
-  the room until it was fixed during Phase 4. Now unblocked.
+- **Dual location bookkeeping.** Not a launch item; general cleanup, and the thing Lua
+  would build on, so do it before Lua. Laid out to be walked through in order.
+
+  *What is there today* (checked 2026-09-24):
+
+  - **Players, two copies.** `world.playerRoomMap` (player -> room) and each `Room`'s
+    `playerList` (room -> players). `World.addPlayerTo`, `RemovePlayer` and `movePlayer`
+    each update both by hand. (`p.Location()`, once a third copy, is gone.) This is where
+    the Phase 4 ghost came from: `RemovePlayer` updated the map and forgot the room.
+  - **Mobs, three copies.** `spaces.MobileRoomMap` holds `mobileToRoom` (mob -> room) *and*
+    `roomToMobiles`, a `syncmap.MapList` that nothing ever reads -- a locking map in a
+    world that has no locks, kept in step for no one. Then each `Room` has its own `mobs`.
+  - **`moveMobile` only works because errors are ignored.** It calls
+    `src.MobileLeaves`/`dest.MobileEnters`, which move the mob between room lists, and then
+    `mobileRooms.Remove` + `Add`, which *also* touch the room lists: `Remove` removes the
+    mob from `src` a second time (`ErrNotFound`, swallowed by a `// TODO error handling`)
+    and `Add` adds it to `dest` a second time (`ErrDuplicate`, swallowed). Correct result,
+    by accident.
+  - **Floor objects, one copy.** Only `Room.Inventory`. Nothing asks "which room is this
+    knife in?", so there is nothing to desync.
+
+  *The decision: rooms keep their lists.* Almost every question the game asks starts from
+  a room -- `look`, `say`, `Room.Send`/`Notify`, aggro's "first player in my room",
+  `get knife`, corpse decay -- and the room's `ordered.List` answers it directly and in a
+  stable order. Keeping only thing -> room in the world would make every `look` a scan of
+  the whole world and lose that order. The reverse direction (player -> room, mob -> room)
+  is an *index*: useful for `tell`, `stat`, saving and combat, but derived. Two copies is
+  fine; two *writers* is the bug.
+
+  *The plan: one owner, and nothing else can write.*
+
+  1. A type in `spaces` -- `Occupancy`, say -- holding both directions for players and mobs:
+     `PlacePlayer(p, r)`, `MovePlayer(p, dest)`, `RemovePlayer(p)`, `RoomOfPlayer(p)`, and
+     the same four for mobiles. It is the only code that touches a room's lists.
+  2. Unexport the room's writers (`AddPlayer`, `RemovePlayer`, `AddMobile`, `RemoveMobile`,
+     `PlayerEnters`/`Leaves`, `MobileEnters`/`Leaves`), leaving `Room` with readers only:
+     `Players()`, `Mobs()`, `FindPlayer`, `FindMobile`. Because `Occupancy` lives in
+     `spaces` it can still call them; `world` can't. A half-done move now fails to compile
+     instead of leaving a ghost.
+  3. Delete `roomToMobiles` and the `syncmap` dependency with it.
+  4. `world.playerRoomMap` and `MobileRoomMap` fold into `Occupancy`; `World.movePlayer`,
+     `moveMobile`, `addPlayerTo` and `RemovePlayer` become one call each plus whatever
+     else they do (fights, `playerList`). Errors from the lists stop being swallowed --
+     with one writer, a duplicate or a miss is a real bug worth logging.
+  5. Leave objects alone. Where an object is forms a tree (floor, inventory, equipment,
+     corpse contents) and nothing asks the reverse question yet. Add an index when a
+     "locate object" spell or a script needs one, through the same owner.
+
+  *Why this is the Lua groundwork.* "The janitor sweeps away a rusty knife" needs two
+  things. Room-centred reads (`room:items()`, `room:players()`), which the room lists
+  already give. And a single place where state changes: the script calls a world verb
+  (`extract(obj)`, `move(obj, dest)`) rather than editing a list, and that verb is where
+  the event goes out and where hooks fire -- `on_enter`, `on_leave`, `on_drop`. With moves
+  spread across handlers, every hook would have to be added in several places, and one
+  would be missed exactly the way `RemovePlayer` missed its room.
 - **`spaces.Room` conflates definition and instance.** One struct holds both the static
   topology loaded from `content/` (`Id`, `Name`, `Description`, `Zone`, `directions`, `flags`)
   and the live contents that change every tick (`playerList`, `Inventory`, `mobs`). Because
