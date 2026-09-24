@@ -27,6 +27,9 @@ type mobEntry struct {
 	Aggressive bool `json:"aggressive"`
 	// Damage is dice notation, "1d4". Absent means bare hands.
 	Damage string `json:"damage"`
+	// Power is where this mob sits on the same scale as a player's gear.
+	// A pointer, like AC: absent means the bottom of the zone's band.
+	Power *int `json:"power"`
 }
 
 type WanderingEntry struct {

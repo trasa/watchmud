@@ -27,7 +27,9 @@ hidden number, derive combat stats from equipment.
   hit*; power means *stronger*. Two things, tuned separately.
 - **Mobs get `"power"` in mobs.json**, defaulted by the loader the same way `ac` is.
   Zones get a power band in the manifest, which is how content says "this is the
-  10-15 area".
+  10-15 area". A mob with no `"power"` is the bottom of its zone's band;
+  an explicit one may sit outside it, which is what a boss is. A zone with no
+  band is 0-0.
 - **Combat reads the power *difference*, clamped.** d20 vs AC has to stay bounded --
   if AC grew with power, by power 30 nothing would ever connect. So hit and damage
   stay as they are, and `attacker.Power - defender.Power` becomes a modifier on top.

@@ -23,6 +23,10 @@ type Definition struct {
 	// Damage is what this mob hits with. The loader always sets it, bare
 	// hands when the file says nothing.
 	Damage rules.DamageRoll
+	// Power is where this mob sits on the scale a player's gear puts them on.
+	// The loader always sets it, the bottom of the zone's band when the file
+	// says nothing.
+	Power int
 }
 
 func NewDefinition(definitionId string,

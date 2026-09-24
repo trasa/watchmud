@@ -116,12 +116,18 @@ func (c *Content) loadZoneManifest(fsys fs.FS) error {
 		if !m.Enabled {
 			continue
 		}
-		c.addZone(spaces.NewZone(
+		band, err := zonePowerBand(m)
+		if err != nil {
+			return err
+		}
+		zone := spaces.NewZone(
 			m.Id,
 			m.Name,
 			zonereset.Mode(m.ResetMode),
 			time.Duration(m.LifetimeMinutes)*time.Minute,
-		))
+		)
+		zone.Power = band
+		c.addZone(zone)
 	}
 	return nil
 }
@@ -278,6 +284,10 @@ func (c *Content) loadMobileDefinitions(fsys fs.FS) error {
 			if err != nil {
 				return err
 			}
+			power, err := mobPower(zonename, mob, c.Zones[zonename].Power)
+			if err != nil {
+				return err
+			}
 			defn := mobile.NewDefinition(
 				mob.Id,
 				mob.Name,
@@ -299,6 +309,7 @@ func (c *Content) loadMobileDefinitions(fsys fs.FS) error {
 			flags := mobile.ConvertFlags(mob.Flags)
 			defn.SetFlags(flags)
 			defn.Damage = damage
+			defn.Power = power
 			c.Zones[zonename].AddMobileDefinition(defn)
 		}
 	}

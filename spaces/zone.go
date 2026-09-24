@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/zonereset"
 )
 
@@ -22,6 +23,8 @@ type Zone struct {
 	ResetMode         zonereset.Mode
 	LastReset         time.Time
 	Lifetime          time.Duration
+	// Power is the band this zone is built for. See LEVELS.md.
+	Power rules.PowerBand
 }
 
 func NewZone(id string, name string, resetMode zonereset.Mode, lifetime time.Duration) *Zone {
