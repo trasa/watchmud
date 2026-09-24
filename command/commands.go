@@ -157,6 +157,13 @@ type Flee struct{}
 
 func (Flee) Verb() string { return "flee" }
 
+// Consider sizes up a mob before you start something you can't finish.
+type Consider struct {
+	Target string
+}
+
+func (Consider) Verb() string { return "consider" }
+
 // ---- builder commands ------------------------------------------------------
 
 type Load struct {

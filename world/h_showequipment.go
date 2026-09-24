@@ -17,7 +17,8 @@ func (w *World) handleShowEquipment(msg *gameserver.HandlerParameter, cmd comman
 			Durability:       inst.Durability,
 			MaxDurability:    inst.Definition.MaxDurability,
 			Broken:           inst.Broken(),
+			Power:            inst.Power,
 		})
 	}
-	msg.Player.Send(event.Equipment{Items: items})
+	msg.Player.Send(event.Equipment{Power: msg.Player.Power(), Items: items})
 }

@@ -3,6 +3,8 @@ package telnet
 import (
 	"fmt"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/event"
@@ -90,7 +92,7 @@ func render(msg any, self string) string {
 		return renderInventory(m.Items)
 
 	case event.Equipment:
-		return renderEquipment(m.Items)
+		return renderEquipment(m.Power, m.Items)
 
 	// ---- talking -----------------------------------------------------------
 
@@ -127,6 +129,9 @@ func render(msg any, self string) string {
 
 	case event.Attacking:
 		return "Ok.\n"
+
+	case event.Considered:
+		return renderConsidered(m)
 
 	case event.GearDamaged:
 		if m.Items == 1 {
@@ -184,15 +189,15 @@ func render(msg any, self string) string {
 	}
 }
 
-func renderEquipment(equipment []event.EquippedItem) string {
+func renderEquipment(power int, equipment []event.EquippedItem) string {
 	if len(equipment) == 0 {
 		return "Nothing equipped.\n"
 	}
 	var b strings.Builder
-	b.WriteString("You are using:\n")
+	b.WriteString(fmt.Sprintf("You are using (power %d):\n", power))
 	for _, eq := range equipment {
 		// include instance id just for testing, for now...
-		b.WriteString(string(eq.Slot) + "\t" + eq.ShortDescription + "\t" + condition(eq) + "(" + eq.Id + ")\n")
+		b.WriteString(fmt.Sprintf("%s\t%s\t[power %d] %s(%s)\n", eq.Slot, eq.ShortDescription, eq.Power, condition(eq), eq.Id))
 	}
 	b.WriteString("\n")
 	return b.String()
@@ -248,6 +253,7 @@ func renderPlayerStat(s event.Stat) string {
 	b.WriteString("Status:\n")
 	b.WriteString("Player:\t" + s.PlayerName + "\n")
 	b.WriteString("Lineage:\t" + s.Lineage + "\tRole: " + roleOrNone(s.Role) + "\n")
+	b.WriteString(fmt.Sprintf("Power:\t%d\n", s.Power))
 	b.WriteString(fmt.Sprintf("Health:\t%d of %d\n", s.CurrentHealth, s.MaxHealth))
 	b.WriteString("Location:\t" + player.NewLocation(s.ZoneId, s.RoomId).String() + "\n")
 	b.WriteString("\n")
@@ -391,4 +397,37 @@ func whoTitle(p event.WhoEntry) string {
 		return p.PlayerName
 	}
 	return p.PlayerName + " the " + strings.Join(parts, " ")
+}
+
+// renderConsidered puts the power gap into words, then gives the numbers. The
+// steps follow what the gap does to a fight (rules.PowerHitModifier moves a
+// point per two): about level is a coin toss, five below is -2 or worse to
+// hit and hitting back hard, and ten is as far as the clamp goes.
+func renderConsidered(c event.Considered) string {
+	var s string
+	switch {
+	case c.Delta <= -10:
+		s = c.Target + " would kill you without noticing."
+	case c.Delta <= -5:
+		s = c.Target + " would probably kill you."
+	case c.Delta <= -2:
+		s = c.Target + " would be a real challenge."
+	case c.Delta <= 1:
+		s = c.Target + " looks like a fair fight."
+	case c.Delta <= 4:
+		s = c.Target + " should be easy."
+	default:
+		s = "You could kill " + c.Target + " with your eyes closed."
+	}
+	return fmt.Sprintf("%s (power %d; you are %d)\n", capitalize(s), c.TargetPower, c.YourPower)
+}
+
+// capitalize the first letter, for a mob name ("field rat") that ends up
+// starting a sentence.
+func capitalize(s string) string {
+	if s == "" {
+		return s
+	}
+	r, size := utf8.DecodeRuneInString(s)
+	return string(unicode.ToUpper(r)) + s[size:]
 }

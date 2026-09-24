@@ -235,6 +235,38 @@ var commandCases = []commandCase{
 		want:  statBlockTank,
 	},
 	{
+		name: "stat shows the power of what is worn",
+		setup: func(_ *world.World, p *player.Player, o *player.Player) {
+			helmet := testHelmet()
+			helmet.Power = 7
+			p.Equipment().Equip(rules.SlotHead, helmet)
+		},
+		input: "stat",
+		want:  statBlockPowered,
+	},
+	{
+		// testcontent: the target drone is power 3, the little one power 1,
+		// and a player wearing nothing is power 0
+		name:  "consider something above you",
+		input: "consider target",
+		want:  "Target Drone would be a real challenge. (power 3; you are 0)\n",
+	},
+	{
+		name:  "consider something about level",
+		input: "con little",
+		want:  "Little Drone looks like a fair fight. (power 1; you are 0)\n",
+	},
+	{
+		name:  "consider something that isn't here",
+		input: "consider dragon",
+		want:  "You don't see that here.\n",
+	},
+	{
+		name:  "consider with no target",
+		input: "consider",
+		want:  "Consider what?\n",
+	},
+	{
 		// a role shows up in who beside the lineage, where a class used to
 		name: "who shows the role",
 		setup: func(_ *world.World, p *player.Player, o *player.Player) {
@@ -375,11 +407,20 @@ Change what you're wearing to change your role.
 const statBlockNoGear = "Status:\n" +
 	"Player:\ttestdood\n" +
 	"Lineage:\tHuman\tRole: none\n" +
+	"Power:\t0\n" +
 	"Health:\t100 of 100\n" +
 	"Location:\t(wrathrock - temple_square)\n\n"
 
 const statBlockTank = "Status:\n" +
 	"Player:\ttestdood\n" +
 	"Lineage:\tHuman\tRole: Tank\n" +
+	"Power:\t0\n" +
+	"Health:\t100 of 100\n" +
+	"Location:\t(wrathrock - temple_square)\n\n"
+
+const statBlockPowered = "Status:\n" +
+	"Player:\ttestdood\n" +
+	"Lineage:\tHuman\tRole: Tank\n" +
+	"Power:\t7\n" +
 	"Health:\t100 of 100\n" +
 	"Location:\t(wrathrock - temple_square)\n\n"

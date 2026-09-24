@@ -18,10 +18,10 @@ func TestRenderEquipment_condition(t *testing.T) {
 	}}, "testdood")
 
 	assert.Equal(t,
-		"You are using:\n"+
-			"wield\ta knife\t(17/25) (id-1)\n"+
-			"body\ta chain shirt\t(broken) (id-2)\n"+
-			"head\tan heirloom helm\t(id-3)\n\n",
+		"You are using (power 0):\n"+
+			"wield\ta knife\t[power 0] (17/25) (id-1)\n"+
+			"body\ta chain shirt\t[power 0] (broken) (id-2)\n"+
+			"head\tan heirloom helm\t[power 0] (id-3)\n\n",
 		got)
 }
 

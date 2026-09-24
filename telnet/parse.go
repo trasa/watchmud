@@ -92,6 +92,9 @@ func parseCommand(tokens []string) (command.Command, error) {
 	case "role", "roles":
 		return command.Role{}, nil
 
+	case "consider", "con":
+		return command.Consider{Target: rest}, nil
+
 	case "kill", "attack":
 		if len(tokens) < 2 {
 			return nil, errors.New("What do you want to attack?")

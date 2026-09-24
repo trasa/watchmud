@@ -61,7 +61,7 @@ move is one change.
 
 Each one leaves `make check` green and is playable on its own.
 
-### 1. Prerequisites
+### 1. Prerequisites -- done
 
 - **Regeneration.** Health comes back on a `regen` pulse for anyone not fighting,
   players and mobs both. Without it, dying (which leaves you on 1 hp) ends your
@@ -77,7 +77,7 @@ has no parser to read it from JSON. It belongs with the first resistance.
 *Done when:* a hurt player heals back while idle, and swapping weapons changes the
 damage.
 
-### 2. Power
+### 2. Power -- done
 
 - `object.Instance.Power`, saved with the record the way durability is.
 - `Equipment.Power()`: the average over equipped, unbroken items.

@@ -123,6 +123,8 @@ type InventoryItem struct {
 }
 
 type Equipment struct {
+	// Power is the player's, the average of Items that aren't broken.
+	Power int
 	Items []EquippedItem
 }
 
@@ -138,6 +140,8 @@ type EquippedItem struct {
 	Durability    int
 	MaxDurability int
 	Broken        bool
+	// Power is this particular piece's.
+	Power int
 }
 
 // ---- talking ---------------------------------------------------------------
@@ -181,10 +185,21 @@ type Stat struct {
 	Lineage    string
 	// Role, empty when the player is wearing nothing that speaks to one.
 	Role          string
+	Power         int
 	CurrentHealth int
 	MaxHealth     int
 	ZoneId        string
 	RoomId        string
+}
+
+// Considered answers consider. Delta is yours less theirs, clamped the way
+// combat clamps it (rules.PowerDelta), so the renderer's wording tracks what
+// the fight would actually do rather than the raw gap.
+type Considered struct {
+	Target      string
+	TargetPower int
+	YourPower   int
+	Delta       int
 }
 
 // Role is the answer to "what am I, and why": the role the player's equipment

@@ -19,6 +19,7 @@ func (w *World) handleStat(msg *gameserver.HandlerParameter, cmd command.Stat) {
 		PlayerName:    p.Name(),
 		Lineage:       p.LineageName(),
 		Role:          w.roleName(p.RoleWeights()),
+		Power:         p.Power(),
 		CurrentHealth: p.CurrentHealth(),
 		MaxHealth:     p.MaxHealth(),
 		ZoneId:        room.Zone.Id,

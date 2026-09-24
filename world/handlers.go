@@ -29,6 +29,8 @@ func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) error {
 		w.handleInventory(msg, cmd)
 	case command.Kill:
 		w.handleKill(msg, cmd)
+	case command.Consider:
+		w.handleConsider(msg, cmd)
 	case command.Load:
 		w.handleLoad(msg, cmd)
 	case command.Logout:
