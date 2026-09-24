@@ -8,6 +8,45 @@ the vocabulary is `command/` in and `event/` out. Classes are gone too, and line
 cosmetic: what a character is good at comes from the equipment they have on. Phase 7 --
 real MUD-client protocol support -- is next.
 
+## Launch: real players, this week (set 2026-09-24)
+
+The short-term goal: deploy to a server, let real players in, and then grow content and
+bots. Checked against the tree on 2026-09-24. In order -- the first group are blockers,
+because today anyone can log in as anyone and anyone can spawn mobs.
+
+**Blockers:**
+
+1. **Passwords.** `command.Login`/`CreatePlayer` carry a `Password` nothing reads. Hash it
+   (bcrypt) into the record, ask for it at create and login, and turn echo off while it's
+   typed -- `IAC WILL ECHO` / `WONT ECHO`, the one slice of Phase 7 that can't wait.
+   Existing characters have no hash: set one on their next login.
+2. **Wizard commands are open to everyone.** `load` and `restore` have no check. A
+   wizard flag on the record, set by hand (or a names list in app.yaml), checked in
+   dispatch before any `h_wiz_*` handler.
+3. **Names.** Letters only, 3-16, case-folded, a reserved list (`self`, `all`, `corpse`,
+   mob names...). A name is permanent and public.
+4. **Connection hygiene.** Idle timeout at the login prompt (short) and in game (long),
+   via read deadlines; a cap on connections per IP; a panic in one handler must not take
+   the server down -- check dispatch for a `recover`.
+5. **`help`.** A new player with no command list quits. One screen: movement, look,
+   get/drop/wear/remove, kill/flee/consider, eq/i/stat/role, say/tell/who, quit.
+6. **Deploy.** A Dockerfile (static binary + `content/`), compose with mongo *with auth*,
+   a small VPS, telnet on 4000 (or 23), mongo backups on a timer, logs to a file that
+   rotates. SIGTERM already flushes the write-behind store; make sure the platform
+   sends SIGTERM, not SIGKILL.
+
+**First week, once people are in:**
+
+- A welcome line after login pointing new characters south to the Hollowfields.
+- Bare `corpse` should mean the newest corpse, not the oldest (found in play).
+- The Barrow-King's AC call (LEVELS.md).
+- Mob taunts, the first Lua (below, "No scripting language").
+
+**Then: content and bots.** Bots are players with a telnet socket: a small Go client
+that logs in and walks, kills, loots and talks. The same harness is a load test, a smoke
+test for every deploy (the one used by hand on 2026-09-24 walked Wrathrock to the
+throne room and looted a goose), and a way to make an empty world feel inhabited.
+
 The Context section below describes the tree as it was in September 2026, before any of
 this landed. It is kept for its reasoning, not as a description of the present.
 
