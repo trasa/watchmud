@@ -30,6 +30,8 @@ type mobEntry struct {
 	// Power is where this mob sits on the same scale as a player's gear.
 	// A pointer, like AC: absent means the bottom of the zone's band.
 	Power *int `json:"power"`
+	// Loot is what might be in the corpse. See loot.go.
+	Loot []lootEntry `json:"loot"`
 }
 
 type WanderingEntry struct {

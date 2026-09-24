@@ -27,6 +27,8 @@ type Definition struct {
 	// The loader always sets it, the bottom of the zone's band when the file
 	// says nothing.
 	Power int
+	// Loot is what might drop into the corpse; see LootEntry.
+	Loot []LootEntry
 }
 
 func NewDefinition(definitionId string,

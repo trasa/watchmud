@@ -15,7 +15,13 @@
     "ac": 12,
     "damage": "1d4",
     "power": 6,
-    "aggressive": true
+    "aggressive": true,
+    "loot": [
+      {
+        "object": "grave_dust",
+        "chance": 40
+      }
+    ]
   },
   {
     "id": "barrow_skeleton",
@@ -33,7 +39,17 @@
     "ac": 14,
     "damage": "1d8",
     "power": 8,
-    "aggressive": true
+    "aggressive": true,
+    "loot": [
+      {
+        "object": "barrow_helm",
+        "chance": 15
+      },
+      {
+        "object": "barrow_plate",
+        "chance": 10
+      }
+    ]
   },
   {
     "id": "ghoul",
@@ -50,7 +66,17 @@
     "ac": 13,
     "damage": "2d4",
     "power": 9,
-    "aggressive": true
+    "aggressive": true,
+    "loot": [
+      {
+        "object": "bone_charm",
+        "chance": 20
+      },
+      {
+        "object": "grave_dust",
+        "chance": 40
+      }
+    ]
   },
   {
     "id": "barrow_king",
@@ -69,6 +95,20 @@
     "ac": 16,
     "damage": "2d8",
     "power": 15,
-    "aggressive": true
+    "aggressive": true,
+    "loot": [
+      {
+        "object": "barrow_blade",
+        "chance": 35
+      },
+      {
+        "object": "black_iron_crown",
+        "chance": 35
+      },
+      {
+        "object": "barrow_plate",
+        "chance": 35
+      }
+    ]
   }
 ]

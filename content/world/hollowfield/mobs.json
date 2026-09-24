@@ -15,7 +15,13 @@
     "ac": 10,
     "damage": "1d2",
     "power": 1,
-    "aggressive": false
+    "aggressive": false,
+    "loot": [
+      {
+        "object": "rat_pelt",
+        "chance": 50
+      }
+    ]
   },
   {
     "id": "angry_goose",
@@ -33,7 +39,13 @@
     "ac": 10,
     "damage": "1d3",
     "power": 1,
-    "aggressive": true
+    "aggressive": true,
+    "loot": [
+      {
+        "object": "goose_feather",
+        "chance": 60
+      }
+    ]
   },
   {
     "id": "giant_beetle",
@@ -51,7 +63,13 @@
     "ac": 12,
     "damage": "1d3",
     "power": 2,
-    "aggressive": false
+    "aggressive": false,
+    "loot": [
+      {
+        "object": "beetle_carapace",
+        "chance": 50
+      }
+    ]
   },
   {
     "id": "wild_dog",
@@ -72,7 +90,13 @@
     "ac": 11,
     "damage": "1d4",
     "power": 2,
-    "aggressive": false
+    "aggressive": false,
+    "loot": [
+      {
+        "object": "rat_pelt",
+        "chance": 30
+      }
+    ]
   },
   {
     "id": "bandit_lookout",
@@ -90,7 +114,13 @@
     "ac": 11,
     "damage": "1d4",
     "power": 3,
-    "aggressive": false
+    "aggressive": false,
+    "loot": [
+      {
+        "object": "bandit_hood",
+        "chance": 20
+      }
+    ]
   },
   {
     "id": "bandit",
@@ -108,7 +138,17 @@
     "ac": 12,
     "damage": "1d6",
     "power": 4,
-    "aggressive": false
+    "aggressive": false,
+    "loot": [
+      {
+        "object": "bandit_hood",
+        "chance": 15
+      },
+      {
+        "object": "bandit_cudgel",
+        "chance": 15
+      }
+    ]
   },
   {
     "id": "wild_boar",
@@ -127,7 +167,13 @@
     "ac": 12,
     "damage": "1d6",
     "power": 4,
-    "aggressive": false
+    "aggressive": false,
+    "loot": [
+      {
+        "object": "boar_hide_jerkin",
+        "chance": 20
+      }
+    ]
   },
   {
     "id": "hedge_witch",
@@ -146,7 +192,17 @@
     "ac": 11,
     "damage": "1d4",
     "power": 4,
-    "aggressive": false
+    "aggressive": false,
+    "loot": [
+      {
+        "object": "ring_of_mending",
+        "chance": 15
+      },
+      {
+        "object": "sprig_censer",
+        "chance": 15
+      }
+    ]
   },
   {
     "id": "wolf",
@@ -164,6 +220,12 @@
     "ac": 12,
     "damage": "1d6",
     "power": 5,
-    "aggressive": true
+    "aggressive": true,
+    "loot": [
+      {
+        "object": "rat_pelt",
+        "chance": 30
+      }
+    ]
   }
 ]

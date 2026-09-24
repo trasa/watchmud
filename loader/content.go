@@ -288,6 +288,10 @@ func (c *Content) loadMobileDefinitions(fsys fs.FS) error {
 			if err != nil {
 				return err
 			}
+			loot, err := c.mobLoot(zonename, mob)
+			if err != nil {
+				return err
+			}
 			defn := mobile.NewDefinition(
 				mob.Id,
 				mob.Name,
@@ -310,6 +314,7 @@ func (c *Content) loadMobileDefinitions(fsys fs.FS) error {
 			defn.SetFlags(flags)
 			defn.Damage = damage
 			defn.Power = power
+			defn.Loot = loot
 			c.Zones[zonename].AddMobileDefinition(defn)
 		}
 	}
