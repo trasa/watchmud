@@ -5,6 +5,7 @@ import (
 	"uuid"
 
 	"github.com/rs/zerolog/log"
+	"github.com/trasa/watchmud/behavior"
 	"github.com/trasa/watchmud/combat"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
@@ -36,7 +37,7 @@ func (w *World) becomeMobileCorpse(m *mobile.Instance) {
 		corpseName,
 		"",
 		rules.ObjectCategoryCorpse,
-		m.Definition.Aliases,
+		append([]string{"corpse"}, m.Definition.Aliases...),
 		corpseName,
 		fmt.Sprintf("The corpse of %s is lying here.", m.Definition.Name),
 		rules.SlotNone,
@@ -46,9 +47,16 @@ func (w *World) becomeMobileCorpse(m *mobile.Instance) {
 		// none means it stays worth nothing if either of those changes.
 		rules.ArmorTypeNone)
 
+	// You loot a corpse, you don't carry it off.
+	d.Behaviors.Add(behavior.NoTake)
+
 	corpse := object.NewInstance(uuid.New(), d)
-	// TODO transfer m's possessions over to the corpse
-	// TODO mobiles can't have possessions at the moment, not implemented yet..
+	corpse.Contents = object.NewContents()
+	for _, drop := range w.rollLoot(m) {
+		if err := corpse.Contents.Add(drop); err != nil {
+			log.Error().Err(err).Msgf("becomeMobileCorpse: adding %s to the corpse of %s", drop.Definition.Name, m.Definition.Name)
+		}
+	}
 	r := w.getRoomContainingMobile(m)
 	if r == nil {
 		log.Warn().Msgf("becomeMobileCorpse: could not find room containing mobile %s", m.Definition.Name)
@@ -60,4 +68,34 @@ func (w *World) becomeMobileCorpse(m *mobile.Instance) {
 	if err := r.Inventory.Add(corpse); err != nil {
 		log.Error().Msgf("becomeMobileCorpse: could not add corpse %s to room %s, %v", corpse.Definition.Name, r.Name, err)
 	}
+}
+
+// rollLoot rolls each line of a mob's loot table on its own -- a d100 against
+// the entry's chance -- and makes whatever comes up, at the mob's power plus
+// rules.LootPowerBump. At the *mob's* power, never the killer's: out-level a
+// boss and his drops stop being worth having, on purpose (LEVELS.md).
+//
+// A roll that errors is a bug in the dice, not a reason to lose the corpse;
+// that entry just doesn't drop.
+func (w *World) rollLoot(m *mobile.Instance) []*object.Instance {
+	var drops []*object.Instance
+	for _, entry := range m.Definition.Loot {
+		roll, err := w.roller.IntN(100)
+		if err != nil {
+			log.Error().Err(err).Msgf("rollLoot: %s", m.Definition.Id)
+			continue
+		}
+		if roll >= entry.Chance {
+			continue
+		}
+		bump, err := w.roller.IntN(100)
+		if err != nil {
+			log.Error().Err(err).Msgf("rollLoot: %s", m.Definition.Id)
+			bump = 100 // no bump
+		}
+		item := object.NewInstance(uuid.New(), entry.Object)
+		item.Power = m.Power() + rules.LootPowerBump(bump)
+		drops = append(drops, item)
+	}
+	return drops
 }

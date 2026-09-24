@@ -1,6 +1,10 @@
 package object
 
-import "uuid"
+import (
+	"uuid"
+
+	"github.com/trasa/watchmud/ordered"
+)
 
 // Instance of the Definitions in the world around you.
 // That ShinySword in your hand has certain properties, some of
@@ -20,6 +24,16 @@ type Instance struct {
 	// tier: power 5 off a goblin, power 15 off an ogre. Zero is the bottom.
 	// Whatever makes the instance sets it; see LEVELS.md.
 	Power int
+
+	// Contents is what's inside, for a container; nil for anything that
+	// isn't one. Only corpses are containers so far.
+	Contents *ordered.List[uuid.UUID, *Instance]
+}
+
+// NewContents is an empty container's worth of contents, in the order things
+// were put in.
+func NewContents() *ordered.List[uuid.UUID, *Instance] {
+	return ordered.NewList(func(i *Instance) uuid.UUID { return i.Id })
 }
 
 // IdStr from the Thing interface

@@ -45,3 +45,23 @@ func PowerDamage(damage, attacker, defender int) int {
 	percent := 100 + PowerDelta(attacker, defender)*PowerDamagePercent
 	return max(1, (damage*percent+50)/100)
 }
+
+// Loot power: a drop comes out at the mob's power, with a small chance of a
+// bit more. Placeholders, like the rest -- and these set the pace of the whole
+// game, since they're the only way power climbs. LEVELS.md.
+const (
+	LootBumpTwoPercent = 2  // chance of +2
+	LootBumpOnePercent = 10 // chance of +1, after that
+)
+
+// LootPowerBump is what a d100 roll (0-99) adds to a drop's power.
+func LootPowerBump(roll int) int {
+	switch {
+	case roll < LootBumpTwoPercent:
+		return 2
+	case roll < LootBumpTwoPercent+LootBumpOnePercent:
+		return 1
+	default:
+		return 0
+	}
+}

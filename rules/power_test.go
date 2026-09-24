@@ -42,3 +42,13 @@ func TestPowerDamage_aHitIsAtLeastOne(t *testing.T) {
 	assert.Equal(t, 1, PowerDamage(1, 0, 15))
 	assert.Equal(t, 0, PowerDamage(0, 15, 0), "but no damage stays no damage")
 }
+
+// The loot bump, on a d100 roll of 0-99: 2% +2, the next 10% +1.
+func TestLootPowerBump(t *testing.T) {
+	assert.Equal(t, 2, LootPowerBump(0))
+	assert.Equal(t, 2, LootPowerBump(1))
+	assert.Equal(t, 1, LootPowerBump(2))
+	assert.Equal(t, 1, LootPowerBump(11))
+	assert.Equal(t, 0, LootPowerBump(12))
+	assert.Equal(t, 0, LootPowerBump(99))
+}

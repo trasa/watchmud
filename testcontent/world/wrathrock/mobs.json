@@ -21,6 +21,10 @@
     "wandering_definition": { "can_wander": false },
     "ac": 10,
     "power": 3,
+    "loot": [
+      { "object": "knife", "chance": 50 },
+      { "object": "rope", "chance": 100 }
+    ],
     "aggressive": false
   },
   {
