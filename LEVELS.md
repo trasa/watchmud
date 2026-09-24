@@ -158,15 +158,11 @@ Needed for that fight, and not yet anywhere else on this page:
 
 - **Abilities from gear** (below, under Tabled -- no longer tabled): `cast heal`, and
   whatever resource or cooldown limits it.
-- **Retargeting, which comes first.** A mob keeps its first target (`FightLedger.Fight`
-  won't overwrite it), which is what a tank wants -- whoever engages first holds him.
-  But when that target dies, `EndAllFightsWith` deletes the mob's fight and leaves
-  everyone else's fight *against* it. The mob is still "in a fight", so aggro skips it,
-  and it never swings again: the King kills one person and then stands there while the
-  rest finish him. Today, two newbies beat him by taking turns dying. A mob whose target
-  dies has to pick up someone still fighting it. (ROADMAP.md "Known problems": the
-  ledger leaks third-party attackers.)
-- **Threat**, later: which of those someones it picks, so a tank can take him back.
+- ~~**Retargeting.**~~ Done. A mob keeps whoever engaged it first, and when they die or
+  flee it turns on the earliest remaining attacker, so the King no longer stands still
+  once the tank falls. (It used to: two newbies could beat him by taking turns dying.)
+- **Threat**, later: a way for a tank to take him *back* once he has turned on someone
+  else. First-engaged-holds covers the opening; nothing covers a pull gone wrong.
 
 ### 5. Crafting (later)
 

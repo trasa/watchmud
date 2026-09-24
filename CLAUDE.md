@@ -447,11 +447,16 @@ which is why `DoViolence` checks `Fighter.Dead()` before letting anyone swing. B
 `*player.Player` and `*mobile.Instance` satisfy `Combatant`, which is what keeps the melee
 code from knowing which it is hitting.
 
-**Combat is structurally sound and behaviourally absent.** `DoViolence` is wired to
-`PulseViolence` and the melee math works, but nothing drives a fight -- no aggression, no
-gameplay layer carrying one to a conclusion. Don't assume a change here is observable in
-play yet. The ledger also leaks third-party attackers when a target dies; see ROADMAP.md
-"Known problems".
+**Fights happen in play now.** `kill` starts one, an `"aggressive"` mob starts one on the
+mobile pulse with the first player in its room, and `DoViolence` carries it to a death.
+
+**Targeting is "whoever engaged first", and it survives a death.** `Fight` never
+overwrites a combatant's existing target, so a mob stays on whoever hit it first -- which
+is what a tank relies on. `EndAllFightsWith` (death, flee, logout) then *retargets*: anyone
+left being fought but no longer fighting turns on their earliest remaining attacker,
+by the ledger's `seq`, since a map has no order. Without that the Barrow-King kills the
+tank and stands there, still "in a fight" so aggro skips him, never swinging again. There
+is no threat yet -- nothing lets a tank take a mob back.
 
 ## Conventions
 

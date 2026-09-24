@@ -7,6 +7,7 @@ import (
 
 type FightLedger struct {
 	fightMap map[uuid.UUID]*Fight
+	nextSeq  uint64
 }
 
 func NewFightLedger() *FightLedger {
@@ -20,12 +21,17 @@ func (f *FightLedger) Fight(fighter Combatant, fightee Combatant, zoneId string,
 		// TODO fixme
 		return fmt.Errorf("fighter is already fighting someone")
 	}
-	f.fightMap[fighter.Id()] = newFight(fighter, fightee, zoneId, roomId)
+	f.fightMap[fighter.Id()] = f.newFight(fighter, fightee, zoneId, roomId)
 
 	if !f.IsFighting(fightee) {
-		f.fightMap[fightee.Id()] = newFight(fightee, fighter, zoneId, roomId)
+		f.fightMap[fightee.Id()] = f.newFight(fightee, fighter, zoneId, roomId)
 	}
 	return nil
+}
+
+func (f *FightLedger) newFight(fighter Combatant, fightee Combatant, zoneId string, roomId string) *Fight {
+	f.nextSeq++
+	return newFight(fighter, fightee, zoneId, roomId, f.nextSeq)
 }
 
 func (f *FightLedger) InFight(c Combatant) bool {
@@ -61,10 +67,39 @@ func (f *FightLedger) EndFight(fighter Combatant) {
 	delete(f.fightMap, fighter.Id())
 }
 
+// EndAllFightsWith takes someone out of every fight, both ways -- they died,
+// fled or left -- and then retargets anyone that leaves still under attack.
 func (f *FightLedger) EndAllFightsWith(id uuid.UUID) {
 	for k, v := range f.fightMap {
 		if v.Fighter.Id() == id || v.Fightee.Id() == id {
 			delete(f.fightMap, k)
 		}
+	}
+	f.retarget()
+}
+
+// retarget gives anyone who is being fought, but has stopped fighting, a fight
+// back against the attacker who has been at it longest.
+//
+// Without it the King kills the tank and then stands there: still "in a
+// fight", so aggro skips him, and with no fight of his own, so violence never
+// has him swing. Earliest is the rule that held him on the tank in the first
+// place -- Fight never overwrites a target -- carried on to whoever is next.
+//
+// A new fight is against someone already fighting, so it can't leave anyone
+// else stranded; one pass is enough.
+func (f *FightLedger) retarget() {
+	earliest := make(map[uuid.UUID]*Fight)
+	for _, fight := range f.fightMap {
+		target := fight.Fightee.Id()
+		if f.IsFighting(fight.Fightee) {
+			continue
+		}
+		if prev, ok := earliest[target]; !ok || fight.seq < prev.seq {
+			earliest[target] = fight
+		}
+	}
+	for target, attack := range earliest {
+		f.fightMap[target] = f.newFight(attack.Fightee, attack.Fighter, attack.ZoneId, attack.RoomId)
 	}
 }

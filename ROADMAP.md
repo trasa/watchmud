@@ -485,16 +485,20 @@ Named so they don't get rediscovered as surprises:
   Instance" in CLAUDE.md): a `RoomDefinition` owned by the `Zone`, immutable once loaded and
   holding the exits, and a live `Room` pointing at it. Same refactor as the dual-bookkeeping
   item above, seen from the other side — do them together. Now unblocked.
-- **Nothing drives combat.** `DoViolence` is wired to `PulseViolence` and the melee
-  calculation is done, but there is no aggression behaviour and nothing that carries a
-  fight through to a conclusion in normal play. The pieces are in place; the gameplay layer
-  on top of them is not written.
-- **The fight ledger leaks third-party attackers.** `Fight(A, B)` writes two entries,
-  `A->B` and `B->A`. When B kills A, `becomeCorpse` ends A's and `violence.go` ends B's --
-  but a third combatant C who was also attacking A keeps its entry forever. Every violence
-  pulse thereafter fetches it, sees `Fightee.Dead()`, and `continue`s. C is never told the
-  target died and the entry never goes away. `IsBeingFought`'s linear scan is the ledger
-  admitting it has no index for "who is attacking X"; an `EndAllFightsWith(id)` is the fix.
+- ~~**Nothing drives combat.**~~ Fixed: aggressive mobs start fights and they run to a
+  death. See CLAUDE.md "Combat".
+- ~~**The fight ledger leaks third-party attackers.**~~ Fixed twice over. `EndAllFightsWith`
+  now clears the dead one from everyone's fights, and then retargets whoever that leaves
+  being fought but not fighting -- the other half of the leak, where a mob whose target
+  died stood still forever. `isBeingFought` is still a linear scan; fine at this size.
+- **No scripting language.** Content will want behaviour data can't express -- the
+  Barrow-King calling his skeletons at half health, a hedge-witch who talks. The fit is an
+  embedded Lua (gopher-lua): it isn't thread-safe, and doesn't need to be, since scripts
+  would run on the world goroutine like everything else. Deliberately not yet. It needs
+  hooks to attach to (entered room, died, health crossed a line, tick), and an API over
+  the engine, and that API would be rewritten by each of power, loot, abilities and threat
+  as they land. The first real customer is probably the King's fight, once heals and
+  threat exist. Until then, abilities stay data in objects.json, as roles are.
 - **`Fight` snapshots `ZoneId`/`RoomId`** at the moment it starts, so a fight that somehow
   outlives its room notifies the wrong one. Same family as the location bookkeeping above.
 - **`RoleWeights` is hand-authored for everything that isn't armor.** ~~A builder writing

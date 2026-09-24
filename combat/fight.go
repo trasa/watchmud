@@ -14,15 +14,20 @@ type Fight struct {
 	LastPulse rules.PulseCount
 	ZoneId    string
 	RoomId    string
+
+	// seq is the order fights started in, which the ledger -- a map -- has
+	// no other way to know. See FightLedger.retarget.
+	seq uint64
 }
 
-func newFight(fighter Combatant, fightee Combatant, zoneId string, roomId string) *Fight {
+func newFight(fighter Combatant, fightee Combatant, zoneId string, roomId string, seq uint64) *Fight {
 	return &Fight{
-		fighter,
-		fightee,
-		rules.PulseNever,
-		zoneId,
-		roomId,
+		Fighter:   fighter,
+		Fightee:   fightee,
+		LastPulse: rules.PulseNever,
+		ZoneId:    zoneId,
+		RoomId:    roomId,
+		seq:       seq,
 	}
 }
 

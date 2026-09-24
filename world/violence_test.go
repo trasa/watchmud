@@ -39,6 +39,25 @@ func (s *violenceSuite) TestKillingOneAttackerLeavesTheOtherFighting() {
 	s.Assert().True(s.w.fightLedger.InFight(s.p), "and the player is still in a fight")
 }
 
+// Your target dies while something else is still hitting you: you turn on
+// it, rather than stand there "in a fight" and never swing again. The same
+// rule is what turns the Barrow-King on the next player once the tank falls.
+func (s *violenceSuite) TestWhenYourTargetDiesYouTurnOnTheNextAttacker() {
+	target, exists := s.w.StartRoom.FindMobile("target")
+	s.Require().True(exists)
+	little, exists := s.w.StartRoom.FindMobile("little")
+	s.Require().True(exists)
+
+	s.Require().NoError(s.w.fightLedger.Fight(s.p, target, "wrathrock", "temple_square"))
+	s.Require().NoError(s.w.fightLedger.Fight(little, s.p, "wrathrock", "temple_square"))
+
+	s.w.combatantDied(target, s.w.StartRoom, true)
+
+	fight := s.w.fightLedger.GetFight(s.p)
+	s.Require().NotNil(fight, "the player is fighting again")
+	s.Assert().Same(little, fight.Fightee)
+}
+
 // The one who died leaves in both directions: nothing is left swinging at a
 // corpse either.
 func (s *violenceSuite) TestTheDeadLeaveInBothDirections() {

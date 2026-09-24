@@ -67,3 +67,67 @@ func (suite *FightLedgerSuite) TestEndFight() {
 	suite.Assert().False(suite.fightLedger.IsFighting(fighter))
 	suite.Assert().True(suite.fightLedger.IsFighting(fightee))
 }
+
+func combatant(name string) *TestCombatant {
+	return NewTestCombatant(name, 10, []DamageType{}, []DamageType{})
+}
+
+// The King kills the tank. He has to turn on whoever else is hitting him
+// rather than stand there, still "in a fight", never swinging again.
+func (suite *FightLedgerSuite) TestTargetGoneMeansTheNextAttacker() {
+	tank, striker, king := combatant("tank"), combatant("striker"), combatant("king")
+	suite.Require().NoError(suite.fightLedger.Fight(tank, king, "barrow", "throne_room"))
+	suite.Require().NoError(suite.fightLedger.Fight(striker, king, "barrow", "throne_room"))
+	suite.Require().Same(tank, suite.fightLedger.GetFight(king).Fightee, "held by whoever engaged first")
+
+	suite.fightLedger.EndAllFightsWith(tank.Id())
+
+	fight := suite.fightLedger.GetFight(king)
+	suite.Require().NotNil(fight)
+	suite.Assert().Same(striker, fight.Fightee)
+	suite.Assert().Equal("barrow", fight.ZoneId)
+	suite.Assert().Equal("throne_room", fight.RoomId)
+}
+
+// With several left, the one who has been at it longest: the same rule that
+// kept him on the tank in the first place. Repeated because the ledger is a
+// map, and a lucky iteration order would pass this once by accident.
+func (suite *FightLedgerSuite) TestTheNextAttackerIsTheEarliest() {
+	for range 50 {
+		ledger := NewFightLedger()
+		tank, first, second, third, king := combatant("tank"), combatant("first"), combatant("second"), combatant("third"), combatant("king")
+		for _, c := range []*TestCombatant{tank, first, second, third} {
+			suite.Require().NoError(ledger.Fight(c, king, "z", "r"))
+		}
+
+		ledger.EndAllFightsWith(tank.Id())
+		suite.Require().Same(first, ledger.GetFight(king).Fightee)
+
+		ledger.EndAllFightsWith(first.Id())
+		suite.Require().Same(second, ledger.GetFight(king).Fightee)
+	}
+}
+
+// Players too: fighting a rat while a wolf chews on you, the rat dies and you
+// turn to the wolf instead of standing there taking it.
+func (suite *FightLedgerSuite) TestAPlayerTurnsOnWhateverIsStillBitingThem() {
+	player, rat, wolf := combatant("player"), combatant("rat"), combatant("wolf")
+	suite.Require().NoError(suite.fightLedger.Fight(player, rat, "z", "r"))
+	suite.Require().NoError(suite.fightLedger.Fight(wolf, player, "z", "r"))
+
+	suite.fightLedger.EndAllFightsWith(rat.Id())
+
+	suite.Require().True(suite.fightLedger.IsFighting(player))
+	suite.Assert().Same(wolf, suite.fightLedger.GetFight(player).Fightee)
+}
+
+// One on one, nobody is left, so nobody picks anybody up.
+func (suite *FightLedgerSuite) TestNobodyLeftMeansNoFight() {
+	a, b := combatant("a"), combatant("b")
+	suite.Require().NoError(suite.fightLedger.Fight(a, b, "z", "r"))
+
+	suite.fightLedger.EndAllFightsWith(a.Id())
+
+	suite.Assert().False(suite.fightLedger.InFight(b))
+	suite.Assert().Empty(suite.fightLedger.GetFights())
+}
