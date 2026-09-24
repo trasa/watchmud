@@ -491,14 +491,24 @@ Named so they don't get rediscovered as surprises:
   now clears the dead one from everyone's fights, and then retargets whoever that leaves
   being fought but not fighting -- the other half of the leak, where a mob whose target
   died stood still forever. `isBeingFought` is still a linear scan; fine at this size.
-- **No scripting language.** Content will want behaviour data can't express -- the
-  Barrow-King calling his skeletons at half health, a hedge-witch who talks. The fit is an
-  embedded Lua (gopher-lua): it isn't thread-safe, and doesn't need to be, since scripts
-  would run on the world goroutine like everything else. Deliberately not yet. It needs
-  hooks to attach to (entered room, died, health crossed a line, tick), and an API over
-  the engine, and that API would be rewritten by each of power, loot, abilities and threat
-  as they land. The first real customer is probably the King's fight, once heals and
-  threat exist. Until then, abilities stay data in objects.json, as roles are.
+- **No scripting language.** Go is the primary language and stays that way: every
+  feature and every mechanic -- combat, power, loot, abilities, threat, doors and locks
+  -- is written in Go. Lua (gopher-lua) is for small, local behaviour that composes
+  actions the engine already has: *a mob picks up an item it finds*, *a mob locks a door
+  that's unlocked*, the Barrow-King saying something and summoning skeletons at half
+  health, the hedge-witch answering `say heal`. A script decides *when*, never *how the
+  math works*; if a script needs an action the engine doesn't have, that's a Go feature
+  first.
+  How it fits: scripts run on the world goroutine, one Lua state, no locks (gopher-lua
+  isn't thread-safe and doesn't need to be); every hook call is time-limited, for the same
+  reason `Send` never blocks; dice go through `w.roller` so scripted fights stay testable;
+  Lua coroutines give `wait(2)` resumed by the heartbeat, which is why Lua over Starlark.
+  Scripts live in `content/world/<zone>/scripts/`, named from mobs.json/rooms.json and
+  resolved at startup. The real work is the hooks (entered room, died, health crossed a
+  line, heard something, pulse) and a small action API over them.
+  Not yet: both of the examples above need Go features that don't exist -- mobs have no
+  inventory, and there are no doors or locks. First case when it comes: the King's
+  half-health script, three hooks and about four actions.
 - **`Fight` snapshots `ZoneId`/`RoomId`** at the moment it starts, so a fight that somehow
   outlives its room notifies the wrong one. Same family as the location bookkeeping above.
 - **`RoleWeights` is hand-authored for everything that isn't armor.** ~~A builder writing
