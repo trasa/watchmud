@@ -108,3 +108,18 @@ func TestGiveStartingGear_equipUnwearableIsCarried(t *testing.T) {
 	assert.Equal(t, 1, p.Inventory().Len())
 	assert.Nil(t, p.Equipment().At(rules.SlotNone))
 }
+
+// The kit's power is stamped on each item as it is made, so a new character
+// starts at whatever the kit says rather than at zero.
+func TestGiveStartingGear_power(t *testing.T) {
+	p := NewTestPlayer(uuid.New(), "newbie", nil)
+
+	GiveStartingGear(p, rules.StartingGear{
+		{ZoneId: "wrathrock", DefinitionId: "knife", Equip: true, Power: 1},
+		{ZoneId: "wrathrock", DefinitionId: "tunic", Equip: true, Power: 1},
+		{ZoneId: "wrathrock", DefinitionId: "waterskin"},
+	}, newTestDefs(t))
+
+	assert.Equal(t, 1, p.Equipment().At(rules.SlotWield).Power)
+	assert.Equal(t, 1, p.Power())
+}

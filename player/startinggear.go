@@ -32,6 +32,7 @@ func GiveStartingGear(p *Player, gear rules.StartingGear, defs DefinitionSource)
 		}
 
 		inst := object.NewInstance(uuid.New(), d)
+		inst.Power = item.Power
 		p.inventory.Add(inst)
 
 		if !item.Equip {

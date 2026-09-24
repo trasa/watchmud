@@ -27,4 +27,9 @@ type StartingGearItem struct {
 	ZoneId       string `json:"zone"`
 	DefinitionId string `json:"object"`
 	Equip        bool   `json:"equip"`
+	// Power is what the item is made at. A plain int, not a pointer: absent
+	// and zero agree, as they do in a save record. Set it to the bottom of
+	// the newbie zone's band so a new character starts level with the
+	// weakest thing out there, not below it.
+	Power int `json:"power"`
 }

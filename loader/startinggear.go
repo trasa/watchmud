@@ -30,6 +30,10 @@ func (c *Content) checkStartingGear() error {
 			return fmt.Errorf("starting gear %s/%s: object not defined in that zone",
 				item.ZoneId, item.DefinitionId)
 		}
+		if item.Power < 0 {
+			return fmt.Errorf("starting gear %s/%s: negative power %d",
+				item.ZoneId, item.DefinitionId, item.Power)
+		}
 		if !item.Equip {
 			continue
 		}

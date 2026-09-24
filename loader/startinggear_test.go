@@ -96,3 +96,23 @@ func TestCheckStartingGear_sameSlotNotEquipped(t *testing.T) {
 	})
 	assert.NoError(t, c.checkStartingGear())
 }
+
+func TestCheckStartingGear_negativePower(t *testing.T) {
+	c := contentWithGear(t, rules.StartingGear{
+		{ZoneId: "wrathrock", DefinitionId: "knife", Equip: true, Power: -1},
+	})
+	assert.ErrorContains(t, c.checkStartingGear(), "negative power")
+}
+
+// The real kit starts a new character level with the weakest thing in the
+// Hollowfields, not below it.
+func TestLoadContent_startingGearMatchesTheNewbieZone(t *testing.T) {
+	c, err := LoadContent(os.DirFS("../content"))
+	require.NoError(t, err)
+
+	for _, item := range c.Catalog.StartingGear {
+		if item.Equip {
+			assert.Equal(t, c.Zones["hollowfield"].Power.Min, item.Power, "%s/%s", item.ZoneId, item.DefinitionId)
+		}
+	}
+}
