@@ -1,0 +1,74 @@
+[
+  {
+    "id": "grave_rat",
+    "name": "grave rat",
+    "aliases": [
+      "rat",
+      "grave"
+    ],
+    "short_description": "A grave rat.",
+    "description_in_room": "A hairless grave rat, pale as a grub, bares its teeth.",
+    "max_health": 15,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 12,
+    "damage": "1d4",
+    "power": 6,
+    "aggressive": true
+  },
+  {
+    "id": "barrow_skeleton",
+    "name": "barrow skeleton",
+    "aliases": [
+      "skeleton",
+      "barrow"
+    ],
+    "short_description": "A barrow skeleton.",
+    "description_in_room": "A skeleton in rusted mail turns its empty sockets toward you.",
+    "max_health": 35,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 14,
+    "damage": "1d8",
+    "power": 8,
+    "aggressive": true
+  },
+  {
+    "id": "ghoul",
+    "name": "ghoul",
+    "aliases": [
+      "ghoul"
+    ],
+    "short_description": "A ghoul.",
+    "description_in_room": "A ghoul crouches over a broken coffin, licking its fingers.",
+    "max_health": 45,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 13,
+    "damage": "2d4",
+    "power": 9,
+    "aggressive": true
+  },
+  {
+    "id": "barrow_king",
+    "name": "Barrow-King",
+    "aliases": [
+      "king",
+      "barrow",
+      "barrowking"
+    ],
+    "short_description": "The Barrow-King.",
+    "description_in_room": "The Barrow-King towers over you, crowned in black iron.",
+    "max_health": 180,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 16,
+    "damage": "2d8",
+    "power": 15,
+    "aggressive": true
+  }
+]

@@ -1,0 +1,64 @@
+[
+  {
+    "id": "cave_mouth",
+    "name": "The Cave Mouth",
+    "description": "Daylight falls down the root-choked shaft above you and gives out a few steps in. The walls are dressed stone under the dirt: this was built, not dug. Scratches and droppings cover the floor, and a darker way leads further down.",
+    "exits": [
+      { "direction": "up", "dest_zone": "hollowfield", "dest_room": "overturned_oak" },
+      { "direction": "down", "dest_room": "twisting_tunnel" }
+    ]
+  },
+  {
+    "id": "twisting_tunnel",
+    "name": "A Twisting Tunnel",
+    "description": "The passage winds back on itself, low enough that you have to stoop. Niches are cut into the walls at shoulder height, and every one of them holds a skull facing the way you came.",
+    "exits": [
+      { "direction": "up", "dest_room": "cave_mouth" },
+      { "direction": "south", "dest_room": "bone_gallery" }
+    ]
+  },
+  {
+    "id": "bone_gallery",
+    "name": "The Gallery of Bones",
+    "description": "A long vault lined floor to ceiling with bones, stacked and patterned like bricks. Some of the patterns are missing pieces, as though the bones got up and left. Passages lead east and west.",
+    "exits": [
+      { "direction": "north", "dest_room": "twisting_tunnel" },
+      { "direction": "east", "dest_room": "flooded_passage" },
+      { "direction": "west", "dest_room": "collapsed_crypt" }
+    ]
+  },
+  {
+    "id": "collapsed_crypt",
+    "name": "The Collapsed Crypt",
+    "description": "Half the ceiling has come down on a row of stone coffins. The lids that aren't crushed have been pushed aside from the inside. Something has been eating in here.",
+    "exits": [
+      { "direction": "east", "dest_room": "bone_gallery" }
+    ]
+  },
+  {
+    "id": "flooded_passage",
+    "name": "The Flooded Passage",
+    "description": "Black water stands knee-deep and very cold. Your footsteps echo ahead of you, and there are ripples in the water that you didn't make.",
+    "exits": [
+      { "direction": "west", "dest_room": "bone_gallery" },
+      { "direction": "south", "dest_room": "antechamber" }
+    ]
+  },
+  {
+    "id": "antechamber",
+    "name": "The Antechamber",
+    "description": "A square chamber, dry and silent, its walls carved with a procession of armored figures all marching toward a stair that goes down. At the foot of the carvings is a warning in an old script. You can't read it. You can guess.",
+    "exits": [
+      { "direction": "north", "dest_room": "flooded_passage" },
+      { "direction": "down", "dest_room": "throne_room" }
+    ]
+  },
+  {
+    "id": "throne_room",
+    "name": "The Throne of the Barrow-King",
+    "description": "A domed hall, lit by a cold light with no source. Grave-goods are heaped about the walls: shields, blades, the rotted banners of a kingdom nobody remembers. On a throne of fitted stone sits a tall armored figure with a crown of black iron, and as you enter, it stands up.",
+    "exits": [
+      { "direction": "up", "dest_room": "antechamber" }
+    ]
+  }
+]

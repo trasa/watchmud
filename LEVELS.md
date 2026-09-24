@@ -99,10 +99,74 @@ says so before you start it.
 
 *Done when:* killing something gives you something worth wearing.
 
+**The first loot tables** are already decided, for the Hollowfields and the Sunken
+Barrow. Every object below is defined in that zone's objects.json and placed nowhere,
+waiting for these. Chances are placeholders like everything else here.
+
+| Mob | Drops |
+|---|---|
+| field rat | rat pelt (50) |
+| angry goose | goose feather (60) |
+| giant beetle | beetle carapace (50) |
+| wild dog, wolf | rat pelt (30) -- until there is a proper hide |
+| bandit lookout | bandit hood (20) |
+| bandit | bandit hood (15), bandit cudgel (15) |
+| wild boar | boar-hide jerkin (20) |
+| hedge-witch | ring of mending (15), sprig censer (15) |
+| grave rat | grave dust (40) |
+| barrow skeleton | barrow helm (15), barrow plate (10) |
+| ghoul | bone charm (20), grave dust (40) |
+| the Barrow-King | barrow blade (35), black iron crown (35), barrow plate (35) |
+
+The hedge-witch is where the first healers come from: the ring and the censer are what
+make someone a Healer, and they have to be found in newbie country or no group ever has
+one to take into the barrow.
+
+**Out-level it and it isn't worth it, on purpose.** Drops come out at the *mob's* power,
+never the killer's, so the King's gear is power 15 whoever takes it. A power-20 player
+who solos him is trading down; the loot is only worth having to the people who needed
+a group to get it. Don't "fix" that by scaling drops to the player.
+
 ### 4. Content
 
 Power bands on the zones and mobs to fill them. Content work, not code, and where the
 placeholders above get replaced.
+
+Started: **the Hollowfields** (1-5, south of Wrathrock -- farms, bandits, an old wood)
+and **the Sunken Barrow** (6-10, down under the overturned oak in the wood's far corner),
+whose Barrow-King (power 15) is the first boss.
+
+**The Barrow-King is a group fight, and it takes all three kinds of gear.** Nothing may
+branch on a role, so each has to be something the gear actually does:
+
+- *tankish* -- plate's AC. He has to hit hard enough that anyone else in front of him
+  dies fast, and plate has to turn enough of it aside to survive with healing.
+- *healish* -- the heal that the ring of mending or the censer grants. Without it even
+  the tank runs out before he does.
+- *damageish* -- weapon dice. His health is big enough that a tank and a healer on
+  their own can't finish him.
+
+Targets to check him against once power modifiers, heals and threat all exist:
+
+- solo, newbie kit: dead in about 20 rounds, having done almost nothing to him
+- tank plus damage, no healer: the tank dies before he's at half
+- tank, healer, damage: they win, and the healer is busy the whole fight
+
+Until then he is unbeatable, and that's fine: he's the reason heals get built.
+
+Needed for that fight, and not yet anywhere else on this page:
+
+- **Abilities from gear** (below, under Tabled -- no longer tabled): `cast heal`, and
+  whatever resource or cooldown limits it.
+- **Retargeting, which comes first.** A mob keeps its first target (`FightLedger.Fight`
+  won't overwrite it), which is what a tank wants -- whoever engages first holds him.
+  But when that target dies, `EndAllFightsWith` deletes the mob's fight and leaves
+  everyone else's fight *against* it. The mob is still "in a fight", so aggro skips it,
+  and it never swings again: the King kills one person and then stands there while the
+  rest finish him. Today, two newbies beat him by taking turns dying. A mob whose target
+  dies has to pick up someone still fighting it. (ROADMAP.md "Known problems": the
+  ledger leaks third-party attackers.)
+- **Threat**, later: which of those someones it picks, so a tank can take him back.
 
 ### 5. Crafting (later)
 

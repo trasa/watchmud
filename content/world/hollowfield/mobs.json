@@ -1,0 +1,169 @@
+[
+  {
+    "id": "field_rat",
+    "name": "field rat",
+    "aliases": [
+      "rat",
+      "field"
+    ],
+    "short_description": "A fat field rat.",
+    "description_in_room": "A fat field rat noses through the straw.",
+    "max_health": 6,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 10,
+    "damage": "1d2",
+    "power": 1,
+    "aggressive": false
+  },
+  {
+    "id": "angry_goose",
+    "name": "angry goose",
+    "aliases": [
+      "goose",
+      "angry"
+    ],
+    "short_description": "An angry goose.",
+    "description_in_room": "An angry goose lowers its neck and hisses at you.",
+    "max_health": 8,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 10,
+    "damage": "1d3",
+    "power": 1,
+    "aggressive": true
+  },
+  {
+    "id": "giant_beetle",
+    "name": "giant beetle",
+    "aliases": [
+      "beetle",
+      "giant"
+    ],
+    "short_description": "A giant beetle.",
+    "description_in_room": "A giant beetle the size of a dog clicks its mandibles.",
+    "max_health": 12,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 12,
+    "damage": "1d3",
+    "power": 2,
+    "aggressive": false
+  },
+  {
+    "id": "wild_dog",
+    "name": "wild dog",
+    "aliases": [
+      "dog",
+      "wild"
+    ],
+    "short_description": "A wild dog.",
+    "description_in_room": "A mangy wild dog watches you, hackles up.",
+    "max_health": 14,
+    "wandering_definition": {
+      "can_wander": true,
+      "check_frequency_seconds": 30,
+      "check_percentage": 30,
+      "wander_style": "random"
+    },
+    "ac": 11,
+    "damage": "1d4",
+    "power": 2,
+    "aggressive": false
+  },
+  {
+    "id": "bandit_lookout",
+    "name": "bandit lookout",
+    "aliases": [
+      "lookout",
+      "bandit"
+    ],
+    "short_description": "A bandit lookout.",
+    "description_in_room": "A bandit lookout leans on a stick, pretending not to watch the path.",
+    "max_health": 18,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 11,
+    "damage": "1d4",
+    "power": 3,
+    "aggressive": false
+  },
+  {
+    "id": "bandit",
+    "name": "bandit",
+    "aliases": [
+      "bandit",
+      "thug"
+    ],
+    "short_description": "A bandit.",
+    "description_in_room": "A bandit in a patched jerkin fingers a cudgel.",
+    "max_health": 24,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 12,
+    "damage": "1d6",
+    "power": 4,
+    "aggressive": false
+  },
+  {
+    "id": "wild_boar",
+    "name": "wild boar",
+    "aliases": [
+      "boar",
+      "wild",
+      "pig"
+    ],
+    "short_description": "A wild boar.",
+    "description_in_room": "A wild boar roots at the ground, tusks muddy.",
+    "max_health": 30,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 12,
+    "damage": "1d6",
+    "power": 4,
+    "aggressive": false
+  },
+  {
+    "id": "hedge_witch",
+    "name": "hedge-witch",
+    "aliases": [
+      "witch",
+      "hedge",
+      "hedgewitch"
+    ],
+    "short_description": "The hedge-witch.",
+    "description_in_room": "The hedge-witch sorts herbs and pays you no mind at all.",
+    "max_health": 28,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 11,
+    "damage": "1d4",
+    "power": 4,
+    "aggressive": false
+  },
+  {
+    "id": "wolf",
+    "name": "wolf",
+    "aliases": [
+      "wolf",
+      "grey"
+    ],
+    "short_description": "A grey wolf.",
+    "description_in_room": "A grey wolf steps out of the trees, head low.",
+    "max_health": 22,
+    "wandering_definition": {
+      "can_wander": false
+    },
+    "ac": 12,
+    "damage": "1d6",
+    "power": 5,
+    "aggressive": true
+  }
+]

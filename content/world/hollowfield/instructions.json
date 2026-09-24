@@ -1,0 +1,110 @@
+[
+  {
+    "type": "CreateMobile",
+    "mobile_id": "field_rat",
+    "room_id": "barn",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "field_rat",
+    "room_id": "wheat_field",
+    "instance_max": 2
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "field_rat",
+    "room_id": "barn",
+    "instance_max": 3
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "field_rat",
+    "room_id": "hedgerow",
+    "instance_max": 4
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "angry_goose",
+    "room_id": "millpond",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "angry_goose",
+    "room_id": "millpond",
+    "instance_max": 2
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "giant_beetle",
+    "room_id": "orchard",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "giant_beetle",
+    "room_id": "orchard",
+    "instance_max": 2
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "wild_dog",
+    "room_id": "farm_lane",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "wild_dog",
+    "room_id": "hedgerow",
+    "instance_max": 2
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "bandit_lookout",
+    "room_id": "bandit_trail",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "bandit",
+    "room_id": "bandit_camp",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "bandit",
+    "room_id": "bandit_camp",
+    "instance_max": 2
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "wild_boar",
+    "room_id": "wood_edge",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "wild_boar",
+    "room_id": "woodcutter_clearing",
+    "instance_max": 2
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "hedge_witch",
+    "room_id": "witch_hollow",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "wolf",
+    "room_id": "deep_wood",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "wolf",
+    "room_id": "deep_wood",
+    "instance_max": 2
+  }
+]

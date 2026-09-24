@@ -19,5 +19,21 @@
     "reset_mode": 2,
     "lifetime_minutes": 3,
     "enabled": true
+  },
+  {
+    "id": "hollowfield",
+    "name": "The Hollowfields",
+    "reset_mode": 2,
+    "lifetime_minutes": 3,
+    "enabled": true,
+    "power": { "min": 1, "max": 5 }
+  },
+  {
+    "id": "barrow",
+    "name": "The Sunken Barrow",
+    "reset_mode": 1,
+    "lifetime_minutes": 10,
+    "enabled": true,
+    "power": { "min": 6, "max": 10 }
   }
 ]

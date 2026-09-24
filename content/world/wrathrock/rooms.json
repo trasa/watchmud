@@ -97,11 +97,16 @@
   {
     "id": "south_trail",
     "name": "southern path",
-    "description": "A trail leading south.",
+    "description": "A trail leading south, toward the Hollowfields.",
     "exits": [
       {
         "direction": "north",
         "dest_room": "out_south_gate"
+      },
+      {
+        "direction": "south",
+        "dest_zone": "hollowfield",
+        "dest_room": "waystone"
       }
     ]
   }

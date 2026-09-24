@@ -1,0 +1,143 @@
+[
+  {
+    "id": "waystone",
+    "name": "The Waystone",
+    "description": "A mossy standing stone marks where the trail from Wrathrock splits among the Hollowfields. Someone has scratched arrows into it: MILL to the west, FIELDS to the east, and to the south, the lane. Beneath the last arrow, smaller and newer, someone has added: WOOD -- DON'T.",
+    "exits": [
+      { "direction": "north", "dest_zone": "wrathrock", "dest_room": "south_trail" },
+      { "direction": "south", "dest_room": "farm_lane" },
+      { "direction": "west", "dest_room": "millpond" },
+      { "direction": "east", "dest_room": "hedgerow" }
+    ]
+  },
+  {
+    "id": "millpond",
+    "name": "The Millpond",
+    "description": "A broad, still pond backs up behind a mill whose wheel stopped turning a long time ago. The reeds along the bank are flattened into nests, and something in them is hissing at you.",
+    "exits": [
+      { "direction": "east", "dest_room": "waystone" },
+      { "direction": "south", "dest_room": "orchard" }
+    ]
+  },
+  {
+    "id": "hedgerow",
+    "name": "Along the Hedgerow",
+    "description": "A tangled hedgerow of hawthorn and bramble runs north to south, taller than a man and full of rustling. Gaps have been chewed through it at ankle height.",
+    "exits": [
+      { "direction": "west", "dest_room": "waystone" },
+      { "direction": "south", "dest_room": "wheat_field" }
+    ]
+  },
+  {
+    "id": "farm_lane",
+    "name": "Farm Lane",
+    "description": "A rutted lane between low stone walls. The farms on either side have been left to themselves: gates hang open, and nobody answers when you call. The lane runs on south toward a bridge.",
+    "exits": [
+      { "direction": "north", "dest_room": "waystone" },
+      { "direction": "south", "dest_room": "old_bridge" },
+      { "direction": "west", "dest_room": "orchard" },
+      { "direction": "east", "dest_room": "wheat_field" }
+    ]
+  },
+  {
+    "id": "orchard",
+    "name": "The Overgrown Orchard",
+    "description": "Apple trees gone wild, their windfalls rotting in the grass and drawing every insect for a mile. A red barn stands at the southern end of the rows.",
+    "exits": [
+      { "direction": "north", "dest_room": "millpond" },
+      { "direction": "east", "dest_room": "farm_lane" },
+      { "direction": "south", "dest_room": "barn" }
+    ]
+  },
+  {
+    "id": "wheat_field",
+    "name": "The Wheat Field",
+    "description": "Wheat stands unharvested and gone to seed, head-high and whispering. Paths have been trampled through it by things much lower to the ground than you. A narrow track leads south, away from the farms.",
+    "exits": [
+      { "direction": "north", "dest_room": "hedgerow" },
+      { "direction": "west", "dest_room": "farm_lane" },
+      { "direction": "south", "dest_room": "bandit_trail" }
+    ]
+  },
+  {
+    "id": "barn",
+    "name": "The Red Barn",
+    "description": "The barn's doors hang off their hinges. Inside, the hayloft sags and the stalls are empty of anything a farmer would want, and full of things a farmer wouldn't. It smells strongly of rat.",
+    "exits": [
+      { "direction": "north", "dest_room": "orchard" },
+      { "direction": "east", "dest_room": "old_bridge" }
+    ]
+  },
+  {
+    "id": "old_bridge",
+    "name": "The Old Bridge",
+    "description": "A humpbacked stone bridge crosses a slow brown stream. Past it to the south, the farmland gives up and the trees begin, dark and close together.",
+    "exits": [
+      { "direction": "north", "dest_room": "farm_lane" },
+      { "direction": "west", "dest_room": "barn" },
+      { "direction": "south", "dest_room": "wood_edge" }
+    ]
+  },
+  {
+    "id": "bandit_trail",
+    "name": "A Narrow Track",
+    "description": "The track bends away from the fields into scrub. Bootprints, a cold pipe, a snapped arrow: somebody watches this path. Smoke rises from somewhere to the east.",
+    "exits": [
+      { "direction": "north", "dest_room": "wheat_field" },
+      { "direction": "east", "dest_room": "bandit_camp" }
+    ]
+  },
+  {
+    "id": "bandit_camp",
+    "name": "The Bandit Camp",
+    "description": "A ring of lean-tos around a smoky fire, with stolen sacks of grain stacked under a tarp. The people who live here did not invite you and are not pleased to see you.",
+    "exits": [
+      { "direction": "west", "dest_room": "bandit_trail" }
+    ]
+  },
+  {
+    "id": "wood_edge",
+    "name": "The Edge of the Old Wood",
+    "description": "Oaks older than Wrathrock close overhead, and the light goes green and dim. A woodcutter's path leads off to the west. To the south the trees grow thicker, and it is very quiet.",
+    "exits": [
+      { "direction": "north", "dest_room": "old_bridge" },
+      { "direction": "west", "dest_room": "woodcutter_clearing" },
+      { "direction": "south", "dest_room": "deep_wood" }
+    ]
+  },
+  {
+    "id": "woodcutter_clearing",
+    "name": "The Woodcutter's Clearing",
+    "description": "Stumps and a half-finished woodpile, an axe rusted into a block. Whoever worked here left in a hurry. A thin path winds south between the trees, and it smells of woodsmoke and herbs.",
+    "exits": [
+      { "direction": "east", "dest_room": "wood_edge" },
+      { "direction": "south", "dest_room": "witch_hollow" }
+    ]
+  },
+  {
+    "id": "witch_hollow",
+    "name": "The Hedge-Witch's Hollow",
+    "description": "A turf-roofed hut sits in a hollow ringed with drying herbs, charms of bone and twine, and a garden that is much too green for the season. Whoever keeps it knows how to mend what the wood breaks.",
+    "exits": [
+      { "direction": "north", "dest_room": "woodcutter_clearing" }
+    ]
+  },
+  {
+    "id": "deep_wood",
+    "name": "The Deep Wood",
+    "description": "The trees crowd so close that the sky is a rumor. There are tracks in the mud, big ones, and a smell of wet fur. Eastward the ground slopes down toward something huge lying across the path.",
+    "exits": [
+      { "direction": "north", "dest_room": "wood_edge" },
+      { "direction": "east", "dest_room": "overturned_oak" }
+    ]
+  },
+  {
+    "id": "overturned_oak",
+    "name": "Beneath the Overturned Oak",
+    "description": "An oak of enormous age has fallen here, and its roots have torn a hole out of the hillside. The hole goes down -- rough steps cut into the earth, older than the tree was. Cold air breathes up out of it, carrying the smell of stone and something long dead.",
+    "exits": [
+      { "direction": "west", "dest_room": "deep_wood" },
+      { "direction": "down", "dest_zone": "barrow", "dest_room": "cave_mouth" }
+    ]
+  }
+]

@@ -1,0 +1,110 @@
+[
+  {
+    "id": "rat_pelt",
+    "name": "rat pelt",
+    "category": "OTHER",
+    "aliases": [
+      "pelt",
+      "rat"
+    ],
+    "short_description": "a scrap of rat pelt",
+    "description_on_ground": "A scrap of rat pelt lies here, still faintly warm."
+  },
+  {
+    "id": "goose_feather",
+    "name": "goose feather",
+    "category": "OTHER",
+    "aliases": [
+      "feather",
+      "goose"
+    ],
+    "short_description": "a long goose feather",
+    "description_on_ground": "A long grey goose feather lies here, looking smug."
+  },
+  {
+    "id": "beetle_carapace",
+    "name": "beetle carapace",
+    "category": "OTHER",
+    "aliases": [
+      "carapace",
+      "shell",
+      "beetle"
+    ],
+    "short_description": "a piece of beetle carapace",
+    "description_on_ground": "A curved piece of black beetle carapace lies here."
+  },
+  {
+    "id": "boar_hide_jerkin",
+    "name": "boar-hide jerkin",
+    "category": "ARMOR",
+    "aliases": [
+      "jerkin",
+      "boar",
+      "hide"
+    ],
+    "short_description": "a boar-hide jerkin",
+    "description_on_ground": "A stiff jerkin of boar hide, bristles and all, lies here.",
+    "equipment_slot": "body",
+    "armor_type": "leather"
+  },
+  {
+    "id": "bandit_hood",
+    "name": "bandit hood",
+    "category": "ARMOR",
+    "aliases": [
+      "hood",
+      "bandit"
+    ],
+    "short_description": "a leather bandit hood",
+    "description_on_ground": "A leather hood with eye-holes cut in it lies here.",
+    "equipment_slot": "head",
+    "armor_type": "leather"
+  },
+  {
+    "id": "bandit_cudgel",
+    "name": "bandit cudgel",
+    "category": "WEAPON",
+    "aliases": [
+      "cudgel",
+      "club",
+      "bandit"
+    ],
+    "short_description": "a knotted cudgel",
+    "description_on_ground": "A knotted cudgel, well used, lies here.",
+    "equipment_slot": "wield",
+    "damage": "1d6",
+    "roles": {
+      "striker": 3
+    }
+  },
+  {
+    "id": "ring_of_mending",
+    "name": "ring of mending",
+    "category": "TREASURE",
+    "aliases": [
+      "ring",
+      "mending"
+    ],
+    "short_description": "a ring of woven willow",
+    "description_on_ground": "A ring of woven willow, still green, lies here.",
+    "equipment_slot": "fingers",
+    "roles": {
+      "healer": 3
+    }
+  },
+  {
+    "id": "sprig_censer",
+    "name": "sprig censer",
+    "category": "OTHER",
+    "aliases": [
+      "censer",
+      "sprig"
+    ],
+    "short_description": "a censer of smouldering herbs",
+    "description_on_ground": "A small censer of smouldering herbs lies here, smelling of summer.",
+    "equipment_slot": "hold",
+    "roles": {
+      "healer": 3
+    }
+  }
+]

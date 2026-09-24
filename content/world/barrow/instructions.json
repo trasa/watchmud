@@ -1,0 +1,56 @@
+[
+  {
+    "type": "CreateMobile",
+    "mobile_id": "grave_rat",
+    "room_id": "cave_mouth",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "grave_rat",
+    "room_id": "twisting_tunnel",
+    "instance_max": 2
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "grave_rat",
+    "room_id": "cave_mouth",
+    "instance_max": 3
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "barrow_skeleton",
+    "room_id": "bone_gallery",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "barrow_skeleton",
+    "room_id": "flooded_passage",
+    "instance_max": 2
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "barrow_skeleton",
+    "room_id": "antechamber",
+    "instance_max": 3
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "ghoul",
+    "room_id": "collapsed_crypt",
+    "instance_max": 1
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "ghoul",
+    "room_id": "collapsed_crypt",
+    "instance_max": 2
+  },
+  {
+    "type": "CreateMobile",
+    "mobile_id": "barrow_king",
+    "room_id": "throne_room",
+    "instance_max": 1
+  }
+]
