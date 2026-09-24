@@ -358,6 +358,23 @@ Two things drive wear, both from `world/durability.go` (not `combat/`: combat wo
 Message order matters and is pinned by tests: the blow, then the death, then what the
 death cost, then the room the player wakes up in.
 
+### Loot and corpses
+
+A mob's `"loot"` in mobs.json (`mobile.Definition.Loot`) is resolved at startup -- a bare
+object id is the mob's own zone, `"zone/id"` any other, and anything that doesn't resolve
+fails the load. On death `World.rollLoot` rolls each entry on its own, a d100 (`IntN(100)`)
+against its chance, and a drop is made at **the mob's power**, plus `rules.LootPowerBump`
+from a second d100. Never the killer's power: out-levelling a boss makes his drops not
+worth having, on purpose.
+
+The drops go into the corpse, which is the only container so far. A container is an
+`object.Instance` with non-nil `Contents` (an `ordered.List`, like every other container);
+nil means "not a container", so check that rather than the category. Corpses are
+`NoTake`, answer to `corpse`, and have a `DecaysAt`: `World.DecayCorpses` runs on the
+mobile pulse and removes them, contents and all, after `rules.CorpseDecay`. The zero
+`DecaysAt` means never. `get <item> from <container>` and `look in <container>` live in
+`world/containers.go`, and only search the room's floor.
+
 ### Player death
 
 A player leaves **no corpse**. `combatantDied` ends their fights (via `becomeCorpse`),

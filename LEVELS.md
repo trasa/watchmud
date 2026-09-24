@@ -56,6 +56,7 @@ move is one change.
 | To-hit per point of delta | +½ | whether a higher mob can be hit at all |
 | Damage per point of delta | ±5%, rounded, a hit does at least 1 | how long fights above your power take |
 | Loot power bump | 10% chance of +1, 2% of +2 | **the pace of the whole game** |
+| Corpse decay | 5 minutes (`rules.CorpseDecay`) | time to loot vs. rooms filling up |
 
 ## Phases
 
@@ -89,7 +90,7 @@ damage.
 *Done when:* the same fight goes differently as your gear gets better, and `consider`
 says so before you start it.
 
-### 3. Loot
+### 3. Loot -- done
 
 - Loot tables in mobs.json: `"loot": [{"object": "wrathrock/rusty_sword", "chance": 25}]`.
 - Corpses hold the drops, which finishes the `TODO transfer m's possessions` in

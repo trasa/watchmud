@@ -110,6 +110,11 @@ type ContainerContents struct {
 	Items     []ContainedItem
 }
 
+// Decayed is something on the floor crumbling away: a corpse, so far.
+type Decayed struct {
+	Item string
+}
+
 type ContainedItem struct {
 	ShortDescription string
 	Power            int

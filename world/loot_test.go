@@ -2,11 +2,13 @@ package world
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trasa/watchmud/command"
 	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/object"
+	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/testdice"
 )
 
@@ -86,4 +88,25 @@ func (s *lootSuite) TestTheCorpseCantBeTaken() {
 	s.Require().NoError(s.w.HandleIncomingMessage(s.handlerParameter(command.Get{Target: "corpse"})))
 
 	s.Assert().Equal(event.TargetNotGettable, sent[event.Failed](s.T(), s.r, 0).Code)
+}
+
+// A corpse lasts rules.CorpseDecay, and then it's gone, loot and all, with a
+// line to the room. Nothing else on the floor goes with it.
+func (s *lootSuite) TestCorpsesDecay() {
+	s.dice.Load([]int{99, 0, 99})
+	corpse := s.killDrone()
+	s.Require().Equal(1, corpse.Contents.Len())
+	s.r.Sent = nil
+
+	s.w.decayCorpses(time.Now())
+	_, stillThere := s.w.StartRoom.Inventory.InstanceId(corpse.Id)
+	s.Assert().True(stillThere, "not yet")
+	s.Assert().Empty(s.r.Sent)
+
+	s.w.decayCorpses(time.Now().Add(rules.CorpseDecay + time.Second))
+	_, stillThere = s.w.StartRoom.Inventory.InstanceId(corpse.Id)
+	s.Assert().False(stillThere, "gone")
+	s.Assert().Equal("the corpse of Target Drone", sent[event.Decayed](s.T(), s.r, 0).Item)
+
+	s.Assert().NotEmpty(s.w.StartRoom.Inventory.NameOrAlias("knife"), "the room's own knife doesn't decay")
 }

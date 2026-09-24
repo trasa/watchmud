@@ -87,6 +87,9 @@ func render(msg any, self string) string {
 	case event.ContainerContents:
 		return renderContainerContents(m)
 
+	case event.Decayed:
+		return capitalize(m.Item) + " crumbles to dust.\n"
+
 	case event.Equipped:
 		return "Equipped.\n"
 

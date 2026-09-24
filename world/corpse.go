@@ -2,11 +2,13 @@ package world
 
 import (
 	"fmt"
+	"time"
 	"uuid"
 
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/behavior"
 	"github.com/trasa/watchmud/combat"
+	"github.com/trasa/watchmud/event"
 	"github.com/trasa/watchmud/mobile"
 	"github.com/trasa/watchmud/object"
 	"github.com/trasa/watchmud/rules"
@@ -52,6 +54,7 @@ func (w *World) becomeMobileCorpse(m *mobile.Instance) {
 
 	corpse := object.NewInstance(uuid.New(), d)
 	corpse.Contents = object.NewContents()
+	corpse.DecaysAt = time.Now().Add(rules.CorpseDecay)
 	for _, drop := range w.rollLoot(m) {
 		if err := corpse.Contents.Add(drop); err != nil {
 			log.Error().Err(err).Msgf("becomeMobileCorpse: adding %s to the corpse of %s", drop.Definition.Name, m.Definition.Name)
@@ -98,4 +101,31 @@ func (w *World) rollLoot(m *mobile.Instance) []*object.Instance {
 		drops = append(drops, item)
 	}
 	return drops
+}
+
+// DecayCorpses clears away every corpse whose time is up, based on time.Now().
+func (w *World) DecayCorpses() {
+	w.decayCorpses(time.Now())
+}
+
+// decayCorpses removes whatever on a room's floor has a DecaysAt that has
+// passed -- anything still inside goes with it -- and tells the room.
+func (w *World) decayCorpses(now time.Time) {
+	for _, zone := range w.content.Zones {
+		for _, room := range zone.Rooms {
+			var gone []*object.Instance
+			for item := range room.Inventory.All() {
+				if !item.DecaysAt.IsZero() && !now.Before(item.DecaysAt) {
+					gone = append(gone, item)
+				}
+			}
+			for _, item := range gone {
+				if err := room.Inventory.Remove(item); err != nil {
+					log.Error().Err(err).Msgf("decayCorpses: removing %s from %s", item.Definition.Name, room.Id)
+					continue
+				}
+				room.Send(event.Decayed{Item: item.Definition.ShortDescription})
+			}
+		}
+	}
 }

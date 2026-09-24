@@ -53,3 +53,8 @@ func TestRenderConsidered_capitalizes(t *testing.T) {
 }
 
 func itoa(i int) string { return fmt.Sprint(i) }
+
+func TestRenderDecayed(t *testing.T) {
+	assert.Equal(t, "The corpse of a rat crumbles to dust.\n",
+		render(event.Decayed{Item: "the corpse of a rat"}, "testdood"))
+}

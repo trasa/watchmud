@@ -1,5 +1,7 @@
 package rules
 
+import "time"
+
 // PowerBand is the range of power a zone is built for -- how content says
 // "this is the 10-15 area". Zero value is the bottom band. See LEVELS.md.
 type PowerBand struct {
@@ -53,6 +55,11 @@ const (
 	LootBumpTwoPercent = 2  // chance of +2
 	LootBumpOnePercent = 10 // chance of +1, after that
 )
+
+// CorpseDecay is how long a corpse lasts, loot and all, before it crumbles:
+// long enough to finish the fight and loot it, short enough that a grind
+// doesn't fill the room. A placeholder; LEVELS.md.
+const CorpseDecay = 5 * time.Minute
 
 // LootPowerBump is what a d100 roll (0-99) adds to a drop's power.
 func LootPowerBump(roll int) int {

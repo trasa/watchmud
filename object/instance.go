@@ -1,6 +1,7 @@
 package object
 
 import (
+	"time"
 	"uuid"
 
 	"github.com/trasa/watchmud/ordered"
@@ -28,6 +29,10 @@ type Instance struct {
 	// Contents is what's inside, for a container; nil for anything that
 	// isn't one. Only corpses are containers so far.
 	Contents *ordered.List[uuid.UUID, *Instance]
+
+	// DecaysAt is when this crumbles away, whatever it's holding; the zero
+	// time means never. Only corpses decay so far.
+	DecaysAt time.Time
 }
 
 // NewContents is an empty container's worth of contents, in the order things
