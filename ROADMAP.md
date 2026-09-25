@@ -41,15 +41,34 @@ because today anyone can log in as anyone and anyone can spawn mobs.
    are checked at the name prompt, before a password or creation is offered.
    Not reserved: object names (a player called Knife can't be picked up -- `get` never
    searches players), and look-alike names (Bob vs Bobb). Neither is worth it yet.
-4. **Connection hygiene.** Idle timeout at the login prompt (short) and in game (long),
-   via read deadlines; a cap on connections per IP; a panic in one handler must not take
-   the server down -- check dispatch for a `recover`.
+4. ~~**Connection hygiene.**~~ Done 2026-09-24.
+   - **Panics:** `GameServer.recovering` wraps every dispatch -- the stack goes to the log,
+     the player gets "Something went wrong", a connection mid-login gets a failed login
+     rather than waiting forever. Each heartbeat job recovers on its own
+     (`recoverPulse`), so a crash in combat doesn't also skip the save after it. The
+     world can be left half-changed by a handler that died partway; still better than
+     no world.
+   - **Idle:** a read deadline before every line, 2 minutes at login and 30 in game
+     (`defaultLoginIdle`/`defaultPlayIdle` in `telnet/conn.go`). Timing out in game is
+     a logout with cause `idle`: saved, out of the world.
+   - **Per address:** 5 connections per IP (`maxConnsPerAddress`), refused with a
+     message past that. Constants for now; move them to app.yaml if they need tuning
+     without a build.
 5. **`help`.** A new player with no command list quits. One screen: movement, look,
    get/drop/wear/remove, kill/flee/consider, eq/i/stat/role, say/tell/who, quit.
 6. **Deploy.** A Dockerfile (static binary + `content/`), compose with mongo *with auth*,
    a small VPS, telnet on 4000 (or 23), mongo backups on a timer, logs to a file that
    rotates. SIGTERM already flushes the write-behind store; make sure the platform
    sends SIGTERM, not SIGKILL.
+
+   **Telnet binds `localhost`** (`cmd/watchmud`: `fmt.Sprintf("localhost:%d", ...)`),
+   which nothing outside the machine -- or outside the container -- can reach. It needs
+   a host in config (`0.0.0.0` in the container, `localhost` stays the dev default so
+   a laptop doesn't serve its LAN).
+
+   **The per-address cap sees the proxy, not the player**, if TLS is terminated by a
+   proxy: every TLS player arrives from 127.0.0.1 and the sixth is refused. Either TLS
+   in Go (the cap keeps working), PROXY protocol from the proxy, or exempt loopback.
 
    **And a TLS port** beside the plain one, so a password doesn't have to cross the
    internet in the clear. Telnet has no encryption and no MUD protocol adds any (MCCP

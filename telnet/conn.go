@@ -47,6 +47,9 @@ type conn struct {
 	// from one to the other.
 	loginIdle, playIdle time.Duration
 	readTimeout         time.Duration
+
+	// onClose runs once the socket is closed, to give back its slot.
+	onClose func()
 }
 
 const (
@@ -101,7 +104,19 @@ func Listen(ctx context.Context, addr string, gs gameserver.Instance, cat *rules
 		return fmt.Errorf("telnet listen on %s: %w", addr, err)
 	}
 	log.Info().Msgf("telnet listening on %s", addr)
+	return serve(ctx, ln, gs, cat, maxConnsPerAddress)
+}
 
+// maxConnsPerAddress is enough for a household behind one router, or a player
+// with a second window open, and not enough for one client to take every
+// slot. Everyone behind a TLS-terminating proxy shares its address, so a
+// proxy in front of this needs PROXY protocol, or this needs to go up.
+const maxConnsPerAddress = 5
+
+// serve accepts connections from ln until ctx is done, refusing any past
+// perAddress from one IP.
+func serve(ctx context.Context, ln net.Listener, gs gameserver.Instance, cat *rules.Catalog, perAddress int) error {
+	limit := &addressLimit{max: perAddress, open: make(map[string]int)}
 	go func() {
 		<-ctx.Done()
 		_ = ln.Close() // unblocks the Accept, below
@@ -115,8 +130,15 @@ func Listen(ctx context.Context, addr string, gs gameserver.Instance, cat *rules
 			}
 			return fmt.Errorf("telnet accept: %w", err)
 		}
+		host := remoteHost(nc)
+		if !limit.acquire(host) {
+			log.Warn().Msgf("telnet %s: too many connections from %s, refused", nc.RemoteAddr(), host)
+			refuse(nc, "Too many connections from your address. Try again later.\r\n")
+			continue
+		}
 		log.Info().Msgf("telnet connection from %s", nc.RemoteAddr())
 		c := newConn(nc, gs, cat)
+		c.onClose = func() { limit.release(host) }
 		go c.writePump()
 		go c.readPump()
 		c.Send("Welcome to WatchMUD.\r\n")
@@ -487,6 +509,9 @@ func (c *conn) writePump() {
 	defer func() {
 		// this unblocks a parked readPump
 		_ = c.netConn.Close()
+		if c.onClose != nil {
+			c.onClose()
+		}
 	}()
 
 	for {
@@ -633,4 +658,47 @@ func (c *conn) commandLoop() (quit bool) {
 			return true
 		}
 	}
+}
+
+// addressLimit counts open connections per remote host. The accept loop
+// acquires and each connection's writePump releases, so it needs its lock.
+type addressLimit struct {
+	mu   sync.Mutex
+	max  int
+	open map[string]int
+}
+
+func (l *addressLimit) acquire(host string) bool {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.open[host] >= l.max {
+		return false
+	}
+	l.open[host]++
+	return true
+}
+
+func (l *addressLimit) release(host string) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.open[host]--; l.open[host] <= 0 {
+		delete(l.open, host) // or the map grows by every address that ever connected
+	}
+}
+
+// remoteHost is the IP a connection came from, without the port, which is
+// different for every connection and would make the limit count nothing.
+func remoteHost(nc net.Conn) string {
+	host, _, err := net.SplitHostPort(nc.RemoteAddr().String())
+	if err != nil {
+		return nc.RemoteAddr().String()
+	}
+	return host
+}
+
+// refuse says why and hangs up, before a conn or its goroutines exist.
+func refuse(nc net.Conn, why string) {
+	_ = nc.SetWriteDeadline(time.Now().Add(writeTimeout))
+	_, _ = io.WriteString(nc, why)
+	_ = nc.Close()
 }
