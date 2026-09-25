@@ -17,9 +17,12 @@ func NewTestPlayer(id uuid.UUID, name string, out Sender) *Player {
 	if err != nil {
 		panic(err) // the test catalog is a literal; it cannot fail to index
 	}
-	return New(id,
+	return New(
+		id,
 		name,
+		"passwordHash",
 		out,
 		&rules.Lineage{Id: "human", Name: "Human"},
-		cat)
+		cat,
+	)
 }

@@ -15,13 +15,14 @@ func intp(i int) *int { return &i }
 func testRecord() *player.Record {
 	knifeId := uuid.New()
 	return &player.Record{
-		Id:         uuid.New(),
-		Name:       "newbie",
-		CurHealth:  93,
-		MaxHealth:  100,
-		LineageId:  "hill_dwarf",
-		LastZoneId: "wrathrock",
-		LastRoomId: "temple_square",
+		Id:           uuid.New(),
+		Name:         "newbie",
+		PasswordHash: "$2a$10$abcdefghijklmnopqrstuuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY",
+		CurHealth:    93,
+		MaxHealth:    100,
+		LineageId:    "hill_dwarf",
+		LastZoneId:   "wrathrock",
+		LastRoomId:   "temple_square",
 		Equipment: []player.EquipmentRecord{
 			{Slot: "wield", InstanceId: knifeId},
 		},

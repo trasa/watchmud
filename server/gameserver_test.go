@@ -3,6 +3,7 @@ package server
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,6 +16,7 @@ import (
 	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/testdice"
 	"github.com/trasa/watchmud/world"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // testConn is a connection with nobody on it yet, which is what creation
@@ -40,20 +42,51 @@ func newTestGameServer(t *testing.T) (*GameServer, *memstore.Store) {
 	w, err := world.New(content, store, testdice.New())
 	require.NoError(t, err)
 
-	return New(w, content.Catalog, store), store
+	gs := New(w, content.Catalog, store)
+	gs.bcryptCost = bcrypt.MinCost
+	return gs, store
+}
+
+// settle does what Run would: takes the callback a login or creation queued
+// from its bcrypt goroutine and dispatches it.
+func settle(t *testing.T, gs *GameServer) {
+	t.Helper()
+	select {
+	case msg := <-gs.incomingBuffer:
+		require.NoError(t, gs.dispatch(msg))
+	case <-time.After(5 * time.Second):
+		t.Fatal("nothing came back from the bcrypt goroutine")
+	}
+}
+
+// create and login are the whole two-step conversation.
+func create(t *testing.T, gs *GameServer, c gameserver.Conn, name, password string) {
+	t.Helper()
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.CreatePlayer{
+		Name:     name,
+		Lineage:  "human",
+		Password: command.Secret(password),
+	})))
+	settle(t, gs)
+}
+
+func login(t *testing.T, gs *GameServer, c gameserver.Conn, name, password string) {
+	t.Helper()
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.Login{
+		Name:     name,
+		Password: command.Secret(password),
+	})))
+	settle(t, gs)
 }
 
 // A brand new character arrives dressed, and the record written for them says
 // so -- so the gear is still there on their next login.
+// create player is two steps now because of hashing the password.
 func TestCreatePlayer_startingGear(t *testing.T) {
 	gs, store := newTestGameServer(t)
 	c := &testConn{}
 
-	err := gs.dispatch(gameserver.NewHandlerParameter(c, command.CreatePlayer{
-		Name:    "newbie",
-		Lineage: "human",
-	}))
-	require.NoError(t, err)
+	create(t, gs, c, "newbie", "sekrit")
 
 	p := c.Player()
 	require.NotNil(t, p)
@@ -90,7 +123,7 @@ func TestCreatePlayer_startingGear(t *testing.T) {
 func TestPrompt_reachesPlayersInTheWorld(t *testing.T) {
 	gs, _ := newTestGameServer(t)
 	c := &testConn{}
-	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.CreatePlayer{Name: "newbie"})))
+	create(t, gs, c, "newbie", "sekrit")
 
 	c.Player().TakeMeleeDamage(30)
 	gs.prompt()
@@ -115,7 +148,7 @@ func TestPrompt_skipsAFailedLogin(t *testing.T) {
 func TestLogin_returnsToTheLastRoom(t *testing.T) {
 	gs, store := newTestGameServer(t)
 	c := &testConn{}
-	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.CreatePlayer{Name: "wanderer"})))
+	create(t, gs, c, "wanderer", "sekrit")
 	rec, _, err := store.Load("wanderer")
 	require.NoError(t, err)
 	gs.world.RemovePlayer(c.Player())
@@ -124,7 +157,7 @@ func TestLogin_returnsToTheLastRoom(t *testing.T) {
 	require.NoError(t, store.Save(rec))
 
 	back := &testConn{}
-	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(back, command.Login{Name: "wanderer"})))
+	login(t, gs, back, "wanderer", "sekrit")
 
 	require.NotNil(t, back.Player())
 	require.Len(t, back.sent, 2)
@@ -142,10 +175,10 @@ func TestLogin_returnsToTheLastRoom(t *testing.T) {
 // creation has to.
 func TestCreatePlayer_nameTaken(t *testing.T) {
 	gs, _ := newTestGameServer(t)
-	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(&testConn{}, command.CreatePlayer{Name: "bob"})))
+	create(t, gs, &testConn{}, "bob", "sekrit")
 
 	second := &testConn{}
-	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(second, command.CreatePlayer{Name: "bob"})))
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(second, command.CreatePlayer{Name: "bob", Password: "other"})))
 
 	assert.Nil(t, second.Player(), "no second bob")
 	require.Len(t, second.sent, 1)
@@ -157,10 +190,10 @@ func TestCreatePlayer_nameTaken(t *testing.T) {
 func TestLogin_alreadyPlaying(t *testing.T) {
 	gs, _ := newTestGameServer(t)
 	first := &testConn{}
-	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(first, command.CreatePlayer{Name: "bob"})))
+	create(t, gs, first, "bob", "sekrit")
 
 	second := &testConn{}
-	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(second, command.Login{Name: "bob"})))
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(second, command.Login{Name: "bob", Password: "sekrit"})))
 	assert.Nil(t, second.Player())
 	require.Len(t, second.sent, 1)
 	assert.Equal(t, event.LoginFailed{Reason: event.AlreadyPlaying}, second.sent[0])
@@ -168,6 +201,43 @@ func TestLogin_alreadyPlaying(t *testing.T) {
 	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(first, command.Logout{})))
 
 	third := &testConn{}
-	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(third, command.Login{Name: "bob"})))
+	login(t, gs, third, "bob", "sekrit")
 	assert.NotNil(t, third.Player(), "back in once the first session is gone")
+}
+
+// The wrong password is refused, with a reason: login() reads an empty one as
+// success.
+func TestLogin_wrongPassword(t *testing.T) {
+	gs, _ := newTestGameServer(t)
+	first := &testConn{}
+	create(t, gs, first, "bob", "sekrit")
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(first, command.Logout{})))
+
+	c := &testConn{}
+	login(t, gs, c, "bob", "guess")
+
+	assert.Nil(t, c.Player())
+	require.Len(t, c.sent, 1)
+	assert.Equal(t, event.LoginFailed{Reason: event.BadPassword}, c.sent[0])
+}
+
+// Two creations of one name can both pass the first check while their hashes
+// are being made; the second to come back must lose.
+func TestCreatePlayer_nameTakenWhileHashing(t *testing.T) {
+	gs, _ := newTestGameServer(t)
+	first, second := &testConn{}, &testConn{}
+	for _, c := range []*testConn{first, second} {
+		require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.CreatePlayer{Name: "bob", Password: "sekrit"})))
+	}
+	settle(t, gs)
+	settle(t, gs)
+
+	// either may have come back first
+	winner, loser := first, second
+	if first.Player() == nil {
+		winner, loser = second, first
+	}
+	assert.NotNil(t, winner.Player())
+	assert.Nil(t, loser.Player())
+	assert.Equal(t, []any{event.CreateFailed{Reason: event.NameTaken}}, loser.sent)
 }

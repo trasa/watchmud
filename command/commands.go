@@ -8,19 +8,19 @@ import (
 
 type Login struct {
 	Name     string
-	Password string
+	Password Secret
 }
 
 func (Login) Verb() string { return "login" }
 
 type CreatePlayer struct {
 	Name     string
-	Password string
+	Password Secret
 	// Lineage is a rules.Lineage id, and the only choice creation makes. It
 	// is cosmetic: there is no class to pick beside it, because what a
 	// character is good at comes from the gear they put on.
 	Lineage string
-	// TODO other fields ...
+	// TODO other fields ... see server/commands.go
 }
 
 func (CreatePlayer) Verb() string { return "create" }

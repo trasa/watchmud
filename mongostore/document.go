@@ -20,11 +20,11 @@ type playerDoc struct {
 	// Id is the character's uuid, which is the identity that survives
 	// everything, including a rename we don't have a command for yet. The
 	// name is what you log in with, so it gets a unique index instead.
-	Id   string `bson:"_id"`
-	Name string `bson:"name"`
-
-	CurHealth int `bson:"cur_health"`
-	MaxHealth int `bson:"max_health"`
+	Id           string `bson:"_id"`
+	Name         string `bson:"name"`
+	PasswordHash string `bson:"password_hash"`
+	CurHealth    int    `bson:"cur_health"`
+	MaxHealth    int    `bson:"max_health"`
 
 	LineageId  string `bson:"lineage_id"`
 	LastZoneId string `bson:"last_zone_id"`
@@ -62,14 +62,15 @@ type inventoryDoc struct {
 // newPlayerDoc converts a record on its way to the database.
 func newPlayerDoc(r *player.Record, now time.Time) playerDoc {
 	doc := playerDoc{
-		Id:         r.Id.String(),
-		Name:       r.Name,
-		CurHealth:  r.CurHealth,
-		MaxHealth:  r.MaxHealth,
-		LineageId:  r.LineageId,
-		LastZoneId: r.LastZoneId,
-		LastRoomId: r.LastRoomId,
-		UpdatedAt:  now.UTC(),
+		Id:           r.Id.String(),
+		Name:         r.Name,
+		PasswordHash: r.PasswordHash,
+		CurHealth:    r.CurHealth,
+		MaxHealth:    r.MaxHealth,
+		LineageId:    r.LineageId,
+		LastZoneId:   r.LastZoneId,
+		LastRoomId:   r.LastRoomId,
+		UpdatedAt:    now.UTC(),
 	}
 	for _, e := range r.Equipment {
 		doc.Equipment = append(doc.Equipment, equipmentDoc{
@@ -101,13 +102,14 @@ func (d playerDoc) record() (*player.Record, error) {
 		return nil, fmt.Errorf("player %s: bad _id %q: %w", d.Name, d.Id, err)
 	}
 	r := &player.Record{
-		Id:         id,
-		Name:       d.Name,
-		CurHealth:  d.CurHealth,
-		MaxHealth:  d.MaxHealth,
-		LineageId:  d.LineageId,
-		LastZoneId: d.LastZoneId,
-		LastRoomId: d.LastRoomId,
+		Id:           id,
+		Name:         d.Name,
+		PasswordHash: d.PasswordHash,
+		CurHealth:    d.CurHealth,
+		MaxHealth:    d.MaxHealth,
+		LineageId:    d.LineageId,
+		LastZoneId:   d.LastZoneId,
+		LastRoomId:   d.LastRoomId,
 	}
 	for _, e := range d.Equipment {
 		instanceId, err := uuid.Parse(e.InstanceId)

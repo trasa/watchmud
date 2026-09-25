@@ -12,6 +12,7 @@ import (
 type Record struct {
 	Id                     uuid.UUID
 	Name                   string
+	PasswordHash           string
 	CurHealth, MaxHealth   int
 	LineageId              string // cosmetic; there is no ClassId beside it any more
 	LastZoneId, LastRoomId string
@@ -58,16 +59,9 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 			return nil, errors.New("no lineages defined in the catalog")
 		}
 	}
-	p := &Player{
-		id:        rec.Id,
-		name:      rec.Name,
-		out:       out,
-		Lineage:   lineage,
-		inventory: NewInventory(),
-		equipment: object.NewEquipment(cat),
-		curHealth: rec.CurHealth,
-		maxHealth: rec.MaxHealth,
-	}
+	p := New(rec.Id, rec.Name, rec.PasswordHash, out, lineage, cat)
+	p.curHealth = rec.CurHealth
+	p.maxHealth = rec.MaxHealth
 
 	for _, ir := range rec.Inventory {
 		//Missing definitions. A saved InventoryRecord can reference a zone or object id that content no longer defines — you edit content/, and last week's save now points at nothing. Erroring means an unlucky
@@ -113,13 +107,14 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 
 func (p *Player) Record() *Record {
 	return &Record{
-		Id:        p.Id(),
-		Name:      p.Name(),
-		CurHealth: p.curHealth,
-		MaxHealth: p.maxHealth,
-		LineageId: p.Lineage.Id,
-		Equipment: EquipmentToRecord(p.equipment),
-		Inventory: p.inventory.Record(),
+		Id:           p.Id(),
+		Name:         p.Name(),
+		PasswordHash: p.passwordHash,
+		CurHealth:    p.curHealth,
+		MaxHealth:    p.maxHealth,
+		LineageId:    p.Lineage.Id,
+		Equipment:    EquipmentToRecord(p.equipment),
+		Inventory:    p.inventory.Record(),
 	}
 }
 

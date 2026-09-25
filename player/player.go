@@ -11,9 +11,10 @@ import (
 )
 
 type Player struct {
-	id   uuid.UUID
-	name string
-	out  Sender
+	id           uuid.UUID
+	name         string
+	out          Sender
+	passwordHash string
 
 	// Lineage is cosmetic and nothing reads it but the renderer. There is no
 	// Class beside it and no Role in its place: a role is read off
@@ -30,19 +31,21 @@ type Player struct {
 // it.
 func New(id uuid.UUID,
 	name string,
+	passwordHash string,
 	out Sender,
 	lineage *rules.Lineage,
 	cat *rules.Catalog,
 ) *Player {
 	return &Player{
-		id:        id,
-		name:      name,
-		out:       out,
-		Lineage:   lineage,
-		inventory: NewInventory(),
-		equipment: object.NewEquipment(cat),
-		curHealth: 100, // TODO need a default here,
-		maxHealth: 100,
+		id:           id,
+		name:         name,
+		passwordHash: passwordHash,
+		out:          out,
+		Lineage:      lineage,
+		inventory:    NewInventory(),
+		equipment:    object.NewEquipment(cat),
+		curHealth:    100, // TODO need a default here,
+		maxHealth:    100,
 	}
 }
 

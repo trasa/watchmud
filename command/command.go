@@ -14,3 +14,16 @@ package command
 type Command interface {
 	Verb() string
 }
+
+const secretStr = "[redacted]"
+
+// Secret are not logged into anything, shhhh.
+type Secret string
+
+func (Secret) String() string {
+	return secretStr
+}
+
+func (s Secret) GoString() string {
+	return s.String()
+}

@@ -14,6 +14,7 @@ import (
 	"github.com/trasa/watchmud/player"
 	"github.com/trasa/watchmud/rules"
 	"github.com/trasa/watchmud/world"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type GameServer struct {
@@ -22,6 +23,8 @@ type GameServer struct {
 	catalog        *rules.Catalog
 	tickInterval   time.Duration
 	store          player.Store
+	// bcryptCost is bcrypt.DefaultCost; tests turn it down to MinCost.
+	bcryptCost int
 }
 
 func New(w *world.World, c *rules.Catalog, s player.Store) *GameServer {
@@ -31,6 +34,7 @@ func New(w *world.World, c *rules.Catalog, s player.Store) *GameServer {
 		world:          w,
 		catalog:        c,
 		store:          s,
+		bcryptCost:     bcrypt.DefaultCost,
 	}
 }
 
@@ -134,6 +138,10 @@ func (gs *GameServer) dispatch(msg *gameserver.HandlerParameter) error {
 		return gs.handleLogin(msg, cmd)
 	case command.CreatePlayer:
 		return gs.handleCreatePlayer(msg, cmd)
+	case loginChecked:
+		return gs.handleLoginChecked(msg, cmd)
+	case createHashed:
+		return gs.handleCreateHashed(msg, cmd)
 	default:
 		return gs.world.HandleIncomingMessage(msg)
 	}
@@ -155,9 +163,7 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter, cmd command.
 		return errors.New("player already attached to client")
 	}
 
-	// TODO authentication and stuff...
 	playerName := cmd.Name
-
 	// One character, one session. A second one would load its own copy of
 	// the character, and the two would take turns saving over each other --
 	// drop a sword in one and the other still has it to save back. Taking
@@ -178,10 +184,52 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter, cmd command.
 		return nil
 	}
 
-	// create the player
+	go func() {
+		ok := bcrypt.CompareHashAndPassword([]byte(rec.PasswordHash), []byte(cmd.Password)) == nil
+		gs.Receive(gameserver.NewHandlerParameter(msg.Client, loginChecked{Name: cmd.Name, Ok: ok}))
+	}()
+	// return to handleLoginChecked
+	return nil
+}
+
+func (gs *GameServer) handleLoginChecked(msg *gameserver.HandlerParameter, cmd loginChecked) error {
+	if !cmd.Ok {
+		log.Warn().Msgf("login failed for %s", cmd.Name)
+		msg.Client.Send(event.LoginFailed{Reason: event.BadPassword})
+		return nil
+	}
+	// have to check again because something might have gotten through
+	if msg.Client.Player() != nil {
+		// you've already got one - this is an error in our connection logic
+		return errors.New("player already attached to client")
+	}
+
+	// One character, one session. A second one would load its own copy of
+	// the character, and the two would take turns saving over each other --
+	// drop a sword in one and the other still has it to save back. Taking
+	// over the old session is the friendlier answer; refusing is the safe one.
+	if gs.world.IsPlaying(cmd.Name) {
+		msg.Client.Send(event.LoginFailed{Reason: event.AlreadyPlaying})
+		return nil
+	}
+	// reload record
+	rec, found, err := gs.store.Load(cmd.Name)
+	if err != nil {
+		// store error - problem with the store, return an error
+		return err
+	}
+	if !found {
+		// shouldn't happen unless something crazy with database
+		// not an error - could represent a new player (player creation)
+		log.Info().Str("playerName", cmd.Name).Msg("playerName not found in store")
+		msg.Client.Send(event.LoginFailed{Reason: event.NoSuchPlayer})
+		return nil
+	}
+
+	// turn the record into a player.Player
 	p, err := player.FromRecord(rec, msg.Client, gs.catalog, gs.world)
 	if err != nil {
-		return fmt.Errorf("handleLogin %s: %w", playerName, err)
+		return fmt.Errorf("handleLogin %s: %w", cmd.Name, err)
 	}
 	msg.Player = p
 	msg.Client.SetPlayer(p)
@@ -201,6 +249,11 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter, cmd c
 		return fmt.Errorf("player %s already attached to client", msg.Client.Player().Name())
 	}
 	playerName := cmd.Name
+
+	if len(cmd.Name) == 0 || len(cmd.Password) == 0 {
+		msg.Client.Send(event.CreateFailed{Reason: event.BadRequest})
+		return fmt.Errorf("handleCreatePlayer %s: %s", playerName, event.BadRequest)
+	}
 
 	// The name has to be checked here. It used to be the database's unique
 	// index that refused a duplicate, but saves are queued now and that error
@@ -228,9 +281,54 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter, cmd c
 		return errors.New("handleCreatePlayer: no lineages defined in the catalog")
 	}
 
+	// separate go func because bcrypt is slooooow and can't be on the gameserver's goroutine.
+	// its ok because this doesn't modify any game / world state.
+	go func() {
+		hash, err := bcrypt.GenerateFromPassword([]byte(cmd.Password), gs.bcryptCost)
+		if err != nil {
+			log.Warn().Err(err).Msg("Failed to hash password?! Bad bad not good.")
+			msg.Client.Send(event.CreateFailed{Reason: event.Unknown})
+			return
+		}
+		ok := err == nil
+		gs.Receive(gameserver.NewHandlerParameter(msg.Client, createHashed{
+			Ok:           ok,
+			Name:         cmd.Name,
+			Lineage:      cmd.Lineage,
+			HashPassword: command.Secret(hash),
+		}))
+	}()
+	// control goes to handleCreateHashed
+	return nil
+}
+
+func (gs *GameServer) handleCreateHashed(msg *gameserver.HandlerParameter, cmd createHashed) error {
+	// Checked again: another connection could have created this name while
+	// the hash was being made.
+	if _, taken, err := gs.store.Load(cmd.Name); err != nil {
+		return fmt.Errorf("handleCreateHashed %s: %w", cmd.Name, err)
+	} else if taken {
+		msg.Client.Send(event.CreateFailed{Reason: event.NameTaken})
+		return nil
+	}
+	// The lineage is the only choice creation makes, and it is cosmetic. An
+	// id the catalog doesn't know means the transport offered something stale
+	// -- worth a log line, not worth refusing to make the character.
+	lineage, found := gs.catalog.Lineages[cmd.Lineage]
+	if !found {
+		if cmd.Lineage != "" {
+			log.Warn().Str("playerName", cmd.Name).Msgf("unknown lineage %q at creation, using the default", cmd.Lineage)
+		}
+		lineage = gs.catalog.DefaultLineage()
+	}
+	if lineage == nil {
+		return errors.New("handleCreateHashed: no lineages defined in the catalog")
+	}
+
 	p := player.New(
 		uuid.New(),
-		playerName,
+		cmd.Name,
+		string(cmd.HashPassword),
 		msg.Client,
 		lineage,
 		gs.catalog,
@@ -242,9 +340,8 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter, cmd c
 	player.GiveStartingGear(p, gs.catalog.StartingGear, gs.world)
 
 	// TODO need to set the location first (AddPlayer always puts the player in the start room, for now)
-
 	if err := gs.store.Save(p.Record()); err != nil {
-		return fmt.Errorf("handleCreatePlayer: %v", err)
+		return fmt.Errorf("handleCreateHashed: %v", err)
 	}
 
 	msg.Client.SetPlayer(p)

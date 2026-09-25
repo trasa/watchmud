@@ -19,6 +19,10 @@ package event
 type ResultCode string
 
 const (
+	// I dunno
+	Unknown    ResultCode = "UNKNOWN"
+	BadRequest ResultCode = "BAD_REQUEST"
+
 	// targets
 	TargetNotFound    ResultCode = "TARGET_NOT_FOUND"
 	TargetNotGettable ResultCode = "TARGET_NOT_GETTABLE"
@@ -79,6 +83,9 @@ const (
 	// Two sessions of one character each save over the other, which is how
 	// items get duplicated.
 	AlreadyPlaying ResultCode = "ALREADY_PLAYING"
+	// BadPassword: the character exists and that isn't its password. It must
+	// never be empty -- login() reads an empty reason as success.
+	BadPassword ResultCode = "BAD_PASSWORD"
 	// NameTaken: creation lost a race for the name, or was asked for one that
 	// exists. The store no longer says so itself -- saves are queued, and the
 	// database's unique index is only heard from on the writer goroutine.
