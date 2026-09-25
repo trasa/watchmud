@@ -14,7 +14,9 @@ serverPort: 10000
 # HTTP listener
 webPort: 8888
 # Telnet listener
-telnetPort: 4000
+telnet:
+  host: localhost
+  port: 4000
 
 # Persistence. Characters are stored one document per character in mongo.
 # `make db-up` starts the one in docker-compose.yml -- on port 27018, so it

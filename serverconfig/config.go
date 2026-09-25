@@ -17,7 +17,10 @@ type Config struct {
 	}
 	ServerPort int `yaml:"serverPort"`
 	WebPort    int `yaml:"webPort"`
-	TelnetPort int `yaml:"telnetPort"`
+	Telnet     struct {
+		Host string `yaml:"host"`
+		Port int    `yaml:"port"`
+	}
 
 	Mongo MongoConfig `yaml:"mongo"`
 }
@@ -42,6 +45,10 @@ func Load(path string) (*Config, error) {
 	// parse the configuration file
 	if err := yaml.UnmarshalStrict(data, &cfg); err != nil {
 		return nil, fmt.Errorf("parse %s: %w", path, err)
+	}
+	// verify contents
+	if len(cfg.Telnet.Host) == 0 || cfg.Telnet.Port == 0 {
+		return nil, fmt.Errorf("telnet host and port must be configured")
 	}
 	return &cfg, nil
 }

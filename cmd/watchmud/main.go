@@ -39,7 +39,7 @@ func run() error {
 	contentPath := flag.String("content", "", "override location of the content files")
 	flag.Parse()
 
-	// load the serverconfig.Config from YAML
+	// load and verify the serverconfig.Config from YAML
 	cfg, err := serverconfig.Load(*configPath)
 	if err != nil {
 		return fmt.Errorf("server config: %w", err)
@@ -57,6 +57,7 @@ func run() error {
 	}
 	defer closeLog()
 	log.Info().Msg("Logging initialized.")
+
 	d, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("main: %w", err)
@@ -99,6 +100,7 @@ func run() error {
 	}
 	roller := dice.New(seed)
 
+	// build the world and the game server
 	w, err := world.New(content, saver, roller)
 	if err != nil {
 		return fmt.Errorf("loading world: %w", err)
@@ -107,15 +109,17 @@ func run() error {
 
 	// launch telnet listener as goroutine
 	go func() {
-		err := telnet.Listen(ctx, fmt.Sprintf("localhost:%d", cfg.TelnetPort), gameServer, content.Catalog)
+		err := telnet.Listen(ctx, fmt.Sprintf("%s:%d", cfg.Telnet.Host, cfg.Telnet.Port), gameServer, content.Catalog)
 		if err != nil {
 			log.Error().Err(err).Msg("telnet listener")
 		}
 	}()
 
+	// run the game server
 	if runErr := gameServer.Run(ctx); runErr != nil && !errors.Is(runErr, context.Canceled) {
 		return fmt.Errorf("game server: %w", runErr)
 	}
+
 	return nil
 }
 
