@@ -38,6 +38,12 @@ services:
   mongo:
     image: mongo:8
     restart: unless-stopped
+    # WiredTiger's cache, capped rather than left to mongo's own sizing, so
+    # its memory is a number chosen for the droplet (1GB, shared with docker
+    # and the game) rather than one derived from it. Hundreds of characters
+    # fit in a fraction of this. The entrypoint puts "mongod" in front of
+    # arguments that start with a dash, so init scripts still run.
+    command: ["--wiredTigerCacheSizeGB", "0.25"]
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?set it in deploy/.env}
