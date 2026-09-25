@@ -1,0 +1,9 @@
+# Keep the build context to what the image needs. Secrets especially: .env
+# holds the database passwords and must never be baked into an image.
+.git
+.idea
+bin
+deploy/.env
+deploy/backups
+**/*.log
+**/.DS_Store

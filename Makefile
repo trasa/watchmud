@@ -83,6 +83,11 @@ wizard:
 	docker compose exec mongo mongosh watchmud --quiet --eval \
 		'const n = "$(NAME)", name = n[0].toUpperCase() + n.slice(1).toLowerCase(); const r = db.players.updateOne({name}, {$$set: {wizard: $(if $(UNSET),false,true)}}); print(r.matchedCount ? name + ": wizard=$(if $(UNSET),false,true)" : "no character named " + name)'
 
+## docker-build: build the deploy image, to check the Dockerfile still works
+.PHONY: docker-build
+docker-build:
+	docker build -t watchmud:dev .
+
 ## test-db: run the tests that need a real mongo (make db-up first)
 .PHONY: test-db
 test-db:

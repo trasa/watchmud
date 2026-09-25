@@ -24,3 +24,7 @@ _ReSharper.*
 .DS_Store
 vendor/
 .secret/
+
+# deploy secrets and backups
+deploy/.env
+deploy/backups/

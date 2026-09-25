@@ -60,21 +60,24 @@ because today anyone can log in as anyone and anyone can spawn mobs.
    one, so help can't offer a verb the parser refuses, or a builder command. "help" at
    the name prompt explains the prompt instead of creating a character called Help.
    `shout` is now an alias for `tellall`, which already rendered as a shout.
-6. **Deploy.** A Dockerfile (static binary + `content/`), compose with mongo *with auth*,
-   a small VPS, telnet on 4000 (or 23), mongo backups on a timer, logs to a file that
-   rotates. SIGTERM already flushes the write-behind store; make sure the platform
-   sends SIGTERM, not SIGKILL.
+6. ~~**Deploy.**~~ Done 2026-09-25, except TLS. `Dockerfile` (static binary on distroless,
+   non-root, 12.5MB) and `deploy/compose.yaml`: the game, mongo *with auth* and no
+   published port, and a backup service (nightly `mongodump`, two weeks kept, into
+   `deploy/backups`). Logs are stdout (an empty `log.file`) rotated by docker. The
+   mongo uri, password and all, comes from `WATCHMUD_MONGO_URI` rather than the
+   checked-in `deploy/app.yaml`, and is logged redacted (`mongostore.RedactURI` -- it
+   was logging the password). `stop_grace_period: 30s` so SIGTERM's flush of queued
+   saves isn't cut off. The telnet bind is `telnet.host` in config (54c319d). Runbook:
+   `deploy/README.md`. Tested end to end locally, including a restart with a player
+   connected (they came back where they were) and restoring a backup.
 
-   **Telnet binds `localhost`** (`cmd/watchmud`: `fmt.Sprintf("localhost:%d", ...)`),
-   which nothing outside the machine -- or outside the container -- can reach. It needs
-   a host in config (`0.0.0.0` in the container, `localhost` stays the dev default so
-   a laptop doesn't serve its LAN).
+   Still open:
+   - **Copy backups off the host.** They sit on the same disk as the database.
+   - **Check the per-address cap sees real addresses** once players connect; the
+     README says how.
+   - **TLS**, below.
 
-   **The per-address cap sees the proxy, not the player**, if TLS is terminated by a
-   proxy: every TLS player arrives from 127.0.0.1 and the sixth is refused. Either TLS
-   in Go (the cap keeps working), PROXY protocol from the proxy, or exempt loopback.
-
-   **And a TLS port** beside the plain one, so a password doesn't have to cross the
+   **A TLS port** beside the plain one, so a password doesn't have to cross the
    internet in the clear. Telnet has no encryption and no MUD protocol adds any (MCCP
    is compression; GMCP/MSDP/MTTS are data channels; telnet START_TLS, option 46, has
    almost no client support), so what the better-run games do is a second port that
@@ -86,11 +89,13 @@ because today anyone can log in as anyone and anyone can spawn mobs.
      key paths in config (both in `serverconfig`, it's `UnmarshalStrict`), and a
      renewal story: certbot on the box, reload on renew.
    - Or terminate TLS in a proxy (Caddy's layer-4 module, haproxy, stunnel) that
-     forwards plaintext to 4000 on localhost. No Go at all, one more moving part.
+     forwards plaintext to 4000. No Go at all, one more moving part -- and **every TLS
+     player then arrives from the proxy's address**, so the 5-per-address cap refuses
+     the sixth. PROXY protocol, or exempting the proxy, fixes that. TLS in Go doesn't
+     have the problem, which makes it the better of the two.
 
    Keep plain telnet: stock `telnet` can't speak TLS, and locking those players out
    costs more than it protects. Say at the login banner that the secure port exists.
-   Needs the domain, so it belongs here with deploy rather than with passwords.
 
 **First week, once people are in:**
 
@@ -106,6 +111,61 @@ throne room and looted a goose), and a way to make an empty world feel inhabited
 
 The Context section below describes the tree as it was in September 2026, before any of
 this landed. It is kept for its reasoning, not as a description of the present.
+
+## Later: the Kubernetes cluster?
+
+There's a hosted cluster already running other projects. The compose deploy was built
+so this stays open: same image, config in a file, secrets in the environment. Nothing
+needs undoing to move. What's different about this service, and what it would take.
+
+**It is a singleton, and must stay one.** One process owns the world: every room,
+every fight, who is where. Two copies aren't two servers, they're two worlds, each
+saving the same characters over the other -- which is how items get duplicated. So:
+`replicas: 1` and `strategy: Recreate` (the default rolling update starts the new pod
+before stopping the old one, which is exactly the two-copies case), or a StatefulSet.
+No horizontal scaling, ever, without a real redesign.
+
+**Every restart is an outage.** Players hold a socket for hours; a new pod means every
+one of them drops and reconnects. k8s restarts pods more often than a VPS restarts
+containers: node upgrades, drains, rebalancing, eviction under memory pressure. A
+PodDisruptionBudget can't help a singleton -- `minAvailable: 1` just blocks the drain.
+`terminationGracePeriodSeconds: 30` so the save flush finishes, and it would be worth
+announcing a shutdown to players from SIGTERM first.
+
+**Raw TCP in.** Ingress controllers are HTTP. Telnet needs a `Service` of type
+`LoadBalancer` (usually one paid cloud load balancer per service), or the ingress
+controller's TCP passthrough, or a Gateway API `TCPRoute`. Two things to check on
+whichever it is:
+- **Idle timeouts.** Cloud load balancers drop idle TCP connections (often 350s to a
+  few minutes); a player reading a room description counts as idle. Go's accepted
+  connections send TCP keepalives every 15s by default, which usually covers it --
+  verify, don't assume.
+- **Client addresses.** A load balancer that rewrites the source address makes every
+  player the same address to the 5-per-address cap. `externalTrafficPolicy: Local`,
+  or PROXY protocol.
+
+**Mongo.** In the cluster it's a StatefulSet with a PersistentVolumeClaim -- the volume
+is tied to one zone, so the pod can only reschedule there -- and backups become a
+CronJob pushing `mongodump` to object storage (off-host, which the VPS still lacks). Or
+a managed mongo outside the cluster, which moves the whole problem elsewhere.
+
+**Health checks need an endpoint first.** A TCP probe would open a telnet session every
+few seconds, and wouldn't notice the one failure that matters: the world goroutine
+wedged while the listener still accepts. The fix is a small HTTP endpoint (`webPort` is
+still in the config struct, unused) reporting the time of the last heartbeat, failing
+when it's stale. Worth having on the VPS too.
+
+**For it:** restarts, rescheduling and health checks done for you; secrets, logs and
+monitoring the other projects already use; rolling out a new image is one command;
+cert-manager for the TLS certificate; the cluster is already paid for.
+
+**Against it:** a stateful singleton that holds long connections uses almost none of
+that, and each piece above is something to get right that a VPS doesn't ask for.
+Rescheduling -- the main thing k8s adds -- is an outage for this service.
+
+**Recommendation:** launch on compose. Move when there's a reason: the VPS becoming a
+second thing to maintain, or wanting the cluster's monitoring. The health endpoint is
+worth doing either way, and is the first step if it moves.
 
 ## Context
 

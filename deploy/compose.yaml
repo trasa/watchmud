@@ -1,0 +1,80 @@
+# WatchMUD for real players: the game, its mongo, and nightly backups.
+#
+#   cp deploy/.env.example deploy/.env    # then set the two passwords
+#   docker compose -f deploy/compose.yaml up -d --build
+#
+# See deploy/README.md. This is separate from the docker-compose.yml at the
+# repo root, which is the unauthenticated mongo for development.
+
+services:
+  watchmud:
+    build:
+      context: ..
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      WATCHMUD_MONGO_URI: mongodb://watchmud:${WATCHMUD_DB_PASSWORD:?set it in deploy/.env}@mongo:27017/watchmud?authSource=watchmud
+    ports:
+      - "${WATCHMUD_PORT:-4000}:4000"
+    # docker stop waits this long after SIGTERM before SIGKILL. The flush of
+    # queued saves gets 10s and the mongo disconnect 5s (cmd/watchmud), so the
+    # default of 10s could kill it mid-save.
+    stop_grace_period: 30s
+    # stdout, rotated: at most 5 files of 20MB.
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "5"
+
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?set it in deploy/.env}
+      WATCHMUD_DB_PASSWORD: ${WATCHMUD_DB_PASSWORD:?set it in deploy/.env}
+    # No ports: published. Only the game and the backup reach it, over the
+    # compose network; nothing on the internet can even try a password.
+    volumes:
+      - mongo-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "5"
+
+  # A dump of the game's database every night into deploy/backups, keeping two
+  # weeks. On the same disk as mongo, so it covers mistakes, not the disk
+  # dying: copy deploy/backups somewhere else too. See the README.
+  backup:
+    image: mongo:8
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?set it in deploy/.env}
+      BACKUP_EVERY_SECONDS: ${BACKUP_EVERY_SECONDS:-86400}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ./backups:/backups
+      - ./backup.sh:/backup.sh:ro
+    entrypoint: ["bash", "/backup.sh"]
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "2"
+
+volumes:
+  mongo-data:

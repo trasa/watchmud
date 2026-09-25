@@ -1,0 +1,27 @@
+# WatchMUD: a static binary and its content, on an image with nothing else in
+# it. Built by deploy/compose.yaml; `make docker-build` builds it alone.
+
+FROM golang:1.27 AS build
+WORKDIR /src
+
+# modules first, so a code change doesn't re-download them
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+# CGO off: a static binary, which is what lets the runtime image be distroless.
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/watchmud ./cmd/watchmud
+
+# distroless/static: no shell, no package manager, a non-root user. Nothing to
+# exec into -- `docker compose logs` is how you see what it's doing.
+FROM gcr.io/distroless/static-debian12:nonroot
+WORKDIR /app
+COPY --from=build /out/watchmud /app/watchmud
+COPY content /app/content
+COPY deploy/app.yaml /app/app.yaml
+
+EXPOSE 4000
+USER nonroot:nonroot
+# exec form, so watchmud is PID 1 and gets docker stop's SIGTERM directly --
+# that is what flushes the write-behind saves before it exits.
+ENTRYPOINT ["/app/watchmud", "-config", "/app/app.yaml"]

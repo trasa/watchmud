@@ -1,0 +1,22 @@
+# WatchMUD server configuration for the container (deploy/compose.yaml).
+# serverconfig/config_test.go loads this file, so a typo here fails `make check`
+# instead of the deploy.
+---
+
+# No file: log to stdout, where docker keeps it and rotates it (see the
+# logging: block in compose.yaml).
+log:
+  level: info
+
+contentPath: /app/content
+
+# 0.0.0.0 so the port docker publishes reaches it. localhost here would be
+# the container's own loopback, which nothing outside can reach.
+telnet:
+  host: 0.0.0.0
+  port: 4000
+
+# The uri carries the password, so it isn't here: WATCHMUD_MONGO_URI in the
+# environment supplies it (compose.yaml builds it from .env).
+mongo:
+  database: watchmud

@@ -31,6 +31,7 @@ make vet              # green since Phase 5
 make generate         # regenerate *_string.go after editing a stringer enum
 make db-up            # start the local mongo (docker compose, host port 27018)
 make test-db          # the mongostore tests that need a real mongo
+make docker-build     # build the deploy image (deploy/README.md for the rest)
 go test ./world -run TestLook_successful          # single test
 go test ./player -run TestPlayerTestSuite/TestX   # testify suite: Suite/Method
 ```
@@ -514,4 +515,11 @@ is no threat yet -- nothing lets a tank take a mob back.
   stdlib `log`. Follow whichever the file already uses.
 - Config is `app.local.yaml` (`-config` to override, `-content` overrides just the content
   path). `serverconfig.Load` uses `yaml.UnmarshalStrict`, so an unknown key is a hard startup
-  failure -- add the struct field and the YAML key in the same change.
+  failure -- add the struct field and the YAML key in the same change. `deploy/app.yaml`
+  is the container's, and `serverconfig/config_test.go` loads it, so it breaks `make
+  check` rather than a deploy. `WATCHMUD_MONGO_URI` overrides `mongo.uri`: the uri holds
+  the password and doesn't belong in a checked-in file. Never log it raw --
+  `mongostore.RedactURI`. An empty `log.file` means stdout only, which is what the
+  container uses.
+- Deploying is `deploy/compose.yaml` and `deploy/README.md`; the root
+  `docker-compose.yml` is only the unauthenticated dev mongo.
