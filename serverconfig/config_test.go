@@ -1,0 +1,53 @@
+package serverconfig
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func writeConfig(t *testing.T, yaml string) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "app.yaml")
+	require.NoError(t, os.WriteFile(path, []byte(yaml), 0o600))
+	return path
+}
+
+const minimal = `
+contentPath: ./content
+telnet:
+  host: 0.0.0.0
+  port: 4000
+mongo:
+  uri: mongodb://from-the-file
+  database: watchmud
+`
+
+func TestLoad_mongoUriFromTheEnvironment(t *testing.T) {
+	t.Setenv("WATCHMUD_MONGO_URI", "mongodb://user:secret@mongo:27017/watchmud")
+
+	cfg, err := Load(writeConfig(t, minimal))
+	require.NoError(t, err)
+	assert.Equal(t, "mongodb://user:secret@mongo:27017/watchmud", cfg.Mongo.Uri)
+	assert.Equal(t, "watchmud", cfg.Mongo.Database, "the rest still comes from the file")
+}
+
+func TestLoad_mongoUriFromTheFile(t *testing.T) {
+	t.Setenv("WATCHMUD_MONGO_URI", "")
+
+	cfg, err := Load(writeConfig(t, minimal))
+	require.NoError(t, err)
+	assert.Equal(t, "mongodb://from-the-file", cfg.Mongo.Uri)
+}
+
+// The deploy config has to load, or the container won't start.
+func TestLoad_theDeployConfig(t *testing.T) {
+	cfg, err := Load("../deploy/app.yaml")
+	require.NoError(t, err)
+	assert.Equal(t, "0.0.0.0", cfg.Telnet.Host, "reachable from outside the container")
+	assert.Empty(t, cfg.Log.File, "stdout; docker rotates it")
+	assert.Empty(t, cfg.Mongo.Uri, "the uri carries the password: it comes from the environment")
+}

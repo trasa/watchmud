@@ -141,7 +141,7 @@ func openStore(ctx context.Context, cfg *serverconfig.Config) (player.Store, fun
 	if err != nil {
 		return nil, nil, err
 	}
-	log.Info().Str("uri", cfg.Mongo.Uri).Str("database", cfg.Mongo.Database).Msg("persistence: mongo")
+	log.Info().Str("uri", mongostore.RedactURI(cfg.Mongo.Uri)).Str("database", cfg.Mongo.Database).Msg("persistence: mongo")
 
 	return store, func() {
 		// ctx is cancelled by the signal that got us here, so the disconnect

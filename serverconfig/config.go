@@ -46,6 +46,12 @@ func Load(path string) (*Config, error) {
 	if err := yaml.UnmarshalStrict(data, &cfg); err != nil {
 		return nil, fmt.Errorf("parse %s: %w", path, err)
 	}
+	// The uri carries the database password, so a deployment keeps it out
+	// of the file (which is checked in) and passes it in the environment --
+	// a compose .env, or a kubernetes Secret.
+	if uri := os.Getenv("WATCHMUD_MONGO_URI"); uri != "" {
+		cfg.Mongo.Uri = uri
+	}
 	// verify contents
 	if len(cfg.Telnet.Host) == 0 || cfg.Telnet.Port == 0 {
 		return nil, fmt.Errorf("telnet host and port must be configured")
