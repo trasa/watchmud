@@ -283,6 +283,21 @@ var commandCases = []commandCase{
 		want:      startRoomBlock,
 		wantOther: "testdood leaves.\ntestdood enters.\n",
 	},
+	{
+		// a builder command refused to a player reads like a verb that
+		// doesn't exist -- the same words parse.go uses for one
+		name:  "load is unknown to a player",
+		input: "load mob rabbit",
+		want:  "Unknown request: load\n",
+	},
+	{
+		name: "load works for a wizard",
+		setup: func(_ *world.World, p *player.Player, _ *player.Player) {
+			p.SetWizard(true)
+		},
+		input: "load mob rabbit",
+		want:  "Loaded.\n",
+	},
 }
 
 func TestCommandRendering(t *testing.T) {

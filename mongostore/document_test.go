@@ -18,6 +18,7 @@ func testRecord() *player.Record {
 		Id:           uuid.New(),
 		Name:         "newbie",
 		PasswordHash: "$2a$10$abcdefghijklmnopqrstuuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY",
+		Wizard:       true,
 		CurHealth:    93,
 		MaxHealth:    100,
 		LineageId:    "hill_dwarf",

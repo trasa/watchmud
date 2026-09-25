@@ -17,6 +17,11 @@ func failureText(verb, code string) string {
 	if code == "" {
 		return "You can't do that.\n"
 	}
+	// the same words parse.go uses for a verb it doesn't know, so a builder
+	// command refused to a player reads as one that doesn't exist
+	if code == "UNKNOWN_COMMAND" {
+		return "Unknown request: " + verb + "\n"
+	}
 	if s, ok := failureByVerb[verb+"/"+code]; ok {
 		return s + "\n"
 	}

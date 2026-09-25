@@ -478,7 +478,12 @@ is no threat yet -- nothing lets a tank take a mob back.
 ## Conventions
 
 - Handlers are one file each, `world/h_<command>.go`, with a sibling `h_<command>_test.go`.
-  Wizard/builder commands are `h_wiz_<command>.go`.
+  Wizard/builder commands are `h_wiz_<command>.go`, and **the command struct must
+  implement `command.Wizard`** (`func (X) wizard() {}` beside the others in
+  command/commands.go) and join the list in `world/wizard_test.go`. That marker is
+  the only gate: `HandleIncomingMessage` refuses a marked command from anyone whose
+  record lacks `Wizard`, before any handler runs. Forget it and the command is open to
+  every player. Grant it with `make wizard NAME=...`, while they're logged out.
 - **`Send` returns nothing.** `player.Sender` is `Send(msg any)`. The only error any
   implementation could produce meant "this connection is already dead and I already tore it
   down," which no caller can act on. Don't reintroduce an error return.

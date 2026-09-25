@@ -15,6 +15,9 @@ type Player struct {
 	name         string
 	out          Sender
 	passwordHash string
+	// wizard lets them run the builder commands. Nothing in the game grants
+	// it: it is set by hand on the record (make wizard NAME=...).
+	wizard bool
 
 	// Lineage is cosmetic and nothing reads it but the renderer. There is no
 	// Class beside it and no Role in its place: a role is read off
@@ -161,3 +164,6 @@ func (p *Player) Log() *zerolog.Logger {
 		Logger()
 	return &l
 }
+
+func (p *Player) IsWizard() bool        { return p.wizard }
+func (p *Player) SetWizard(wizard bool) { p.wizard = wizard }

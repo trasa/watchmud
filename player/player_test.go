@@ -93,3 +93,20 @@ func (s *PlayerSuite) TestIsDead() {
 	s.p.curHealth = 0
 	s.Assert().True(s.p.Dead())
 }
+
+// Being a wizard is on the record, so it has to come back off it -- a save
+// that forgot it would demote every wizard at the next timed save.
+func (s *PlayerSuite) TestWizardSurvivesTheRecord() {
+	p := NewTestPlayer(uuid.New(), "gandalf", &Recorder{})
+	s.Assert().False(p.IsWizard(), "nobody starts as one")
+	p.SetWizard(true)
+
+	rec := p.Record()
+	s.Assert().True(rec.Wizard)
+
+	cat, err := rules.NewTestCatalog()
+	s.Require().NoError(err)
+	back, err := FromRecord(rec, &Recorder{}, cat, nil)
+	s.Require().NoError(err)
+	s.Assert().True(back.IsWizard())
+}

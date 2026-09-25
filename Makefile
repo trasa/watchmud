@@ -76,6 +76,13 @@ db-reset:
 db-shell:
 	docker compose exec mongo mongosh watchmud
 
+## wizard: make a character a wizard -- make wizard NAME=bob (UNSET=1 to undo). Do it while they're logged out: a timed save of a logged-in player writes the old value back.
+.PHONY: wizard
+wizard:
+	@test -n "$(NAME)" || (echo "usage: make wizard NAME=<character> [UNSET=1]" && exit 1)
+	docker compose exec mongo mongosh watchmud --quiet --eval \
+		'const r = db.players.updateOne({name: "$(NAME)"}, {$$set: {wizard: $(if $(UNSET),false,true)}}); print(r.matchedCount ? "$(NAME): wizard=$(if $(UNSET),false,true)" : "no character named $(NAME)")'
+
 ## test-db: run the tests that need a real mongo (make db-up first)
 .PHONY: test-db
 test-db:

@@ -171,6 +171,19 @@ func (Consider) Verb() string { return "consider" }
 
 // ---- builder commands ------------------------------------------------------
 
+// Wizard marks a builder command. The world refuses one from anyone whose
+// record doesn't say they're a wizard, before any handler runs. The method is
+// unexported so only this package can mark a command, and a builder command
+// without it is open to everyone: add it to world/wizard_test.go's list too.
+type Wizard interface {
+	Command
+	wizard()
+}
+
+func (Load) wizard()       {}
+func (Restore) wizard()    {}
+func (RoomStatus) wizard() {}
+
 type Load struct {
 	Type string // "mob" or "obj"
 	Zone string // empty means the room's own zone

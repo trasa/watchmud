@@ -7,7 +7,6 @@ import (
 )
 
 func (w *World) handleRestore(msg *gameserver.HandlerParameter, cmd command.Restore) {
-	// TODO figure out the level of the user and if they are allowed to run this wizcommand!
 	targetRoom := w.getPlayerRoom(msg.Player)
 
 	logWizCommand(msg.Player, "restore", "Player %s is attempting to restore %s",

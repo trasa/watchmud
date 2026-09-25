@@ -13,7 +13,18 @@ import (
 //
 // The switch is the whole dispatch table: no string keys, no reflection, and
 // each handler is handed its command already typed.
+//
+// Builder commands are refused here, before the switch, so no handler has to
+// remember to check. A player who isn't a wizard gets the answer a verb
+// nobody has heard of gets.
 func (w *World) HandleIncomingMessage(msg *gameserver.HandlerParameter) error {
+	if _, wiz := msg.Command.(command.Wizard); wiz && (msg.Player == nil || !msg.Player.IsWizard()) {
+		if msg.Player != nil {
+			logWizCommand(msg.Player, msg.Command.Verb(), "Player %s is not a wizard; refused", msg.Player.Name())
+		}
+		msg.Fail(event.UnknownCommand)
+		return nil
+	}
 	switch cmd := msg.Command.(type) {
 	case command.Drop:
 		w.handleDrop(msg, cmd)

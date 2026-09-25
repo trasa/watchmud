@@ -13,6 +13,7 @@ type Record struct {
 	Id                     uuid.UUID
 	Name                   string
 	PasswordHash           string
+	Wizard                 bool
 	CurHealth, MaxHealth   int
 	LineageId              string // cosmetic; there is no ClassId beside it any more
 	LastZoneId, LastRoomId string
@@ -62,6 +63,7 @@ func FromRecord(rec *Record, out Sender, cat *rules.Catalog, defs DefinitionSour
 	p := New(rec.Id, rec.Name, rec.PasswordHash, out, lineage, cat)
 	p.curHealth = rec.CurHealth
 	p.maxHealth = rec.MaxHealth
+	p.wizard = rec.Wizard
 
 	for _, ir := range rec.Inventory {
 		//Missing definitions. A saved InventoryRecord can reference a zone or object id that content no longer defines — you edit content/, and last week's save now points at nothing. Erroring means an unlucky
@@ -110,6 +112,7 @@ func (p *Player) Record() *Record {
 		Id:           p.Id(),
 		Name:         p.Name(),
 		PasswordHash: p.passwordHash,
+		Wizard:       p.wizard,
 		CurHealth:    p.curHealth,
 		MaxHealth:    p.maxHealth,
 		LineageId:    p.Lineage.Id,

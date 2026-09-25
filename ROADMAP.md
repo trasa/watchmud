@@ -25,9 +25,13 @@ because today anyone can log in as anyone and anyone can spawn mobs.
    **Characters made before this have no hash and can't log in** -- no migration, on
    purpose (anyone who knew the name could claim it): clear the `players` collection
    before launch.
-2. **Wizard commands are open to everyone.** `load` and `restore` have no check. A
-   wizard flag on the record, set by hand (or a names list in app.yaml), checked in
-   dispatch before any `h_wiz_*` handler.
+2. ~~**Wizard commands are open to everyone.**~~ Done 2026-09-24. `Wizard` on the record
+   (and the mongo document), set by hand with `make wizard NAME=...` while that character
+   is logged out. Builder commands carry the `command.Wizard` marker and
+   `World.HandleIncomingMessage` refuses them before the switch, answering a non-wizard
+   exactly as it would a verb that doesn't exist. `load`, `restore` and `roomstatus`
+   (which dumps room internals) are gated. A record flag rather than a names list in
+   app.yaml, because anyone could create a listed name before its owner did.
 3. **Names.** Letters only, 3-16, case-folded, a reserved list (`self`, `all`, `corpse`,
    mob names...). A name is permanent and public.
 4. **Connection hygiene.** Idle timeout at the login prompt (short) and in game (long),
