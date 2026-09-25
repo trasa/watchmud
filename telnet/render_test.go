@@ -8,11 +8,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/rules"
-	"github.com/trasa/watchmud/world"
+	"github.com/watchmud/watchmud/gameserver"
+	"github.com/watchmud/watchmud/object"
+	"github.com/watchmud/watchmud/player"
+	"github.com/watchmud/watchmud/rules"
+	"github.com/watchmud/watchmud/world"
 )
 
 type commandCase struct {

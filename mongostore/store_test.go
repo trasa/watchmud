@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/trasa/watchmud/player"
+	"github.com/watchmud/watchmud/player"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 

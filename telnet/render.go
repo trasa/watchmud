@@ -7,9 +7,9 @@ import (
 	"unicode/utf8"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/player"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // Render turns anything sent to a connection into the text a telnet client

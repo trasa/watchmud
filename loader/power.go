@@ -3,7 +3,7 @@ package loader
 import (
 	"fmt"
 
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // zonePowerBand is what the manifest said, or the bottom band if it said

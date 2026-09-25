@@ -1,7 +1,7 @@
 package command
 
 import (
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // ---- session ---------------------------------------------------------------

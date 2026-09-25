@@ -5,7 +5,7 @@ import (
 	"time"
 	"uuid"
 
-	"github.com/trasa/watchmud/player"
+	"github.com/watchmud/watchmud/player"
 )
 
 // playerDoc is one character as it sits in the collection.

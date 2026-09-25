@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/testdice"
+	"github.com/watchmud/watchmud/testdice"
 )
 
 type MeleeSuite struct {

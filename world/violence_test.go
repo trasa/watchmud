@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/event"
+	"github.com/watchmud/watchmud/event"
 )
 
 // What happens to everyone else's fights when one combatant dies. These drive

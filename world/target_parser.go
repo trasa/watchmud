@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/trasa/watchmud/object"
+	"github.com/watchmud/watchmud/object"
 )
 
 type Target struct {

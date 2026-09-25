@@ -1,6 +1,6 @@
 package object
 
-import "github.com/trasa/watchmud/rules"
+import "github.com/watchmud/watchmud/rules"
 
 // Durability is per-instance, because it is the whole point: two chain shirts
 // off the same definition are the same kind of thing, and the one you have

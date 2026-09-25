@@ -1,6 +1,6 @@
 package server
 
-import "github.com/trasa/watchmud/command"
+import "github.com/watchmud/watchmud/command"
 
 // loginChecked is a command.Command that contains the callback from comparing a password to the stored password hash,
 // not exported and put over here so clients can't ever forge one.

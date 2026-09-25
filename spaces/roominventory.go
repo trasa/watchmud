@@ -5,8 +5,8 @@ import (
 	"iter"
 	"uuid"
 
-	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/ordered"
+	"github.com/watchmud/watchmud/object"
+	"github.com/watchmud/watchmud/ordered"
 )
 
 // RoomInventory is what is lying on the floor of a room, in the order it

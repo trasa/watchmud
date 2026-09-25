@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/rules"
 )
 
 func TestRenderEquipment_power(t *testing.T) {

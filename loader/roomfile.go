@@ -1,7 +1,7 @@
 package loader
 
 import (
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/rules"
 )
 
 type roomFileEntry struct {

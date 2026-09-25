@@ -1,7 +1,7 @@
 package spaces
 
 import (
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // RoomExit is a direction to another room.

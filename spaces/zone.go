@@ -7,10 +7,10 @@ import (
 	"uuid"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/mobile"
-	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/rules"
-	"github.com/trasa/watchmud/zonereset"
+	"github.com/watchmud/watchmud/mobile"
+	"github.com/watchmud/watchmud/object"
+	"github.com/watchmud/watchmud/rules"
+	"github.com/watchmud/watchmud/zonereset"
 )
 
 type Zone struct {

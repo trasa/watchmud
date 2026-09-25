@@ -1,6 +1,6 @@
 package gameserver
 
-import "github.com/trasa/watchmud/player"
+import "github.com/watchmud/watchmud/player"
 
 type TestConn struct {
 	player *player.Player

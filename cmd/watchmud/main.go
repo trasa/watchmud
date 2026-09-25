@@ -12,17 +12,17 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/dice"
-	"github.com/trasa/watchmud/loader"
-	"github.com/trasa/watchmud/logging"
-	"github.com/trasa/watchmud/memstore"
-	"github.com/trasa/watchmud/mongostore"
-	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/server"
-	"github.com/trasa/watchmud/serverconfig"
-	"github.com/trasa/watchmud/telnet"
-	"github.com/trasa/watchmud/world"
-	"github.com/trasa/watchmud/writebehind"
+	"github.com/watchmud/watchmud/dice"
+	"github.com/watchmud/watchmud/loader"
+	"github.com/watchmud/watchmud/logging"
+	"github.com/watchmud/watchmud/memstore"
+	"github.com/watchmud/watchmud/mongostore"
+	"github.com/watchmud/watchmud/player"
+	"github.com/watchmud/watchmud/server"
+	"github.com/watchmud/watchmud/serverconfig"
+	"github.com/watchmud/watchmud/telnet"
+	"github.com/watchmud/watchmud/world"
+	"github.com/watchmud/watchmud/writebehind"
 )
 
 func main() {

@@ -5,8 +5,8 @@ import (
 	"uuid"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/ordered"
+	"github.com/watchmud/watchmud/object"
+	"github.com/watchmud/watchmud/ordered"
 )
 
 // Inventory is what a player is carrying, in the order they picked it up.

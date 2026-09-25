@@ -5,13 +5,13 @@ import (
 	"uuid"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/combat"
-	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/mobile"
-	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/rules"
-	"github.com/trasa/watchmud/testdice"
+	"github.com/watchmud/watchmud/combat"
+	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/mobile"
+	"github.com/watchmud/watchmud/object"
+	"github.com/watchmud/watchmud/player"
+	"github.com/watchmud/watchmud/rules"
+	"github.com/watchmud/watchmud/testdice"
 )
 
 // Armor class from the equipment a player is actually wearing, all the way

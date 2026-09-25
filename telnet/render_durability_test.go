@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // What a player sees of durability: the condition of each piece in the

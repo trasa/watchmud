@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/rules"
 )
 
 type InstanceMeleeDamageSuite struct {

@@ -5,8 +5,8 @@ import (
 	"iter"
 	"uuid"
 
-	"github.com/trasa/watchmud/mobile"
-	"github.com/trasa/watchmud/ordered"
+	"github.com/watchmud/watchmud/mobile"
+	"github.com/watchmud/watchmud/ordered"
 )
 
 // RoomMobs is the mobs standing in a room, in the order they arrived.

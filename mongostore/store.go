@@ -16,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
-	"github.com/trasa/watchmud/player"
+	"github.com/watchmud/watchmud/player"
 )
 
 // DefaultDatabase is used when the config names a uri but no database.

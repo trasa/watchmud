@@ -5,7 +5,7 @@ import (
 	"uuid"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // A player's power is the average of what they have on. See LEVELS.md.

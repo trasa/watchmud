@@ -3,7 +3,7 @@ package loader
 import (
 	"fmt"
 
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // objectDamage is the dice a wielded object hits with. Anything worn in the wield slot

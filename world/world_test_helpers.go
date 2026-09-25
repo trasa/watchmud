@@ -7,12 +7,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/command"
-	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/loader"
-	"github.com/trasa/watchmud/memstore"
-	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/testdice"
+	"github.com/watchmud/watchmud/command"
+	"github.com/watchmud/watchmud/gameserver"
+	"github.com/watchmud/watchmud/loader"
+	"github.com/watchmud/watchmud/memstore"
+	"github.com/watchmud/watchmud/player"
+	"github.com/watchmud/watchmud/testdice"
 )
 
 type worldTestSuite struct {

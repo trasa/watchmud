@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/mobile"
-	"github.com/trasa/watchmud/rules"
-	"github.com/trasa/watchmud/spaces"
+	"github.com/watchmud/watchmud/mobile"
+	"github.com/watchmud/watchmud/rules"
+	"github.com/watchmud/watchmud/spaces"
 )
 
 // DoMobileActivity and walk through all the mob instances that are

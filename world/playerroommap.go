@@ -1,8 +1,8 @@
 package world
 
 import (
-	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/spaces"
+	"github.com/watchmud/watchmud/player"
+	"github.com/watchmud/watchmud/spaces"
 )
 
 type playerRoomMap struct {

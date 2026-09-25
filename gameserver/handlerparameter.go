@@ -1,9 +1,9 @@
 package gameserver
 
 import (
-	"github.com/trasa/watchmud/command"
-	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/player"
+	"github.com/watchmud/watchmud/command"
+	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/player"
 )
 
 // HandlerParameter is what a handler is handed: the connection, the player

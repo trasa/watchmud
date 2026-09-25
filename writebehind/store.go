@@ -11,7 +11,7 @@ import (
 	"uuid"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/player"
+	"github.com/watchmud/watchmud/player"
 )
 
 type Store struct {

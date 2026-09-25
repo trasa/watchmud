@@ -3,10 +3,10 @@ package telnet
 import (
 	"uuid"
 
-	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/rules"
-	"github.com/trasa/watchmud/world"
+	"github.com/watchmud/watchmud/object"
+	"github.com/watchmud/watchmud/player"
+	"github.com/watchmud/watchmud/rules"
+	"github.com/watchmud/watchmud/world"
 )
 
 // a corpse in the start room holding these

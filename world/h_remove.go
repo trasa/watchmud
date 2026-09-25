@@ -1,9 +1,9 @@
 package world
 
 import (
-	"github.com/trasa/watchmud/command"
-	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/gameserver"
+	"github.com/watchmud/watchmud/command"
+	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/gameserver"
 )
 
 // handleRemove takes an equipped item off. The item stays in the player's

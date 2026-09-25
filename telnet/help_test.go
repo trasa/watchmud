@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/trasa/watchmud/command"
+	"github.com/watchmud/watchmud/command"
 )
 
 // Help can't advertise a verb the parser doesn't know -- that is how the two

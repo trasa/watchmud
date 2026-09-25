@@ -2,10 +2,10 @@ package world
 
 import (
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/command"
-	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/gameserver"
-	"github.com/trasa/watchmud/object"
+	"github.com/watchmud/watchmud/command"
+	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/gameserver"
+	"github.com/watchmud/watchmud/object"
 )
 
 // findContainer is the container a player named, on the floor of the room

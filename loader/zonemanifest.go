@@ -1,6 +1,6 @@
 package loader
 
-import "github.com/trasa/watchmud/rules"
+import "github.com/watchmud/watchmud/rules"
 
 type zoneManifestEntry struct {
 	Id              string `json:"id"`

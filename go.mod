@@ -1,4 +1,4 @@
-module github.com/trasa/watchmud
+module github.com/watchmud/watchmud
 
 go 1.27.0
 

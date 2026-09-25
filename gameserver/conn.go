@@ -1,6 +1,6 @@
 package gameserver
 
-import "github.com/trasa/watchmud/player"
+import "github.com/watchmud/watchmud/player"
 
 // Conn is a live connection to something that can play the game. It exists
 // because a connection has no *player.Player until it logs in; once it does,

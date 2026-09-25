@@ -2,7 +2,7 @@ package world
 
 import (
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/player"
+	"github.com/watchmud/watchmud/player"
 )
 
 // QueuePlayerRecords hands a record of everyone in the world to the store.

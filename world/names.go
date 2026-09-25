@@ -1,8 +1,8 @@
 package world
 
 import (
-	"github.com/trasa/watchmud/loader"
-	"github.com/trasa/watchmud/player"
+	"github.com/watchmud/watchmud/loader"
+	"github.com/watchmud/watchmud/player"
 )
 
 // grammarWords are what a player types to mean something other than a player:

@@ -4,8 +4,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/trasa/watchmud/behavior"
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/behavior"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // Definition of what it means to be an "object"

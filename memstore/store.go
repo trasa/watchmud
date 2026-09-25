@@ -3,7 +3,7 @@ package memstore
 import (
 	"uuid"
 
-	"github.com/trasa/watchmud/player"
+	"github.com/watchmud/watchmud/player"
 )
 
 type Store struct {

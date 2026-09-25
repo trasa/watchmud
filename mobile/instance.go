@@ -7,7 +7,7 @@ import (
 	"time"
 	"uuid"
 
-	"github.com/trasa/watchmud/combat"
+	"github.com/watchmud/watchmud/combat"
 )
 
 // Instance is a Mobile standing in front of you, representing

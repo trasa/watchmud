@@ -1,6 +1,6 @@
 package world
 
-import "github.com/trasa/watchmud/rules"
+import "github.com/watchmud/watchmud/rules"
 
 // Regenerate gives everyone who isn't fighting a little health back:
 // players and mobs both, or a boss could be worn down by dying at it

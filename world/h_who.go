@@ -3,9 +3,9 @@ package world
 import (
 	"sort"
 
-	"github.com/trasa/watchmud/command"
-	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/gameserver"
+	"github.com/watchmud/watchmud/command"
+	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/gameserver"
 )
 
 func (w *World) handleWho(msg *gameserver.HandlerParameter, cmd command.Who) {

@@ -1,6 +1,6 @@
 package mobile
 
-import "github.com/trasa/watchmud/object"
+import "github.com/watchmud/watchmud/object"
 
 // LootEntry is one line of a mob's loot table: what might drop, and the
 // percent chance it does. Each line is rolled on its own when the mob dies,

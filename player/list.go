@@ -3,7 +3,7 @@ package player
 import (
 	"iter"
 
-	"github.com/trasa/watchmud/ordered"
+	"github.com/watchmud/watchmud/ordered"
 )
 
 // List of players, in the order they joined, keyed by NameKey so a name

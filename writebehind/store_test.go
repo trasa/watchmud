@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/trasa/watchmud/memstore"
-	"github.com/trasa/watchmud/player"
+	"github.com/watchmud/watchmud/memstore"
+	"github.com/watchmud/watchmud/player"
 )
 
 // gatedStore holds every write until the test lets it through, so a test can

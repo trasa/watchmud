@@ -2,7 +2,7 @@ package spaces
 
 import (
 	"github.com/trasa/syncmap"
-	"github.com/trasa/watchmud/mobile"
+	"github.com/watchmud/watchmud/mobile"
 )
 
 type mobileToRoom map[*mobile.Instance]*Room

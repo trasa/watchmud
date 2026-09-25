@@ -2,7 +2,7 @@ package world
 
 import (
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/player"
+	"github.com/watchmud/watchmud/player"
 )
 
 func logWizCommand(p *player.Player, command string, msg string, args ...interface{}) {

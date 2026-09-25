@@ -1,6 +1,6 @@
 package loader
 
-import "github.com/trasa/watchmud/rules"
+import "github.com/watchmud/watchmud/rules"
 
 // mob file might not exist, they are optional
 type mobEntry struct {

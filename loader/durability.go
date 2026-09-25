@@ -3,7 +3,7 @@ package loader
 import (
 	"fmt"
 
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // objectDurability is what one object definition starts out able to take.

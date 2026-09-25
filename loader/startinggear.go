@@ -3,7 +3,7 @@ package loader
 import (
 	"fmt"
 
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // checkStartingGear makes sure every item in the kit is something the world

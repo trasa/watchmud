@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/trasa/watchmud/command"
+	"github.com/watchmud/watchmud/command"
 )
 
 func TestSecretsRedacted(t *testing.T) {

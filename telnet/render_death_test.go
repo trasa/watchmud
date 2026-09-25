@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/trasa/watchmud/event"
+	"github.com/watchmud/watchmud/event"
 )
 
 func TestRenderDied(t *testing.T) {

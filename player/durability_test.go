@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/object"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // durabilityDefs is a DefinitionSource whose gear wears out.

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/trasa/watchmud/mobile"
+	"github.com/watchmud/watchmud/mobile"
 )
 
 type lootEntry struct {

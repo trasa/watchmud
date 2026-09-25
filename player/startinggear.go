@@ -4,8 +4,8 @@ import (
 	"uuid"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/object"
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/object"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // GiveStartingGear creates the kit from content/rules/starting_gear.json and

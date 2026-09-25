@@ -3,7 +3,7 @@ package player
 import (
 	"uuid"
 
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // NewTestPlayer that tracks messages. The test catalog's armor table is

@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/gameserver"
+	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/gameserver"
 )
 
 type worldUnknownMessageSuite struct {

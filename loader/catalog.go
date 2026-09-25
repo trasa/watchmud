@@ -3,7 +3,7 @@ package loader
 import (
 	"io/fs"
 
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/rules"
 )
 
 func LoadCatalog(rulesFS fs.FS) (*rules.Catalog, error) {

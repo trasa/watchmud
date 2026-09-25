@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/mobile"
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/mobile"
+	"github.com/watchmud/watchmud/rules"
 )
 
 type mobileRoomMapSuite struct {

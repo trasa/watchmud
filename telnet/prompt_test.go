@@ -6,8 +6,8 @@ import (
 	"uuid"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/player"
+	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/player"
 )
 
 // frames runs messages through frame in order, as writePump would, and

@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/zonereset"
+	"github.com/watchmud/watchmud/zonereset"
 )
 
 // DoZoneActivity for each zone based on time.Now()

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/trasa/watchmud/command"
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/command"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // parseCommand turns a line the player typed into a command.

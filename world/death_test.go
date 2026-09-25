@@ -1,7 +1,7 @@
 package world
 
 import (
-	"github.com/trasa/watchmud/event"
+	"github.com/watchmud/watchmud/event"
 )
 
 // A player who dies leaves no corpse: they wake up in the death room with a

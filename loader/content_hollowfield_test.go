@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/trasa/watchmud/rules"
-	"github.com/trasa/watchmud/spaces"
+	"github.com/watchmud/watchmud/rules"
+	"github.com/watchmud/watchmud/spaces"
 )
 
 // walk follows exits from a room, failing the test on the first one that

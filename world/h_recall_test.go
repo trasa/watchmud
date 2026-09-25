@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trasa/watchmud/command"
-	"github.com/trasa/watchmud/event"
+	"github.com/watchmud/watchmud/command"
+	"github.com/watchmud/watchmud/event"
 )
 
 type handleRecallSuite struct {

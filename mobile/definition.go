@@ -3,8 +3,8 @@ package mobile
 import (
 	"strings"
 
-	"github.com/trasa/watchmud/combat"
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/combat"
+	"github.com/watchmud/watchmud/rules"
 )
 
 // Definition defines what it means to be a mob.

@@ -4,7 +4,7 @@ import (
 	"time"
 	"uuid"
 
-	"github.com/trasa/watchmud/ordered"
+	"github.com/watchmud/watchmud/ordered"
 )
 
 // Instance of the Definitions in the world around you.

@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/mobile"
-	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/rules"
+	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/mobile"
+	"github.com/watchmud/watchmud/player"
+	"github.com/watchmud/watchmud/rules"
 )
 
 type Room struct {

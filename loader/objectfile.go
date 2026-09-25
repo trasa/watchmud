@@ -1,6 +1,6 @@
 package loader
 
-import "github.com/trasa/watchmud/rules"
+import "github.com/watchmud/watchmud/rules"
 
 // object file is optional
 type objectEntry struct {

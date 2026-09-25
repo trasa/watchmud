@@ -2,11 +2,11 @@ package world
 
 import (
 	"github.com/rs/zerolog/log"
-	"github.com/trasa/watchmud/combat"
-	"github.com/trasa/watchmud/event"
-	"github.com/trasa/watchmud/player"
-	"github.com/trasa/watchmud/rules"
-	"github.com/trasa/watchmud/spaces"
+	"github.com/watchmud/watchmud/combat"
+	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/player"
+	"github.com/watchmud/watchmud/rules"
+	"github.com/watchmud/watchmud/spaces"
 )
 
 // DoViolence walks through all the combat going on and
