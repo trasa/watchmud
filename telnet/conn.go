@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"github.com/rs/zerolog/log"
 	"github.com/trasa/watchmud/command"
@@ -47,6 +48,12 @@ type conn struct {
 // prompt after it. Through the queue rather than a field so it lands in
 // order, ahead of whatever the world says in reply.
 type inputReceived struct{}
+
+// echo turns the client's local echo on or off, so a password isn't shown
+// as it's typed. Through the send queue so it lands in order around the
+// prompt, and written raw by write: it is protocol, not text, and neither
+// frame nor render has any business with it.
+type echo bool
 
 // reprompt asks writePump for the prompt again, for the input the world
 // never hears about. The connection can't build one itself: what the prompt
@@ -160,6 +167,18 @@ func (c *conn) awaitAuth() (ok bool, why event.ResultCode) {
 	}
 }
 
+const (
+	minPassword   = 8
+	maxPassword   = 72 // bytes: bcrypt ignores everything past it
+	passwordTries = 3
+)
+
+// login is the whole conversation before a player exists: a name, then either
+// its password or, for a name nobody has, the offer to create it.
+//
+// The name goes to the server alone first. A known name comes back as
+// PasswordRequired and an unknown one as NoSuchPlayer, which is what decides
+// which question comes next.
 func (c *conn) login() bool {
 	for {
 		name, ok := c.prompt("By what name do you wish to be known? ")
@@ -168,36 +187,131 @@ func (c *conn) login() bool {
 		}
 		c.emit(command.Login{Name: name})
 		ok, why := c.awaitAuth()
-		if ok {
-			return true
-		}
-		if why == event.AlreadyPlaying {
+		switch {
+		case ok:
+			return true // only a server that asked for no password
+		case why == event.AlreadyPlaying:
 			c.Send(fmt.Sprintf("%s is already playing.\r\n", name))
+		case why == event.PasswordRequired:
+			if done, ok := c.enterPassword(name); done || !ok {
+				return done
+			}
+		case why == event.NoSuchPlayer:
+			if done, ok := c.create(name); done || !ok {
+				return done
+			}
+		default:
+			return false // the connection closed while we waited
+		}
+	}
+}
+
+// enterPassword asks for an existing character's password, a few times. done
+// is a successful login; !ok means the connection is finished, including
+// being hung up on for too many wrong answers. Neither means back to the name.
+func (c *conn) enterPassword(name string) (done, ok bool) {
+	for range passwordTries {
+		password, ok := c.askSecret("Password: ")
+		if !ok {
+			return false, false
+		}
+		c.emit(command.Login{Name: name, Password: command.Secret(password)})
+		loggedIn, why := c.awaitAuth()
+		switch {
+		case loggedIn:
+			return true, true
+		case why == event.BadPassword:
+			c.Send("Wrong password.\r\n")
+		case why == event.AlreadyPlaying:
+			// someone got in as them while bcrypt was working
+			c.Send(fmt.Sprintf("%s is already playing.\r\n", name))
+			return false, true
+		default:
+			return false, false
+		}
+	}
+	c.Send("Too many wrong passwords.\r\n")
+	c.Close()
+	return false, false
+}
+
+// create offers to make a character nobody has, and does. Its results mean
+// what enterPassword's do.
+func (c *conn) create(name string) (done, ok bool) {
+	yn, ok := c.prompt(fmt.Sprintf("No one by the name of %s. Create them? (yn) ", name))
+	if !ok {
+		return false, false
+	}
+	if !strings.HasPrefix(strings.ToLower(yn), "y") {
+		return false, true
+	}
+	lineage, ok := c.chooseLineage()
+	if !ok {
+		return false, false
+	}
+	password, ok := c.choosePassword()
+	if !ok {
+		return false, false
+	}
+	c.emit(command.CreatePlayer{Name: name, Lineage: lineage, Password: command.Secret(password)})
+	created, why := c.awaitAuth()
+	switch {
+	case created:
+		return true, true
+	case why == event.NameTaken:
+		c.Send(fmt.Sprintf("Someone else has just taken the name %s.\r\n", name))
+	case why == "":
+		return false, false // closed while we waited
+	default:
+		c.Send("Something went wrong creating that character.\r\n")
+	}
+	return false, true
+}
+
+// choosePassword asks for a new password twice, until it's acceptable and
+// both answers agree.
+func (c *conn) choosePassword() (string, bool) {
+	for {
+		password, ok := c.askSecret("Choose a password: ")
+		if !ok {
+			return "", false
+		}
+		if problem := checkPassword(password); problem != "" {
+			c.Send(problem + "\r\n")
 			continue
 		}
-		// PLAYER_LOGIN_FAILED: no such player
-		yn, ok := c.prompt(fmt.Sprintf("No one by the name of %s. Create them? (yn) ", name))
+		again, ok := c.askSecret("Again: ")
 		if !ok {
-			return false
+			return "", false
 		}
-		if strings.HasPrefix(strings.ToLower(yn), "y") {
-			lineage, ok := c.chooseLineage()
-			if !ok {
-				return false
-			}
-			c.emit(command.CreatePlayer{Name: name, Lineage: lineage})
-			ok, why := c.awaitAuth()
-			if ok {
-				return true
-			}
-			if why == event.NameTaken {
-				c.Send(fmt.Sprintf("Someone else has just taken the name %s.\r\n", name))
-			} else {
-				c.Send("Something went wrong creating that character.\r\n")
-			}
+		if again != password {
+			c.Send("Those don't match. Once more.\r\n")
+			continue
 		}
-
+		return password, true
 	}
+}
+
+// checkPassword says what's wrong with a new password, or nothing. The
+// minimum counts characters, what a player thinks they typed; the maximum
+// counts bytes, since the limit is bcrypt's.
+func checkPassword(password string) string {
+	if utf8.RuneCountInString(password) < minPassword {
+		return fmt.Sprintf("A password needs at least %d characters.", minPassword)
+	}
+	if len(password) > maxPassword {
+		return fmt.Sprintf("A password can be at most %d bytes long.", maxPassword)
+	}
+	return ""
+}
+
+// askSecret is prompt with the client's echo off, and back on however it
+// ends. The Enter wasn't echoed either, so turning it back on starts a new
+// line too.
+func (c *conn) askSecret(text string) (string, bool) {
+	c.Send(echo(false))
+	defer c.Send(echo(true))
+	return c.prompt(text)
 }
 
 // chooseLineage is the whole of character creation. There is no class step
@@ -368,17 +482,34 @@ func (c *conn) writePump() {
 }
 
 func (c *conn) write(msg any) error {
+	if e, ok := msg.(echo); ok {
+		return c.writeRaw(echoBytes(bool(e)))
+	}
 	text := c.frame(msg)
 	if text == "" {
 		return nil
 	}
 	text = strings.ReplaceAll(text, "\r\n", "\n") // normalize
 	text = strings.ReplaceAll(text, "\n", "\r\n") // replace with \r\n
+	return c.writeRaw(text)
+}
+
+func (c *conn) writeRaw(text string) error {
 	if err := c.netConn.SetWriteDeadline(time.Now().Add(writeTimeout)); err != nil {
 		return err
 	}
 	_, err := io.WriteString(c.netConn, text)
 	return err
+}
+
+// echoBytes is the negotiation for echo. WILL ECHO claims echoing for the
+// server, which then doesn't, so nothing typed shows. WONT hands it back,
+// and adds the newline the unechoed Enter didn't.
+func echoBytes(on bool) string {
+	if on {
+		return string([]byte{IAC, WONT, optEcho}) + "\r\n"
+	}
+	return string([]byte{IAC, WILL, optEcho})
 }
 
 // frame renders msg and decides where the prompt goes around it. Empty means

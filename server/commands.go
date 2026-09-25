@@ -14,7 +14,6 @@ func (loginChecked) Verb() string { return "loginChecked" }
 // createHashed is a command.Command that creates a hashed password from a plaintext password when
 // creating a new player and record. Private for the same reason as loginChecked.
 type createHashed struct {
-	Ok           bool
 	Name         string
 	HashPassword command.Secret
 	// Lineage is a rules.Lineage id, and the only choice creation makes. It

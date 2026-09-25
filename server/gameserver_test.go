@@ -241,3 +241,20 @@ func TestCreatePlayer_nameTakenWhileHashing(t *testing.T) {
 	assert.Nil(t, loser.Player())
 	assert.Equal(t, []any{event.CreateFailed{Reason: event.NameTaken}}, loser.sent)
 }
+
+// A name sent without a password is how the login conversation finds out
+// whether to ask for one or offer to create the character. No bcrypt for it:
+// there's nothing to compare.
+func TestLogin_noPasswordAsksForOne(t *testing.T) {
+	gs, _ := newTestGameServer(t)
+	first := &testConn{}
+	create(t, gs, first, "bob", "sekrit")
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(first, command.Logout{})))
+
+	c := &testConn{}
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.Login{Name: "bob"})))
+
+	assert.Nil(t, c.Player())
+	assert.Equal(t, []any{event.LoginFailed{Reason: event.PasswordRequired}}, c.sent)
+	assert.Empty(t, gs.incomingBuffer, "nothing went off to bcrypt")
+}

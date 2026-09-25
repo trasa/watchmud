@@ -86,6 +86,10 @@ const (
 	// BadPassword: the character exists and that isn't its password. It must
 	// never be empty -- login() reads an empty reason as success.
 	BadPassword ResultCode = "BAD_PASSWORD"
+	// PasswordRequired: the character exists and the login carried no
+	// password. It is how the login conversation learns to ask for one
+	// rather than offer to create the character.
+	PasswordRequired ResultCode = "PASSWORD_REQUIRED"
 	// NameTaken: creation lost a race for the name, or was asked for one that
 	// exists. The store no longer says so itself -- saves are queued, and the
 	// database's unique index is only heard from on the writer goroutine.

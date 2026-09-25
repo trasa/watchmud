@@ -183,6 +183,10 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter, cmd command.
 		msg.Client.Send(event.LoginFailed{Reason: event.NoSuchPlayer})
 		return nil
 	}
+	if cmd.Password == "" {
+		msg.Client.Send(event.LoginFailed{Reason: event.PasswordRequired})
+		return nil
+	}
 
 	go func() {
 		ok := bcrypt.CompareHashAndPassword([]byte(rec.PasswordHash), []byte(cmd.Password)) == nil
@@ -290,9 +294,7 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter, cmd c
 			msg.Client.Send(event.CreateFailed{Reason: event.Unknown})
 			return
 		}
-		ok := err == nil
 		gs.Receive(gameserver.NewHandlerParameter(msg.Client, createHashed{
-			Ok:           ok,
 			Name:         cmd.Name,
 			Lineage:      cmd.Lineage,
 			HashPassword: command.Secret(hash),

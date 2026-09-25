@@ -16,10 +16,15 @@ because today anyone can log in as anyone and anyone can spawn mobs.
 
 **Blockers:**
 
-1. **Passwords.** `command.Login`/`CreatePlayer` carry a `Password` nothing reads. Hash it
-   (bcrypt) into the record, ask for it at create and login, and turn echo off while it's
-   typed -- `IAC WILL ECHO` / `WONT ECHO`, the one slice of Phase 7 that can't wait.
-   Existing characters have no hash: set one on their next login.
+1. ~~**Passwords.**~~ Done 2026-09-24. bcrypt runs on a goroutine and answers through
+   `incomingBuffer` (`loginChecked`/`createHashed` in `server/commands.go`), since at
+   ~70ms a hash on the world goroutine would stall everyone. The telnet conversation asks
+   name first; the server answers a bare name with `PasswordRequired` or `NoSuchPlayer`,
+   which picks the next question. Echo is off while a password is typed, three wrong
+   tries hangs up, and a new password is 8+ characters, at most 72 bytes, typed twice.
+   **Characters made before this have no hash and can't log in** -- no migration, on
+   purpose (anyone who knew the name could claim it): clear the `players` collection
+   before launch.
 2. **Wizard commands are open to everyone.** `load` and `restore` have no check. A
    wizard flag on the record, set by hand (or a names list in app.yaml), checked in
    dispatch before any `h_wiz_*` handler.
