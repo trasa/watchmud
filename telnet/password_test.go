@@ -27,6 +27,7 @@ type fakeServer struct {
 	passwords map[string]string
 	received  []command.Command
 	loggedOut bool
+	cause     string
 }
 
 func (f *fakeServer) Receive(msg *gameserver.HandlerParameter) {
@@ -56,10 +57,17 @@ func (f *fakeServer) Receive(msg *gameserver.HandlerParameter) {
 	}
 }
 
-func (f *fakeServer) Logout(gameserver.Conn, string) {
+func (f *fakeServer) Logout(_ gameserver.Conn, cause string) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.loggedOut = true
+	f.cause = cause
+}
+
+func (f *fakeServer) logoutCause() (bool, string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.loggedOut, f.cause
 }
 
 func (f *fakeServer) commands() []command.Command {
@@ -80,6 +88,13 @@ type session struct {
 
 func startSession(t *testing.T, gs gameserver.Instance) *session {
 	t.Helper()
+	return startSessionWith(t, gs, nil)
+}
+
+// startSessionWith lets a test adjust the conn -- its timeouts, say -- before
+// its pumps start.
+func startSessionWith(t *testing.T, gs gameserver.Instance, adjust func(*conn)) *session {
+	t.Helper()
 	serverEnd, client := net.Pipe()
 	s := &session{t: t, client: client, closed: make(chan struct{})}
 	go func() {
@@ -97,6 +112,9 @@ func startSession(t *testing.T, gs gameserver.Instance) *session {
 	}()
 
 	c := newConn(serverEnd, gs, nil) // no catalog: creation skips the lineage menu
+	if adjust != nil {
+		adjust(c)
+	}
 	go c.writePump()
 	go c.readPump()
 	t.Cleanup(func() { _ = client.Close() })

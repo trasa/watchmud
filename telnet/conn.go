@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -40,7 +41,22 @@ type conn struct {
 	// touches them.
 	atPrompt   bool
 	lastPrompt *event.Prompt
+
+	// How long a line may take to arrive before the connection is dropped,
+	// before login and after. readPump owns readTimeout and switches it
+	// from one to the other.
+	loginIdle, playIdle time.Duration
+	readTimeout         time.Duration
 }
+
+const (
+	// Short: someone sitting at the name prompt holds a connection slot and
+	// is doing nothing else with it.
+	defaultLoginIdle = 2 * time.Minute
+	// Long: a player reading, or making tea. Dropping them ends the session
+	// the way quitting does, saved and out of the world.
+	defaultPlayIdle = 30 * time.Minute
+)
 
 // inputReceived goes through the send queue when readPump reads a line, so
 // writePump knows the prompt it wrote has been answered: the client's echo
@@ -70,6 +86,8 @@ func newConn(c net.Conn, gs gameserver.Instance, cat *rules.Catalog) *conn {
 		sendQueue:  make(chan any, sendQueueSize),
 		quit:       make(chan struct{}),
 		authResult: make(chan event.ResultCode, 1),
+		loginIdle:  defaultLoginIdle,
+		playIdle:   defaultPlayIdle,
 	}
 }
 
@@ -440,7 +458,13 @@ func (c *conn) prompt(text string) (string, bool) {
 
 // readLine returns the next line from the client. ok is false once the
 // connection is finished: EOF, read error, Close.
+//
+// Each call gets readTimeout to finish, counted from when it starts, so a
+// client can't hold the connection open by trickling bytes with no newline.
 func (c *conn) readLine() (string, bool) {
+	if err := c.netConn.SetReadDeadline(time.Now().Add(c.readTimeout)); err != nil {
+		return "", false
+	}
 	if !c.scanner.Scan() {
 		return "", false
 	}
@@ -566,11 +590,18 @@ func (c *conn) frame(msg any) string {
 func (c *conn) readPump() {
 	defer c.Close()
 	c.scanner = bufio.NewScanner(&iacFilter{src: bufio.NewReader(c.netConn)})
-	if c.login() && c.commandLoop() {
-		return // logout already emitted
+	c.readTimeout = c.loginIdle
+	if c.login() {
+		c.readTimeout = c.playIdle
+		if c.commandLoop() {
+			return // logout already emitted
+		}
 	}
 	cause := "client disconnected"
-	if err := c.scanner.Err(); err != nil {
+	if err := c.scanner.Err(); errors.Is(err, os.ErrDeadlineExceeded) {
+		cause = "idle"
+		c.Send("\r\nIdle too long. Goodbye.\r\n")
+	} else if err != nil {
 		cause = fmt.Sprintf("read error: %v", err)
 	}
 	log.Info().Msgf("telnet %s: %s", c.netConn.RemoteAddr(), cause)
