@@ -225,6 +225,11 @@ func (c *conn) login() bool {
 		if !ok {
 			return false // disconnected
 		}
+		if isHelp(name) {
+			c.Send("Type a name to log in as, or a new one to create a character.\r\n" +
+				"Once you're in, type 'help' for the commands.\r\n")
+			continue
+		}
 		c.emit(command.Login{Name: name})
 		ok, why := c.awaitAuth()
 		switch {
@@ -643,6 +648,12 @@ func (c *conn) commandLoop() (quit bool) {
 		if line == "" {
 			// bare Enter: nothing to do but ask again. The world never hears
 			// about it, so the prompt has to come from here.
+			c.Send(reprompt{})
+			continue
+		}
+		if isHelp(line) {
+			// the world never hears it, so the prompt has to come from here
+			c.Send(helpText)
 			c.Send(reprompt{})
 			continue
 		}

@@ -85,6 +85,8 @@ Adding a command:
    default arm. `world/world_unknownMessage_test.go` covers that arm; your own case needs a
    test in `telnet/render_test.go`.
 6. `telnet/render.go`: a case for the event.
+7. `telnet/help.go`: an entry, if players should know about it (builder commands
+   shouldn't). `help_test.go` fails if help offers a verb `parse.go` doesn't know.
 
 Handlers reply via `msg.Player.Send(...)`, `room.Send(...)` or `room.Notify(...)`, and fail
 via `msg.Fail(event.SomeCode)`. They never return errors, and **`Send` has no error return**

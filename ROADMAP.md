@@ -54,8 +54,12 @@ because today anyone can log in as anyone and anyone can spawn mobs.
    - **Per address:** 5 connections per IP (`maxConnsPerAddress`), refused with a
      message past that. Constants for now; move them to app.yaml if they need tuning
      without a build.
-5. **`help`.** A new player with no command list quits. One screen: movement, look,
-   get/drop/wear/remove, kill/flee/consider, eq/i/stat/role, say/tell/who, quit.
+5. ~~**`help`.**~~ Done 2026-09-25. `help`, `?` or `commands`, answered by the connection
+   (`telnet/help.go`) rather than the world, since it lists typed verbs and only
+   `parse.go` knows those. Each entry names its verbs and `help_test.go` parses every
+   one, so help can't offer a verb the parser refuses, or a builder command. "help" at
+   the name prompt explains the prompt instead of creating a character called Help.
+   `shout` is now an alias for `tellall`, which already rendered as a shout.
 6. **Deploy.** A Dockerfile (static binary + `content/`), compose with mongo *with auth*,
    a small VPS, telnet on 4000 (or 23), mongo backups on a timer, logs to a file that
    rotates. SIGTERM already flushes the write-behind store; make sure the platform

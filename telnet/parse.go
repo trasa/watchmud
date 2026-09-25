@@ -91,7 +91,7 @@ func parseCommand(tokens []string) (command.Command, error) {
 			Value: strings.Join(tokens[2:], " "),
 		}, nil
 
-	case "tellall", "ta":
+	case "tellall", "ta", "shout":
 		return command.TellAll{Value: rest}, nil
 
 	case "who":
