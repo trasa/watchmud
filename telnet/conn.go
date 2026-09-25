@@ -3,6 +3,7 @@ package telnet
 import (
 	"bufio"
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -98,13 +99,75 @@ func newConn(c net.Conn, gs gameserver.Instance, cat *rules.Catalog) *conn {
 // creation is a conversation held on this side of the seam, before there is a
 // player to hand a command to, and a menu of lineages is presentation. The
 // renderer already depends on rules for the same reason.
-func Listen(ctx context.Context, addr string, gs gameserver.Instance, cat *rules.Catalog) error {
-	ln, err := net.Listen("tcp", addr)
+// Options says where to listen. TLSAddr empty means no TLS port.
+type Options struct {
+	Addr string // plain telnet
+
+	TLSAddr           string
+	TLSPort           int // told to players on the plain port, so they can find it
+	CertFile, KeyFile string
+}
+
+func Listen(ctx context.Context, opts Options, gs gameserver.Instance, cat *rules.Catalog) error {
+	// one cap across both ports: TLS isn't five more connections
+	limit := &addressLimit{max: maxConnsPerAddress, open: make(map[string]int)}
+	listeners := []listener{}
+
+	ln, err := net.Listen("tcp", opts.Addr)
 	if err != nil {
-		return fmt.Errorf("telnet listen on %s: %w", addr, err)
+		return fmt.Errorf("telnet listen on %s: %w", opts.Addr, err)
 	}
-	log.Info().Msgf("telnet listening on %s", addr)
-	return serve(ctx, ln, gs, cat, maxConnsPerAddress)
+	log.Info().Msgf("telnet listening on %s", opts.Addr)
+	tlsPort := 0
+	if opts.TLSAddr != "" {
+		tlsPort = opts.TLSPort
+	}
+	listeners = append(listeners, listener{ln: ln, banner: plainBanner(tlsPort)})
+
+	if opts.TLSAddr != "" {
+		cert, err := loadCertificate(opts.CertFile, opts.KeyFile)
+		if err != nil {
+			_ = ln.Close()
+			return err
+		}
+		tln, err := net.Listen("tcp", opts.TLSAddr)
+		if err != nil {
+			_ = ln.Close()
+			return fmt.Errorf("tls listen on %s: %w", opts.TLSAddr, err)
+		}
+		log.Info().Msgf("telnet over TLS listening on %s", opts.TLSAddr)
+		listeners = append(listeners, listener{
+			ln:               tln,
+			tls:              tlsConfig(cert),
+			handshakeTimeout: defaultHandshakeTimeout,
+			banner:           "Welcome to WatchMUD.\r\n",
+		})
+	}
+
+	// the first to fail takes the rest down with it: a server that has
+	// quietly lost one of its ports looks fine until someone tries it
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	errs := make(chan error, len(listeners))
+	for _, l := range listeners {
+		go func() { errs <- serve(ctx, l, gs, cat, limit) }()
+	}
+	err = <-errs
+	cancel()
+	for range len(listeners) - 1 {
+		<-errs
+	}
+	return err
+}
+
+// plainBanner greets a telnet connection, and points it at the TLS port when
+// there is one.
+func plainBanner(tlsPort int) string {
+	banner := "Welcome to WatchMUD.\r\n"
+	if tlsPort != 0 {
+		banner += fmt.Sprintf("For an encrypted connection, use port %d with TLS.\r\n", tlsPort)
+	}
+	return banner
 }
 
 // maxConnsPerAddress is enough for a household behind one router, or a player
@@ -113,17 +176,24 @@ func Listen(ctx context.Context, addr string, gs gameserver.Instance, cat *rules
 // proxy in front of this needs PROXY protocol, or this needs to go up.
 const maxConnsPerAddress = 5
 
-// serve accepts connections from ln until ctx is done, refusing any past
-// perAddress from one IP.
-func serve(ctx context.Context, ln net.Listener, gs gameserver.Instance, cat *rules.Catalog, perAddress int) error {
-	limit := &addressLimit{max: perAddress, open: make(map[string]int)}
+// listener is one port: plain telnet when tls is nil.
+type listener struct {
+	ln               net.Listener
+	tls              *tls.Config
+	handshakeTimeout time.Duration
+	banner           string
+}
+
+// serve accepts connections from l until ctx is done, refusing any past the
+// limit from one IP.
+func serve(ctx context.Context, l listener, gs gameserver.Instance, cat *rules.Catalog, limit *addressLimit) error {
 	go func() {
 		<-ctx.Done()
-		_ = ln.Close() // unblocks the Accept, below
+		_ = l.ln.Close() // unblocks the Accept, below
 	}()
 
 	for {
-		nc, err := ln.Accept()
+		nc, err := l.ln.Accept()
 		if err != nil {
 			if ctx.Err() != nil {
 				return nil // shutting down, expected
@@ -133,16 +203,43 @@ func serve(ctx context.Context, ln net.Listener, gs gameserver.Instance, cat *ru
 		host := remoteHost(nc)
 		if !limit.acquire(host) {
 			log.Warn().Msgf("telnet %s: too many connections from %s, refused", nc.RemoteAddr(), host)
-			refuse(nc, "Too many connections from your address. Try again later.\r\n")
+			if l.tls == nil {
+				refuse(nc, "Too many connections from your address. Try again later.\r\n")
+			} else {
+				_ = nc.Close() // nothing it could read yet: that takes a handshake
+			}
 			continue
 		}
-		log.Info().Msgf("telnet connection from %s", nc.RemoteAddr())
-		c := newConn(nc, gs, cat)
-		c.onClose = func() { limit.release(host) }
-		go c.writePump()
-		go c.readPump()
-		c.Send("Welcome to WatchMUD.\r\n")
+		if l.tls == nil {
+			start(nc, gs, cat, l.banner, host, limit)
+			continue
+		}
+		// the handshake on its own goroutine: a slow or silent client must
+		// not hold up the next Accept
+		go func() {
+			tc := tls.Server(nc, l.tls)
+			_ = tc.SetDeadline(time.Now().Add(l.handshakeTimeout))
+			if err := tc.Handshake(); err != nil {
+				log.Info().Msgf("telnet %s: TLS handshake failed: %v", nc.RemoteAddr(), err)
+				_ = nc.Close()
+				limit.release(host)
+				return
+			}
+			_ = tc.SetDeadline(time.Time{}) // the conn's pumps set their own
+			start(tc, gs, cat, l.banner, host, limit)
+		}()
 	}
+}
+
+// start runs a connection that has its slot, and gives the slot back when it
+// closes.
+func start(nc net.Conn, gs gameserver.Instance, cat *rules.Catalog, banner, host string, limit *addressLimit) {
+	log.Info().Msgf("telnet connection from %s", nc.RemoteAddr())
+	c := newConn(nc, gs, cat)
+	c.onClose = func() { limit.release(host) }
+	go c.writePump()
+	go c.readPump()
+	c.Send(banner)
 }
 
 func (c *conn) Player() *player.Player {

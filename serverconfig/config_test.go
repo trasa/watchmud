@@ -50,4 +50,31 @@ func TestLoad_theDeployConfig(t *testing.T) {
 	assert.Equal(t, "0.0.0.0", cfg.Telnet.Host, "reachable from outside the container")
 	assert.Empty(t, cfg.Log.File, "stdout; docker rotates it")
 	assert.Empty(t, cfg.Mongo.Uri, "the uri carries the password: it comes from the environment")
+	assert.Equal(t, 4443, cfg.TLS.Port)
+	assert.Equal(t, "/app/certs/fullchain.pem", cfg.TLS.Cert, "where compose.yaml mounts deploy/certs")
+}
+
+func TestLoad_tlsIsOptional(t *testing.T) {
+	cfg, err := Load(writeConfig(t, minimal))
+	require.NoError(t, err)
+	assert.Zero(t, cfg.TLS.Port, "no tls: block, no TLS")
+}
+
+func TestLoad_tlsNeedsCertAndKey(t *testing.T) {
+	_, err := Load(writeConfig(t, minimal+`
+tls:
+  port: 4443
+  cert: /certs/fullchain.pem
+`))
+	assert.ErrorContains(t, err, "tls")
+
+	cfg, err := Load(writeConfig(t, minimal+`
+tls:
+  port: 4443
+  cert: /certs/fullchain.pem
+  key: /certs/privkey.pem
+`))
+	require.NoError(t, err)
+	assert.Equal(t, 4443, cfg.TLS.Port)
+	assert.Equal(t, "/certs/privkey.pem", cfg.TLS.Key)
 }

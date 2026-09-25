@@ -107,16 +107,30 @@ func run() error {
 	}
 	gameServer := server.New(w, content.Catalog, saver)
 
-	// launch telnet listener as goroutine
+	// The listeners run beside the game; if they fail -- a port in use, a
+	// certificate that won't load -- the server stops with that error rather
+	// than run on with nobody able to connect, looking healthy.
+	ctx, stopForListener := context.WithCancelCause(ctx)
+	defer stopForListener(nil)
 	go func() {
-		err := telnet.Listen(ctx, fmt.Sprintf("%s:%d", cfg.Telnet.Host, cfg.Telnet.Port), gameServer, content.Catalog)
-		if err != nil {
+		opts := telnet.Options{Addr: fmt.Sprintf("%s:%d", cfg.Telnet.Host, cfg.Telnet.Port)}
+		if cfg.TLS.Port != 0 {
+			opts.TLSAddr = fmt.Sprintf("%s:%d", cfg.Telnet.Host, cfg.TLS.Port)
+			opts.TLSPort = cfg.TLS.Port
+			opts.CertFile, opts.KeyFile = cfg.TLS.Cert, cfg.TLS.Key
+		}
+		if err := telnet.Listen(ctx, opts, gameServer, content.Catalog); err != nil {
 			log.Error().Err(err).Msg("telnet listener")
+			stopForListener(err)
 		}
 	}()
 
 	// run the game server
-	if runErr := gameServer.Run(ctx); runErr != nil && !errors.Is(runErr, context.Canceled) {
+	runErr := gameServer.Run(ctx)
+	if cause := context.Cause(ctx); cause != nil && !errors.Is(cause, context.Canceled) {
+		return fmt.Errorf("listener: %w", cause)
+	}
+	if runErr != nil && !errors.Is(runErr, context.Canceled) {
 		return fmt.Errorf("game server: %w", runErr)
 	}
 

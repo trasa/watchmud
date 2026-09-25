@@ -22,6 +22,15 @@ type Config struct {
 		Port int    `yaml:"port"`
 	}
 
+	// TLS is a second port beside telnet's, same host, speaking TLS. Off when
+	// port is 0. cert and key are PEM files, re-read when they change on disk,
+	// so a renewal needs no restart.
+	TLS struct {
+		Port int    `yaml:"port"`
+		Cert string `yaml:"cert"`
+		Key  string `yaml:"key"`
+	} `yaml:"tls"`
+
 	Mongo MongoConfig `yaml:"mongo"`
 }
 
@@ -55,6 +64,9 @@ func Load(path string) (*Config, error) {
 	// verify contents
 	if len(cfg.Telnet.Host) == 0 || cfg.Telnet.Port == 0 {
 		return nil, fmt.Errorf("telnet host and port must be configured")
+	}
+	if cfg.TLS.Port != 0 && (cfg.TLS.Cert == "" || cfg.TLS.Key == "") {
+		return nil, fmt.Errorf("tls.port is set, so tls.cert and tls.key must be too")
 	}
 	return &cfg, nil
 }

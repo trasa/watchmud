@@ -31,7 +31,8 @@ func TestServe_capsConnectionsPerAddress(t *testing.T) {
 	require.NoError(t, err)
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
-	go func() { _ = serve(ctx, ln, &fakeServer{passwords: map[string]string{}}, nil, 2) }()
+	l := listener{ln: ln, banner: "Welcome to WatchMUD.\r\n"}
+	go func() { _ = serve(ctx, l, &fakeServer{passwords: map[string]string{}}, nil, newLimit(2)) }()
 	addr := ln.Addr().String()
 
 	first, greeting := dial(t, addr)
@@ -56,4 +57,11 @@ func TestServe_capsConnectionsPerAddress(t *testing.T) {
 		line, _ := bufio.NewReader(nc).ReadString('\n')
 		return strings.HasPrefix(line, "Welcome")
 	}, 2*time.Second, 20*time.Millisecond)
+}
+
+// The plain port says the encrypted one exists; players can't use what they
+// don't know about.
+func TestBanner(t *testing.T) {
+	assert.Equal(t, "Welcome to WatchMUD.\r\n", plainBanner(0))
+	assert.Equal(t, "Welcome to WatchMUD.\r\nFor an encrypted connection, use port 4443 with TLS.\r\n", plainBanner(4443))
 }
