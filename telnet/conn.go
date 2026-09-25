@@ -192,6 +192,10 @@ func (c *conn) login() bool {
 			return true // only a server that asked for no password
 		case why == event.AlreadyPlaying:
 			c.Send(fmt.Sprintf("%s is already playing.\r\n", name))
+		case why == event.InvalidName:
+			c.Send("Names are 3 to 16 letters, a to z, and nothing else.\r\n")
+		case why == event.NameReserved:
+			c.Send("That name belongs to something else here. Pick another.\r\n")
 		case why == event.PasswordRequired:
 			if done, ok := c.enterPassword(name); done || !ok {
 				return done
@@ -238,6 +242,10 @@ func (c *conn) enterPassword(name string) (done, ok bool) {
 // create offers to make a character nobody has, and does. Its results mean
 // what enterPassword's do.
 func (c *conn) create(name string) (done, ok bool) {
+	// the server already found it valid; show it the way it will be stored
+	if canonical, err := player.CanonicalName(name); err == nil {
+		name = canonical
+	}
 	yn, ok := c.prompt(fmt.Sprintf("No one by the name of %s. Create them? (yn) ", name))
 	if !ok {
 		return false, false

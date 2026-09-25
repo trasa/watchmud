@@ -104,7 +104,7 @@ func TestCreatePlayer_startingGear(t *testing.T) {
 	assert.Equal(t, "knife", knife.Definition.Name)
 	require.NotNil(t, p.Equipment().At(rules.SlotHead))
 
-	rec, found, err := store.Load("newbie")
+	rec, found, err := store.Load("Newbie")
 	require.NoError(t, err)
 	require.True(t, found)
 	assert.Len(t, rec.Inventory, 3)
@@ -149,7 +149,7 @@ func TestLogin_returnsToTheLastRoom(t *testing.T) {
 	gs, store := newTestGameServer(t)
 	c := &testConn{}
 	create(t, gs, c, "wanderer", "sekrit")
-	rec, _, err := store.Load("wanderer")
+	rec, _, err := store.Load("Wanderer")
 	require.NoError(t, err)
 	gs.world.RemovePlayer(c.Player())
 
@@ -166,7 +166,7 @@ func TestLogin_returnsToTheLastRoom(t *testing.T) {
 
 	// a look is saved like any other command, and the save says where they are
 	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(back, command.Look{})))
-	rec, _, err = store.Load("wanderer")
+	rec, _, err = store.Load("Wanderer")
 	require.NoError(t, err)
 	assert.Equal(t, "market_square", rec.LastRoomId)
 }
@@ -257,4 +257,68 @@ func TestLogin_noPasswordAsksForOne(t *testing.T) {
 	assert.Nil(t, c.Player())
 	assert.Equal(t, []any{event.LoginFailed{Reason: event.PasswordRequired}}, c.sent)
 	assert.Empty(t, gs.incomingBuffer, "nothing went off to bcrypt")
+}
+
+// A name is stored one way and found in any case, so bob and BOB are one
+// character -- and the store's unique index enforces it without knowing why.
+func TestName_caseFolded(t *testing.T) {
+	gs, store := newTestGameServer(t)
+	first := &testConn{}
+	create(t, gs, first, "bOB", "sekrit")
+	require.NotNil(t, first.Player())
+	assert.Equal(t, "Bob", first.Player().Name())
+
+	rec, found, err := store.Load("Bob")
+	require.NoError(t, err)
+	require.True(t, found, "stored under the canonical name")
+	assert.Equal(t, "Bob", rec.Name)
+
+	// same character, whatever the case: taken to a creation, playing to a login
+	dup := &testConn{}
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(dup, command.CreatePlayer{Name: "BOB", Password: "other"})))
+	assert.Equal(t, []any{event.CreateFailed{Reason: event.NameTaken}}, dup.sent)
+
+	second := &testConn{}
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(second, command.Login{Name: "bob", Password: "sekrit"})))
+	assert.Equal(t, []any{event.LoginFailed{Reason: event.AlreadyPlaying}}, second.sent)
+
+	require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(first, command.Logout{})))
+	back := &testConn{}
+	login(t, gs, back, "BOB", "sekrit")
+	require.NotNil(t, back.Player())
+	assert.Equal(t, "Bob", back.Player().Name())
+}
+
+// A name that can't be one is refused at the name prompt, before a password
+// or a creation is offered for it.
+func TestName_invalid(t *testing.T) {
+	gs, store := newTestGameServer(t)
+	for _, name := range []string{"bo", "bob2", "bob the great", ""} {
+		c := &testConn{}
+		require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.Login{Name: name})))
+		assert.Equal(t, []any{event.LoginFailed{Reason: event.InvalidName}}, c.sent, "login %q", name)
+
+		c = &testConn{}
+		require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.CreatePlayer{Name: name, Password: "sekrit"})))
+		assert.Equal(t, []any{event.CreateFailed{Reason: event.InvalidName}}, c.sent, "create %q", name)
+		assert.Empty(t, gs.incomingBuffer, "nothing went to bcrypt for %q", name)
+	}
+	_, found, err := store.Load("Bob2")
+	require.NoError(t, err)
+	assert.False(t, found)
+}
+
+// Words the world already uses -- the target grammar, and every mob -- can't
+// be a new character's name.
+func TestName_reserved(t *testing.T) {
+	gs, _ := newTestGameServer(t)
+	for _, name := range []string{"self", "All", "rabbit", "drone"} {
+		c := &testConn{}
+		require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.Login{Name: name})))
+		assert.Equal(t, []any{event.LoginFailed{Reason: event.NameReserved}}, c.sent, "login %q", name)
+
+		c = &testConn{}
+		require.NoError(t, gs.dispatch(gameserver.NewHandlerParameter(c, command.CreatePlayer{Name: name, Password: "sekrit"})))
+		assert.Equal(t, []any{event.CreateFailed{Reason: event.NameReserved}}, c.sent, "create %q", name)
+	}
 }

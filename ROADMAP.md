@@ -23,8 +23,8 @@ because today anyone can log in as anyone and anyone can spawn mobs.
    which picks the next question. Echo is off while a password is typed, three wrong
    tries hangs up, and a new password is 8+ characters, at most 72 bytes, typed twice.
    **Characters made before this have no hash and can't log in** -- no migration, on
-   purpose (anyone who knew the name could claim it): clear the `players` collection
-   before launch.
+   purpose (anyone who knew the name could claim it). Production starts from an empty
+   mongo, so there is nothing to clear; just don't copy a dev database across.
 2. ~~**Wizard commands are open to everyone.**~~ Done 2026-09-24. `Wizard` on the record
    (and the mongo document), set by hand with `make wizard NAME=...` while that character
    is logged out. Builder commands carry the `command.Wizard` marker and
@@ -32,8 +32,15 @@ because today anyone can log in as anyone and anyone can spawn mobs.
    exactly as it would a verb that doesn't exist. `load`, `restore` and `roomstatus`
    (which dumps room internals) are gated. A record flag rather than a names list in
    app.yaml, because anyone could create a listed name before its owner did.
-3. **Names.** Letters only, 3-16, case-folded, a reserved list (`self`, `all`, `corpse`,
-   mob names...). A name is permanent and public.
+3. ~~**Names.**~~ Done 2026-09-24. `player.CanonicalName`: 3-16 letters a-z, stored
+   capitalized ("bOB" is Bob), so store lookups stay exact and mongo's unique index is
+   case-insensitive for free; `player.List` compares by `NameKey` (lowercase), so `tell
+   bob` finds Bob. `World.IsReservedName` refuses the target grammar (`all`, `self`,
+   `corpse`, `someone`...) and every loaded mob's name and aliases -- asked only of names
+   nobody has, so a mob added later doesn't lock out the player who had it first. Both
+   are checked at the name prompt, before a password or creation is offered.
+   Not reserved: object names (a player called Knife can't be picked up -- `get` never
+   searches players), and look-alike names (Bob vs Bobb). Neither is worth it yet.
 4. **Connection hygiene.** Idle timeout at the login prompt (short) and in game (long),
    via read deadlines; a cap on connections per IP; a panic in one handler must not take
    the server down -- check dispatch for a `recover`.

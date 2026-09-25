@@ -38,6 +38,10 @@ func (f *fakeServer) Receive(msg *gameserver.HandlerParameter) {
 	case command.Login:
 		want, exists := f.passwords[cmd.Name]
 		switch {
+		case len(cmd.Name) < 3:
+			msg.Client.Send(event.LoginFailed{Reason: event.InvalidName})
+		case cmd.Name == "rabbit":
+			msg.Client.Send(event.LoginFailed{Reason: event.NameReserved})
 		case !exists:
 			msg.Client.Send(event.LoginFailed{Reason: event.NoSuchPlayer})
 		case cmd.Password == "":
@@ -186,7 +190,7 @@ func TestCreate_passwordIsConfirmed(t *testing.T) {
 
 	cmds := gs.commands()
 	require.Len(t, cmds, 2)
-	assert.Equal(t, command.CreatePlayer{Name: "newbie", Password: "longenough"}, cmds[1])
+	assert.Equal(t, command.CreatePlayer{Name: "Newbie", Password: "longenough"}, cmds[1])
 
 	// every one of those five answers was typed with echo off
 	transcript := s.transcript()
@@ -203,4 +207,21 @@ func TestCheckPassword(t *testing.T) {
 	// eight characters, but the limit is bcrypt's, in bytes: 8 × 3-byte runes
 	assert.Equal(t, "", checkPassword("日本語日本語日本"))
 	assert.Contains(t, checkPassword(string(bytes.Repeat([]byte("é"), 37))), "72")
+}
+
+// A name the server won't have is explained and asked for again, rather than
+// hanging up or offering to create it.
+func TestLogin_badNamesAskAgain(t *testing.T) {
+	gs := &fakeServer{passwords: map[string]string{}}
+	s := startSession(t, gs)
+
+	s.answer("known? ", "xy")
+	s.answer("letters", "rabbit")
+	s.answer("belongs to", "newbie")
+	s.waitFor("Create them?")
+
+	transcript := s.transcript()
+	assert.Contains(t, transcript, "Names are 3 to 16 letters, a to z, and nothing else.")
+	assert.Contains(t, transcript, "That name belongs to something else here. Pick another.")
+	assert.Contains(t, transcript, "No one by the name of Newbie.", "shown as it will be stored")
 }

@@ -90,6 +90,11 @@ const (
 	// password. It is how the login conversation learns to ask for one
 	// rather than offer to create the character.
 	PasswordRequired ResultCode = "PASSWORD_REQUIRED"
+	// InvalidName: not a name at all -- 3 to 16 letters a-z and nothing else.
+	InvalidName ResultCode = "INVALID_NAME"
+	// NameReserved: a word the world already uses, a mob's or the target
+	// grammar's, that a player's name would collide with.
+	NameReserved ResultCode = "NAME_RESERVED"
 	// NameTaken: creation lost a race for the name, or was asked for one that
 	// exists. The store no longer says so itself -- saves are queued, and the
 	// database's unique index is only heard from on the writer goroutine.

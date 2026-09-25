@@ -125,9 +125,17 @@ what makes quit-and-log-straight-back-in safe. Two consequences:
 
 - **Nothing on the world goroutine hears a save fail.** In particular mongo's unique name
   index can no longer refuse a duplicate at creation, so `handleCreatePlayer` checks
-  `store.Load` itself (`event.NameTaken`); dispatch being one command at a time is what
-  makes that check race-free. `handleLogin` likewise refuses a character already in the
-  world (`event.AlreadyPlaying`) -- two sessions of one character save over each other.
+  `store.Load` itself (`event.NameTaken`). Creation spans two dispatches -- bcrypt runs on
+  a goroutine in between -- so `handleCreateHashed` checks again when the hash comes back;
+  each check alone is race-free because dispatch is one command at a time. `handleLogin`
+  likewise refuses a character already in the world (`event.AlreadyPlaying`), and checks
+  again in `handleLoginChecked` -- two sessions of one character save over each other.
+
+**A name has one stored form.** `player.CanonicalName` turns whatever was typed into it
+("bOB" is "Bob") or refuses it, at the top of `handleLogin` and `handleCreatePlayer`;
+everything after that, the store included, can compare exactly. Where a player types a
+name in play (`tell bob`), `player.List` keys on `player.NameKey`, the lowercase. Don't
+add a case-insensitive lookup to a store: canonicalize at the door instead.
 - **Shutdown order matters.** `main` defers `saver.Close` after `closeStore`, so it runs
   first and flushes before mongo disconnects. It only runs on a signal `NotifyContext`
   listens for: SIGINT and SIGTERM. Anything else exits without the last save.

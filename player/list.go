@@ -6,7 +6,8 @@ import (
 	"github.com/trasa/watchmud/ordered"
 )
 
-// List of players, in the order they joined, keyed by name.
+// List of players, in the order they joined, keyed by NameKey so a name
+// typed in any case finds them.
 //
 // Add and Remove don't report the duplicate/missing cases the underlying
 // ordered.List distinguishes: no caller could do anything about a player who
@@ -18,7 +19,7 @@ type List struct {
 
 func NewList() *List {
 	return &List{
-		players: ordered.NewList((*Player).Name),
+		players: ordered.NewList(func(p *Player) string { return NameKey(p.Name()) }),
 	}
 }
 
@@ -46,7 +47,7 @@ func (l *List) AllExcept(exclude *Player) iter.Seq[*Player] {
 	if exclude == nil {
 		return l.All()
 	}
-	return l.players.AllExcept(exclude.Name())
+	return l.players.AllExcept(NameKey(exclude.Name()))
 }
 
 // Slice of the players, in the order they joined. Prefer All; this is for
@@ -56,8 +57,7 @@ func (l *List) Slice() []*Player {
 }
 
 func (l *List) FindByName(name string) *Player {
-	// TODO what happens if name is not found?
-	p, _ := l.players.Get(name)
+	p, _ := l.players.Get(NameKey(name)) // nil when nobody has it
 	return p
 }
 

@@ -163,7 +163,14 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter, cmd command.
 		return errors.New("player already attached to client")
 	}
 
-	playerName := cmd.Name
+	// Every name is stored in one form, so the lookups below can be exact
+	// and "BOB" is Bob. Something that can't be a name is refused before a
+	// password or a creation is offered for it.
+	playerName, err := player.CanonicalName(cmd.Name)
+	if err != nil {
+		msg.Client.Send(event.LoginFailed{Reason: event.InvalidName})
+		return nil
+	}
 	// One character, one session. A second one would load its own copy of
 	// the character, and the two would take turns saving over each other --
 	// drop a sword in one and the other still has it to save back. Taking
@@ -178,7 +185,12 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter, cmd command.
 		return err
 	}
 	if !found {
-		// not an error - could represent a new player (player creation)
+		// not an error - could represent a new player (player creation),
+		// unless the world has the word already
+		if gs.world.IsReservedName(playerName) {
+			msg.Client.Send(event.LoginFailed{Reason: event.NameReserved})
+			return nil
+		}
 		log.Info().Str("playerName", playerName).Msg("playerName not found in store")
 		msg.Client.Send(event.LoginFailed{Reason: event.NoSuchPlayer})
 		return nil
@@ -190,7 +202,7 @@ func (gs *GameServer) handleLogin(msg *gameserver.HandlerParameter, cmd command.
 
 	go func() {
 		ok := bcrypt.CompareHashAndPassword([]byte(rec.PasswordHash), []byte(cmd.Password)) == nil
-		gs.Receive(gameserver.NewHandlerParameter(msg.Client, loginChecked{Name: cmd.Name, Ok: ok}))
+		gs.Receive(gameserver.NewHandlerParameter(msg.Client, loginChecked{Name: playerName, Ok: ok}))
 	}()
 	// return to handleLoginChecked
 	return nil
@@ -252,11 +264,18 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter, cmd c
 		// this is a programming bug (login state machine), so report the error
 		return fmt.Errorf("player %s already attached to client", msg.Client.Player().Name())
 	}
-	playerName := cmd.Name
-
-	if len(cmd.Name) == 0 || len(cmd.Password) == 0 {
+	playerName, err := player.CanonicalName(cmd.Name)
+	if err != nil {
+		msg.Client.Send(event.CreateFailed{Reason: event.InvalidName})
+		return nil
+	}
+	if len(cmd.Password) == 0 {
 		msg.Client.Send(event.CreateFailed{Reason: event.BadRequest})
 		return fmt.Errorf("handleCreatePlayer %s: %s", playerName, event.BadRequest)
+	}
+	if gs.world.IsReservedName(playerName) {
+		msg.Client.Send(event.CreateFailed{Reason: event.NameReserved})
+		return nil
 	}
 
 	// The name has to be checked here. It used to be the database's unique
@@ -295,7 +314,7 @@ func (gs *GameServer) handleCreatePlayer(msg *gameserver.HandlerParameter, cmd c
 			return
 		}
 		gs.Receive(gameserver.NewHandlerParameter(msg.Client, createHashed{
-			Name:         cmd.Name,
+			Name:         playerName,
 			Lineage:      cmd.Lineage,
 			HashPassword: command.Secret(hash),
 		}))

@@ -34,6 +34,8 @@ type World struct {
 	mobileRooms *spaces.MobileRoomMap // mobile -> room; room -> mobiles
 
 	fightLedger *combat.FightLedger
+
+	reservedNames map[string]bool // by player.NameKey; see IsReservedName
 }
 
 // New creates a brand-new World based on this content
@@ -47,6 +49,7 @@ func New(c *loader.Content, s player.Store, roller rules.Roller) (w *World, err 
 		roller:       roller,
 		store:        s,
 	}
+	w.reservedNames = reservedNames(c)
 	if err := w.initialLoad(); err != nil {
 		return nil, fmt.Errorf("building world: %w", err)
 	}
