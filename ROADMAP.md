@@ -83,6 +83,10 @@ because today anyone can log in as anyone and anyone can spawn mobs.
    with a player connected, who stayed connected.
 
    Still open:
+   - **The host.** Production is `watchmud.com` -- telnet 4000, TLS 4443. The domains
+     (watchmud.com, watchmud.games) are registered and their DNS is at DigitalOcean;
+     there is no droplet yet. Then an A record for watchmud.com, and deploy/README.md
+     from "First time".
    - **Copy backups off the host.** They sit on the same disk as the database.
    - **Check the per-address cap sees real addresses** once players connect; the
      README says how.

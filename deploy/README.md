@@ -11,7 +11,8 @@ renewed certificate picked up with a player connected, who stayed connected.
 ## First time
 
 You need Docker with the compose plugin, a checkout of this repo on the host, and a
-domain name pointing at the host for the TLS certificate. Get the certificate first
+domain name pointing at the host for the TLS certificate -- production is
+`watchmud.com`: telnet on 4000, TLS on 4443. Get the certificate first
 (see TLS, below): the game won't start with TLS configured and no certificate. To
 start without TLS, set `tls.port: 0` in `deploy/app.yaml`.
 
@@ -42,7 +43,7 @@ The certificate is Let's Encrypt's, through certbot on the host (not in a contai
 certbot's standalone mode answers the challenge on port 80 itself:
 
 ```sh
-sudo certbot certonly --standalone -d mud.example.com \
+sudo certbot certonly --standalone -d watchmud.com \
   --deploy-hook "$PWD/deploy/certbot-hook.sh"
 ```
 
@@ -55,7 +56,7 @@ renewals don't disconnect anyone. The log says `tls: loaded the renewed certific
 Check it from anywhere:
 
 ```sh
-openssl s_client -connect mud.example.com:4443 </dev/null 2>/dev/null | openssl x509 -noout -dates
+openssl s_client -connect watchmud.com:4443 </dev/null 2>/dev/null | openssl x509 -noout -dates
 ```
 
 ## Making yourself a wizard
