@@ -16,6 +16,17 @@ telnet:
   host: 0.0.0.0
   port: 4000
 
+# The same game over TLS, so passwords don't cross the internet in the clear.
+# The plain port's banner tells players this port number, so compose.yaml
+# publishes it unchanged. The certificate comes from certbot through
+# deploy/certbot-hook.sh, and is reloaded on renewal without a restart.
+# Set port to 0 to run without TLS; with it set, missing certificates stop
+# the server at startup.
+tls:
+  port: 4443
+  cert: /app/certs/fullchain.pem
+  key: /app/certs/privkey.pem
+
 # The uri carries the password, so it isn't here: WATCHMUD_MONGO_URI in the
 # environment supplies it (compose.yaml builds it from .env).
 mongo:

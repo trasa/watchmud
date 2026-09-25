@@ -28,3 +28,4 @@ vendor/
 # deploy secrets and backups
 deploy/.env
 deploy/backups/
+deploy/certs/

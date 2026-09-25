@@ -5,11 +5,15 @@ Everything below runs from the repo root on that host.
 
 Tested end to end with Docker 29, 2026-09-25: create a character, restart the game
 container with that player still connected, log back in in the same room; backups
-written and restored; mongo not reachable from the host.
+written and restored; mongo not reachable from the host; a session over TLS, and a
+renewed certificate picked up with a player connected, who stayed connected.
 
 ## First time
 
-You need Docker with the compose plugin, and a checkout of this repo on the host.
+You need Docker with the compose plugin, a checkout of this repo on the host, and a
+domain name pointing at the host for the TLS certificate. Get the certificate first
+(see TLS, below): the game won't start with TLS configured and no certificate. To
+start without TLS, set `tls.port: 0` in `deploy/app.yaml`.
 
 ```sh
 cp deploy/.env.example deploy/.env
@@ -20,11 +24,39 @@ docker compose -f deploy/compose.yaml ps        # three services, mongo (healthy
 telnet <host> 4000
 ```
 
-Open port 4000 in the host's firewall, and nothing else except ssh. Mongo publishes no
-port, so it is only reachable from the other two containers. **Docker writes its own
+Open ports 4000 and 4443 in the host's firewall, 80 for certbot's renewals, and
+nothing else except ssh. Mongo publishes no port, so it is only reachable from the
+other two containers. **Docker writes its own
 iptables rules for published ports and goes around `ufw`**: a `ufw deny 4000` won't
 close the game port. Use the cloud provider's firewall, or take the port out of
 `compose.yaml`.
+
+## TLS
+
+Port 4443 is the same game over TLS, so passwords don't cross the internet in the
+clear; port 4000 stays plain telnet for clients that can't do TLS, and tells players
+4443 exists. Mudlet has a "Secure" checkbox, TinTin++ has `#ssl`, and anything else
+can use `openssl s_client -connect <host>:4443`.
+
+The certificate is Let's Encrypt's, through certbot on the host (not in a container).
+certbot's standalone mode answers the challenge on port 80 itself:
+
+```sh
+sudo certbot certonly --standalone -d mud.example.com \
+  --deploy-hook "$PWD/deploy/certbot-hook.sh"
+```
+
+The hook copies the certificate into `deploy/certs`, owned by the game's user (uid
+65532 -- `/etc/letsencrypt` is root-only). certbot remembers the hook, and its
+renewal timer runs it again every time the certificate is renewed. **The game
+reloads the renewed certificate on the next connection, without a restart**, so
+renewals don't disconnect anyone. The log says `tls: loaded the renewed certificate`.
+
+Check it from anywhere:
+
+```sh
+openssl s_client -connect mud.example.com:4443 </dev/null 2>/dev/null | openssl x509 -noout -dates
+```
 
 ## Making yourself a wizard
 
@@ -97,7 +129,6 @@ docker compose -f deploy/compose.yaml up -d watchmud
 
 ## Not done yet
 
-- **TLS.** Passwords still cross the internet as plain telnet. See ROADMAP, Deploy.
 - **A health check.** `restart: unless-stopped` brings the game back if it crashes,
   but nothing notices it hanging. A TCP check wouldn't either, and would show up as a
   connection in the logs every time it ran.

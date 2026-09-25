@@ -60,7 +60,7 @@ because today anyone can log in as anyone and anyone can spawn mobs.
    one, so help can't offer a verb the parser refuses, or a builder command. "help" at
    the name prompt explains the prompt instead of creating a character called Help.
    `shout` is now an alias for `tellall`, which already rendered as a shout.
-6. ~~**Deploy.**~~ Done 2026-09-25, except TLS. `Dockerfile` (static binary on distroless,
+6. ~~**Deploy.**~~ Done 2026-09-25, TLS included. `Dockerfile` (static binary on distroless,
    non-root, 12.5MB) and `deploy/compose.yaml`: the game, mongo *with auth* and no
    published port, and a backup service (nightly `mongodump`, two weeks kept, into
    `deploy/backups`). Logs are stdout (an empty `log.file`) rotated by docker. The
@@ -71,13 +71,23 @@ because today anyone can log in as anyone and anyone can spawn mobs.
    `deploy/README.md`. Tested end to end locally, including a restart with a player
    connected (they came back where they were) and restoring a backup.
 
+   **TLS** is port 4443, the same game, in Go (`telnet/tls.go`): certbot on the host,
+   `deploy/certbot-hook.sh` copies each renewal where the non-root container can read
+   it, and the server reloads it on the next handshake -- a renewal restarts nothing and
+   disconnects no one. Handshakes run on their own goroutine with a 10s deadline, so a
+   plain telnet client on the TLS port can't hold up accepts or keep its slot. The
+   5-per-address cap is shared across both ports. The plain port's banner advertises
+   4443. A listener that fails -- a port in use, a certificate that won't load at
+   startup -- now stops the server instead of leaving it running with no way in.
+   Tested in the compose stack: a whole session over TLS 1.3, and a renewal swapped in
+   with a player connected, who stayed connected.
+
    Still open:
    - **Copy backups off the host.** They sit on the same disk as the database.
    - **Check the per-address cap sees real addresses** once players connect; the
      README says how.
-   - **TLS**, below.
 
-   **A TLS port** beside the plain one, so a password doesn't have to cross the
+   Why it was done this way, for the record: **a TLS port** beside the plain one, so a password doesn't have to cross the
    internet in the clear. Telnet has no encryption and no MUD protocol adds any (MCCP
    is compression; GMCP/MSDP/MTTS are data channels; telnet START_TLS, option 46, has
    almost no client support), so what the better-run games do is a second port that

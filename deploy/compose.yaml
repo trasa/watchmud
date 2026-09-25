@@ -18,6 +18,12 @@ services:
       WATCHMUD_MONGO_URI: mongodb://watchmud:${WATCHMUD_DB_PASSWORD:?set it in deploy/.env}@mongo:27017/watchmud?authSource=watchmud
     ports:
       - "${WATCHMUD_PORT:-4000}:4000"
+      # TLS. The same number both sides: the plain port's banner tells players
+      # the one in app.yaml, so publishing it as anything else would lie.
+      - "4443:4443"
+    volumes:
+      # filled by certbot-hook.sh; see README, "TLS"
+      - ./certs:/app/certs:ro
     # docker stop waits this long after SIGTERM before SIGKILL. The flush of
     # queued saves gets 10s and the mongo disconnect 5s (cmd/watchmud), so the
     # default of 10s could kill it mid-save.

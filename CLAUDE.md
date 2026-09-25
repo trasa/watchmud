@@ -175,6 +175,12 @@ Two rules that look inconsistent and are not:
   a full `incomingBuffer` is correct backpressure -- the flooding client waits, no command
   is dropped.
 
+**`tls.go`** is the second port: the same `conn` over `tls.Server`, handshaken on its
+own goroutine before the pumps start. `certificate` re-reads the PEM files when their
+mtimes move (checked each handshake), so a Let's Encrypt renewal needs no restart --
+and a restart is an outage for everyone connected. `Listen` runs both listeners with
+one `addressLimit`, and returns the first one's error, which `main` treats as fatal.
+
 **`protocol.go`** is an `io.Reader` that strips `IAC` sequences, including subnegotiation
 payloads that legitimately contain `0x00` and doubled `0xFF`. Full option negotiation is
 Phase 7.
