@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime/debug"
 	"time"
 	"uuid"
 
@@ -54,10 +55,7 @@ func (gs *GameServer) Run(ctx context.Context) error {
 			gs.world.QueuePlayerRecords()
 			return ctx.Err()
 		case msg := <-gs.incomingBuffer:
-			if err := gs.dispatch(msg); err != nil {
-				// don't return error, we're not halting the server
-				log.Error().Err(err).Msg("error dispatching message")
-			}
+			gs.recovering(msg, gs.dispatch)
 			gs.prompt()
 		case <-ticker.C:
 			now := time.Now()
@@ -94,36 +92,36 @@ func (gs *GameServer) heartbeat(pulse rules.PulseCount, delta time.Duration) {
 	// (zone reset ...)
 	zonePulse := gs.catalog.MudTime.Zone
 	if pulse.CheckInterval(zonePulse) {
-		gs.world.DoZoneActivity()
+		recoverPulse("zone", gs.world.DoZoneActivity)
 	}
 
 	// pulse mobs
 	// (mobs walk around, initiate attack?)
 	mobPulse := gs.catalog.MudTime.Mobile
 	if pulse.CheckInterval(mobPulse) {
-		gs.world.DoMobileActivity()
+		recoverPulse("mobile", gs.world.DoMobileActivity)
 		// on the same pulse: CorpseDecay is minutes, and ten seconds late
 		// is nothing anyone will notice
-		gs.world.DecayCorpses()
+		recoverPulse("corpses", gs.world.DecayCorpses)
 	}
 
 	// perform violence
 	// do the attacking (players and mobs and everybody)
 	violencePulse := gs.catalog.MudTime.Violence
 	if pulse.CheckInterval(violencePulse) {
-		gs.world.DoViolence(pulse)
+		recoverPulse("violence", func() { gs.world.DoViolence(pulse) })
 	}
 
 	// anyone not fighting gets some health back
 	regenPulse := gs.catalog.MudTime.Regen
 	if pulse.CheckInterval(regenPulse) {
-		gs.world.Regenerate()
+		recoverPulse("regen", gs.world.Regenerate)
 	}
 
 	// saving player data
 	savePulse := gs.catalog.MudTime.PlayerSave
 	if pulse.CheckInterval(savePulse) {
-		gs.world.QueuePlayerRecords()
+		recoverPulse("save", gs.world.QueuePlayerRecords)
 	}
 }
 
@@ -373,4 +371,54 @@ func (gs *GameServer) handleCreateHashed(msg *gameserver.HandlerParameter, cmd c
 	p.Send(event.PlayerCreated{Name: p.Name()})
 	gs.world.Arrive(p)
 	return nil
+}
+
+// recovering runs one message's handler and survives it panicking. Without
+// this, one bad handler -- a nil room, an index out of range -- ends the
+// process and every player's session with it. The world may be left
+// half-changed by whatever the handler got through before it died, which is
+// still better than no world; the stack goes to the log so it gets fixed.
+//
+// Whoever sent it is told something went wrong. Before login that means a
+// failed login: the login conversation is blocked waiting for an answer, and
+// would otherwise wait until the idle timeout.
+func (gs *GameServer) recovering(msg *gameserver.HandlerParameter, handle func(*gameserver.HandlerParameter) error) {
+	defer func() {
+		r := recover()
+		if r == nil {
+			return
+		}
+		log.Error().
+			Str("command", fmt.Sprintf("%T", msg.Command)).
+			Str("stack", string(debug.Stack())).
+			Msgf("panic handling a command: %v", r)
+		if p := msg.Client.Player(); p != nil {
+			verb := ""
+			if msg.Command != nil {
+				verb = msg.Command.Verb()
+			}
+			p.Send(event.Failed{Verb: verb, Code: event.Unknown})
+		} else {
+			msg.Client.Send(event.LoginFailed{Reason: event.Unknown})
+		}
+	}()
+	if err := handle(msg); err != nil {
+		// don't return error, we're not halting the server
+		log.Error().Err(err).Msg("error dispatching message")
+	}
+}
+
+// recoverPulse runs one heartbeat job and survives it panicking, on its own
+// so that the jobs after it still run: the save is last, and a crash in
+// combat every pulse must not also stop everybody being saved.
+func recoverPulse(job string, run func()) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error().
+				Str("pulse", job).
+				Str("stack", string(debug.Stack())).
+				Msgf("panic in a pulse: %v", r)
+		}
+	}()
+	run()
 }

@@ -63,6 +63,7 @@ var failureByCode = map[string]string{
 	"PARSE_ERROR":     "You'll have to phrase that differently.",
 	"UNKNOWN_COMMAND": "I don't understand that.",
 	"INTERNAL_ERROR":  "Something went wrong.",
+	"UNKNOWN":         "Something went wrong there. It's been logged.", // a handler panicked
 
 	// targets
 	"TARGET_NOT_FOUND":    "You don't see that here.",
