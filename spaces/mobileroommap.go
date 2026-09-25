@@ -1,21 +1,21 @@
 package spaces
 
 import (
-	"github.com/trasa/syncmap"
 	"github.com/watchmud/watchmud/mobile"
 )
 
 type mobileToRoom map[*mobile.Instance]*Room
 
+// MobileRoomMap is which room each mob is in. The other direction, which mobs
+// a room holds, is the room's own list; see ROADMAP "Dual location
+// bookkeeping".
 type MobileRoomMap struct {
-	mobileToRoom  mobileToRoom
-	roomToMobiles syncmap.MapList
+	mobileToRoom mobileToRoom
 }
 
 func NewMobileRoomMap() *MobileRoomMap {
 	return &MobileRoomMap{
-		mobileToRoom:  make(mobileToRoom),
-		roomToMobiles: syncmap.NewMapList(),
+		mobileToRoom: make(mobileToRoom),
 	}
 }
 
@@ -32,7 +32,6 @@ func (m *MobileRoomMap) GetAllMobiles() (mobs []*mobile.Instance) {
 
 func (m *MobileRoomMap) Add(mob *mobile.Instance, r *Room) {
 	m.mobileToRoom[mob] = r
-	m.roomToMobiles.Add(r, mob)
 	// TODO error handling
 	r.AddMobile(mob)
 }
@@ -41,7 +40,6 @@ func (m *MobileRoomMap) Remove(mob *mobile.Instance) {
 	r := m.mobileToRoom[mob]
 	delete(m.mobileToRoom, mob)
 	if r != nil {
-		m.roomToMobiles.RemoveItem(r, mob)
 		r.RemoveMobile(mob) // TODO error handling
 	}
 }

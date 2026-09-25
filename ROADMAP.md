@@ -643,9 +643,10 @@ Named so they don't get rediscovered as surprises:
     `playerList` (room -> players). `World.addPlayerTo`, `RemovePlayer` and `movePlayer`
     each update both by hand. (`p.Location()`, once a third copy, is gone.) This is where
     the Phase 4 ghost came from: `RemovePlayer` updated the map and forgot the room.
-  - **Mobs, three copies.** `spaces.MobileRoomMap` holds `mobileToRoom` (mob -> room) *and*
-    `roomToMobiles`, a `syncmap.MapList` that nothing ever reads -- a locking map in a
-    world that has no locks, kept in step for no one. Then each `Room` has its own `mobs`.
+  - **Mobs, two copies.** `spaces.MobileRoomMap` holds `mobileToRoom` (mob -> room), and
+    each `Room` has its own `mobs`. (There were three: `MobileRoomMap` also kept
+    `roomToMobiles`, a `syncmap.MapList` nothing read -- removed 2026-09-25, and with it
+    the last dependency on a `trasa/*` repo.)
   - **`moveMobile` only works because errors are ignored.** It calls
     `src.MobileLeaves`/`dest.MobileEnters`, which move the mob between room lists, and then
     `mobileRooms.Remove` + `Add`, which *also* touch the room lists: `Remove` removes the
@@ -673,7 +674,7 @@ Named so they don't get rediscovered as surprises:
      `Players()`, `Mobs()`, `FindPlayer`, `FindMobile`. Because `Occupancy` lives in
      `spaces` it can still call them; `world` can't. A half-done move now fails to compile
      instead of leaving a ghost.
-  3. Delete `roomToMobiles` and the `syncmap` dependency with it.
+  3. ~~Delete `roomToMobiles` and the `syncmap` dependency with it.~~ Done 2026-09-25.
   4. `world.playerRoomMap` and `MobileRoomMap` fold into `Occupancy`; `World.movePlayer`,
      `moveMobile`, `addPlayerTo` and `RemovePlayer` become one call each plus whatever
      else they do (fights, `playerList`). Errors from the lists stop being swallowed --
