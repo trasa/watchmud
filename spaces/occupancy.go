@@ -36,7 +36,7 @@ func (o *Occupancy) PlacePlayer(p *player.Player, r *Room) {
 			Msg("PlacePlayer: already placed")
 		return
 	}
-	r.AddPlayer(p)
+	r.addPlayer(p)
 	o.playerRoom[p] = r
 }
 
@@ -44,16 +44,16 @@ func (o *Occupancy) PlacePlayer(p *player.Player, r *Room) {
 // rooms. A player who is nowhere just arrives.
 func (o *Occupancy) MovePlayer(p *player.Player, dir rules.Direction, dest *Room) {
 	if src := o.playerRoom[p]; src != nil {
-		src.PlayerLeaves(p, dir)
+		src.playerLeaves(p, dir)
 	}
-	dest.PlayerEnters(p)
+	dest.playerEnters(p)
 	o.playerRoom[p] = dest
 }
 
 // RemovePlayer takes p out of the world's rooms without telling anyone.
 func (o *Occupancy) RemovePlayer(p *player.Player) {
 	if r := o.playerRoom[p]; r != nil {
-		r.RemovePlayer(p)
+		r.removePlayer(p)
 	}
 	delete(o.playerRoom, p)
 }
@@ -69,7 +69,7 @@ func (o *Occupancy) PlaceMobile(mob *mobile.Instance, r *Room) {
 			Msg("PlaceMobile: already placed")
 		return
 	}
-	if err := r.AddMobile(mob); err != nil {
+	if err := r.addMobile(mob); err != nil {
 		log.Error().Err(err).Str("room", r.Location().String()).Msg("PlaceMobile")
 		return
 	}
@@ -78,15 +78,15 @@ func (o *Occupancy) PlaceMobile(mob *mobile.Instance, r *Room) {
 
 func (o *Occupancy) MoveMobile(mob *mobile.Instance, dir rules.Direction, dest *Room) {
 	if src := o.mobileRoom[mob]; src != nil {
-		src.MobileLeaves(mob, dir)
+		src.mobileLeaves(mob, dir)
 	}
-	dest.MobileEnters(mob)
+	dest.mobileEnters(mob)
 	o.mobileRoom[mob] = dest
 }
 
 func (o *Occupancy) RemoveMobile(mob *mobile.Instance) {
 	if r := o.mobileRoom[mob]; r != nil {
-		if err := r.RemoveMobile(mob); err != nil {
+		if err := r.removeMobile(mob); err != nil {
 			log.Error().Err(err).Str("room", r.Location().String()).Msg("RemoveMobile")
 		}
 	}

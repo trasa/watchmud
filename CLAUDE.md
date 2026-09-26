@@ -103,7 +103,7 @@ most one interval.
 **Save through `w.record(p)`, never `p.Record()` directly.** The player doesn't know where it
 is standing -- location lives in `playerToRoom` -- so `w.record` is what fills in
 `LastZoneId`/`LastRoomId`, and a bare `p.Record()` saves a player who is nowhere. Logout
-takes the record *before* `RemovePlayer` for that reason.
+takes the record *before* `removePlayer` for that reason.
 On login, `World.ReturnPlayer` puts them back in that room, falling back to the start
 room when the record names none (a new or pre-location character) or a room content no
 longer has. `AddPlayer` is the start-room path, for new characters and tests. After the

@@ -56,7 +56,7 @@ func createInventoryInfo(room *spaces.Room) (result []event.RoomStatusItem) {
 }
 
 func createMobInfo(room *spaces.Room) (result []event.RoomStatusMob) {
-	for m := range room.Mobs() {
+	for _, m := range room.Mobiles() {
 		result = append(result,
 			event.RoomStatusMob{
 				Id:                m.IdStr(),
@@ -66,8 +66,8 @@ func createMobInfo(room *spaces.Room) (result []event.RoomStatusMob) {
 				ShortDescription:  m.Definition.ShortDescription,
 				DescriptionInRoom: m.Definition.DescriptionInRoom,
 				ZoneId:            m.Definition.ZoneId,
-				CurrentHealth:     int(m.CurHealth),
-				MaxHealth:         int(m.Definition.MaxHealth),
+				CurrentHealth:     m.CurHealth,
+				MaxHealth:         m.Definition.MaxHealth,
 				Flags:             m.Definition.GetFlags(),
 			})
 	}

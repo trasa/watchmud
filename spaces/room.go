@@ -2,7 +2,6 @@ package spaces
 
 import (
 	"fmt"
-	"iter"
 	"math/rand"
 	"sort"
 	"time"
@@ -80,13 +79,13 @@ func (r *Room) Flags() (result []string) {
 	return
 }
 
-// PlayerLeaves a room. Tells other room residents about it.
-func (r *Room) PlayerLeaves(p *player.Player, dir rules.Direction) {
+// playerLeaves a room. Tells other room residents about it.
+func (r *Room) playerLeaves(p *player.Player, dir rules.Direction) {
 	r.playerList.Remove(p)
 	r.Send(event.Left{Who: p.Name(), Direction: dir})
 }
 
-func (r *Room) MobileLeaves(mob *mobile.Instance, dir rules.Direction) {
+func (r *Room) mobileLeaves(mob *mobile.Instance, dir rules.Direction) {
 	if err := r.mobs.Remove(mob); err != nil {
 		log.Error().Err(err).Str("room", r.Location().String()).Msg("mobileLeaves: failed to leave room")
 		return
@@ -94,13 +93,13 @@ func (r *Room) MobileLeaves(mob *mobile.Instance, dir rules.Direction) {
 	r.Send(event.Left{Who: mob.Name(), Direction: dir})
 }
 
-// AddPlayer to the Room, without sending notifications
-func (r *Room) AddPlayer(p *player.Player) {
+// addPlayer to the Room, without sending notifications
+func (r *Room) addPlayer(p *player.Player) {
 	r.playerList.Add(p)
 }
 
-// RemovePlayer from the Room, without sending notifications
-func (r *Room) RemovePlayer(p *player.Player) {
+// removePlayer from the Room, without sending notifications
+func (r *Room) removePlayer(p *player.Player) {
 	r.playerList.Remove(p)
 }
 
@@ -108,35 +107,31 @@ func (r *Room) Players() []*player.Player {
 	return r.playerList.Slice()
 }
 
-// PlayerEnters a room, telling other room entities about it.
-// Different from AddPlayer, which just updates the list and
+// playerEnters a room, telling other room entities about it.
+// Different from addPlayer, which just updates the list and
 // does not send notifications.
-func (r *Room) PlayerEnters(p *player.Player) {
+func (r *Room) playerEnters(p *player.Player) {
 	r.Send(event.Entered{Who: p.Name()})
-	r.AddPlayer(p)
+	r.addPlayer(p)
 }
 
-// MobileEnters a room, telling other room entities about it.
-func (r *Room) MobileEnters(mob *mobile.Instance) {
-	if err := r.AddMobile(mob); err != nil {
+// mobileEnters a room, telling other room entities about it.
+func (r *Room) mobileEnters(mob *mobile.Instance) {
+	if err := r.addMobile(mob); err != nil {
 		log.Error().Err(err).Str("room", r.Location().String()).Msg("MobileEnters: failed to add mobile")
 		return
 	}
 	r.Send(event.Entered{Who: mob.Definition.Name})
 }
 
-func (r *Room) AddMobile(inst *mobile.Instance) error {
+func (r *Room) addMobile(inst *mobile.Instance) error {
 	return r.mobs.Add(inst)
 }
 
-func (r *Room) RemoveMobile(inst *mobile.Instance) error {
+func (r *Room) removeMobile(inst *mobile.Instance) error {
 	return r.mobs.Remove(inst)
 }
 
-// TODO remove me
-func (r *Room) Mobs() iter.Seq[*mobile.Instance] {
-	return r.mobs.All()
-}
 func (r *Room) Mobiles() []*mobile.Instance {
 	var result []*mobile.Instance
 	for m := range r.mobs.All() {
