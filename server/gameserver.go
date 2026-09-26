@@ -358,7 +358,6 @@ func (gs *GameServer) handleCreateHashed(msg *gameserver.HandlerParameter, cmd c
 	// leaves them dressed rather than naked.
 	player.GiveStartingGear(p, gs.catalog.StartingGear, gs.world)
 
-	// TODO need to set the location first (AddPlayer always puts the player in the start room, for now)
 	if err := gs.store.Save(p.Record()); err != nil {
 		return fmt.Errorf("handleCreateHashed: %v", err)
 	}
@@ -366,7 +365,7 @@ func (gs *GameServer) handleCreateHashed(msg *gameserver.HandlerParameter, cmd c
 	msg.Client.SetPlayer(p)
 	msg.Player = p
 
-	gs.world.AddPlayer(p)
+	gs.world.PlacePlayer(p, gs.world.StartRoom)
 
 	p.Send(event.PlayerCreated{Name: p.Name()})
 	gs.world.Arrive(p)

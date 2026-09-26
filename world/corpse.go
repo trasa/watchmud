@@ -60,14 +60,8 @@ func (w *World) becomeMobileCorpse(m *mobile.Instance) {
 			log.Error().Err(err).Msgf("becomeMobileCorpse: adding %s to the corpse of %s", drop.Definition.Name, m.Definition.Name)
 		}
 	}
-	r := w.getRoomContainingMobile(m)
-	if r == nil {
-		log.Warn().Msgf("becomeMobileCorpse: could not find room containing mobile %s", m.Definition.Name)
-		return
-	}
-
-	w.removeMobile(m)
-
+	r := w.mobileRoom(m)
+	w.RemoveMobile(m)
 	if err := r.Inventory.Add(corpse); err != nil {
 		log.Error().Msgf("becomeMobileCorpse: could not add corpse %s to room %s, %v", corpse.Definition.Name, r.Name, err)
 	}

@@ -308,13 +308,13 @@ func TestCommandRendering(t *testing.T) {
 
 			rec := &player.Recorder{}
 			p := player.NewTestPlayer(uuid.New(), "testdood", rec)
-			w.AddPlayer(p)
+			w.PlacePlayer(p, w.StartRoom)
 			c := gameserver.NewTestConn(p)
 
 			// second player
 			otherRec := &player.Recorder{}
 			o := player.NewTestPlayer(uuid.New(), "otherdood", otherRec)
-			w.AddPlayer(o)
+			w.PlacePlayer(o, w.StartRoom)
 			_ = gameserver.NewTestConn(o)
 
 			if tc.setup != nil {

@@ -43,7 +43,7 @@ func (s *HandleMoveSuite) TestMove_butYouCant() {
 func (s *HandleMoveSuite) TestMoveWhileFighting() {
 	r := &player.Recorder{}
 	other := player.NewTestPlayer(uuid.New(), "other", r)
-	s.w.AddPlayer(other)
+	s.w.PlacePlayer(other, s.w.StartRoom)
 
 	s.Assert().NoError(s.w.fightLedger.Fight(s.p, other, s.w.StartRoom.Zone.Id, s.w.StartRoom.Id))
 	s.move(rules.DirectionNorth)

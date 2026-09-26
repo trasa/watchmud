@@ -30,7 +30,7 @@ func (s *handleFleeSuite) SetupTest() {
 	s.w.roller = s.roller
 	s.otherRec = &player.Recorder{}
 	s.other = player.NewTestPlayer(uuid.New(), "other", s.otherRec)
-	s.w.AddPlayer(s.other)
+	s.w.PlacePlayer(s.other, s.w.StartRoom)
 }
 
 func (s *handleFleeSuite) kill(target string) {

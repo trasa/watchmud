@@ -22,6 +22,6 @@ func (s *worldRemovePlayerSuite) TestRemovePlayer() {
 	s.w.RemovePlayer(s.p)
 
 	s.Assert().Equal(0, s.w.playerList.Count())
-	s.Assert().Equal(s.w.VoidRoom, s.w.getPlayerRoom(s.p))
+	s.Assert().Equal(s.w.VoidRoom, s.w.playerRoom(s.p))
 	s.Assert().Equal(0, len(s.w.StartRoom.Players()))
 }

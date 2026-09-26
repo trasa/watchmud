@@ -35,7 +35,7 @@ func (s *WhoSuite) TestSuccess() {
 func (s *WhoSuite) TestSort() {
 	rec := &player.Recorder{}
 	otherPlayer := player.NewTestPlayer(uuid.New(), "other", rec)
-	s.w.AddPlayer(otherPlayer)
+	s.w.PlacePlayer(otherPlayer, s.w.StartRoom)
 
 	s.w.handleWho(s.handlerParameter(command.Who{}), command.Who{})
 	response := sent[event.Who](s.T(), s.r, 0)
@@ -49,7 +49,7 @@ func (s *WhoSuite) TestLogoutRemovesPlayer() {
 
 	rec := &player.Recorder{}
 	otherPlayer := player.NewTestPlayer(uuid.New(), "other", rec)
-	s.w.AddPlayer(otherPlayer)
+	s.w.PlacePlayer(otherPlayer, s.w.StartRoom)
 	s.w.RemovePlayer(otherPlayer)
 
 	s.w.handleWho(s.handlerParameter(command.Who{}), command.Who{})

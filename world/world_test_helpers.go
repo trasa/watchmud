@@ -44,7 +44,7 @@ func (s *worldTestSuite) SetupTest() {
 	s.w = w
 	s.r = &player.Recorder{}
 	s.p = player.NewTestPlayer(uuid.New(), "testdood", s.r)
-	s.w.AddPlayer(s.p)
+	s.w.PlacePlayer(s.p, w.StartRoom)
 	s.c = gameserver.NewTestConn(s.p)
 }
 

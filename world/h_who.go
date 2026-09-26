@@ -18,7 +18,7 @@ func (w *World) handleWho(msg *gameserver.HandlerParameter, cmd command.Who) {
 	// built, so it is current as of this moment and not a moment earlier.
 	entries := []event.WhoEntry{}
 	for p := range w.playerList.All() {
-		r := w.getPlayerRoom(p)
+		r := w.playerRoom(p)
 		entries = append(entries, event.WhoEntry{
 			PlayerName: p.Name(),
 			Lineage:    p.LineageName(),

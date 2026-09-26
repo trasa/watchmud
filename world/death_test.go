@@ -20,7 +20,7 @@ func (s *durabilitySuite) TestDyingTakesYouToTheDeathRoom() {
 
 	s.dies()
 
-	s.Assert().Equal(s.w.VoidRoom, s.w.getPlayerRoom(s.p))
+	s.Assert().Equal(s.w.VoidRoom, s.w.playerRoom(s.p))
 	s.Assert().Empty(s.w.StartRoom.Players(), "gone from where they died")
 	s.Assert().Len(s.w.VoidRoom.Players(), 1)
 

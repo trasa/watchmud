@@ -7,7 +7,7 @@ import (
 )
 
 func (w *World) handleSay(msg *gameserver.HandlerParameter, cmd command.Say) {
-	room := w.getPlayerRoom(msg.Player)
+	room := w.playerRoom(msg.Player)
 	room.Send(event.Said{
 		Speaker: msg.Player.Name(),
 		Value:   cmd.Value,

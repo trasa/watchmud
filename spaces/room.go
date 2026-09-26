@@ -133,8 +133,16 @@ func (r *Room) RemoveMobile(inst *mobile.Instance) error {
 	return r.mobs.Remove(inst)
 }
 
+// TODO remove me
 func (r *Room) Mobs() iter.Seq[*mobile.Instance] {
 	return r.mobs.All()
+}
+func (r *Room) Mobiles() []*mobile.Instance {
+	var result []*mobile.Instance
+	for m := range r.mobs.All() {
+		result = append(result, m)
+	}
+	return result
 }
 
 // Send to every player in the room.

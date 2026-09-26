@@ -28,7 +28,7 @@ func (w *World) handleGet(msg *gameserver.HandlerParameter, cmd command.Get) {
 
 	// TODO handle "coins" (target.Quantity)
 
-	room := w.getPlayerRoom(msg.Player)
+	room := w.playerRoom(msg.Player)
 	items := targetsIn(target, room.Inventory.All())
 	if len(items) == 0 {
 		msg.Fail(event.TargetNotFound)

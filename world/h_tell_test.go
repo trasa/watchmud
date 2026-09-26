@@ -28,12 +28,12 @@ func (s *handleTellSuite) SetupTest() {
 	s.worldTestSuite.SetupTest()
 	s.senderRec = &player.Recorder{}
 	s.sender = player.NewTestPlayer(uuid.New(), "sender", s.senderRec)
-	s.w.AddPlayer(s.sender)
+	s.w.PlacePlayer(s.sender, s.w.StartRoom)
 	s.senderConn = gameserver.NewTestConn(s.sender)
 
 	s.receiverRec = &player.Recorder{}
 	s.receiver = player.NewTestPlayer(uuid.New(), "receiver", s.receiverRec)
-	s.w.AddPlayer(s.receiver)
+	s.w.PlacePlayer(s.receiver, s.w.StartRoom)
 }
 
 func (s *handleTellSuite) tell(value string) {

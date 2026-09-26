@@ -20,7 +20,7 @@ func (w *World) doZoneActivity(now time.Time) {
 		if z.ResetMode == zonereset.NO_PLAYERS || z.ResetMode == zonereset.ALWAYS {
 			// is it time yet for this zone's lifetime?
 			if now.Sub(z.LastReset) > z.Lifetime {
-				if errs := z.Reset(w.mobileRooms); len(errs) != 0 {
+				if errs := z.Reset(w.occupancy); len(errs) != 0 {
 					for _, err := range errs {
 						log.Warn().Str("zone", z.Id).Err(err).Msg("zone reset error")
 					}

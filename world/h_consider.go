@@ -15,7 +15,7 @@ func (w *World) handleConsider(msg *gameserver.HandlerParameter, cmd command.Con
 		msg.Fail(event.NoTarget)
 		return
 	}
-	mob, exists := w.getPlayerRoom(msg.Player).FindMobile(cmd.Target)
+	mob, exists := w.playerRoom(msg.Player).FindMobile(cmd.Target)
 	if !exists {
 		msg.Fail(event.TargetNotFound)
 		return

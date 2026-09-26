@@ -61,14 +61,14 @@ func (z *Zone) String() string {
 	return fmt.Sprintf("(Zone %s: '%s')", z.Id, z.Name)
 }
 
-func (z *Zone) Reset(mobileRoomMap *MobileRoomMap) []error {
+func (z *Zone) Reset(o *Occupancy) []error {
 	log.Debug().Str("zone", z.Name).Msg("reset")
 	errs := []error{}
 	for _, cmd := range z.Commands {
 		switch cmd.(type) {
 		case CreateMobile:
 			var err error
-			if err = z.createMobile(mobileRoomMap, cmd.(CreateMobile)); err != nil {
+			if err = z.createMobile(o, cmd.(CreateMobile)); err != nil {
 				errs = append(errs, err)
 			}
 		case CreateObject:
@@ -90,22 +90,19 @@ func (z *Zone) Reset(mobileRoomMap *MobileRoomMap) []error {
 	return errs
 }
 
-func (z *Zone) createMobile(mobileRoomMap *MobileRoomMap, cmd CreateMobile) error {
-	// TODO determine how many of the definition are in the zone
-	defn := z.MobileDefinitions[cmd.MobileDefinitionId]
-	if defn == nil {
+func (z *Zone) createMobile(occ *Occupancy, cmd CreateMobile) error {
+	d := z.MobileDefinitions[cmd.MobileDefinitionId]
+	if d == nil {
 		return errors.New(fmt.Sprintf("createMobile: definition id not found: %s", cmd))
 	}
 	// how many of this mobile definition id are in the zone?
-	log.Printf("createMobile: considering %s, there are %d, max %d",
-		defn.Id, mobileRoomMap.GetMobileDefinitionCount(defn.Id), cmd.InstanceMax)
-	if mobileRoomMap.GetMobileDefinitionCount(defn.Id) < cmd.InstanceMax {
+	if occ.MobileCount(d.Id) < cmd.InstanceMax {
 		r := z.Rooms[cmd.RoomId]
 		if r == nil {
 			return errors.New(fmt.Sprintf("createMobile: room not found: %s", cmd))
 		}
-		log.Printf("Creating mobile: %s", defn.Id)
-		mobileRoomMap.Add(mobile.NewInstance(defn), r)
+		log.Printf("Creating mobile: %s", d.Id)
+		occ.PlaceMobile(mobile.NewInstance(d), r)
 	}
 	return nil
 }

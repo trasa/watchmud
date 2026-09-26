@@ -7,33 +7,19 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/watchmud/watchmud/command"
 	"github.com/watchmud/watchmud/event"
-	"github.com/watchmud/watchmud/gameserver"
 	"github.com/watchmud/watchmud/object"
-	"github.com/watchmud/watchmud/player"
 	"github.com/watchmud/watchmud/rules"
 )
 
 type handleInventorySuite struct {
-	suite.Suite
-	w *World
-	r *player.Recorder
-	p *player.Player
-	c *gameserver.TestConn
+	worldTestSuite
 }
 
 func TestHandleInventorySuite(t *testing.T) {
 	suite.Run(t, new(handleInventorySuite))
 }
 func (s *handleInventorySuite) SetupTest() {
-	s.w, _ = NewTestWorld()
-	s.r = &player.Recorder{}
-	s.p = player.NewTestPlayer(uuid.New(), "foo", s.r)
-	s.w.AddPlayer(s.p)
-	s.c = gameserver.NewTestConn(s.p)
-}
-
-func (s *handleInventorySuite) handleParameter() *gameserver.HandlerParameter {
-	return gameserver.NewHandlerParameter(s.c, command.Inventory{})
+	s.worldTestSuite.SetupTest()
 }
 
 func (s *handleInventorySuite) TestInventory_Success() {
@@ -54,7 +40,8 @@ func (s *handleInventorySuite) TestInventory_Success() {
 	}
 	s.p.Inventory().Add(instPtr)
 
-	s.w.handleInventory(s.handleParameter(), command.Inventory{})
+	cmd := command.Inventory{}
+	s.w.handleInventory(s.handlerParameter(cmd), cmd)
 
 	s.Assert().Equal(1, len(s.r.Sent))
 	resp := s.r.Sent[0].(event.Inventory)

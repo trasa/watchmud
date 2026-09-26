@@ -12,7 +12,7 @@ import (
 )
 
 func (w *World) handleLoad(msg *gameserver.HandlerParameter, cmd command.Load) {
-	targetRoom := w.getPlayerRoom(msg.Player)
+	targetRoom := w.playerRoom(msg.Player)
 
 	if cmd.Zone == "" {
 		cmd.Zone = targetRoom.Zone.Id
@@ -51,7 +51,7 @@ func (w *World) handleLoadCreateMob(msg *gameserver.HandlerParameter, cmd comman
 	// add instance to room via the world
 	// have to do it this way so that the World has appropriate bookkeeping,
 	// if you add directly to the target room then you'll cause problems.
-	w.AddMobile(inst, targetRoom)
+	w.PlaceMobile(inst, targetRoom)
 
 	msg.Player.Send(event.Loaded{})
 }

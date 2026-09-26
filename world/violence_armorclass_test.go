@@ -44,7 +44,7 @@ func (s *violenceArmorClassSuite) SetupTest() {
 	cat := w.content.Catalog
 	s.r = &player.Recorder{}
 	s.p = player.New(uuid.New(), "victim", "", s.r, cat.DefaultLineage(), cat)
-	s.w.AddPlayer(s.p)
+	s.w.PlacePlayer(s.p, s.w.StartRoom)
 
 	drone, exists := s.w.StartRoom.FindMobile("target")
 	s.Require().True(exists)

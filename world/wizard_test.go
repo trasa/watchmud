@@ -34,7 +34,7 @@ func (s *wizardSuite) TestTheListIsMarked() {
 // To anyone else a builder command doesn't exist: the same answer a verb
 // nobody has heard of gets, and nothing happens.
 func (s *wizardSuite) TestRefusedToPlayers() {
-	rabbits := s.w.mobileRooms.GetMobileDefinitionCount("rabbit")
+	rabbits := s.w.occupancy.MobileCount("rabbit")
 	for _, cmd := range wizardCommands {
 		s.r.Clear()
 		s.Require().NoError(s.w.HandleIncomingMessage(s.handlerParameter(cmd)))
@@ -42,14 +42,14 @@ func (s *wizardSuite) TestRefusedToPlayers() {
 		s.Require().Len(s.r.Sent, 1, "%T", cmd)
 		s.Assert().Equal(event.Failed{Verb: cmd.Verb(), Code: event.UnknownCommand}, s.r.Sent[0], "%T", cmd)
 	}
-	s.Assert().Equal(rabbits, s.w.mobileRooms.GetMobileDefinitionCount("rabbit"), "no rabbit was loaded")
+	s.Assert().Equal(rabbits, s.w.occupancy.MobileCount("rabbit"), "no rabbit was loaded")
 }
 
 func (s *wizardSuite) TestAllowedToWizards() {
 	s.p.SetWizard(true)
-	rabbits := s.w.mobileRooms.GetMobileDefinitionCount("rabbit")
+	rabbits := s.w.occupancy.MobileCount("rabbit")
 
 	s.Require().NoError(s.w.HandleIncomingMessage(s.handlerParameter(command.Load{Type: "mob", Id: "rabbit"})))
 
-	s.Assert().Equal(rabbits+1, s.w.mobileRooms.GetMobileDefinitionCount("rabbit"))
+	s.Assert().Equal(rabbits+1, s.w.occupancy.MobileCount("rabbit"))
 }

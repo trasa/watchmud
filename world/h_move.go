@@ -13,17 +13,17 @@ func (w *World) handleMove(msg *gameserver.HandlerParameter, cmd command.Move) {
 		return
 	}
 
-	playerRoom := w.getPlayerRoom(msg.Player)
+	src := w.playerRoom(msg.Player)
 	dir := cmd.Direction
 
 	msg.Player.Log().Trace().Msgf("player wants to move %s", dir.String())
 
 	// can player go in that direction?
-	targetRoom := playerRoom.DestinationRoom(dir)
-	if targetRoom == nil {
+	dest := src.DestinationRoom(dir)
+	if dest == nil {
 		msg.Fail(event.CantGoThatWay)
 		return
 	}
-	w.movePlayer(msg.Player, dir, playerRoom, targetRoom)
-	msg.Player.Send(targetRoom.DescriptionExcept(msg.Player))
+	w.movePlayer(msg.Player, dir, dest)
+	msg.Player.Send(dest.DescriptionExcept(msg.Player))
 }

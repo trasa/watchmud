@@ -10,7 +10,7 @@ import (
 func (w *World) handleRoomStatus(msg *gameserver.HandlerParameter, cmd command.RoomStatus) {
 	// TODO allow user to specify room and zone to get status of
 
-	room := w.getPlayerRoom(msg.Player)
+	room := w.playerRoom(msg.Player)
 
 	msg.Player.Send(event.RoomStatus{
 		Id:          room.Id,

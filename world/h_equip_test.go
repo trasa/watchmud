@@ -28,7 +28,7 @@ func (s *HandleEquipSuite) SetupTest() {
 	s.w, _ = NewTestWorld()
 	s.r = &player.Recorder{}
 	s.p = player.NewTestPlayer(uuid.New(), "foo", s.r)
-	s.w.AddPlayer(s.p)
+	s.w.PlacePlayer(s.p, s.w.StartRoom)
 	s.c = gameserver.NewTestConn(s.p)
 }
 

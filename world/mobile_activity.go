@@ -21,7 +21,7 @@ func (w *World) DoMobileActivity() {
 	// remember that mobs can leave the zone they started out in
 	// if programmed to
 	// or if they really want to...
-	for _, mob := range w.mobileRooms.GetAllMobiles() {
+	for _, mob := range w.occupancy.Mobiles() {
 		if w.fightLedger.InFight(mob) {
 			// actions where the mob is in a fight somewhere
 		} else {
@@ -36,7 +36,7 @@ func (w *World) DoMobileActivity() {
 }
 
 func (w *World) doMobAggro(mob *mobile.Instance) {
-	room := w.getRoomContainingMobile(mob)
+	room := w.mobileRoom(mob)
 	players := room.Players()
 	if len(players) > 0 {
 		if err := w.fightLedger.Fight(mob, players[0], room.Zone.Id, room.Id); err != nil {
@@ -64,28 +64,22 @@ func (w *World) doMobWander(mob *mobile.Instance) {
 // pick a direction that is within the mob's zone and walk to it, if possible.
 func (w *World) doMobRandomWander(mob *mobile.Instance) error {
 	mob.LastWanderingTime = time.Now()
-	mobRoom := w.getRoomContainingMobile(mob)
-	if mobRoom == nil {
-		return errors.New(fmt.Sprintf("Mobile ID '%s' can't randomly wander - not in a room at all!", mob.Definition.Id))
-	}
+	mobRoom := w.mobileRoom(mob)
+
 	// test wandering percentage
 	if mob.CheckWanderChance() {
 		dir := mobRoom.PickRandomDirection(true)
 		if dir == rules.DirectionNone {
 			return errors.New(fmt.Sprintf("Mobile ID '%s' is in a room without exit and can't wander out of it.", mob.Definition.Id))
 		}
-		w.moveMobile(mob, dir, mobRoom, mobRoom.DestinationRoom(dir))
-		//log.Printf("World.doMobRandomWander: %s randomly wanders to %s", mob.Definition.Id, mobRoom.Get(dir))
+		w.moveMobile(mob, dir, mobRoom.DestinationRoom(dir))
 	}
 	return nil
 }
 
 func (w *World) doMobFollowPathWander(mob *mobile.Instance) error {
 	mob.LastWanderingTime = time.Now()
-	mobRoom := w.getRoomContainingMobile(mob)
-	if mobRoom == nil {
-		return errors.New(fmt.Sprintf("Mobile ID '%s' can't follow path - not in a room at all!", mob.Definition.Id))
-	}
+	mobRoom := w.mobileRoom(mob)
 	if mob.CheckWanderChance() {
 		dir, changeDirection, err := getNextDirectionOnPath(mob, mobRoom)
 		if err != nil {
@@ -98,8 +92,7 @@ func (w *World) doMobFollowPathWander(mob *mobile.Instance) error {
 		if changeDirection {
 			mob.WanderingForward = !mob.WanderingForward
 		}
-		w.moveMobile(mob, dir, mobRoom, mobRoom.DestinationRoom(dir))
-		//log.Printf("World.doMobFollowPathWander: %s moves to %s", mob.Definition.Id, mobRoom.Get(dir))
+		w.moveMobile(mob, dir, mobRoom.DestinationRoom(dir))
 	}
 	return nil
 }

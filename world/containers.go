@@ -18,7 +18,7 @@ func (w *World) findContainer(msg *gameserver.HandlerParameter, name string) (*o
 		msg.Fail(event.ParseError)
 		return nil, false
 	}
-	found := targetsIn(target, w.getPlayerRoom(msg.Player).Inventory.All())
+	found := targetsIn(target, w.playerRoom(msg.Player).Inventory.All())
 	if len(found) == 0 {
 		msg.Fail(event.TargetNotFound)
 		return nil, false
@@ -52,7 +52,7 @@ func (w *World) getFrom(msg *gameserver.HandlerParameter, cmd command.Get) {
 		return
 	}
 
-	room := w.getPlayerRoom(msg.Player)
+	room := w.playerRoom(msg.Player)
 	for _, item := range items {
 		if err := container.Contents.Remove(item); err != nil {
 			log.Error().Err(err).Str("player", msg.Player.Name()).Msgf("get from: removing %s from %s", item.Id, container.Definition.Name)

@@ -7,7 +7,7 @@ import (
 )
 
 func (w *World) handleRestore(msg *gameserver.HandlerParameter, cmd command.Restore) {
-	targetRoom := w.getPlayerRoom(msg.Player)
+	targetRoom := w.playerRoom(msg.Player)
 
 	logWizCommand(msg.Player, "restore", "Player %s is attempting to restore %s",
 		msg.Player.Name(), cmd.Target)

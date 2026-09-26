@@ -16,7 +16,7 @@ func (w *World) Regenerate() {
 		}
 		p.RestoreHealth(rules.RegenAmount(p.MaxHealth()))
 	}
-	for _, mob := range w.mobileRooms.GetAllMobiles() {
+	for _, mob := range w.Mobiles() {
 		if mob.Dead() || w.fightLedger.InFight(mob) {
 			continue
 		}

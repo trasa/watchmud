@@ -27,11 +27,11 @@ func (s *handleTellAllSuite) SetupTest() {
 
 	s.receiverRec = &player.Recorder{}
 	s.receiver = player.NewTestPlayer(uuid.New(), "receiver", s.receiverRec)
-	s.w.AddPlayer(s.receiver)
+	s.w.PlacePlayer(s.receiver, s.w.StartRoom)
 
 	s.otherRec = &player.Recorder{}
 	s.other = player.NewTestPlayer(uuid.New(), "other", s.otherRec)
-	s.w.AddPlayer(s.other)
+	s.w.PlacePlayer(s.other, s.w.StartRoom)
 }
 
 func (s *handleTellAllSuite) TestSuccess() {

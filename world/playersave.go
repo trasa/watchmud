@@ -21,7 +21,9 @@ func (w *World) QueuePlayerRecords() {
 // player. Every save goes through here, or the room is forgotten.
 func (w *World) record(p *player.Player) *player.Record {
 	rec := p.Record()
-	if r := w.playerToRoom.Get(p); r != nil {
+	// don't use version that returns Void if they aren't in a room,
+	// we want to test for that case.
+	if r := w.occupancy.RoomOfPlayer(p); r != nil {
 		rec.LastZoneId = r.Zone.Id
 		rec.LastRoomId = r.Id
 	}

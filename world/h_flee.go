@@ -19,10 +19,10 @@ func (w *World) handleFlee(msg *gameserver.HandlerParameter, cmd command.Flee) {
 	}
 
 	// TODO stunned, disabled, other status effects
-	room := w.getPlayerRoom(msg.Player)
+	src := w.playerRoom(msg.Player)
 
 	for range fleeAttempts {
-		room.Send(event.Fleeing{Who: msg.Player.Name()})
+		src.Send(event.Fleeing{Who: msg.Player.Name()})
 
 		// pick a direction at random out of all possible
 		// where direction.All is ([North, East, South, West, Up, Down])
@@ -34,15 +34,15 @@ func (w *World) handleFlee(msg *gameserver.HandlerParameter, cmd command.Flee) {
 			return
 		}
 		dir := rules.AllUsableDirections[i]
-		if room.HasExit(dir) {
+		if src.HasExit(dir) {
 			// success!
-			room.Send(event.Fled{Who: msg.Player.Name()})
-			w.movePlayer(msg.Player, dir, room, room.DestinationRoom(dir))
+			src.Send(event.Fled{Who: msg.Player.Name()})
+			w.movePlayer(msg.Player, dir, src.DestinationRoom(dir))
 			w.fightLedger.EndAllFightsWith(msg.Player.Id())
 			return
 		}
 		// you can't escape
-		room.Send(event.FleeAttemptFailed{Who: msg.Player.Name()})
+		src.Send(event.FleeAttemptFailed{Who: msg.Player.Name()})
 	}
 	msg.Fail(event.CantFlee)
 }

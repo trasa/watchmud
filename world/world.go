@@ -28,10 +28,8 @@ type World struct {
 	roller rules.Roller
 	store  player.Store
 
-	playerList   *player.List   // list of players in world
-	playerToRoom *playerRoomMap // map of player to the room they are in. rooms own their player list.
-
-	mobileRooms *spaces.MobileRoomMap // mobile -> room; room -> mobiles
+	playerList *player.List // list of players in world
+	occupancy  *spaces.Occupancy
 
 	fightLedger *combat.FightLedger
 
@@ -41,13 +39,12 @@ type World struct {
 // New creates a brand-new World based on this content
 func New(c *loader.Content, s player.Store, roller rules.Roller) (w *World, err error) {
 	w = &World{
-		content:      c,
-		playerList:   player.NewList(),
-		playerToRoom: newPlayerRoomMap(),
-		mobileRooms:  spaces.NewMobileRoomMap(),
-		fightLedger:  combat.NewFightLedger(),
-		roller:       roller,
-		store:        s,
+		content:     c,
+		playerList:  player.NewList(),
+		occupancy:   spaces.NewOccupancy(),
+		fightLedger: combat.NewFightLedger(),
+		roller:      roller,
+		store:       s,
 	}
 	w.reservedNames = reservedNames(c)
 	if err := w.initialLoad(); err != nil {
@@ -70,23 +67,16 @@ func (w *World) initialLoad() (err error) {
 		return fmt.Errorf("player-death room: %w", err)
 	}
 
+	// TODO replace
 	// Process the zone commands that say which
 	// mob and object instances to create and where. Distinct from building the
 	// world, since this recurs throughout runtime.
 	for _, zoneId := range slices.Sorted(maps.Keys(content.Zones)) {
-		if errs := content.Zones[zoneId].Reset(w.mobileRooms); len(errs) > 0 {
+		if errs := content.Zones[zoneId].Reset(w.occupancy); len(errs) > 0 {
 			return fmt.Errorf("initial reset of zone %s: %w", zoneId, errors.Join(errs...))
 		}
 	}
 	return nil
-}
-
-// AddPlayer or players to the world, in the start room. New characters come
-// in this way; returning ones go through ReturnPlayer.
-func (w *World) AddPlayer(players ...*player.Player) {
-	for _, p := range players {
-		w.addPlayerTo(p, w.StartRoom)
-	}
 }
 
 // ReturnPlayer puts a returning player back in the room their record says
@@ -101,7 +91,7 @@ func (w *World) ReturnPlayer(p *player.Player, zoneId, roomId string) {
 		}
 		r = w.StartRoom
 	}
-	w.addPlayerTo(p, r)
+	w.PlacePlayer(p, r)
 }
 
 // Arrive finishes a login: the room hears who just appeared in it, and the
@@ -112,64 +102,51 @@ func (w *World) ReturnPlayer(p *player.Player, zoneId, roomId string) {
 // out first; the player's own description has to land after the login
 // conversation has ended, not in the middle of it.
 func (w *World) Arrive(p *player.Player) {
-	r := w.getPlayerRoom(p)
+	r := w.playerRoom(p)
 	r.SendExcept(p, event.EnteredGame{Actor: p.Name()})
 	p.Send(r.DescriptionExcept(p))
 }
 
-func (w *World) addPlayerTo(p *player.Player, r *spaces.Room) {
+func (w *World) PlacePlayer(p *player.Player, r *spaces.Room) {
 	p.Log().Debug().Str("room", r.Location().String()).Msg("Adding player to world")
 	w.playerList.Add(p)
-	r.AddPlayer(p)
-	w.playerToRoom.Update(p, r)
+	w.occupancy.PlacePlayer(p, r)
 }
 
-func (w *World) RemovePlayer(players ...*player.Player) {
-	for _, p := range players {
-		p.Log().Debug().Msg("Removing player")
-		w.fightLedger.EndAllFightsWith(p.Id())
-		// in a room? remove it.
-		r := w.playerToRoom.Get(p)
-		if r != nil {
-			r.RemovePlayer(p)
-		}
-		w.playerList.Remove(p)
-		w.playerToRoom.Remove(p)
-	}
+func (w *World) RemovePlayer(p *player.Player) {
+	p.Log().Debug().Msg("Removing player")
+	w.fightLedger.EndAllFightsWith(p.Id())
+	w.occupancy.RemovePlayer(p)
+	w.playerList.Remove(p)
 }
 
-// Player is moving from src room to dest room.
-func (w *World) movePlayer(p *player.Player, dir rules.Direction, src *spaces.Room, dest *spaces.Room) {
-	src.PlayerLeaves(p, dir)
-	dest.PlayerEnters(p)
-	w.playerToRoom.Update(p, dest)
+// MovePlayer from place to place. Player is moving from src room to dest room.
+func (w *World) movePlayer(p *player.Player, dir rules.Direction, dest *spaces.Room) {
+	w.occupancy.MovePlayer(p, dir, dest)
 }
 
-// Player is jumping from the room they are currently in to the destination.
+// movePlayerMagically from room they're in to somewhere else.
 func (w *World) movePlayerMagically(p *player.Player, dest *spaces.Room) {
-	src := w.playerToRoom.Get(p)
-	if src == nil {
-		src = w.VoidRoom
-	}
-	w.movePlayer(p, rules.DirectionNone, src, dest)
+	w.movePlayer(p, rules.DirectionNone, dest)
 }
 
-// Mobile is moving from src room to dest room.
-func (w *World) moveMobile(mob *mobile.Instance, dir rules.Direction, src *spaces.Room, dest *spaces.Room) {
-	src.MobileLeaves(mob, dir)
-	dest.MobileEnters(mob)
-	w.mobileRooms.Remove(mob)
-	w.mobileRooms.Add(mob, dest)
+// moveMobile to room
+func (w *World) moveMobile(mob *mobile.Instance, dir rules.Direction, dest *spaces.Room) {
+	w.occupancy.MoveMobile(mob, dir, dest)
 }
 
-// AddMobile adds a mobile instance to a room in the world.
-func (w *World) AddMobile(mob *mobile.Instance, targetRoom *spaces.Room) {
-	w.mobileRooms.Add(mob, targetRoom)
+// PlaceMobile adds a mobile instance to a room in the world.
+func (w *World) PlaceMobile(mob *mobile.Instance, targetRoom *spaces.Room) {
+	w.occupancy.PlaceMobile(mob, targetRoom)
 }
 
 // RemoveMobile removes a mobile instance from the world.
-func (w *World) removeMobile(mob *mobile.Instance) {
-	w.mobileRooms.Remove(mob)
+func (w *World) RemoveMobile(mob *mobile.Instance) {
+	w.occupancy.RemoveMobile(mob)
+}
+
+func (w *World) Mobiles() []*mobile.Instance {
+	return w.occupancy.Mobiles()
 }
 
 // roleName resolves a player's equipment weights to a role's display name,
@@ -183,10 +160,10 @@ func (w *World) roleName(weights map[string]int) string {
 	return ""
 }
 
-// getPlayerRoom returns the room a player is in, or VoidRoom if we can't figure that out.
+// playerRoom returns the room a player is in, or VoidRoom if we can't figure that out.
 // Does not return nil.
-func (w *World) getPlayerRoom(p *player.Player) *spaces.Room {
-	r := w.playerToRoom.Get(p)
+func (w *World) playerRoom(p *player.Player) *spaces.Room {
+	r := w.occupancy.RoomOfPlayer(p)
 	if r == nil {
 		p.Log().Warn().Msg("player not in a room!")
 		return w.VoidRoom
@@ -194,8 +171,14 @@ func (w *World) getPlayerRoom(p *player.Player) *spaces.Room {
 	return r
 }
 
-func (w *World) getRoomContainingMobile(mob *mobile.Instance) *spaces.Room {
-	return w.mobileRooms.GetRoomForMobile(mob)
+// mobileRoom returns the room a mobile is in, or VoidRoom if we don't know.
+// Does not return nil.
+func (w *World) mobileRoom(mob *mobile.Instance) *spaces.Room {
+	r := w.occupancy.RoomOfMobile(mob)
+	if r == nil {
+		return w.VoidRoom
+	}
+	return r
 }
 
 // Find room by zone id and room id.

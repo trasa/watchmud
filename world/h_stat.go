@@ -13,7 +13,7 @@ func (w *World) handleStat(msg *gameserver.HandlerParameter, cmd command.Stat) {
 	// the player is only ever set at load time and movePlayer doesn't update
 	// it. See ROADMAP.md "Dual location bookkeeping".
 
-	room := w.getPlayerRoom(p)
+	room := w.playerRoom(p)
 
 	p.Send(event.Stat{
 		PlayerName:    p.Name(),

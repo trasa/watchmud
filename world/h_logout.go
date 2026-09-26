@@ -12,7 +12,7 @@ func (w *World) handleLogout(msg *gameserver.HandlerParameter, cmd command.Logou
 	}
 	msg.Player.Log().Debug().Str("cause", cmd.Cause).Msg("player logout")
 	// get the room before removing from the world
-	room := w.playerToRoom.Get(msg.Player)
+	room := w.occupancy.RoomOfPlayer(msg.Player)
 	if room == nil {
 		return // already logged out or not in the world
 	}

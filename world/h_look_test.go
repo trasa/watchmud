@@ -22,7 +22,7 @@ func TestHandleLookSuite(t *testing.T) {
 func (s *handleLookSuite) SetupTest() {
 	s.worldTestSuite.SetupTest()
 	s.other = player.NewTestPlayer(uuid.New(), "other", nil)
-	s.w.AddPlayer(s.other)
+	s.w.PlacePlayer(s.other, s.w.StartRoom)
 }
 
 func (s *handleLookSuite) TestSuccess() {

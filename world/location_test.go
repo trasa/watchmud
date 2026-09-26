@@ -55,7 +55,7 @@ func (s *locationSuite) TestReturnPlayerToTheirRoom() {
 	s.w.ReturnPlayer(p, "wrathrock", "market_square")
 
 	market, _ := s.w.findRoomById("wrathrock", "market_square")
-	s.Assert().Equal(market, s.w.getPlayerRoom(p))
+	s.Assert().Equal(market, s.w.playerRoom(p))
 	s.Assert().Contains(market.Players(), p)
 }
 
@@ -66,7 +66,7 @@ func (s *locationSuite) TestReturnPlayerToARoomThatIsGone() {
 
 	s.w.ReturnPlayer(p, "wrathrock", "demolished")
 
-	s.Assert().Equal(s.w.StartRoom, s.w.getPlayerRoom(p))
+	s.Assert().Equal(s.w.StartRoom, s.w.playerRoom(p))
 }
 
 // A record from before location was saved says nothing at all.
@@ -75,7 +75,7 @@ func (s *locationSuite) TestReturnPlayerWithNoRoom() {
 
 	s.w.ReturnPlayer(p, "", "")
 
-	s.Assert().Equal(s.w.StartRoom, s.w.getPlayerRoom(p))
+	s.Assert().Equal(s.w.StartRoom, s.w.playerRoom(p))
 }
 
 // Arriving: the room hears about it, and the player sees the room -- but not
@@ -83,7 +83,7 @@ func (s *locationSuite) TestReturnPlayerWithNoRoom() {
 func (s *locationSuite) TestArrive() {
 	rec := &player.Recorder{}
 	q := player.NewTestPlayer(uuid.New(), "newcomer", rec)
-	s.w.AddPlayer(q)
+	s.w.PlacePlayer(q, s.w.StartRoom)
 
 	s.w.Arrive(q)
 
