@@ -100,12 +100,50 @@ connection cap is counting that address, and the sixth player is refused.
 
 ## Backups
 
-The `backup` service writes `deploy/backups/watchmud-<time>.archive.gz` every night
-and deletes ones older than two weeks. They're on the same disk as the database, so
-they cover a bad deploy or a mistake, not the disk dying. **Copy them off the host**:
-an rsync from somewhere else on a cron, or the provider's volume snapshots.
+The `backup` service writes `deploy/backups/watchmud-<time>.archive.gz` when it starts
+and every night after, and deletes ones older than two weeks. Those are on the same
+disk as the database: they cover a bad deploy or a mistake, not losing the droplet.
 
-Restoring one replaces the game's data with what's in the file, so stop the game first:
+The `offsite` service covers that. Every hour it copies new dumps to a DigitalOcean
+Spaces bucket, which keeps them for 90 days. It copies and never syncs, so the droplet
+deleting its old dumps doesn't delete them from the bucket.
+
+### Setting up the bucket
+
+1. In the DigitalOcean console, create a Spaces bucket -- say `watchmud-backups` --
+   in a **different region from the droplet** (nyc3; the droplet is in sfo3), with
+   file listing restricted. The name is global across Spaces, so it may need a suffix.
+2. Create a Spaces access key **limited to that bucket**, with read/write/delete
+   (delete is how the 90-day pruning works). The secret is shown once.
+3. **Before pulling a version of this repo that has the `offsite` service**, add the
+   settings to `deploy/.env` -- compose refuses to run anything, even `logs`, while
+   they're missing:
+
+   ```sh
+   SPACES_REGION=nyc3
+   SPACES_BUCKET=watchmud-backups
+   SPACES_KEY=<access key>
+   SPACES_SECRET=<secret>
+   ```
+
+4. Then start it. Only the new service starts; the game isn't touched:
+
+   ```sh
+   git pull
+   docker compose -f deploy/compose.yaml up -d offsite
+   docker compose -f deploy/compose.yaml logs offsite
+   ```
+
+   The log should say `Copied (new)` for each dump and `offsite: copied to
+   spaces:watchmud-backups/backups`. Check the files are in the bucket in the console.
+
+A key that can delete from the bucket is a key that can empty it, and it's on the
+droplet. If the droplet were compromised, the bucket could go too. Turning on the
+droplet's own weekly backups in the console is a second copy that key can't touch.
+
+### Restoring
+
+Restoring replaces the game's data with what's in the file, so stop the game first:
 
 ```sh
 docker compose -f deploy/compose.yaml stop watchmud
@@ -113,6 +151,16 @@ docker compose -f deploy/compose.yaml exec -T mongo mongorestore -u root -p <roo
   --authenticationDatabase admin --gzip --archive --drop < deploy/backups/<file>
 docker compose -f deploy/compose.yaml start watchmud
 ```
+
+If the droplet is gone, the dump comes from the bucket. Download it in the console, or
+on a new droplet with the same `.env`:
+
+```sh
+docker compose -f deploy/compose.yaml run --rm -v "$PWD/deploy/backups:/restore" \
+  --entrypoint rclone offsite copy spaces:watchmud-backups/backups/<file> /restore
+```
+
+then restore it as above.
 
 ## Passwords
 

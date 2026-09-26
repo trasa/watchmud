@@ -88,5 +88,34 @@ services:
         max-size: 5m
         max-file: "2"
 
+  # The dumps above, copied every hour to a Spaces bucket -- in a different
+  # region from the droplet -- so losing the droplet doesn't lose them too.
+  # Its own service so that a failed upload can't get in the way of taking
+  # the dump, and adding it restarts nothing else.
+  offsite:
+    image: rclone/rclone:1.75
+    restart: unless-stopped
+    environment:
+      # the rclone remote "spaces", configured entirely from the environment;
+      # no config file, or rclone says so on every pass
+      RCLONE_CONFIG: /dev/null
+      RCLONE_CONFIG_SPACES_TYPE: s3
+      RCLONE_CONFIG_SPACES_PROVIDER: DigitalOcean
+      RCLONE_CONFIG_SPACES_ENDPOINT: ${SPACES_REGION:?set it in deploy/.env}.digitaloceanspaces.com
+      RCLONE_CONFIG_SPACES_ACCESS_KEY_ID: ${SPACES_KEY:?set it in deploy/.env}
+      RCLONE_CONFIG_SPACES_SECRET_ACCESS_KEY: ${SPACES_SECRET:?set it in deploy/.env}
+      SPACES_BUCKET: ${SPACES_BUCKET:?set it in deploy/.env}
+      OFFSITE_EVERY_SECONDS: ${OFFSITE_EVERY_SECONDS:-3600}
+      OFFSITE_KEEP_DAYS: ${OFFSITE_KEEP_DAYS:-90}
+    volumes:
+      - ./backups:/backups:ro
+      - ./offsite.sh:/offsite.sh:ro
+    entrypoint: ["sh", "/offsite.sh"]
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "2"
+
 volumes:
   mongo-data:

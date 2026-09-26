@@ -93,9 +93,11 @@ works), `certbot renew --dry-run` passing, a backup written, and a wizard made.
    with a player connected, who stayed connected.
 
    Still open:
-   - **Copy backups off the host.** They sit on the same disk as the database; a dead
-     droplet takes both. DigitalOcean Spaces with `s3cmd`/`rclone` from the backup
-     loop, or the droplet's weekly backups as a floor.
+   - ~~**Copy backups off the host.**~~ Done 2026-09-25: the `offsite` service (rclone)
+     copies each dump hourly to a Spaces bucket in another region, which keeps 90 days;
+     `copy`, never `sync`, so the droplet pruning its own doesn't prune the bucket.
+     The bucket key can delete (that's how pruning works), so a compromised droplet
+     could empty it -- the droplet's weekly backups are a copy that key can't reach.
    - **Build the image in GitHub Actions**, push to `ghcr.io/watchmud/watchmud`, and have
      the droplet pull it: a Go build on one vCPU with 1GB takes minutes and swaps, and
      it's the same image a Kubernetes move would need. compose.yaml gets `image:`.
