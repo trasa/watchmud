@@ -25,6 +25,11 @@ import (
 	"github.com/watchmud/watchmud/writebehind"
 )
 
+// version is what's running: a release tag (v1.2.3), a branch and commit, or
+// "dev" for a build that wasn't stamped. Set at build time by the Dockerfile:
+// -ldflags "-X main.version=...".
+var version = "dev"
+
 func main() {
 	if err := run(); err != nil {
 		fmt.Fprintf(os.Stderr, "watchmud: %v\n", err)
@@ -56,7 +61,7 @@ func run() error {
 		return fmt.Errorf("initializing logging: %w", err)
 	}
 	defer closeLog()
-	log.Info().Msg("Logging initialized.")
+	log.Info().Str("version", version).Msg("WatchMUD starting")
 
 	d, err := os.Getwd()
 	if err != nil {

@@ -1,5 +1,7 @@
 # WatchMUD: a static binary and its content, on an image with nothing else in
-# it. Built by deploy/compose.yaml; `make docker-build` builds it alone.
+# it -- so an image version pins the code and the rules and zones together.
+# Built and pushed to ghcr.io by .github/workflows/build.yaml; `make
+# docker-build` builds one locally.
 
 FROM golang:1.27 AS build
 WORKDIR /src
@@ -9,8 +11,11 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
+# what the binary reports itself as: the release tag, or branch-and-commit,
+# passed by .github/workflows/build.yaml. "dev" for a build by hand.
+ARG VERSION=dev
 # CGO off: a static binary, which is what lets the runtime image be distroless.
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/watchmud ./cmd/watchmud
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X main.version=${VERSION}" -o /out/watchmud ./cmd/watchmud
 
 # distroless/static: no shell, no package manager, a non-root user. Nothing to
 # exec into -- `docker compose logs` is how you see what it's doing.
