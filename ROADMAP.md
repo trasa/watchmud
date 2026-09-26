@@ -102,9 +102,18 @@ works), `certbot renew --dry-run` passing, a backup written, and a wizard made.
      survives, are a table in deploy/README.md. Possible later: if Spaces offers a key
      that can write but not delete, prune with a bucket lifecycle rule instead and
      give the droplet that key.
-   - **Build the image in GitHub Actions**, push to `ghcr.io/watchmud/watchmud`, and have
-     the droplet pull it: a Go build on one vCPU with 1GB takes minutes and swaps, and
-     it's the same image a Kubernetes move would need. compose.yaml gets `image:`.
+   - ~~**Build the image in GitHub Actions.**~~ Done 2026-09-26.
+     `.github/workflows/build.yaml` tests every push and PR (make check, the mongo tests
+     against a real mongo, compose.yaml's validity) and pushes images to
+     `ghcr.io/watchmud/watchmud`: `:master`, `:release-X.Y`, `:sha-...` for development,
+     and `:vX.Y.Z` from a version tag, which must be on a `release/` or `hotfix/` branch.
+     Production runs only versions, moved by hand with `deploy/deploy.sh vX.Y.Z` -- which
+     checks out the tag (compose.yaml and scripts are versioned too), pulls, and only
+     then restarts, putting everything back if a step fails. Content is in the image,
+     so a version is code and world together. The binary logs its version at startup.
+     Branching (master / release / hotfix) is in deploy/README.md, "Releasing".
+     Later, maybe: a manual "deploy" workflow that runs deploy.sh over ssh, with a key
+     that can run nothing else.
    - **watchmud.games** has DNS but points nowhere. An A record and `-d watchmud.games`
      on the certificate, if it should.
 

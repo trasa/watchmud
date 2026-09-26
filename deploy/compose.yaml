@@ -1,15 +1,16 @@
-# WatchMUD for real players: the game, its mongo, and nightly backups.
+# WatchMUD for real players: the game, its mongo, and backups.
 #
-#   cp deploy/.env.example deploy/.env    # then set the two passwords
-#   docker compose -f deploy/compose.yaml up -d --build
+#   deploy/deploy.sh v1.2.3     # the way to run it, and to move to a new version
 #
-# See deploy/README.md. This is separate from the docker-compose.yml at the
-# repo root, which is the unauthenticated mongo for development.
+# See deploy/README.md. The game's image comes from ghcr.io, built by
+# .github/workflows/build.yaml; nothing here builds. To build and run one
+# locally instead, add deploy/compose.build.yaml. This is separate from the
+# docker-compose.yml at the repo root, which is the dev mongo.
 
 services:
   watchmud:
-    build:
-      context: ..
+    # WATCHMUD_VERSION is in deploy/.env, written there by deploy.sh
+    image: ghcr.io/watchmud/watchmud:${WATCHMUD_VERSION:?run deploy/deploy.sh <version> -- see deploy/README.md}
     restart: unless-stopped
     depends_on:
       mongo:

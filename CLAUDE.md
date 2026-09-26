@@ -528,4 +528,8 @@ is no threat yet -- nothing lets a tank take a mob back.
   `mongostore.RedactURI`. An empty `log.file` means stdout only, which is what the
   container uses.
 - Deploying is `deploy/compose.yaml` and `deploy/README.md`; the root
-  `docker-compose.yml` is only the unauthenticated dev mongo.
+  `docker-compose.yml` is only the unauthenticated dev mongo. Production runs only
+  images built by `.github/workflows/build.yaml` from a `vX.Y.Z` tag on a `release/`
+  or `hotfix/` branch; `master` is development. `deploy/deploy.sh` is how a version
+  reaches the droplet. Rules and zones are in the image: content changes are released
+  like code.

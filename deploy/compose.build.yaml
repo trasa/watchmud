@@ -1,0 +1,12 @@
+# Build the game's image from this checkout instead of pulling it -- for trying
+# the stack on your own machine, never on the droplet (production runs only
+# images built by .github/workflows/build.yaml from a version tag):
+#
+#   WATCHMUD_VERSION=local docker compose -f deploy/compose.yaml \
+#     -f deploy/compose.build.yaml up -d --build
+services:
+  watchmud:
+    build:
+      context: ..
+      args:
+        VERSION: ${WATCHMUD_VERSION}-local

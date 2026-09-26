@@ -13,15 +13,17 @@ renewed certificate picked up with a player connected, who stayed connected.
 You need Docker with the compose plugin, a checkout of this repo on the host, and a
 domain name pointing at the host for the TLS certificate -- production is
 `watchmud.com`: telnet on 4000, TLS on 4443. Get the certificate first
-(see TLS, below): the game won't start with TLS configured and no certificate. To
-start without TLS, set `tls.port: 0` in `deploy/app.yaml`.
+(see TLS, below): the game won't start with TLS configured and no certificate.
+
+Nothing is built on the host. It runs images that GitHub Actions built from a version
+tag (see Releasing, below), so there has to be one first.
 
 ```sh
 cp deploy/.env.example deploy/.env
-# two long random passwords into deploy/.env:
+# two long random passwords, and the Spaces settings (Backups, below):
 openssl rand -base64 24 | tr -d '/+='
-docker compose -f deploy/compose.yaml up -d --build
-docker compose -f deploy/compose.yaml ps        # three services, mongo (healthy)
+git fetch --tags && git checkout v0.1.0      # deploy.sh needs to exist in the checkout
+deploy/deploy.sh v0.1.0
 telnet <host> 4000
 ```
 
@@ -74,16 +76,63 @@ docker compose -f deploy/compose.yaml exec mongo mongosh -u root -p \
 It asks for the password (`MONGO_ROOT_PASSWORD`). The name is capitalized the way the
 game stores it: `Bob`, not `bob`.
 
-## Updating
+## Releasing
+
+`master` is development. A release is a `release/X.Y` branch cut from it, and each
+version a tag on that branch; fixes to something released go on a `hotfix/` branch
+cut from its tag. Content is released the same way: rules and zones are in the image,
+so a version is the code and the world together.
 
 ```sh
-git pull
-docker compose -f deploy/compose.yaml up -d --build watchmud
+# a new release
+git switch -c release/0.2 master && git push -u origin release/0.2
+git tag -a v0.2.0 -m "v0.2.0" && git push origin v0.2.0
+
+# a fix to what's running
+git switch -c hotfix/0.2.1 v0.2.0
+# ... fix, commit ...
+git push -u origin hotfix/0.2.1
+git tag -a v0.2.1 -m "v0.2.1" && git push origin v0.2.1
+# and merge the fix back into master (and the release branch)
 ```
 
-**This disconnects everyone.** The game gets SIGTERM, saves everyone who is logged in,
-and exits; compose waits up to 30s (`stop_grace_period`) before it would SIGKILL.
-Players reconnect to wherever they were. Announce it first.
+Pushing the tag runs `.github/workflows/build.yaml`: the tests, then the image
+`ghcr.io/watchmud/watchmud:v0.2.0`. It refuses a version tag that isn't on a
+`release/` or `hotfix/` branch. `gh run watch` follows it. Pushes to master and to
+the branches build images too (`:master`, `:release-0.2`, `:sha-abc1234`), for trying
+things -- production only ever runs a version.
+
+The package has to be **public** for the droplet to pull it without logging in: after
+the first image, the watchmud organization's Packages, `watchmud`, Package settings,
+Change visibility. (Or keep it private and `docker login ghcr.io` on the droplet with
+a token that can only read packages.)
+
+## Deploying
+
+On the droplet:
+
+```sh
+cd /srv/watchmud
+deploy/deploy.sh v0.2.0
+```
+
+It fetches the tag, checks the checkout has no local edits, moves the checkout to the
+tag (so compose.yaml and the scripts are that release's), records the version in
+`.env`, and pulls the image -- all before anything stops. If any of that fails, it puts
+the checkout and `.env` back and the running version carries on. Then it asks, and
+restarts.
+
+**Restarting disconnects everyone.** The game gets SIGTERM, saves everyone who is
+logged in, and exits; compose waits up to 30s (`stop_grace_period`) before it would
+SIGKILL. Players reconnect to wherever they were. Announce it first.
+
+Rolling back is deploying the previous version: `deploy/deploy.sh v0.1.0`. The log's
+first line says what's running: `WatchMUD starting version=v0.2.0`.
+
+Old images pile up on a small disk: `docker image prune` now and then.
+
+**Never `--build` on the droplet.** `deploy/compose.build.yaml` is for trying the stack
+on your own machine.
 
 ## Logs
 
