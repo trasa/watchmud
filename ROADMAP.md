@@ -97,7 +97,11 @@ works), `certbot renew --dry-run` passing, a backup written, and a wizard made.
      copies each dump hourly to a Spaces bucket in another region, which keeps 90 days;
      `copy`, never `sync`, so the droplet pruning its own doesn't prune the bucket.
      The bucket key can delete (that's how pruning works), so a compromised droplet
-     could empty it -- the droplet's weekly backups are a copy that key can't reach.
+     could empty it -- so the droplet's own DigitalOcean backups are on too (added
+     2026-09-25), a copy nothing on the droplet can delete. The layers, and what each
+     survives, are a table in deploy/README.md. Possible later: if Spaces offers a key
+     that can write but not delete, prune with a bucket lifecycle rule instead and
+     give the droplet that key.
    - **Build the image in GitHub Actions**, push to `ghcr.io/watchmud/watchmud`, and have
      the droplet pull it: a Go build on one vCPU with 1GB takes minutes and swaps, and
      it's the same image a Kubernetes move would need. compose.yaml gets `image:`.

@@ -137,9 +137,23 @@ deleting its old dumps doesn't delete them from the bucket.
    The log should say `Copied (new)` for each dump and `offsite: copied to
    spaces:watchmud-backups/backups`. Check the files are in the bucket in the console.
 
-A key that can delete from the bucket is a key that can empty it, and it's on the
-droplet. If the droplet were compromised, the bucket could go too. Turning on the
-droplet's own weekly backups in the console is a second copy that key can't touch.
+### What each copy survives
+
+| Copy | Survives | Doesn't survive |
+|---|---|---|
+| `deploy/backups` (nightly, 2 weeks) | a bad deploy, a mistake in the data | losing the droplet |
+| Spaces bucket (hourly, 90 days, nyc3) | losing the droplet, or sfo3 | root on the droplet: the key is in `.env` and can delete, since that's how the pruning works |
+| DigitalOcean droplet backups (console, Backups tab) | root on the droplet -- nothing on it can delete them | losing the DigitalOcean account |
+
+The game itself can't reach the key: it runs as a non-root user in a distroless
+container with no shell, and the key is only in `.env` and the `offsite` container.
+Getting it takes root on the host.
+
+Keep **2FA on the DigitalOcean account**: it's the one place all three can be deleted
+from.
+
+A droplet backup restores the whole droplet (Backups tab, restore or create a droplet
+from it). For just the characters, the dumps are quicker.
 
 ### Restoring
 
