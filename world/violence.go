@@ -12,7 +12,7 @@ import (
 // DoViolence walks through all the combat going on and
 // makes the combat happen. For each fight, determine if
 // it is "time" to do something, and if so determine what to do.
-// Update the state, and continue.
+// Update the state and continue.
 func (w *World) DoViolence(pulse rules.PulseCount) {
 
 	for _, fight := range w.fightLedger.GetFights() {
@@ -38,8 +38,8 @@ func (w *World) DoViolence(pulse rules.PulseCount) {
 				isDead = fight.Fightee.TakeMeleeDamage(fightResult.Damage)
 			}
 			// tell everyone what is going on
-			room, found := w.findRoomById(fight.ZoneId, fight.RoomId)
-			if found {
+			room := w.roomOf(fight.Fighter)
+			if room != nil {
 				room.Notify(event.Struck{
 					Attacker: fight.Fighter.Name(),
 					Target:   fight.Fightee.Name(),
@@ -54,15 +54,11 @@ func (w *World) DoViolence(pulse rules.PulseCount) {
 				// through, and after the room has been told about the blow,
 				// so "your tunic gives out" follows the hit that finished it
 				// instead of preceding it.
-				var scene *spaces.Room
-				if found {
-					scene = room
-				}
-				w.wearFromBlow(fight.Fighter, fight.Fightee, scene)
+				w.wearFromBlow(fight.Fighter, fight.Fightee, room)
 			}
 
 			if isDead {
-				w.combatantDied(fight.Fightee, room, found)
+				w.combatantDied(fight.Fightee, room)
 				// TODO award points or other reward
 			}
 		}
@@ -76,9 +72,9 @@ func (w *World) DoViolence(pulse rules.PulseCount) {
 // took you out of the fight with the other one -- combat with more than one
 // attacker could never happen. becomeCorpse already ends the dead one's
 // fights, in both directions, which is the whole of what should end here.
-func (w *World) combatantDied(dead combat.Combatant, room *spaces.Room, roomFound bool) {
+func (w *World) combatantDied(dead combat.Combatant, room *spaces.Room) {
 	w.becomeCorpse(dead)
-	if roomFound {
+	if room != nil {
 		_, isPlayer := dead.(*player.Player)
 		room.Notify(event.Died{
 			Target:   dead.Name(),
@@ -90,11 +86,7 @@ func (w *World) combatantDied(dead combat.Combatant, room *spaces.Room, roomFoun
 	// reads as a consequence of the death rather than as something that
 	// happened on the way to it. Mobs have no equipment to lose.
 	if p, isPlayer := dead.(*player.Player); isPlayer {
-		var scene *spaces.Room
-		if roomFound {
-			scene = room
-		}
-		w.wearFromDeath(p, scene)
+		w.wearFromDeath(p, room)
 		w.playerRevives(p)
 	}
 }

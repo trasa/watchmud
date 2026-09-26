@@ -16,22 +16,22 @@ func NewFightLedger() *FightLedger {
 	}
 }
 
-func (f *FightLedger) Fight(fighter Combatant, fightee Combatant, zoneId string, roomId string) error {
+func (f *FightLedger) Fight(fighter, fightee Combatant) error {
 	if f.IsFighting(fighter) {
 		// TODO fixme
 		return fmt.Errorf("fighter is already fighting someone")
 	}
-	f.fightMap[fighter.Id()] = f.newFight(fighter, fightee, zoneId, roomId)
+	f.fightMap[fighter.Id()] = f.newFight(fighter, fightee)
 
 	if !f.IsFighting(fightee) {
-		f.fightMap[fightee.Id()] = f.newFight(fightee, fighter, zoneId, roomId)
+		f.fightMap[fightee.Id()] = f.newFight(fightee, fighter)
 	}
 	return nil
 }
 
-func (f *FightLedger) newFight(fighter Combatant, fightee Combatant, zoneId string, roomId string) *Fight {
+func (f *FightLedger) newFight(fighter, fightee Combatant) *Fight {
 	f.nextSeq++
-	return newFight(fighter, fightee, zoneId, roomId, f.nextSeq)
+	return newFight(fighter, fightee, f.nextSeq)
 }
 
 func (f *FightLedger) InFight(c Combatant) bool {
@@ -100,6 +100,6 @@ func (f *FightLedger) retarget() {
 		}
 	}
 	for target, attack := range earliest {
-		f.fightMap[target] = f.newFight(attack.Fightee, attack.Fighter, attack.ZoneId, attack.RoomId)
+		f.fightMap[target] = f.newFight(attack.Fightee, attack.Fighter)
 	}
 }

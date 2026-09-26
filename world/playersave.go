@@ -17,7 +17,7 @@ func (w *World) QueuePlayerRecords() {
 }
 
 // Record is the player's record plus where they are standing. The player
-// can't fill that in themselves: location lives in playerToRoom, not on the
+// can't fill that in themselves: location lives in the world's Occupancy, not on the
 // player. Every save goes through here, or the room is forgotten.
 func (w *World) record(p *player.Player) *player.Record {
 	rec := p.Record()

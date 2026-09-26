@@ -667,21 +667,28 @@ Named so they don't get rediscovered as surprises:
 - **Dual location bookkeeping.** Not a launch item; general cleanup, and the thing Lua
   would build on, so do it before Lua. Laid out to be walked through in order.
 
-  *What is there today* (checked 2026-09-24):
+  **Done 2026-09-26** (steps 1, 2 and 4 below): `spaces.Occupancy` holds both directions
+  for players and mobs and is the only writer of a room's lists, whose writers are now
+  unexported. Kept for the reasoning. Also gone with it: `movePlayerMagically` pretending a
+  player who is nowhere was in the void room (and telling the void they left), and the
+  `ZoneId`/`RoomId` a `Fight` used to snapshot -- a fight's room is its fighter's room.
 
-  - ~~Players, two copies.~~ removed 2026-09-26. `world.playerRoomMap` (player -> room) and each `Room`'s
-    `playerList` (room -> players). `World.addPlayerTo`, `removePlayer` and `movePlayer`
-    each update both by hand. Gone now.
-  - ~~Mobs, two copies.~~ removed 2026-09-26. `spaces.MobileRoomMap` holds `mobileToRoom` (mob -> room), and
-    each `Room` has its own `mobs`. 
-  - **`moveMobile` only works because errors are ignored.** It calls
-    `src.MobileLeaves`/`dest.MobileEnters`, which move the mob between room lists, and then
-    `mobileRooms.Remove` + `Add`, which *also* touch the room lists: `Remove` removes the
+  *What was there* (checked 2026-09-24):
+
+  - ~~**Players, two copies.**~~ `world.playerRoomMap` (player -> room) and each `Room`'s
+    `playerList` (room -> players). `World.addPlayerTo`, `RemovePlayer` and `movePlayer`
+    each updated both by hand. This is where the Phase 4 ghost came from: `RemovePlayer`
+    updated the map and forgot the room.
+  - ~~**Mobs, two copies.**~~ `spaces.MobileRoomMap` held `mobileToRoom` (mob -> room), and
+    each `Room` had its own `mobs`.
+  - ~~**`moveMobile` only worked because errors were ignored.**~~ It called
+    `src.MobileLeaves`/`dest.MobileEnters`, which moved the mob between room lists, and then
+    `mobileRooms.Remove` + `Add`, which *also* touched the room lists: `Remove` removed the
     mob from `src` a second time (`ErrNotFound`, swallowed by a `// TODO error handling`)
-    and `Add` adds it to `dest` a second time (`ErrDuplicate`, swallowed). Correct result,
+    and `Add` added it to `dest` a second time (`ErrDuplicate`, swallowed). Correct result,
     by accident.
-  - ~~Floor objects, one copy.~~ Cleaned up 2026-09-26. 
-  - Note: movePlayerMagically no longer pretends the player is in VoidRoom.
+  - **Floor objects, one copy.** Only `Room.Inventory`. Nothing asks "which room is this
+    knife in?", so there is nothing to desync. Unchanged, on purpose (step 5).
   
   *The decision: rooms keep their lists.* Almost every question the game asks starts from
   a room -- `look`, `say`, `Room.Send`/`Notify`, aggro's "first player in my room",
@@ -693,19 +700,20 @@ Named so they don't get rediscovered as surprises:
 
   *The plan: one owner, and nothing else can write.*
 
-  1. A type in `spaces` -- `Occupancy`, say -- holding both directions for players and mobs:
+  1. ~~A type in `spaces` -- `Occupancy`, say -- holding both directions for players and mobs:
      `PlacePlayer(p, r)`, `MovePlayer(p, dest)`, `RemovePlayer(p)`, `RoomOfPlayer(p)`, and
-     the same four for mobiles. It is the only code that touches a room's lists.
-  2. Unexport the room's writers (`AddPlayer`, `removePlayer`, `AddMobile`, `removeMobile`,
-     `playerEnters`/`Leaves`, `mobileEnters`/`Leaves`), leaving `Room` with readers only:
+     the same four for mobiles. It is the only code that touches a room's lists.~~ Done.
+  2. ~~Unexport the room's writers (`AddPlayer`, `RemovePlayer`, `AddMobile`, `RemoveMobile`,
+     `PlayerEnters`/`Leaves`, `MobileEnters`/`Leaves`), leaving `Room` with readers only:
      `Players()`, `Mobs()`, `FindPlayer`, `FindMobile`. Because `Occupancy` lives in
      `spaces` it can still call them; `world` can't. A half-done move now fails to compile
-     instead of leaving a ghost.
+     instead of leaving a ghost.~~ Done.
   3. ~~Delete `roomToMobiles` and the `syncmap` dependency with it.~~ Done 2026-09-25.
-  4. `world.playerRoomMap` and `MobileRoomMap` fold into `Occupancy`; `World.movePlayer`,
-     `moveMobile`, `addPlayerTo` and `removePlayer` become one call each plus whatever
+  4. ~~`world.playerRoomMap` and `MobileRoomMap` fold into `Occupancy`; `World.movePlayer`,
+     `moveMobile`, `addPlayerTo` and `RemovePlayer` become one call each plus whatever
      else they do (fights, `playerList`). Errors from the lists stop being swallowed --
-     with one writer, a duplicate or a miss is a real bug worth logging.
+     with one writer, a duplicate or a miss is a real bug worth logging.~~ Done, together
+     with step 1.
   5. Leave objects alone. Where an object is forms a tree (floor, inventory, equipment,
      corpse contents) and nothing asks the reverse question yet. Add an index when a
      "locate object" spell or a script needs one, through the same owner.
@@ -716,7 +724,7 @@ Named so they don't get rediscovered as surprises:
   (`extract(obj)`, `move(obj, dest)`) rather than editing a list, and that verb is where
   the event goes out and where hooks fire -- `on_enter`, `on_leave`, `on_drop`. With moves
   spread across handlers, every hook would have to be added in several places, and one
-  would be missed exactly the way `removePlayer` missed its room.
+  would be missed exactly the way `RemovePlayer` missed its room.
 - **`spaces.Room` conflates definition and instance.** One struct holds both the static
   topology loaded from `content/` (`Id`, `Name`, `Description`, `Zone`, `directions`, `flags`)
   and the live contents that change every tick (`playerList`, `Inventory`, `mobs`). Because
@@ -755,8 +763,9 @@ Named so they don't get rediscovered as surprises:
   speaker name and renders to the room. So taunts are the first case -- a fight-started
   and a fight-pulse hook, and one action, `say` -- and the King's half-health script is
   the second.
-- **`Fight` snapshots `ZoneId`/`RoomId`** at the moment it starts, so a fight that somehow
-  outlives its room notifies the wrong one. Same family as the location bookkeeping above.
+- ~~**`Fight` snapshots `ZoneId`/`RoomId`** at the moment it starts, so a fight that somehow
+  outlives its room notifies the wrong one.~~ Fixed 2026-09-26: a fight has no location;
+  `DoViolence` asks `Occupancy` where the fighter is standing.
 - **`RoleWeights` is hand-authored for everything that isn't armor.** ~~A builder writing
   `"roles": {"tank": 3}`~~ -- fixed for armor. A role declaring `"from_armor": true` in
   `roles.json` (Tank) is fed by `armor.json`'s armor-type-by-slot table, the same number
@@ -772,8 +781,8 @@ Named so they don't get rediscovered as surprises:
   branches on the result, because a cliff in a display string is a cosmetic surprise and a
   cliff in a damage formula is a balance bug. **The fix is not a smoother function; it is
   not branching on it.** Combat that wants tankiness should read the armor, not the label.
-- **`server.handleLogin`** logs the error from `player.FromRecord` and then falls through
-  and uses the player anyway.
+- ~~**`server.handleLogin`** logs the error from `player.FromRecord` and then falls through
+  and uses the player anyway.~~ Already fixed: it returns the error.
 - **`world/settings.go`** is a single `VERBOSE_LOGGING` const, and logging is split between
   zerolog and stdlib `log` depending on file age. Worth one consolidating pass eventually.
 

@@ -73,7 +73,7 @@ func (s *violenceArmorClassSuite) wear(slot rules.EquipmentSlot, name string, t 
 func (s *violenceArmorClassSuite) oneWayFight(attacker, defender combat.Combatant) {
 	s.T().Helper()
 	s.w.fightLedger = combat.NewFightLedger()
-	s.Require().NoError(s.w.fightLedger.Fight(attacker, defender, "wrathrock", "temple_square"))
+	s.Require().NoError(s.w.fightLedger.Fight(attacker, defender))
 	s.w.fightLedger.EndFight(defender)
 }
 

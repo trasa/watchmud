@@ -181,6 +181,19 @@ func (w *World) mobileRoom(mob *mobile.Instance) *spaces.Room {
 	return r
 }
 
+// roomOf is the room a combatant is standing in, nil if they are nowhere.
+// Fights don't remember where they started: nobody can leave a fight without
+// ending it, so where the fighter stands is where the fight is.
+func (w *World) roomOf(c combat.Combatant) *spaces.Room {
+	switch c := c.(type) {
+	case *player.Player:
+		return w.occupancy.RoomOfPlayer(c)
+	case *mobile.Instance:
+		return w.occupancy.RoomOfMobile(c)
+	}
+	return nil
+}
+
 // Find room by zone id and room id.
 func (w *World) findRoomById(zoneId string, roomId string) (*spaces.Room, bool) {
 	if z, zoneExists := w.content.Zones[zoneId]; zoneExists {

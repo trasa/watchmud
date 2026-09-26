@@ -45,7 +45,7 @@ func (s *HandleMoveSuite) TestMoveWhileFighting() {
 	other := player.NewTestPlayer(uuid.New(), "other", r)
 	s.w.PlacePlayer(other, s.w.StartRoom)
 
-	s.Assert().NoError(s.w.fightLedger.Fight(s.p, other, s.w.StartRoom.Zone.Id, s.w.StartRoom.Id))
+	s.Assert().NoError(s.w.fightLedger.Fight(s.p, other))
 	s.move(rules.DirectionNorth)
 
 	failed := s.r.Sent[0].(event.Failed)

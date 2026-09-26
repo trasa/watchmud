@@ -35,7 +35,7 @@ func (s *lootSuite) killDrone() *object.Instance {
 	s.T().Helper()
 	drone, exists := s.w.StartRoom.FindMobile("target")
 	s.Require().True(exists)
-	s.w.combatantDied(drone, s.w.StartRoom, true)
+	s.w.combatantDied(drone, s.w.StartRoom)
 
 	for item := range s.w.StartRoom.Inventory.All() {
 		if item.Contents != nil {

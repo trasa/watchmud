@@ -101,9 +101,9 @@ command, is in the next one. Logout saves immediately, as does death; a crash lo
 most one interval.
 
 **Save through `w.record(p)`, never `p.Record()` directly.** The player doesn't know where it
-is standing -- location lives in `playerToRoom` -- so `w.record` is what fills in
+is standing -- location lives in `spaces.Occupancy` -- so `w.record` is what fills in
 `LastZoneId`/`LastRoomId`, and a bare `p.Record()` saves a player who is nowhere. Logout
-takes the record *before* `removePlayer` for that reason.
+takes the record *before* `RemovePlayer` for that reason.
 On login, `World.ReturnPlayer` puts them back in that room, falling back to the start
 room when the record names none (a new or pre-location character) or a room content no
 longer has. `AddPlayer` is the start-room path, for new characters and tests. After the
@@ -451,10 +451,18 @@ because their callers are void methods deep inside a move with nothing to do abo
 and live contents in one struct, which is why `Room.Connect` has to be exported for the
 loader. See ROADMAP.md "Known problems"; don't "fix" it piecemeal.
 
-Location is tracked by paired maps rather than a pointer on the entity:
-`world.PlayerRoomMap` and `spaces.MobileRoomMap` maintain both directions, and `spaces.Room`
-separately holds its own player list/inventory/mobs. Moves and removals must update both
-sides -- see `World.movePlayer` / `World.moveMobile` / `World.RemovePlayer`.
+Location is tracked by **`spaces.Occupancy`**, not a pointer on the entity. A room keeps
+its own lists of players and mobs (every `look` starts from a room, and wants them in a
+stable order); `Occupancy` keeps the reverse index, player -> room and mob -> room, and is
+the only code that writes either side. The room's writers (`addPlayer`, `playerEnters`,
+`mobileLeaves`, ...) are unexported, so from `world/` a half-done move fails to compile
+instead of leaving a ghost. `World.movePlayer` / `moveMobile` / `RemovePlayer` are one
+`Occupancy` call each. Objects are not in it: where an object is forms a tree (floor,
+inventory, equipment, container) and nothing asks the reverse question yet.
+
+A fight has no location of its own. Nobody can leave a fight without ending it (`move`
+and `recall` refuse, `flee` ends it first), so `DoViolence` reports each swing to
+`World.roomOf(fighter)` -- wherever the fighter is standing now.
 
 ### Combat
 

@@ -30,7 +30,7 @@ func (s *regenSuite) TestStopsAtFull() {
 func (s *regenSuite) TestNotWhileFighting() {
 	target, exists := s.w.StartRoom.FindMobile("target")
 	s.Require().True(exists)
-	s.Require().NoError(s.w.fightLedger.Fight(s.p, target, "wrathrock", "temple_square"))
+	s.Require().NoError(s.w.fightLedger.Fight(s.p, target))
 	s.p.TakeMeleeDamage(50)
 	target.TakeMeleeDamage(10)
 

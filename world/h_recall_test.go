@@ -41,7 +41,7 @@ func (s *handleRecallSuite) TestTakesYouToTheStart() {
 func (s *handleRecallSuite) TestNotInAFight() {
 	drone, found := s.w.StartRoom.FindMobile("target")
 	s.Require().True(found)
-	s.Require().NoError(s.w.fightLedger.Fight(s.p, drone, s.w.StartRoom.Zone.Id, s.w.StartRoom.Id))
+	s.Require().NoError(s.w.fightLedger.Fight(s.p, drone))
 	market := s.w.playerRoom(s.p)
 
 	s.recall()

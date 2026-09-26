@@ -43,7 +43,7 @@ func (w *World) handleKill(msg *gameserver.HandlerParameter, cmd command.Kill) {
 	// begin a fight with that target (or join an existing fight if there's
 	// already one going on with that target)
 
-	if err := w.fightLedger.Fight(msg.Player, mobileInstance, room.Zone.Id, room.Id); err != nil {
+	if err := w.fightLedger.Fight(msg.Player, mobileInstance); err != nil {
 		log.Error().Str("playerName", msg.Player.Name()).Str("target", mobileInstance.Name()).Err(err).Msg("kill: couldn't start the fight")
 		msg.Fail(event.InternalError)
 		return

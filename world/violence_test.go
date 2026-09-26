@@ -2,9 +2,13 @@ package world
 
 import (
 	"testing"
+	"uuid"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/watchmud/watchmud/event"
+	"github.com/watchmud/watchmud/player"
+	"github.com/watchmud/watchmud/rules"
+	"github.com/watchmud/watchmud/testdice"
 )
 
 // What happens to everyone else's fights when one combatant dies. These drive
@@ -28,11 +32,11 @@ func (s *violenceSuite) TestKillingOneAttackerLeavesTheOtherFighting() {
 	little, exists := s.w.StartRoom.FindMobile("little")
 	s.Require().True(exists)
 
-	s.Require().NoError(s.w.fightLedger.Fight(target, s.p, "wrathrock", "temple_square"))
-	s.Require().NoError(s.w.fightLedger.Fight(little, s.p, "wrathrock", "temple_square"))
+	s.Require().NoError(s.w.fightLedger.Fight(target, s.p))
+	s.Require().NoError(s.w.fightLedger.Fight(little, s.p))
 	s.Require().True(s.w.fightLedger.IsFighting(little))
 
-	s.w.combatantDied(target, s.w.StartRoom, true)
+	s.w.combatantDied(target, s.w.StartRoom)
 
 	s.Assert().False(s.w.fightLedger.IsFighting(target), "the dead one stops fighting")
 	s.Assert().True(s.w.fightLedger.IsFighting(little), "the survivor keeps fighting")
@@ -48,10 +52,10 @@ func (s *violenceSuite) TestWhenYourTargetDiesYouTurnOnTheNextAttacker() {
 	little, exists := s.w.StartRoom.FindMobile("little")
 	s.Require().True(exists)
 
-	s.Require().NoError(s.w.fightLedger.Fight(s.p, target, "wrathrock", "temple_square"))
-	s.Require().NoError(s.w.fightLedger.Fight(little, s.p, "wrathrock", "temple_square"))
+	s.Require().NoError(s.w.fightLedger.Fight(s.p, target))
+	s.Require().NoError(s.w.fightLedger.Fight(little, s.p))
 
-	s.w.combatantDied(target, s.w.StartRoom, true)
+	s.w.combatantDied(target, s.w.StartRoom)
 
 	fight := s.w.fightLedger.GetFight(s.p)
 	s.Require().NotNil(fight, "the player is fighting again")
@@ -64,9 +68,9 @@ func (s *violenceSuite) TestTheDeadLeaveInBothDirections() {
 	target, exists := s.w.StartRoom.FindMobile("target")
 	s.Require().True(exists)
 
-	s.Require().NoError(s.w.fightLedger.Fight(s.p, target, "wrathrock", "temple_square"))
+	s.Require().NoError(s.w.fightLedger.Fight(s.p, target))
 
-	s.w.combatantDied(target, s.w.StartRoom, true)
+	s.w.combatantDied(target, s.w.StartRoom)
 
 	s.Assert().False(s.w.fightLedger.InFight(target))
 	s.Assert().False(s.w.fightLedger.InFight(s.p))
@@ -76,7 +80,7 @@ func (s *violenceSuite) TestTheRoomIsTold() {
 	target, exists := s.w.StartRoom.FindMobile("target")
 	s.Require().True(exists)
 
-	s.w.combatantDied(target, s.w.StartRoom, true)
+	s.w.combatantDied(target, s.w.StartRoom)
 
 	s.Assert().Equal("Target Drone", sent[event.Died](s.T(), s.r, 0).Target)
 }
@@ -87,7 +91,48 @@ func (s *violenceSuite) TestNoRoomNoNotification() {
 	target, exists := s.w.StartRoom.FindMobile("target")
 	s.Require().True(exists)
 
-	s.w.combatantDied(target, nil, false)
+	s.w.combatantDied(target, nil)
 
 	s.Assert().Empty(s.r.Sent)
+}
+
+// A fight happens where the fighters are standing, not where it started.
+// Nothing lets the fighter walk-off mid-flight, so a test has to carry
+// them; this used to report the swing to temple_square forever, because
+// the fight had written down where it began.
+func (s *violenceSuite) TestTheFightIsWhereTheFightersAre() {
+	target, exists := s.w.StartRoom.FindMobile("target")
+	s.Require().True(exists)
+	market, found := s.w.findRoomById("wrathrock", "market_square")
+	s.Require().True(found)
+
+	// one swing: the drone at the player, and a d20 of 1 so it misses and nothing else is rolled
+	s.Require().NoError(s.w.fightLedger.Fight(target, s.p))
+	s.w.fightLedger.EndFight(s.p)
+	dice := testdice.New()
+	dice.Load([]int{1})
+	s.w.roller = dice
+
+	// both of them are carried off to the market after the fight began
+	s.w.moveMobile(target, rules.DirectionNone, market)
+	s.w.movePlayer(s.p, rules.DirectionNone, market)
+
+	templeEars := &player.Recorder{}
+	s.w.PlacePlayer(player.NewTestPlayer(uuid.New(), "templewatcher", templeEars), s.w.StartRoom)
+	marketEars := &player.Recorder{}
+	s.w.PlacePlayer(player.NewTestPlayer(uuid.New(), "marketwatcher", marketEars), market)
+
+	s.w.DoViolence(5)
+
+	s.Assert().True(heardStruck(marketEars, target.Name()), "the market sees the swing")
+	s.Assert().False(heardStruck(templeEars, target.Name()), "the temple doesn't")
+}
+
+func heardStruck(r *player.Recorder, attacker string) bool {
+	for _, msg := range r.Sent {
+		if struck, ok := msg.(event.Struck); ok && struck.Attacker == attacker {
+			return true
+		}
+	}
+	return false
 }
