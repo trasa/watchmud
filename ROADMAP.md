@@ -2,17 +2,27 @@
 
 ## Status
 
+**Live at watchmud.com** since September 25 2026 -- `telnet watchmud.com 4000`, or TLS
+on 4443. See "Launch", below, for what that took and what's still open.
+
 **Phases 0-6 are complete** (September 12 2026). The server is a working telnet MUD:
 `make run`, then `telnet localhost 4000`, create a character, and play. Protobuf is gone;
 the vocabulary is `command/` in and `event/` out. Classes are gone too, and lineage is
 cosmetic: what a character is good at comes from the equipment they have on. Phase 7 --
 real MUD-client protocol support -- is next.
 
-## Launch: real players, this week (set 2026-09-24)
+## Launch: real players, this week (set 2026-09-24, launched 2026-09-25)
 
 The short-term goal: deploy to a server, let real players in, and then grow content and
 bots. Checked against the tree on 2026-09-24. In order -- the first group are blockers,
 because today anyone can log in as anyone and anyone can spawn mobs.
+
+**Launched 2026-09-25** on a DigitalOcean droplet in sfo3 (Ubuntu 24.04, 1GB, 1 vCPU,
+2GB swap; resized up from 512MB, which couldn't hold docker, mongo and a Go build).
+Checkout at `/srv/watchmud`, run as `deploy/README.md` says. Verified from outside:
+both ports, a Let's Encrypt certificate for watchmud.com (TLS 1.3), mongo and every
+other port unreachable, real client addresses in the log (so the per-address cap
+works), `certbot renew --dry-run` passing, a backup written, and a wizard made.
 
 **Blockers:**
 
@@ -83,16 +93,17 @@ because today anyone can log in as anyone and anyone can spawn mobs.
    with a player connected, who stayed connected.
 
    Still open:
-   - **The host.** Production is `watchmud.com` -- telnet 4000, TLS 4443. The domains
-     (watchmud.com, watchmud.games) are registered and their DNS is at DigitalOcean;
-     there is no droplet yet. Then an A record for watchmud.com, and deploy/README.md
-     from "First time".
-   - **Copy backups off the host.** They sit on the same disk as the database.
-   - **Check the per-address cap sees real addresses** once players connect; the
-     README says how.
+   - **Copy backups off the host.** They sit on the same disk as the database; a dead
+     droplet takes both. DigitalOcean Spaces with `s3cmd`/`rclone` from the backup
+     loop, or the droplet's weekly backups as a floor.
+   - **Build the image in GitHub Actions**, push to `ghcr.io/watchmud/watchmud`, and have
+     the droplet pull it: a Go build on one vCPU with 1GB takes minutes and swaps, and
+     it's the same image a Kubernetes move would need. compose.yaml gets `image:`.
+   - **watchmud.games** has DNS but points nowhere. An A record and `-d watchmud.games`
+     on the certificate, if it should.
 
-   Why it was done this way, for the record: **a TLS port** beside the plain one, so a password doesn't have to cross the
-   internet in the clear. Telnet has no encryption and no MUD protocol adds any (MCCP
+   Why TLS was done this way, for the record: **a TLS port** beside the plain one, so a
+   password doesn't have to cross the internet in the clear. Telnet has no encryption and no MUD protocol adds any (MCCP
    is compression; GMCP/MSDP/MTTS are data channels; telnet START_TLS, option 46, has
    almost no client support), so what the better-run games do is a second port that
    speaks TLS. Mudlet has a "Secure" checkbox, TinTin++ has `#ssl`, and anything else

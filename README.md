@@ -7,8 +7,7 @@ tintin++, mudlet, or plain `telnet` -- create a character, and wander around.
 
     $ telnet watchmud.com 4000      # or 4443 for TLS
 
-(The public server at watchmud.com isn't up yet. To run your own: `make run`, then
-`telnet localhost 4000`.)
+To run your own: `make run`, then `telnet localhost 4000`.
 
 ### Where this is going
 
